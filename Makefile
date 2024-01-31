@@ -27,5 +27,6 @@ saved         : ## save and push to main branch
 	ps2pdf ~/tmp/$^.ps $@ ;  rm ~/tmp/$^.ps; \
   open $@
 
-../docs/%.html: %.py ../docs ## py ==> html
+../docs/%.html: %.py  ## py ==> html
+	mkdir -p ../docs
 	pdoc3 --html --force  --template-dir ../docs  -o ../docs $^

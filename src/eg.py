@@ -1,6 +1,7 @@
 # vim : set et ts=2 sw=2 :
-import etc
-import seer
+
+from etc  import *
+from easy import *
 
 class Eg:
   _all = locals()
