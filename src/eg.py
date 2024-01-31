@@ -35,13 +35,23 @@ class Eg:
                 rnds(d.like(row, 1000, 2, m=the.m, k=the.k)))
 
   def smos():
+    r=lambda x:rnds(x,2)
     print(the.seed)
     d=DATA(csv(the.file),order=False) 
-    print("names,",d.names)
-    print("base,", rnds(d.mid()),2); print("#")
-    random.shuffle(d.rows) 
-    d.smo(lambda i,top: print(f"step{i}, ",rnds(top,2)))
-    print("#\nbest,",rnds(d.clone(d.rows,order=True).rows[0]),2)
+    print("names",d.names,sep=",\t")
+    print("mid", r(d.mid()),r(d.d2h(d.mid())), sep=",\t");
+    print("div", r(d.div()),sep=",\t"); print("#")
+    out=[]
+    for i in range(20):
+       d=DATA(csv(the.file),order=False) 
+       random.shuffle(d.rows) 
+       out += [d.smo()]
+    for one in sorted(out,key=d.d2h):
+        print("smo",r(one),r(d.d2h(one)), sep=",\t")
+    best = d.clone(d.rows,order=True).rows[0]
+    print("#\n100%", r(best), r(d.d2h(best)), sep=",\t")
+
+    #print("#\nbest,",rnds(d.clone(d.rows,order=True).rows[0]),2)
 
 #----------------------------------------------------------------------------------------
 if __name__ == "__main__":

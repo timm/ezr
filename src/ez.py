@@ -35,13 +35,14 @@ the = etc.THE(__doc__)
 #----------------------------------------------------------------------------------------
 def strOfGoal(s):   return s[-1] in "+-!"
 def strOfHeaven(s): return 0 if s[-1] == "-" else 1
-def strOfNum(s):    return s[0].isupper() 
+def strOfNum(s):    return s[0].isupper()
 def colOfSym(x):    return isinstance(x,Counter)
 
 #----------------------------------------------------------------------------------------
 class NUM(etc.struct):
   def __init__(self,lst,txt=" ",rank=0):
-   self.txt, self.rank, self.n, self.mu, self.m2, self._has = txt,rank,0,0,0,sorted(lst)
+   self.n, self.mu, self.m2, self.sd = 0,0,0,0
+   self.txt, self.rank, self._has    = txt,rank,sorted(lst)
    for x in lst:
      self.n += 1
      delta = x - self.mu
@@ -53,8 +54,8 @@ class NUM(etc.struct):
   def d(self,x):
     if x=="?": return x
     tmp = (self.heaven==0 and (self.mu-x) or (x-self.mu))/(self.sd*the.cohen)
-    return 0 if -1 <= tmp and tmp <= 1 else tmp 
-  
+    return 0 if -1 <= tmp and tmp <= 1 else tmp
+
   def d2h(self,x):
     return abs(self.heaven - self.norm(x))
 
@@ -66,17 +67,17 @@ class DATA(etc.struct):
   def __init__(self, lsts, order=False):
     self.names,*rows = list(lsts)
     rotated   = [[y for y in x if y !="?"] for x in zip(*rows)]
-    self.cols = [NUM(lst,s) if strOfNum(s) else Counter(lst) 
+    self.cols = [NUM(lst,s) if strOfNum(s) else Counter(lst)
                  for s,lst in zip(self.names,rotated)]
     self.ys   = {n:c for n,(s,c) in enumerate(zip(self.names,self.cols)) if strOfGoal(s)}
-    self.rows = sorted(rows, key=lambda row:self.d2h(row)) if order else rows  
- 
-  def clone(self, rows=[], order=False):
-    return DATA([self.names] + rows, order=order)  
+    self.rows = sorted(rows, key=lambda row:self.d2h(row)) if order else rows
 
-  def d2h(self,lst):  
+  def clone(self, rows=[], order=False):
+    return DATA([self.names] + rows, order=order)
+
+  def d2h(self,lst):
     x =  sum((col.d2h(lst[n])**2 for n,col in self.ys.items()))
-    return (sum(col.d2h(lst[n])**2 for n,col in self.ys.items()) / len(self.ys))**.5 
+    return (sum(col.d2h(lst[n])**2 for n,col in self.ys.items()) / len(self.ys))**.5
 
   def like(self,row,nall,nh,m=1,k=2):
     def num(col,x):
@@ -92,31 +93,36 @@ class DATA(etc.struct):
     for c,x in etc.slots(row):
       if x != "?" and c not in self.ys:
         col  = self.cols[c]
-        inc  = (sym if colOfSym(col) else num)(col, x) 
+        inc  = (sym if colOfSym(col) else num)(col, x)
         out += math.log(inc)
     return out
 
-  def mid(self): 
-    return [max(col,key=col.get) if colOfSym(col) else col.mu for col in self.cols] 
-  
-  def smo(self, fun=None):  
+  def mid(self):
+    return [max(col,key=col.get) if colOfSym(col) else col.mu for col in self.cols]
+
+  def div(self):
+    return [etc.entropy(col) if colOfSym(col) else col.sd for col in self.cols]
+
+  def smo(self, fun=None):
     def smo1(i, best, rest, rows):
       out,most = 0,-1E300
       for k,row in enumerate(rows):
         b = best.like(row, len(self.rows), 2, the.m, the.k)
-        r = rest.like(row, len(self.rows), 2, the.m, the.k) 
-        tmp = b - r 
-        if tmp > most: out,most = k,tmp  
+        r = rest.like(row, len(self.rows), 2, the.m, the.k)
+        tmp = b - r
+        if tmp > most: out,most = k,tmp
       if fun: fun(i, best.rows[0])
-      return out    
+      return out
     #-----------
     done, todo = self.rows[:the.budget0], self.rows[the.budget0:]
+    data1 = self.clone(done, order=True)
     for i in range(the.Budget):
-      data1 = self.clone(done, order=True)
-      n     = int(len(done)**the.Top + .5)
+      n = int(len(done)**the.Top + .5)
       done.append(
         todo.pop(
           smo1( i + 1 + the.budget0,
-                self.clone(data1.rows[:n],order=True), 
+                self.clone(data1.rows[:n],order=True),
                 self.clone(data1.rows[n:]),
                 todo)))
+      data1 = self.clone(done, order=True)
+    return data1.rows[0]
