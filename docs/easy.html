@@ -107,37 +107,26 @@ class NUM(etc.struct):
     if x==&#34;?&#34;: return x
     tmp = (self.heaven==0 and (self.mu-x) or (x-self.mu))/(self.sd*the.cohen)
     return 0 if -1 &lt;= tmp and tmp &lt;= 1 else tmp 
-
-  def norm(self,x):
-    return x==&#34;?&#34; and x or (x - self.has[0]) / (self.has[-1] - self.has[0])
   
   def d2h(self,x):
      return abs(self.heaven - self.norm(x))
-#----------------------------------------------------------------------------------------
-class COLS(etc.struct):
-  def __init__(self,names,rows):
-    self.names= names
-    rotated  = [[y for y in x if y !=&#34;?&#34;] for x in zip(*rows)]
-    self.all = [(NUM if strOfNum(s) else Counter)(lst) for s,lst in zip(names,rotated)]
-    self.ys  = {n:c for n,(s,c) in enumerate(zip(self.names,self.all)) if strOfGoal(s)}
+
+  def norm(self,x):
+    return x==&#34;?&#34; and x or (x - self.has[0]) / (self.has[-1] - self.has[0])
 
 #----------------------------------------------------------------------------------------
 class DATA(etc.struct):
   def __init__(self, lsts, order=False):
-    names,*rows = list(lsts)
-    self.cols = COLS(names,rows)
+    self.names,*rows = list(lsts)
+    rotated   = [[y for y in x if y !=&#34;?&#34;] for x in zip(*rows)]
+    self.cols = [(NUM if strOfNum(s) else Counter)(lst) for s,lst in zip(names,rotated)]
+    self.ys   = {n:c for n,(s,c) in enumerate(zip(self.names,self.cols)) if strOfGoal(s)}
     self.rows = sorted(rows, key=lambda row:self.d2h(row)) if order else rows
-
-  def mid(self): 
-    return [max(col,key=col.get) if colOfSym(col) else col.mu 
-            for col in enumerate(self.cols.all)] 
-  
   def clone(self, rows=[], order=False):
-    return DATA([self.cols.names] + rows, order=order)  
+    return DATA([self.names] + rows, order=order)  
 
   def d2h(self,lst):  
-    ys = self.cols.ys
-    return (sum(col.d2h(lst[n])**2 for n,col in ys.items()) / len(ys))**.5 
+    return (sum(col.d2h(lst[n])**2 for n,col in self.ys.items()) / len(self.ys))**.5 
 
   def like(self,row,nall,nh,m=1,k=2):
     def num(col,x):
@@ -151,35 +140,37 @@ class DATA(etc.struct):
     prior = (len(self.rows) + k) / (nall + k*nh)
     out   = math.log(prior)
     for c,x in etc.slots(row):
-      if x != &#34;?&#34; and c not in self.cols.ys:
-        col  = self.cols.all[c]
+      if x != &#34;?&#34; and c not in self.ys:
+        col  = self.cols[c]
         inc  = (sym if colOfSym(col) else num)(col, x) 
         out += math.log(inc)
     return out
 
-  def smo(self,fun=None):  
-    def worker(i,best,rest,nall,rows,fun):
-      todo,max,selected = 0,-1E300,[]
+  def mid(self): 
+    return [max(col,key=col.get) if colOfSym(col) else col.mu 
+            for col in enumerate(self.cols)] 
+  
+  def smo(self, fun=None):  
+    def smo1(i, best, rest, rows):
+      out,most = 0,-1E300
       for k,row in enumerate(rows):
-        b = best.like(row,nall,2,the.m,the.k)
-        r = rest.like(row,nall,2,the.m,the.k) 
-        if b&gt;r: selected.append(row)
+        b = best.like(row, len(self.rows), 2, the.m, the.k)
+        r = rest.like(row, len(self.rows), 2, the.m, the.k) 
         tmp = b - r 
-        if tmp &gt; max: todo,max = k,tmp  
-      if fun: fun(i,best.rows[0])
-      return todo    
-    #------------
+        if tmp &gt; most: out,most = k,tmp  
+      if fun: fun(i, best.rows[0])
+      return out    
+    #-----------
     done, todo = self.rows[:the.budget0], self.rows[the.budget0:]
     for i in range(the.Budget):
       data1 = self.clone(done, order=True)
-      n = int(len(done)**the.Top + .5)
-      j = worker(i+the.budget0,
-                  self.clone(data1.rows[:n],order=True), 
-                  self.clone(data1.rows[n:]),
-                  len(self.rows),
-                  todo,
-                  fun) 
-    done.append(todo.pop(j))</code></pre>
+      n     = int(len(done)**the.Top + .5)
+      done.append(
+        todo.pop(
+          smo1( i + 1 + the.budget0,
+                self.clone(data1.rows[:n],order=True), 
+                self.clone(data1.rows[n:]),
+                todo)))</code></pre>
 </details>
 </section>
 <section>
@@ -242,28 +233,6 @@ class DATA(etc.struct):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="easy.COLS"><code class="flex name class">
-<span>class <span class="ident">COLS</span></span>
-<span>(</span><span>names, rows)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class COLS(etc.struct):
-  def __init__(self,names,rows):
-    self.names= names
-    rotated  = [[y for y in x if y !=&#34;?&#34;] for x in zip(*rows)]
-    self.all = [(NUM if strOfNum(s) else Counter)(lst) for s,lst in zip(names,rotated)]
-    self.ys  = {n:c for n,(s,c) in enumerate(zip(self.names,self.all)) if strOfGoal(s)}</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>etc.struct</li>
-</ul>
-</dd>
 <dt id="easy.DATA"><code class="flex name class">
 <span>class <span class="ident">DATA</span></span>
 <span>(</span><span>lsts, order=False)</span>
@@ -276,20 +245,16 @@ class DATA(etc.struct):
 </summary>
 <pre><code class="python">class DATA(etc.struct):
   def __init__(self, lsts, order=False):
-    names,*rows = list(lsts)
-    self.cols = COLS(names,rows)
+    self.names,*rows = list(lsts)
+    rotated   = [[y for y in x if y !=&#34;?&#34;] for x in zip(*rows)]
+    self.cols = [(NUM if strOfNum(s) else Counter)(lst) for s,lst in zip(names,rotated)]
+    self.ys   = {n:c for n,(s,c) in enumerate(zip(self.names,self.cols)) if strOfGoal(s)}
     self.rows = sorted(rows, key=lambda row:self.d2h(row)) if order else rows
-
-  def mid(self): 
-    return [max(col,key=col.get) if colOfSym(col) else col.mu 
-            for col in enumerate(self.cols.all)] 
-  
   def clone(self, rows=[], order=False):
-    return DATA([self.cols.names] + rows, order=order)  
+    return DATA([self.names] + rows, order=order)  
 
   def d2h(self,lst):  
-    ys = self.cols.ys
-    return (sum(col.d2h(lst[n])**2 for n,col in ys.items()) / len(ys))**.5 
+    return (sum(col.d2h(lst[n])**2 for n,col in self.ys.items()) / len(self.ys))**.5 
 
   def like(self,row,nall,nh,m=1,k=2):
     def num(col,x):
@@ -303,35 +268,37 @@ class DATA(etc.struct):
     prior = (len(self.rows) + k) / (nall + k*nh)
     out   = math.log(prior)
     for c,x in etc.slots(row):
-      if x != &#34;?&#34; and c not in self.cols.ys:
-        col  = self.cols.all[c]
+      if x != &#34;?&#34; and c not in self.ys:
+        col  = self.cols[c]
         inc  = (sym if colOfSym(col) else num)(col, x) 
         out += math.log(inc)
     return out
 
-  def smo(self,fun=None):  
-    def worker(i,best,rest,nall,rows,fun):
-      todo,max,selected = 0,-1E300,[]
+  def mid(self): 
+    return [max(col,key=col.get) if colOfSym(col) else col.mu 
+            for col in enumerate(self.cols)] 
+  
+  def smo(self, fun=None):  
+    def smo1(i, best, rest, rows):
+      out,most = 0,-1E300
       for k,row in enumerate(rows):
-        b = best.like(row,nall,2,the.m,the.k)
-        r = rest.like(row,nall,2,the.m,the.k) 
-        if b&gt;r: selected.append(row)
+        b = best.like(row, len(self.rows), 2, the.m, the.k)
+        r = rest.like(row, len(self.rows), 2, the.m, the.k) 
         tmp = b - r 
-        if tmp &gt; max: todo,max = k,tmp  
-      if fun: fun(i,best.rows[0])
-      return todo    
-    #------------
+        if tmp &gt; most: out,most = k,tmp  
+      if fun: fun(i, best.rows[0])
+      return out    
+    #-----------
     done, todo = self.rows[:the.budget0], self.rows[the.budget0:]
     for i in range(the.Budget):
       data1 = self.clone(done, order=True)
-      n = int(len(done)**the.Top + .5)
-      j = worker(i+the.budget0,
-                  self.clone(data1.rows[:n],order=True), 
-                  self.clone(data1.rows[n:]),
-                  len(self.rows),
-                  todo,
-                  fun) 
-    done.append(todo.pop(j))</code></pre>
+      n     = int(len(done)**the.Top + .5)
+      done.append(
+        todo.pop(
+          smo1( i + 1 + the.budget0,
+                self.clone(data1.rows[:n],order=True), 
+                self.clone(data1.rows[n:]),
+                todo)))</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -349,7 +316,7 @@ class DATA(etc.struct):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def clone(self, rows=[], order=False):
-  return DATA([self.cols.names] + rows, order=order)  </code></pre>
+  return DATA([self.names] + rows, order=order)  </code></pre>
 </details>
 </dd>
 <dt id="easy.DATA.d2h"><code class="name flex">
@@ -362,8 +329,7 @@ class DATA(etc.struct):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def d2h(self,lst):  
-  ys = self.cols.ys
-  return (sum(col.d2h(lst[n])**2 for n,col in ys.items()) / len(ys))**.5 </code></pre>
+  return (sum(col.d2h(lst[n])**2 for n,col in self.ys.items()) / len(self.ys))**.5 </code></pre>
 </details>
 </dd>
 <dt id="easy.DATA.like"><code class="name flex">
@@ -387,8 +353,8 @@ class DATA(etc.struct):
   prior = (len(self.rows) + k) / (nall + k*nh)
   out   = math.log(prior)
   for c,x in etc.slots(row):
-    if x != &#34;?&#34; and c not in self.cols.ys:
-      col  = self.cols.all[c]
+    if x != &#34;?&#34; and c not in self.ys:
+      col  = self.cols[c]
       inc  = (sym if colOfSym(col) else num)(col, x) 
       out += math.log(inc)
   return out</code></pre>
@@ -405,7 +371,7 @@ class DATA(etc.struct):
 </summary>
 <pre><code class="python">def mid(self): 
   return [max(col,key=col.get) if colOfSym(col) else col.mu 
-          for col in enumerate(self.cols.all)] </code></pre>
+          for col in enumerate(self.cols)] </code></pre>
 </details>
 </dd>
 <dt id="easy.DATA.smo"><code class="name flex">
@@ -417,29 +383,27 @@ class DATA(etc.struct):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def smo(self,fun=None):  
-  def worker(i,best,rest,nall,rows,fun):
-    todo,max,selected = 0,-1E300,[]
+<pre><code class="python">def smo(self, fun=None):  
+  def smo1(i, best, rest, rows):
+    out,most = 0,-1E300
     for k,row in enumerate(rows):
-      b = best.like(row,nall,2,the.m,the.k)
-      r = rest.like(row,nall,2,the.m,the.k) 
-      if b&gt;r: selected.append(row)
+      b = best.like(row, len(self.rows), 2, the.m, the.k)
+      r = rest.like(row, len(self.rows), 2, the.m, the.k) 
       tmp = b - r 
-      if tmp &gt; max: todo,max = k,tmp  
-    if fun: fun(i,best.rows[0])
-    return todo    
-  #------------
+      if tmp &gt; most: out,most = k,tmp  
+    if fun: fun(i, best.rows[0])
+    return out    
+  #-----------
   done, todo = self.rows[:the.budget0], self.rows[the.budget0:]
   for i in range(the.Budget):
     data1 = self.clone(done, order=True)
-    n = int(len(done)**the.Top + .5)
-    j = worker(i+the.budget0,
-                self.clone(data1.rows[:n],order=True), 
-                self.clone(data1.rows[n:]),
-                len(self.rows),
-                todo,
-                fun) 
-  done.append(todo.pop(j))</code></pre>
+    n     = int(len(done)**the.Top + .5)
+    done.append(
+      todo.pop(
+        smo1( i + 1 + the.budget0,
+              self.clone(data1.rows[:n],order=True), 
+              self.clone(data1.rows[n:]),
+              todo)))</code></pre>
 </details>
 </dd>
 </dl>
@@ -469,12 +433,12 @@ class DATA(etc.struct):
     if x==&#34;?&#34;: return x
     tmp = (self.heaven==0 and (self.mu-x) or (x-self.mu))/(self.sd*the.cohen)
     return 0 if -1 &lt;= tmp and tmp &lt;= 1 else tmp 
-
-  def norm(self,x):
-    return x==&#34;?&#34; and x or (x - self.has[0]) / (self.has[-1] - self.has[0])
   
   def d2h(self,x):
-     return abs(self.heaven - self.norm(x))</code></pre>
+     return abs(self.heaven - self.norm(x))
+
+  def norm(self,x):
+    return x==&#34;?&#34; and x or (x - self.has[0]) / (self.has[-1] - self.has[0])</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -552,9 +516,6 @@ class DATA(etc.struct):
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
-<li>
-<h4><code><a title="easy.COLS" href="#easy.COLS">COLS</a></code></h4>
-</li>
 <li>
 <h4><code><a title="easy.DATA" href="#easy.DATA">DATA</a></code></h4>
 <ul class="">

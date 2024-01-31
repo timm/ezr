@@ -1,5 +1,7 @@
 # vim : set et ts=2 sw=2 :
 
+import re, math
+
 class struct:
   def __init__(self,**d) : self.__dict__.update(d)
   __repr__ = lambda self: o(self.__dict__, self.__class__.__name__)
