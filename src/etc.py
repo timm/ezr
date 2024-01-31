@@ -1,6 +1,7 @@
 # vim : set et ts=2 sw=2 :
 
-import re, math
+import re, ast, sys, math
+from fileinput import FileInput as file_or_stdin
 
 class struct:
   def __init__(self,**d) : self.__dict__.update(d)
@@ -21,22 +22,9 @@ class THE(struct):
           v = "false" if v=="true" else ("true" if v=="false" else after)
           self.__dict__[k] = coerce(v)
 
-def slots(x):
-  if isinstance(x,dict):
-    for k,v in x.items(): yield k,v
-  else:
-    for k,v in enumerate(x): yield k,v
-  
-def o(d,s=""): 
-  return s+"{"+(", ".join([f":{k} {v}" for k,v in d.items() if k[0]!="_"]))+"}" 
-
 def coerce(s):
   try: return ast.literal_eval(s)
   except Exception: return s
-
-def entropy(d): 
-  n = sum(d.values()) 
-  return -sum(v/n*math.log(v/n,2) for _,v in d.items() if v>0)
 
 def csv(file=None):
   with file_or_stdin(file) as src:
@@ -44,7 +32,20 @@ def csv(file=None):
       line = re.sub(r'([\n\t\r"\’ ]|#.*)', '', line)
       if line: yield [coerce(s.strip()) for s in line.split(",")]
 
+def entropy(d): 
+  n = sum(d.values()) 
+  return -sum(v/n*math.log(v/n,2) for _,v in d.items() if v>0)
+
+def o(d, s = ""): 
+  return s+"{"+(", ".join([f":{k} {rnds(v)}" for k,v in d.items() if k[0]!="_"]))+"}" 
+
 def rnds(x,n=2): 
   if isinstance(x,(int,float)):  return x if int(x)==x else round(x,n)
   if isinstance(x,(list,tuple)): return [rnds(y,n) for y in x]
   return x
+
+def slots(x):
+  if isinstance(x,dict):
+    for k,v in x.items(): yield k,v
+  else:
+    for k,v in enumerate(x): yield k,v

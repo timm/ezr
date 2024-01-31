@@ -10,10 +10,13 @@ help          :  ## show help
 saved         : ## save and push to main branch 
 	read -p "commit msg> " note; git commit -am "$$note"; git push;git status
 
-  
+FILES=$(wildcard *.py)
+docs: $(addprefix ~/tmp/, $(FILES:.py=.pdf))  $(addprefix ../docs/, $(FILES:.py=.html))
+
+ 
 ~/tmp/%.pdf   : %.py  ## py ==> pdf
 	mkdir -p ~/tmp
-	echo "a2ps: $^ -> $@" 
+	echo "$@" 
 	a2ps                           \
 		-qBR                          \
 		--chars-per-line 100           \
@@ -25,7 +28,6 @@ saved         : ## save and push to main branch
 		-M letter                            \
 		-o ~/tmp/$^.ps $^ ;                   \
 	ps2pdf ~/tmp/$^.ps $@ ;  rm ~/tmp/$^.ps; \
-  open $@
 
 ../docs/%.html: %.py  ## py ==> html
 	mkdir -p ../docs

@@ -2,6 +2,7 @@
 
 from etc  import *
 from easy import *
+import easy
 
 class Eg:
   _all = locals()
@@ -12,14 +13,19 @@ class Eg:
   def nothing(): pass
 
   def help(): 
-    print(__doc__);  
+    print(easy.__doc__);  
 
   def nums(): 
     print(NUM([x**.5 for x in range(100)]))
   
+  def cols():
+    d = DATA(csv(the.file), order=True)
+    [print(x) for x in d.cols]
+    
   def data():
-    for i,row in enumerate(DATA(csv(the.file),order=True).rows):
-       if i % 500 == 0 : print(i,row)
+    d = DATA(csv(the.file), order=True)
+    for i,row in enumerate(d.rows):
+       if i % 25 == 0 : print(i,row)
 
   def likes():
     d = DATA( csv(the.file),order=True)
@@ -31,14 +37,13 @@ class Eg:
   def smos():
     print(the.seed)
     d=DATA(csv(the.file),order=False) 
-    print("names,",d.cols.names)
+    print("names,",d.names)
     print("base,", rnds(d.mid()),2); print("#")
     random.shuffle(d.rows) 
     d.smo(lambda i,top: print(f"step{i}, ",rnds(top,2)))
     print("#\nbest,",rnds(d.clone(d.rows,order=True).rows[0]),2)
 
 #----------------------------------------------------------------------------------------
-the = THE(__doc__)
 if __name__ == "__main__":
   the.cli()
   random.seed(the.seed)
