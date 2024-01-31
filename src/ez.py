@@ -1,10 +1,10 @@
 # vim : set et ts=2 sw=2 :
 """
-easy: ai can be simple, let me show you how   
+ez: ai can be easy, let me show you how   
 (c) 2023, Tim Menzies, <timm@ieee.org>, BSD-2  
   
 USAGE:    
-1. download easy.py, etc.py, eg.py    
+1. download ez.py, etc.py, eg.py    
 2. python3 eg.py [OPTIONS]   
   
 OPTIONS:  

@@ -1,8 +1,8 @@
 # vim : set et ts=2 sw=2 :
 
 from etc  import *
-from easy import *
-import easy
+from ez import *
+import ez
 
 class Eg:
   _all = locals()
@@ -13,7 +13,7 @@ class Eg:
   def nothing(): pass
 
   def help(): 
-    print(easy.__doc__);  
+    print(ez.__doc__);  
 
   def nums(): 
     print(NUM([x**.5 for x in range(100)]))
