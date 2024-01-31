@@ -30,6 +30,7 @@
 
 from etc  import *
 from easy import *
+import easy
 
 class Eg:
   _all = locals()
@@ -40,14 +41,19 @@ class Eg:
   def nothing(): pass
 
   def help(): 
-    print(__doc__);  
+    print(easy.__doc__);  
 
   def nums(): 
     print(NUM([x**.5 for x in range(100)]))
   
+  def cols():
+    d = DATA(csv(the.file), order=True)
+    [print(x) for x in d.cols]
+    
   def data():
-    for i,row in enumerate(DATA(csv(the.file),order=True).rows):
-       if i % 500 == 0 : print(i,row)
+    d = DATA(csv(the.file), order=True)
+    for i,row in enumerate(d.rows):
+       if i % 25 == 0 : print(i,row)
 
   def likes():
     d = DATA( csv(the.file),order=True)
@@ -59,7 +65,7 @@ class Eg:
   def smos():
     print(the.seed)
     d=DATA(csv(the.file),order=False) 
-    print(&#34;names,&#34;,d.cols.names)
+    print(&#34;names,&#34;,d.names)
     print(&#34;base,&#34;, rnds(d.mid()),2); print(&#34;#&#34;)
     random.shuffle(d.rows) 
     d.smo(lambda i,top: print(f&#34;step{i}, &#34;,rnds(top,2)))
@@ -99,14 +105,19 @@ if __name__ == &#34;__main__&#34;:
   def nothing(): pass
 
   def help(): 
-    print(__doc__);  
+    print(easy.__doc__);  
 
   def nums(): 
     print(NUM([x**.5 for x in range(100)]))
   
+  def cols():
+    d = DATA(csv(the.file), order=True)
+    [print(x) for x in d.cols]
+    
   def data():
-    for i,row in enumerate(DATA(csv(the.file),order=True).rows):
-       if i % 500 == 0 : print(i,row)
+    d = DATA(csv(the.file), order=True)
+    for i,row in enumerate(d.rows):
+       if i % 25 == 0 : print(i,row)
 
   def likes():
     d = DATA( csv(the.file),order=True)
@@ -118,7 +129,7 @@ if __name__ == &#34;__main__&#34;:
   def smos():
     print(the.seed)
     d=DATA(csv(the.file),order=False) 
-    print(&#34;names,&#34;,d.cols.names)
+    print(&#34;names,&#34;,d.names)
     print(&#34;base,&#34;, rnds(d.mid()),2); print(&#34;#&#34;)
     random.shuffle(d.rows) 
     d.smo(lambda i,top: print(f&#34;step{i}, &#34;,rnds(top,2)))
@@ -140,6 +151,20 @@ if __name__ == &#34;__main__&#34;:
   sys.exit(sum(0 if x==None else x for x in errors))</code></pre>
 </details>
 </dd>
+<dt id="eg.Eg.cols"><code class="name flex">
+<span>def <span class="ident">cols</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cols():
+  d = DATA(csv(the.file), order=True)
+  [print(x) for x in d.cols]</code></pre>
+</details>
+</dd>
 <dt id="eg.Eg.data"><code class="name flex">
 <span>def <span class="ident">data</span></span>(<span>)</span>
 </code></dt>
@@ -150,8 +175,9 @@ if __name__ == &#34;__main__&#34;:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def data():
-  for i,row in enumerate(DATA(csv(the.file),order=True).rows):
-     if i % 500 == 0 : print(i,row)</code></pre>
+  d = DATA(csv(the.file), order=True)
+  for i,row in enumerate(d.rows):
+     if i % 25 == 0 : print(i,row)</code></pre>
 </details>
 </dd>
 <dt id="eg.Eg.help"><code class="name flex">
@@ -164,7 +190,7 @@ if __name__ == &#34;__main__&#34;:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def help(): 
-  print(__doc__);  </code></pre>
+  print(easy.__doc__);  </code></pre>
 </details>
 </dd>
 <dt id="eg.Eg.likes"><code class="name flex">
@@ -221,7 +247,7 @@ if __name__ == &#34;__main__&#34;:
 <pre><code class="python">def smos():
   print(the.seed)
   d=DATA(csv(the.file),order=False) 
-  print(&#34;names,&#34;,d.cols.names)
+  print(&#34;names,&#34;,d.names)
   print(&#34;base,&#34;, rnds(d.mid()),2); print(&#34;#&#34;)
   random.shuffle(d.rows) 
   d.smo(lambda i,top: print(f&#34;step{i}, &#34;,rnds(top,2)))
@@ -253,6 +279,7 @@ if __name__ == &#34;__main__&#34;:
 <h4><code><a title="eg.Eg" href="#eg.Eg">Eg</a></code></h4>
 <ul class="two-column">
 <li><code><a title="eg.Eg.all" href="#eg.Eg.all">all</a></code></li>
+<li><code><a title="eg.Eg.cols" href="#eg.Eg.cols">cols</a></code></li>
 <li><code><a title="eg.Eg.data" href="#eg.Eg.data">data</a></code></li>
 <li><code><a title="eg.Eg.help" href="#eg.Eg.help">help</a></code></li>
 <li><code><a title="eg.Eg.likes" href="#eg.Eg.likes">likes</a></code></li>
