@@ -4,11 +4,10 @@ from etc  import *
 from ez import *
 import ez
 
-class Eg:
-  _all = locals()
+class Eg: 
   def all():
-    errors = [f() for s,f in Eg._all.items() if s[0] !="_" and s !="all"]
-    sys.exit(sum(0 if x==None else x for x in errors))
+    sys.exit(sum(1 if getattr(Eg,s)()==False else 0 
+                 for s in dir(Eg) if s[0] !="_" and s !="all"))
     
   def nothing(): pass
 

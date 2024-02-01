@@ -10,7 +10,7 @@ USAGE:
 OPTIONS:  
 
      -b --budget0     initial evals              = 4  
-     -B --Budget      subsequent evals           = 6   
+     -B --Budget      subsequent evals           = 5   
      -c --cohen       small effect size          = .35  
      -c --confidence  statistical confidence     = .05
      -e --effectSize  non-parametric small delta = 0.2385
@@ -24,7 +24,7 @@ OPTIONS:
      -T --Top         best section               = .5   
 """
 
-import re,math,random
+import re,sys,math,random
 from collections import Counter
 from stats import sk
 from etc import o
@@ -81,8 +81,8 @@ class DATA(etc.struct):
 
   def like(self,row,nall,nh,m=1,k=2):
     def num(col,x):
-      v = col.sd**2 + 10**-64
-      nom = math.e**(-1*(x - col.mu)**2/(2*v)) + 10**-64
+      v     = col.sd**2 + 10**-64
+      nom   = math.e**(-1*(x - col.mu)**2/(2*v)) + 10**-64
       denom = (2*math.pi*v)**.5
       return min(1, nom/(denom + 10**-64))
     def sym(col,x):
@@ -105,7 +105,7 @@ class DATA(etc.struct):
 
   def smo(self, fun=None):
     def smo1(i, best, rest, rows):
-      out,most = 0,-1E300
+      out,most = 0,-sys.maxsize
       for k,row in enumerate(rows):
         b = best.like(row, len(self.rows), 2, the.m, the.k)
         r = rest.like(row, len(self.rows), 2, the.m, the.k)
@@ -122,7 +122,7 @@ class DATA(etc.struct):
       done.append(
         todo.pop(
           smo1( i + 1 + the.budget0,
-                self.clone(data1.rows[:n],order=True),
+                self.clone(data1.rows[:n]),
                 self.clone(data1.rows[n:]),
                 todo)))
       data1 = self.clone(done, order=True)

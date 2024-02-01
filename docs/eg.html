@@ -14,6 +14,14 @@
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<div style="background-color: #EEE; margin: 10px; padding-left:10px; padding-right:10px">
+<p style="text-align:right">
+<span style="float:left">
+<a href="https://github.com/timm/easy/blob/main/LICENSE.md">&copy;2024</a> Tim Menzies
+</span>
+See also: <a href="ez.html">ez</a> :: <a href="etc.html">etc</a> :: <a href="eg.html">eg</a>
+</p>
+</div>
 </head>
 <body>
 <main>
@@ -29,8 +37,8 @@
 <pre><code class="python"># vim : set et ts=2 sw=2 :
 
 from etc  import *
-from easy import *
-import easy
+from ez import *
+import ez
 
 class Eg:
   _all = locals()
@@ -41,7 +49,7 @@ class Eg:
   def nothing(): pass
 
   def help(): 
-    print(easy.__doc__);  
+    print(ez.__doc__);  
 
   def nums(): 
     print(NUM([x**.5 for x in range(100)]))
@@ -63,13 +71,30 @@ class Eg:
                 rnds(d.like(row, 1000, 2, m=the.m, k=the.k)))
 
   def smos():
+    repeats=20
+    r=lambda x:rnds(x,2)
     print(the.seed)
     d=DATA(csv(the.file),order=False) 
-    print(&#34;names,&#34;,d.names)
-    print(&#34;base,&#34;, rnds(d.mid()),2); print(&#34;#&#34;)
-    random.shuffle(d.rows) 
-    d.smo(lambda i,top: print(f&#34;step{i}, &#34;,rnds(top,2)))
-    print(&#34;#\nbest,&#34;,rnds(d.clone(d.rows,order=True).rows[0]),2)
+    print(&#34;names&#34;,d.names,sep=&#34;,\t&#34;)
+    print(&#34;mid&#34;, r(d.mid()),r(d.d2h(d.mid())), sep=&#34;,\t&#34;);
+    print(&#34;div&#34;, r(d.div()),sep=&#34;,\t&#34;); print(&#34;#&#34;)
+    #---
+    for one in  sorted([d.smo() for _ in range(repeats)], key=d.d2h):
+      print(f&#34;smo{the.budget0+the.Budget}&#34;,r(one),r(d.d2h(one)), sep=&#34;,\t&#34;)
+    #---
+    print(&#34;#&#34;)
+    out=[]
+    n = int(0.5 + math.log(1 - .95)/math.log(1 - .35/6))
+    for _ in range(repeats):
+       random.shuffle(d.rows)
+       out += [d.clone(d.rows[:n], order=True).rows[0]]
+    for one in  sorted(out, key=d.d2h):   
+       print(f&#34;any{n}&#34;, r(one), r(d.d2h(one)), sep=&#34;,\t&#34;)
+    #---
+    all = d.clone(d.rows,order=True).rows[0]
+    print(&#34;#\n100%&#34;, r(all), r(d.d2h(all)), sep=&#34;,\t&#34;)
+
+    #print(&#34;#\nbest,&#34;,rnds(d.clone(d.rows,order=True).rows[0]),2)
 
 #----------------------------------------------------------------------------------------
 if __name__ == &#34;__main__&#34;:
@@ -105,7 +130,7 @@ if __name__ == &#34;__main__&#34;:
   def nothing(): pass
 
   def help(): 
-    print(easy.__doc__);  
+    print(ez.__doc__);  
 
   def nums(): 
     print(NUM([x**.5 for x in range(100)]))
@@ -127,13 +152,30 @@ if __name__ == &#34;__main__&#34;:
                 rnds(d.like(row, 1000, 2, m=the.m, k=the.k)))
 
   def smos():
+    repeats=20
+    r=lambda x:rnds(x,2)
     print(the.seed)
     d=DATA(csv(the.file),order=False) 
-    print(&#34;names,&#34;,d.names)
-    print(&#34;base,&#34;, rnds(d.mid()),2); print(&#34;#&#34;)
-    random.shuffle(d.rows) 
-    d.smo(lambda i,top: print(f&#34;step{i}, &#34;,rnds(top,2)))
-    print(&#34;#\nbest,&#34;,rnds(d.clone(d.rows,order=True).rows[0]),2)</code></pre>
+    print(&#34;names&#34;,d.names,sep=&#34;,\t&#34;)
+    print(&#34;mid&#34;, r(d.mid()),r(d.d2h(d.mid())), sep=&#34;,\t&#34;);
+    print(&#34;div&#34;, r(d.div()),sep=&#34;,\t&#34;); print(&#34;#&#34;)
+    #---
+    for one in  sorted([d.smo() for _ in range(repeats)], key=d.d2h):
+      print(f&#34;smo{the.budget0+the.Budget}&#34;,r(one),r(d.d2h(one)), sep=&#34;,\t&#34;)
+    #---
+    print(&#34;#&#34;)
+    out=[]
+    n = int(0.5 + math.log(1 - .95)/math.log(1 - .35/6))
+    for _ in range(repeats):
+       random.shuffle(d.rows)
+       out += [d.clone(d.rows[:n], order=True).rows[0]]
+    for one in  sorted(out, key=d.d2h):   
+       print(f&#34;any{n}&#34;, r(one), r(d.d2h(one)), sep=&#34;,\t&#34;)
+    #---
+    all = d.clone(d.rows,order=True).rows[0]
+    print(&#34;#\n100%&#34;, r(all), r(d.d2h(all)), sep=&#34;,\t&#34;)
+
+    #print(&#34;#\nbest,&#34;,rnds(d.clone(d.rows,order=True).rows[0]),2)</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -190,7 +232,7 @@ if __name__ == &#34;__main__&#34;:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def help(): 
-  print(easy.__doc__);  </code></pre>
+  print(ez.__doc__);  </code></pre>
 </details>
 </dd>
 <dt id="eg.Eg.likes"><code class="name flex">
@@ -245,13 +287,30 @@ if __name__ == &#34;__main__&#34;:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def smos():
+  repeats=20
+  r=lambda x:rnds(x,2)
   print(the.seed)
   d=DATA(csv(the.file),order=False) 
-  print(&#34;names,&#34;,d.names)
-  print(&#34;base,&#34;, rnds(d.mid()),2); print(&#34;#&#34;)
-  random.shuffle(d.rows) 
-  d.smo(lambda i,top: print(f&#34;step{i}, &#34;,rnds(top,2)))
-  print(&#34;#\nbest,&#34;,rnds(d.clone(d.rows,order=True).rows[0]),2)</code></pre>
+  print(&#34;names&#34;,d.names,sep=&#34;,\t&#34;)
+  print(&#34;mid&#34;, r(d.mid()),r(d.d2h(d.mid())), sep=&#34;,\t&#34;);
+  print(&#34;div&#34;, r(d.div()),sep=&#34;,\t&#34;); print(&#34;#&#34;)
+  #---
+  for one in  sorted([d.smo() for _ in range(repeats)], key=d.d2h):
+    print(f&#34;smo{the.budget0+the.Budget}&#34;,r(one),r(d.d2h(one)), sep=&#34;,\t&#34;)
+  #---
+  print(&#34;#&#34;)
+  out=[]
+  n = int(0.5 + math.log(1 - .95)/math.log(1 - .35/6))
+  for _ in range(repeats):
+     random.shuffle(d.rows)
+     out += [d.clone(d.rows[:n], order=True).rows[0]]
+  for one in  sorted(out, key=d.d2h):   
+     print(f&#34;any{n}&#34;, r(one), r(d.d2h(one)), sep=&#34;,\t&#34;)
+  #---
+  all = d.clone(d.rows,order=True).rows[0]
+  print(&#34;#\n100%&#34;, r(all), r(d.d2h(all)), sep=&#34;,\t&#34;)
+
+  #print(&#34;#\nbest,&#34;,rnds(d.clone(d.rows,order=True).rows[0]),2)</code></pre>
 </details>
 </dd>
 </dl>
@@ -262,10 +321,9 @@ if __name__ == &#34;__main__&#34;:
 <nav id="sidebar">
 <center>
 <p><img src="easy.png"></p>
-<p><img src="https://img.shields.io/badge/purpose-teaching-red">
-<img src="https://img.shields.io/badge/task-optimization-blue">
-<img src="https://img.shields.io/badge/language-python3-yellow">
-<a href="https://github.com/timm/easy/blob/main/LICENSE.md"><img src="https://img.shields.io/badge/license-bsd2-green"></a>
+<p><img src="https://img.shields.io/badge/purpose-teach-red">
+<img src="https://img.shields.io/badge/task-optimize-blue">
+<img src="https://img.shields.io/badge/language-python-yellow"><br>
 <a href="https://github.com/timm/easy/blob/main/src/"><img height=45 src="https://iconspng.com/uploads/download-button-black.png"></a></p>
 </center>
 <h1>Index</h1>
