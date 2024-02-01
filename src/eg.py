@@ -35,6 +35,7 @@ class Eg:
                 rnds(d.like(row, 1000, 2, m=the.m, k=the.k)))
 
   def smos():
+    repeats=20
     r=lambda x:rnds(x,2)
     print(the.seed)
     d=DATA(csv(the.file),order=False) 
@@ -42,13 +43,13 @@ class Eg:
     print("mid", r(d.mid()),r(d.d2h(d.mid())), sep=",\t");
     print("div", r(d.div()),sep=",\t"); print("#")
     #---
-    for one in  sorted([d.smo() for _ in range(10)], key=d.d2h):
+    for one in  sorted([d.smo() for _ in range(repeats)], key=d.d2h):
       print(f"smo{the.budget0+the.Budget}",r(one),r(d.d2h(one)), sep=",\t")
     #---
     print("#")
     out=[]
     n = int(0.5 + math.log(1 - .95)/math.log(1 - .35/6))
-    for _ in range(10):
+    for _ in range(repeats):
        random.shuffle(d.rows)
        out += [d.clone(d.rows[:n], order=True).rows[0]]
     for one in  sorted(out, key=d.d2h):   
