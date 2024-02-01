@@ -9,19 +9,19 @@ USAGE:
   
 OPTIONS:  
 
-     -b --budget0     initial evals                   = 4  
-     -B --Budget      subsequent evals                = 6   
-     -c --cohen       small effect size               = .35  
-     -c --confidence  statistical confidence          = .05
-     -e --effectSize  non-parametric small delta      = 0.2385
-     -E --Experiments number of Bootstraps            = 512
-     -f --file        csv data file name              = '../data/auto93.csv'  
-     -h --help        print help                      = false
-     -k --k           low class frequency kludge      = 1  
-     -m --m           low attribute frequency kludge  = 2  
-     -s --seed        random number seed              = 31210   
-     -t --todo        start up action                 = 'help'   
-     -T --Top         best section                    = .5   
+     -b --budget0     initial evals              = 4  
+     -B --Budget      subsequent evals           = 6   
+     -c --cohen       small effect size          = .35  
+     -c --confidence  statistical confidence     = .05
+     -e --effectSize  non-parametric small delta = 0.2385
+     -E --Experiments number of Bootstraps       = 512
+     -f --file        csv data file name         = '../data/auto93.csv'  
+     -h --help        print help                 = false
+     -k --k           rare class  kludge         = 1  
+     -m --m           rare attribute  kludge     = 2  
+     -s --seed        random number seed         = 31210   
+     -t --todo        start up action            = 'help'   
+     -T --Top         best section               = .5   
 """
 
 import re,math,random
@@ -114,6 +114,7 @@ class DATA(etc.struct):
       if fun: fun(i, best.rows[0])
       return out
     #-----------
+    random.shuffle(self.rows)
     done, todo = self.rows[:the.budget0], self.rows[the.budget0:]
     data1 = self.clone(done, order=True)
     for i in range(the.Budget):

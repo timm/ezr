@@ -41,15 +41,21 @@ class Eg:
     print("names",d.names,sep=",\t")
     print("mid", r(d.mid()),r(d.d2h(d.mid())), sep=",\t");
     print("div", r(d.div()),sep=",\t"); print("#")
+    #---
+    for one in  sorted([d.smo() for _ in range(10)], key=d.d2h):
+      print(f"smo{the.budget0+the.Budget}",r(one),r(d.d2h(one)), sep=",\t")
+    #---
+    print("#")
     out=[]
-    for i in range(20):
-       d=DATA(csv(the.file),order=False) 
-       random.shuffle(d.rows) 
-       out += [d.smo()]
-    for one in sorted(out,key=d.d2h):
-        print("smo",r(one),r(d.d2h(one)), sep=",\t")
-    best = d.clone(d.rows,order=True).rows[0]
-    print("#\n100%", r(best), r(d.d2h(best)), sep=",\t")
+    n = int(0.5 + math.log(1 - .95)/math.log(1 - .35/6))
+    for _ in range(10):
+       random.shuffle(d.rows)
+       out += [d.clone(d.rows[:n], order=True).rows[0]]
+    for one in  sorted(out, key=d.d2h):   
+       print(f"any{n}", r(one), r(d.d2h(one)), sep=",\t")
+    #---
+    all = d.clone(d.rows,order=True).rows[0]
+    print("#\n100%", r(all), r(d.d2h(all)), sep=",\t")
 
     #print("#\nbest,",rnds(d.clone(d.rows,order=True).rows[0]),2)
 
