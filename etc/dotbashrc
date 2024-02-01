@@ -1,0 +1,28 @@
+export BASH_SILENCE_DEPRECATION_WARNING=1
+clear; tput sgr0; tput bold; tput setaf 6
+cat <<'EOF'
+ .-.
+(o o)    there is no escape...
+| O \    ... from (s)hell !!!
+ \   \
+  `~~~'
+
+EOF
+
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias gp="git add * ; git commit -am saving; git push; git status";
+alias grep='grep --color=auto'
+alias ls="ls -G"
+alias vi="vim -u $H/etc/dotvirmrc" 
+
+tput sgr0;  tput setaf 3;  
+echo "Short cuts:"; echo ""
+alias | sed 's/alias /  /'
+echo ""
+tput sgr0;
+
+,()    { f=$1.py; shift; python3 $f $*; }
+here() { cd $1; basename `pwd`; }
+
+PROMPT_COMMAND='echo -ne "📐 $(git branch 2>/dev/null | grep '^*' | colrm 1 2):";PS1="$(here ..)/$(here .):\!\e[m ▶ "'

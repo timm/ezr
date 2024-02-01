@@ -1,0 +1,81 @@
+set list
+set listchars=tab:>-
+set backupdir-=.
+set backupdir^=~/tmp,/tmp
+set nocompatible    
+set modelines=3
+set scrolloff=3
+set autoindent
+set hidden "remember ls
+set wildmenu
+set wildmode=list:longest
+set visualbell
+set ttyfast
+set backspace=indent,eol,start
+set laststatus=2
+set splitbelow
+set paste
+set mouse=a
+set title
+set number
+set relativenumber
+autocmd BufEnter * cd %:p:h
+set showmatch
+set matchtime=15
+set background=light
+set syntax=on
+syntax enable
+set ignorecase
+set incsearch
+set smartcase
+set showmatch
+set hlsearch
+set nofoldenable    " disable folding
+set ruler
+set laststatus=2
+set statusline=
+set statusline+=%F
+set statusline+=\ 
+set statusline+=%m
+set statusline+=%=
+set statusline+=%y
+set statusline+=\ 
+set statusline+=%c
+set statusline+=:
+set statusline+=%l
+set statusline+=\ 
+if has("mouse_sgr")
+    set ttymouse=sgr
+else
+    set ttymouse=xterm2
+end
+set termguicolors
+let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+map Z 1z=
+set spell spelllang=en_us
+set spellsuggest=fast,20 "Don't show too much suggestion for spell check
+filetype plugin indent on    " required
+filetype plugin on
+nnoremap <Leader><space> :noh<cr>
+set titlestring=%{expand(\"%:p:h\")}
+hi Normal guibg=NONE ctermbg=NONE
+hi NonText guibg=NONE ctermbg=NONE
+set fillchars=vert:\|
+hi VertSplit cterm=NONE
+set ts=2
+set sw=2
+set sts=2
+set et
+set tabstop=2
+set hidden
+set formatoptions-=t
+set nowrap
+
+set number
+set statusline+=%#warningmsg# 
+set statusline+=%* 
+hi CursorLine   cterm=NONE ctermbg=0
+hi CursorColumn cterm=NONE ctermbg=0
+nnoremap <Leader>c :set cursorline! cursorcolumn!<CR>
+hi Normal guibg=NONE ctermbg=NONE
