@@ -7,19 +7,19 @@ def of(s):
     except ValueError: return s
 
 def slurp(file):
-  nums,lst,last= [],[],None
+  SAMPLEs,lst,last= [],[],None
   with open(file) as fp: 
     for word in [of(x) for s in fp.readlines() for x in s.split()]:
       if isinstance(word,float):
         lst += [word]
       else:
-        if len(lst)>0: nums += [NUM(lst,last)]
+        if len(lst)>0: SAMPLEs += [SAMPLE(lst,last)]
         lst,last =[],word
-  if len(lst)>0: nums += [NUM(lst,last)]
-  return nums
+  if len(lst)>0: SAMPLEs += [SAMPLE(lst,last)]
+  return SAMPLEs
 
-class NUM:
-  "stores mean, standard deviation, low, high, of a list of numbers"
+class SAMPLE:
+  "stores mean, standard deviation, low, high, of a list of SAMPLEbers"
   def __init__(self,lst,txt="",rank=0):
     self.has = sorted(lst)
     self.txt, self.rank = txt,0
@@ -32,16 +32,16 @@ class NUM:
 
   def mid(self): return self.has[len(self.has)//2]
 
-  def bar(self, num, fmt="%8.3f", word="%10s", width=50):
+  def bar(self, SAMPLE, fmt="%8.3f", word="%10s", width=50):
     out  = [' '] * width
     pos = lambda x: int(width * (x - self.has[0]) / (self.has[-1] - self.has[0] + 1E-30))
-    [a, b, c, d, e]  = [num.has[int(len(num.has)*x)] for x in [0.1,0.3,0.5,0.7,0.9]]
+    [a, b, c, d, e]  = [SAMPLE.has[int(len(SAMPLE.has)*x)] for x in [0.1,0.3,0.5,0.7,0.9]]
     [na,nb,nc,nd,ne] = [pos(x) for x in [a,b,c,d,e]]
     for i in range(na,nb): out[i] = "-"
     for i in range(nd,ne): out[i] = "-"
     out[width//2] = "|"
     out[nc] = "*"
-    return ', '.join(["%2d" % num.rank, word % num.txt, fmt%c, fmt%(d-b),
+    return ', '.join(["%2d" % SAMPLE.rank, word % SAMPLE.txt, fmt%c, fmt%(d-b),
                       ''.join(out), ', '.join([(fmt % x) for x in [a,b,c,d,e]])])
 
 def different(x,y):
@@ -65,47 +65,47 @@ def _bootstrap(y0,z0,confidence=.05,Experiments=512,):
   """non-parametric significance test From Introduction to Bootstrap, 
      Efron and Tibshirani, 1993, chapter 20. https://doi.org/10.1201/9780429246593"""
   obs = lambda x,y: abs(x.mu-y.mu) / ((x.sd**2/x.n + y.sd**2/y.n)**.5 + 1E-30)
-  x, y, z = NUM(y0+z0), NUM(y0), NUM(z0)
+  x, y, z = SAMPLE(y0+z0), SAMPLE(y0), SAMPLE(z0)
   d = obs(y,z)
   yhat = [y1 - y.mu + x.mu for y1 in y0]
   zhat = [z1 - z.mu + x.mu for z1 in z0]
   n      = 0
   for _ in range(Experiments):
-    ynum = NUM(random.choices(yhat,k=len(yhat)))
-    znum = NUM(random.choices(zhat,k=len(zhat)))
-    if obs(ynum, znum) > d:
+    ySAMPLE = SAMPLE(random.choices(yhat,k=len(yhat)))
+    zSAMPLE = SAMPLE(random.choices(zhat,k=len(zhat)))
+    if obs(ySAMPLE, zSAMPLE) > d:
       n += 1
   return n / Experiments < confidence # true if different
 
-def sk(nums):
-  "sort nums on median. give adjacent nums the same rank if they are statistically the same"
-  def sk1(nums, rank,lvl=1):
-    all = lambda lst:  [x for num in lst for x in num.has]
-    b4, cut = NUM(all(nums)) ,None
+def sk(SAMPLEs):
+  "sort SAMPLEs on median. give adjacent SAMPLEs the same rank if they are statistically the same"
+  def sk1(SAMPLEs, rank,lvl=1):
+    all = lambda lst:  [x for SAMPLE in lst for x in SAMPLE.has]
+    b4, cut = SAMPLE(all(SAMPLEs)) ,None
     max =  -1
-    for i in range(1,len(nums)):  
-      lhs = NUM(all(nums[:i])); 
-      rhs = NUM(all(nums[i:])); 
+    for i in range(1,len(SAMPLEs)):  
+      lhs = SAMPLE(all(SAMPLEs[:i])); 
+      rhs = SAMPLE(all(SAMPLEs[i:])); 
       tmp = (lhs.n*abs(lhs.mid() - b4.mid()) + rhs.n*abs(rhs.mid() - b4.mid()))/b4.n 
       if tmp > max:
          max,cut = tmp,i 
-    if cut and different( all(nums[:cut]), all(nums[cut:])): 
-      rank = sk1(nums[:cut], rank, lvl+1) + 1
-      rank = sk1(nums[cut:], rank, lvl+1)
+    if cut and different( all(SAMPLEs[:cut]), all(SAMPLEs[cut:])): 
+      rank = sk1(SAMPLEs[:cut], rank, lvl+1) + 1
+      rank = sk1(SAMPLEs[cut:], rank, lvl+1)
     else:
-      for num in nums: num.rank = rank
+      for SAMPLE in SAMPLEs: SAMPLE.rank = rank
     return rank
   #------------ 
-  nums = sorted(nums, key=lambda num:num.mid())
-  sk1(nums,0)
-  return nums
+  SAMPLEs = sorted(SAMPLEs, key=lambda SAMPLE:SAMPLE.mid())
+  sk1(SAMPLEs,0)
+  return SAMPLEs
 
 def egSlurp():
   eg0(slurp("stats.txt"))
 
-def eg0(nums):
-  all = NUM([x for num in nums for x in num.has])
-  [print(all.bar(num,width=40,word="%4s", fmt="%5.2f")) for num in sk(nums)] 
+def eg0(SAMPLEs):
+  all = SAMPLE([x for SAMPLE in SAMPLEs for x in SAMPLE.has])
+  [print(all.bar(SAMPLE,width=40,word="%4s", fmt="%5.2f")) for SAMPLE in sk(SAMPLEs)] 
     
 def eg1():
   x=1
@@ -113,9 +113,9 @@ def eg1():
   while x<1.5:
     a1 = [random.gauss(10,3) for x in range(20)]
     a2 = [y*x for y in a1]
-    n1=NUM(a1)
-    n2=NUM(a2)
-    n12=NUM(a1+a2)
+    n1=SAMPLE(a1)
+    n2=SAMPLE(a2)
+    n12=SAMPLE(a1+a2)
     t1=_cliffsDelta(a1,a2)
     t2= _bootstrap(a1,a2)
     t3= abs(n1.mu-n2.mu) > n12.sd/3
@@ -123,21 +123,21 @@ def eg1():
     x *= 1.02
   
 def eg2(n=5):
-  eg0([NUM([0.34, 0.49 ,0.51, 0.6]*n,   "x1"),
-        NUM([0.6  ,0.7 , 0.8 , 0.89]*n,  "x2"),
-        NUM([0.13 ,0.23, 0.38 , 0.38]*n, "x3"),
-        NUM([0.6  ,0.7,  0.8 , 0.9]*n,   "x4"),
-        NUM([0.1  ,0.2,  0.3 , 0.4]*n,   "x5")])
+  eg0([SAMPLE([0.34, 0.49 ,0.51, 0.6]*n,   "x1"),
+        SAMPLE([0.6  ,0.7 , 0.8 , 0.89]*n,  "x2"),
+        SAMPLE([0.13 ,0.23, 0.38 , 0.38]*n, "x3"),
+        SAMPLE([0.6  ,0.7,  0.8 , 0.9]*n,   "x4"),
+        SAMPLE([0.1  ,0.2,  0.3 , 0.4]*n,   "x5")])
   
 def eg3():
-  eg0([NUM([0.32,  0.45,  0.50,  0.5,  0.55],"one"),
-        NUM([ 0.76,  0.90,  0.95,  0.99,  0.995],"two")])
+  eg0([SAMPLE([0.32,  0.45,  0.50,  0.5,  0.55],"one"),
+        SAMPLE([ 0.76,  0.90,  0.95,  0.99,  0.995],"two")])
 
 def eg4(n=5):
   eg0([
-        NUM([0.34, 0.49 ,0.51, 0.6]*n,   "x1"),
-        NUM([0.35, 0.52 ,0.63, 0.8]*n,   "x2"),
-        NUM([0.13 ,0.23, 0.38 , 0.38]*n, "x4"),
+        SAMPLE([0.34, 0.49 ,0.51, 0.6]*n,   "x1"),
+        SAMPLE([0.35, 0.52 ,0.63, 0.8]*n,   "x2"),
+        SAMPLE([0.13 ,0.23, 0.38 , 0.38]*n, "x4"),
         ])
  
 
