@@ -78,7 +78,7 @@ class DATA(etc.struct):
     if order: self.ordered()
 
   def ordered(self):
-    self.rows = sorted(self.rows, key=lambda row:self.d2h(row))
+    self.rows = sorted(self.rows, key= self.d2h)
 
   def add(self,row): 
     self.rows += [row] 
@@ -89,9 +89,15 @@ class DATA(etc.struct):
 
   def d2h(self,lst):
     nom = sum(abs(col.heaven - col.norm(lst[n]))**2 for n,col in self.ys.items())
-    return ( nom / len(self.ys) )**.5
+    return (nom / len(self.ys))**.5
 
-  def like(self,row,nall,nh,m=1,k=2):
+  def mid(self): 
+    return [max(col,key=col.get) if colOfSym(col) else col.mu for col in self.cols]
+
+  def div(self):
+    return [etc.entropy(col) if colOfSym(col) else col.sd for col in self.cols]
+  
+  def loglike(self,row,nall,nh,m=1,k=2):
     def num(col,x):
       v     = col.sd**2 + tiny
       nom   = math.e**(-1*(x - col.mu)**2/(2*v)) + tiny
@@ -109,19 +115,13 @@ class DATA(etc.struct):
         out += math.log(inc)
     return out
 
-  def mid(self): 
-    return [max(col,key=col.get) if colOfSym(col) else col.mu for col in self.cols]
-
-  def div(self):
-    return [etc.entropy(col) if colOfSym(col) else col.sd for col in self.cols]
-
   def smo(self, fun=None):
-    def what2do(i, best, rest, rows):
+    def acquire(i, best, rest, rows):
       out,most = 0,-sys.maxsize
       for k,row in enumerate(rows):
-        b = best.like(row, len(self.rows), 2, the.m, the.k)
-        r = rest.like(row, len(self.rows), 2, the.m, the.k)
-        tmp = 2* b - r
+        b = best.loglike(row, len(self.rows), 2, the.m, the.k)
+        r = rest.loglike(row, len(self.rows), 2, the.m, the.k)
+        tmp = 2*b - r
         if tmp > most: out,most = k,tmp
       if fun: fun(i, best.rows[0])
       return out
@@ -133,7 +133,7 @@ class DATA(etc.struct):
       n = int(len(done)**the.Top + .5)
       done.append(
         todo.pop(
-          what2do( i + 1 + the.budget0,
+          acquire( i + 1 + the.budget0,
                    self.clone(data1.rows[:n]),
                    self.clone(data1.rows[n:]),
                    todo)))

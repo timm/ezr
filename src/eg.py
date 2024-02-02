@@ -31,7 +31,7 @@ class Eg:
     for i,row in enumerate(d.rows): 
       if i % 25 == 0: 
           print(i, rnds(d.d2h(row)),
-                rnds(d.like(row, 1000, 2, m=the.m, k=the.k)))
+                rnds(d.loglike(row, 1000, 2, m=the.m, k=the.k)))
 
   def smos():
     repeats=20
