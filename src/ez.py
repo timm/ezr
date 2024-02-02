@@ -109,7 +109,7 @@ class DATA(etc.struct):
       for k,row in enumerate(rows):
         b = best.like(row, len(self.rows), 2, the.m, the.k)
         r = rest.like(row, len(self.rows), 2, the.m, the.k)
-        tmp = b - r
+        tmp = 2* b - r
         if tmp > most: out,most = k,tmp
       if fun: fun(i, best.rows[0])
       return out
