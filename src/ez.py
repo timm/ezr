@@ -10,7 +10,7 @@ USAGE:
 OPTIONS:  
 
      -b --budget0     initial evals              = 4  
-     -B --Budget      subsequent evals           = 5   
+     -B --Budget      subsequent evals           = 6   
      -c --cohen       small effect size          = .35  
      -c --confidence  statistical confidence     = .05
      -e --effectSize  non-parametric small delta = 0.2385
@@ -59,10 +59,9 @@ class NUM(etc.struct):
     self.m2 += delta * (x -  self.mu)
     self.sd = 0 if self.n < 2 else (self.m2 / (self.n - 1))**.5
 
-  def d(self,x):
-    if x=="?": return x
-    tmp = (self.mu-x)/(self.sd*the.cohen)
-    return 0 if abs(tmp) <=1  else tmp
+  def d(self,x): 
+    tmp = (x-self.mu)/(self.sd*the.cohen)
+    return 0 if abs(tmp) <= 1  else int(etc.rnds(tmp,0))
 
   def norm(self,x):
     return x=="?" and x or (x - self.lo) / (self.hi - self.lo + tiny)

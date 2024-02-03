@@ -1,5 +1,3 @@
-# vim : set et ts=2 sw=2 :
-
 import sys, random
 
 def of(s):
@@ -7,41 +5,56 @@ def of(s):
     except ValueError: return s
 
 def slurp(file):
-  SAMPLEs,lst,last= [],[],None
+  nums,lst,last= [],[],None
   with open(file) as fp: 
     for word in [of(x) for s in fp.readlines() for x in s.split()]:
       if isinstance(word,float):
         lst += [word]
       else:
-        if len(lst)>0: SAMPLEs += [SAMPLE(lst,last)]
+        if len(lst)>0: nums += [SAMPLE(lst,last)]
         lst,last =[],word
-  if len(lst)>0: SAMPLEs += [SAMPLE(lst,last)]
-  return SAMPLEs
+  if len(lst)>0: nums += [SAMPLE(lst,last)]
+  return nums
 
 class SAMPLE:
-  "stores mean, standard deviation, low, high, of a list of SAMPLEbers"
-  def __init__(self,lst,txt="",rank=0):
-    self.has = sorted(lst)
+  "stores mean, standard deviation, low, high, of a list of numbers"
+  def __init__(self,lst=[],txt="",rank=0):
+    self.has, self.ready = [],False
     self.txt, self.rank = txt,0
-    self.n, self.sd, self.mu, self.lo, self.hi = len(lst),0,0, sys.maxsize, -sys.maxsize
-    if self.n != 0: 
-      tmp, self.mu  = 0, sum(lst) / self.n
-      for x in lst: 
-        tmp += (x-self.mu)**2; self.hi=max(x,self.hi); self.lo=min(x,self.lo)
-      self.sd = (tmp/(self.n - 1+1E-30))**.5 
+    self.n, self.sd, self.m2,self.mu, self.lo, self.hi = 0,0,0,0,sys.maxsize, -sys.maxsize
+    [self.add(x) for x in lst]
 
-  def mid(self): return self.has[len(self.has)//2]
+  def add(self,x):
+    self.has += [x]; self.ready=False;
+    self.lo = min(x,self.lo)
+    self.hi = max(x,self.hi)
+    self.n += 1
+    delta = x - self.mu
+    self.mu += delta / self.n
+    self.m2 += delta * (x -  self.mu)
+    self.sd = 0 if self.n < 2 else (self.m2 / (self.n - 1))**.5   
+  
+  def ok(self):
+    if not self.ready: 
+      self.has = sorted(self.has)
+    self.ready=True
+    return self
+  
+  def mid(self): 
+    has=self.ok().has
+    return has[len(has)//2]
 
-  def bar(self, SAMPLE, fmt="%8.3f", word="%10s", width=50):
+  def bar(self, num, fmt="%8.3f", word="%10s", width=50):
     out  = [' '] * width
-    pos = lambda x: int(width * (x - self.has[0]) / (self.has[-1] - self.has[0] + 1E-30))
-    [a, b, c, d, e]  = [SAMPLE.has[int(len(SAMPLE.has)*x)] for x in [0.1,0.3,0.5,0.7,0.9]]
+    pos = lambda x: int(width * (x - self.lo) / (self.hi - self.lo + 1E-30))
+    has = num.ok().has
+    [a, b, c, d, e]  = [has[int(len(has)*x)] for x in [0.1,0.3,0.5,0.7,0.9]]
     [na,nb,nc,nd,ne] = [pos(x) for x in [a,b,c,d,e]]
     for i in range(na,nb): out[i] = "-"
     for i in range(nd,ne): out[i] = "-"
     out[width//2] = "|"
     out[nc] = "*"
-    return ', '.join(["%2d" % SAMPLE.rank, word % SAMPLE.txt, fmt%c, fmt%(d-b),
+    return ', '.join(["%2d" % num.rank, word % num.txt, fmt%c, fmt%(d-b),
                       ''.join(out), ', '.join([(fmt % x) for x in [a,b,c,d,e]])])
 
 def different(x,y):
@@ -71,41 +84,41 @@ def _bootstrap(y0,z0,confidence=.05,Experiments=512,):
   zhat = [z1 - z.mu + x.mu for z1 in z0]
   n      = 0
   for _ in range(Experiments):
-    ySAMPLE = SAMPLE(random.choices(yhat,k=len(yhat)))
-    zSAMPLE = SAMPLE(random.choices(zhat,k=len(zhat)))
-    if obs(ySAMPLE, zSAMPLE) > d:
+    ynum = SAMPLE(random.choices(yhat,k=len(yhat)))
+    znum = SAMPLE(random.choices(zhat,k=len(zhat)))
+    if obs(ynum, znum) > d:
       n += 1
   return n / Experiments < confidence # true if different
 
-def sk(SAMPLEs):
-  "sort SAMPLEs on median. give adjacent SAMPLEs the same rank if they are statistically the same"
-  def sk1(SAMPLEs, rank,lvl=1):
-    all = lambda lst:  [x for SAMPLE in lst for x in SAMPLE.has]
-    b4, cut = SAMPLE(all(SAMPLEs)) ,None
+def sk(nums):
+  "sort nums on median. give adjacent nums the same rank if they are statistically the same"
+  def sk1(nums, rank,lvl=1):
+    all = lambda lst:  [x for num in lst for x in num.has]
+    b4, cut = SAMPLE(all(nums)) ,None
     max =  -1
-    for i in range(1,len(SAMPLEs)):  
-      lhs = SAMPLE(all(SAMPLEs[:i])); 
-      rhs = SAMPLE(all(SAMPLEs[i:])); 
+    for i in range(1,len(nums)):  
+      lhs = SAMPLE(all(nums[:i])); 
+      rhs = SAMPLE(all(nums[i:])); 
       tmp = (lhs.n*abs(lhs.mid() - b4.mid()) + rhs.n*abs(rhs.mid() - b4.mid()))/b4.n 
       if tmp > max:
          max,cut = tmp,i 
-    if cut and different( all(SAMPLEs[:cut]), all(SAMPLEs[cut:])): 
-      rank = sk1(SAMPLEs[:cut], rank, lvl+1) + 1
-      rank = sk1(SAMPLEs[cut:], rank, lvl+1)
+    if cut and different( all(nums[:cut]), all(nums[cut:])): 
+      rank = sk1(nums[:cut], rank, lvl+1) + 1
+      rank = sk1(nums[cut:], rank, lvl+1)
     else:
-      for SAMPLE in SAMPLEs: SAMPLE.rank = rank
+      for num in nums: num.rank = rank
     return rank
   #------------ 
-  SAMPLEs = sorted(SAMPLEs, key=lambda SAMPLE:SAMPLE.mid())
-  sk1(SAMPLEs,0)
-  return SAMPLEs
+  nums = sorted(nums, key=lambda num:num.mid())
+  sk1(nums,0)
+  return nums
 
 def egSlurp():
   eg0(slurp("stats.txt"))
 
-def eg0(SAMPLEs):
-  all = SAMPLE([x for SAMPLE in SAMPLEs for x in SAMPLE.has])
-  [print(all.bar(SAMPLE,width=40,word="%4s", fmt="%5.2f")) for SAMPLE in sk(SAMPLEs)] 
+def eg0(nums):
+  all = SAMPLE([x for num in nums for x in num.has])
+  [print(all.bar(num,width=40,word="%4s", fmt="%5.2f")) for num in sk(nums)] 
     
 def eg1():
   x=1
