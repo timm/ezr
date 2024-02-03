@@ -50,12 +50,12 @@ class SAMPLE:
     has = num.ok().has
     [a, b, c, d, e]  = [has[int(len(has)*x)] for x in [0.1,0.3,0.5,0.7,0.9]]
     [na,nb,nc,nd,ne] = [pos(x) for x in [a,b,c,d,e]]
-    for i in range(na,nb): out[i] = "-"
+    for i in range(nb,nd): out[i] = "-"
     for i in range(nd,ne): out[i] = "-"
     out[width//2] = "|"
     out[nc] = "*"
-    return ', '.join(["%2d" % num.rank, word % num.txt, fmt%c, fmt%(d-b),
-                      ''.join(out), ', '.join([(fmt % x) for x in [a,b,c,d,e]])])
+    return ', '.join(["%2d" % num.rank, word % num.txt, fmt%c, fmt%(d-b),  
+                      ''.join(out), fmt%self.lo,  " .. ", fmt%self.hi ]) #, ', '.join([(fmt % x) for x in [a,b,c,d,e]])])
 
 def different(x,y):
   "non-parametric effect size and significance test"
@@ -118,7 +118,11 @@ def egSlurp():
 
 def eg0(nums):
   all = SAMPLE([x for num in nums for x in num.has])
-  [print(all.bar(num,width=40,word="%4s", fmt="%5.2f")) for num in sk(nums)] 
+  last = None
+  for num in sk(nums):
+    if num.rank != last: print("#")
+    last=num.rank
+    print(all.bar(num,width=40,word="%20s", fmt="%5.2f"))
     
 def eg1():
   x=1

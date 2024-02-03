@@ -10,7 +10,7 @@ USAGE:
 OPTIONS:  
 
      -b --budget0     initial evals              = 4  
-     -B --Budget      subsequent evals           = 6   
+     -B --Budget      subsequent evals           = 5   
      -c --cohen       small effect size          = .35  
      -c --confidence  statistical confidence     = .05
      -e --effectSize  non-parametric small delta = 0.2385
@@ -27,27 +27,26 @@ OPTIONS:
 import re,sys,math,random
 from collections import Counter
 from stats import sk
-from etc import o
+from etc import o,isa
 import etc
 
 the = etc.THE(__doc__)
-tiny= sys.float_info.min
+tiny= sys.float_info.min 
 
 #----------------------------------------------------------------------------------------
-def strOfGoal(s):   return s[-1] in "+-!"
-def strOfHeaven(s): return 0 if s[-1] == "-" else 1
-def strOfNum(s):    return s[0].isupper()
-def colOfSym(x):    return isinstance(x,SYM)
+def isGoal(s):   return s[-1] in "+-!"
+def isHeaven(s): return 0 if s[-1] == "-" else 1
+def isNum(s):    return s[0].isupper() 
 
 #----------------------------------------------------------------------------------------
 class SYM(Counter):
   def add(self,x): self[x] += 1
   
 class NUM(etc.struct):
-  def __init__(self,lst=[],txt=""):
-   self.n, self.mu, self.m2, self.sd, self.txt = 0,0,0,0,txt
+  def __init__(self,lst=[],txt=" "):
+   self.n, self.mu, self.m2, self.sd, self.txt = 0,0,0,0,txt 
    self.lo, self.hi = sys.maxsize, -sys.maxsize
-   self.heaven = 0 if (txt or " ")[-1] == "-" else 1
+   self.heaven = isHeaven(txt)
    [self.add(x) for x in lst]
 
   def add(self,x):
@@ -59,9 +58,10 @@ class NUM(etc.struct):
     self.m2 += delta * (x -  self.mu)
     self.sd = 0 if self.n < 2 else (self.m2 / (self.n - 1))**.5
 
-  def d(self,x): 
-    tmp = (x-self.mu)/(self.sd*the.cohen)
-    return 0 if abs(tmp) <= 1  else int(etc.rnds(tmp,0))
+  def d(self,x):
+    if x=="?": return x
+    tmp = (self.mu-x)/(self.sd*the.cohen)
+    return 0 if abs(tmp) <=1  else tmp
 
   def norm(self,x):
     return x=="?" and x or (x - self.lo) / (self.hi - self.lo + tiny)
@@ -71,13 +71,13 @@ class DATA(etc.struct):
   def __init__(self, lsts=[], order=False):
     self.names,*rows = list(lsts) 
     self.rows = []
-    self.cols = [(NUM(txt=s) if strOfNum(s) else SYM()) for s in self.names] 
-    self.ys   = {n:c for n,(s,c) in enumerate(zip(self.names,self.cols)) if strOfGoal(s)}
+    self.cols = [(NUM(txt=s) if isNum(s) else SYM()) for s in self.names] 
+    self.ys   = {n:c for n,(s,c) in enumerate(zip(self.names,self.cols)) if isGoal(s)}
     [self.add(row) for row in rows] 
     if order: self.ordered()
 
   def ordered(self):
-    self.rows = sorted(self.rows, key= self.d2h)
+    self.rows = sorted(self.rows, key = self.d2h)
 
   def add(self,row): 
     self.rows += [row] 
@@ -91,10 +91,10 @@ class DATA(etc.struct):
     return (nom / len(self.ys))**.5
 
   def mid(self): 
-    return [max(col,key=col.get) if colOfSym(col) else col.mu for col in self.cols]
+    return [max(col,key=col.get) if isa(col,SYM) else col.mu for col in self.cols]
 
   def div(self):
-    return [etc.entropy(col) if colOfSym(col) else col.sd for col in self.cols]
+    return [etc.entropy(col) if isa(col,SYM) else col.sd for col in self.cols]
   
   def loglike(self,row,nall,nh,m=1,k=2):
     def num(col,x):
@@ -110,17 +110,16 @@ class DATA(etc.struct):
     for c,x in etc.slots(row):
       if x != "?" and c not in self.ys:
         col  = self.cols[c]
-        inc  = (sym if colOfSym(col) else num)(col, x)
-        out += math.log(inc)
+        out += math.log((sym if isa(col,SYM) else num)(col, x))
     return out
 
-  def smo(self, fun=None):
+  def smo(self, score=lambda B,R: 2*B-R, fun=None):
     def acquire(i, best, rest, rows):
       out,most = 0,-sys.maxsize
       for k,row in enumerate(rows):
         b = best.loglike(row, len(self.rows), 2, the.m, the.k)
         r = rest.loglike(row, len(self.rows), 2, the.m, the.k)
-        tmp = 2*b - r
+        tmp = score(b,r)
         if tmp > most: out,most = k,tmp
       if fun: fun(i, best.rows[0])
       return out

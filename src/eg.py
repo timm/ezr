@@ -61,43 +61,38 @@ class Eg:
     #print("#\nbest,",rnds(d.clone(d.rows,order=True).rows[0]),2)
 
   def smoy():
-      repeats=20
-      ys=lambda row: [row[k] for k,_ in d.ys.items()]
-      ds=lambda row: [col.d(row[k]) for k,col in d.ys.items()]
-      r=lambda x:rnds(x,2)
-      print(the.seed)
-      d=DATA(csv(the.file),order=False) 
-      print("names",ys(d.names),"D2h-",sep=",\t")
-      print("mid", r(ys(d.mid())),r(d.d2h(d.mid())), sep=",\t");
-      print("div", r(ys(d.div())),r(NUM([d.d2h(row) for row in d.rows]).sd), sep=",\t")
-      tmp = [d.d2h(row) for row in d.rows]
-      d2hs= NUM(tmp,txt="base")
-      d2hSample = SAMPLE(tmp,txt="base")
-      print(f"{the.cohen}d", r([y*the.cohen for y in ys(d.div())]),
-            r(the.cohen*d2hs.sd), sep=",\t")
-      print("#") 
-      #---
-      smoSample=SAMPLE(txt="smo")
-      for one in  sorted([d.smo() for _ in range(repeats)], key=d.d2h):
-        smoSample.add(d.d2h(one))
-        print(f"smo{the.budget0+the.Budget}",r(ds(one)),
-              r(d2hs.d(d.d2h(one))), sep=",\t")
-      #---
-      print("#")
-      out=[]
-      n = int(0.5 + math.log(1 - .95)/math.log(1 - .35/6))
-      for _ in range(repeats):
-        random.shuffle(d.rows)
-        out += [d.clone(d.rows[:n], order=True).rows[0]]
-      anySample=SAMPLE(txt="any")
-      for one in  sorted(out, key=d.d2h):   
-        anySample.add(d.d2h(one))
-        print(f"any{n}", r(ds(one)), d2hs.d(r(d.d2h(one))), sep=",\t")
-      #---
-      all = d.clone(d.rows,order=True).rows[0]
-      print("#\n100%", r(ds(all)), d2hs.d(r(d.d2h(all))), sep=",\t")
-      print("\n#",r(d.d2h(all)))
-      eg0([anySample, d2hSample,smoSample])
+      repeats=10
+      e=math.exp(1)
+     
+      r=lambda a: ', '.join([str(x) for x in rnds(a,2)])
+      d=DATA(csv(the.file),order=False)  
+      n1 = int(0.5 + math.log(1 - .95)/math.log(1 - .35/6))
+      n2 = int(0.5 + math.log(n1,2))
+      n3 = int(0.5 + len(d.rows)**.5)
+      n4 = int(0.5 + min(len(d.names)*10, len(d.rows)*.9))
+      n5 = int(0.5 + len(d.rows)*.9)
+      n6 = 12
+      n7 = 9
+      n8 = 20
+      d2hs = NUM([d.d2h(row) for row in d.clone(d.rows,True).rows])
+      print(f"file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},\nrows : {len(d.rows)},")
+      print(f"cols : {len(d.names)},\nbest : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}")
+      print("#base");all= [SAMPLE([d.d2h(row) for row in d.rows],        txt="base")] 
+      for budget in [n1,n2,n3,n4,n5,n6,n7,n8]: 
+        the.Budget = budget -  the.budget0 
+        if budget < 100:
+           print(f"#b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
+                                     for _   in range(repeats)],txt=f"#b{budget}")]
+           print(f"#bonr{budget}"); all +=  [SAMPLE([d.d2h(d.smo(score=lambda B,R: abs(e**B+e**R)/abs(e**B-e**R + tiny)))
+                                     for _   in range(repeats)],txt=f"#bonr{budget}")]
+        
+        print(f"#rand{budget}");all +=  [SAMPLE([d.d2h(d.clone(shuffle(d.rows)[:budget], order=True).rows[0]) 
+                                    for _ in range(20)], txt=f"#rand{budget}")] 
+      #-----------------------------------
+      print(f"#report{len(all)}");eg0(all)
+     
+    
+      
 
 
 #----------------------------------------------------------------------------------------
