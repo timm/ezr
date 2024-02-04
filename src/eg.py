@@ -60,10 +60,9 @@ class Eg:
 
     #print("#\nbest,",rnds(d.clone(d.rows,order=True).rows[0]),2)
 
-  def smoy():
-      repeats=10
+  def smoy(repeats=20): 
       e=math.exp(1)
-     
+      def say(*l): print(*l,end=" ",flush=True);
       r=lambda a: ', '.join([str(x) for x in rnds(a,2)])
       d=DATA(csv(the.file),order=False)  
       n1 = int(0.5 + math.log(1 - .95)/math.log(1 - .35/6))
@@ -71,25 +70,27 @@ class Eg:
       n3 = int(0.5 + len(d.rows)**.5)
       n4 = int(0.5 + min(len(d.names)*10, len(d.rows)*.9))
       n5 = int(0.5 + len(d.rows)*.9)
-      n6 = 12
+      n6 = 15
       n7 = 9
       n8 = 20
       d2hs = NUM([d.d2h(row) for row in d.clone(d.rows,True).rows])
       print(f"file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},\nrows : {len(d.rows)},")
       print(f"cols : {len(d.names)},\nbest : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}")
-      print("#base");all= [SAMPLE([d.d2h(row) for row in d.rows],        txt="base")] 
-      for budget in [n1,n2,n3,n4,n5,n6,n7,n8]: 
+      say("#base");all= [SAMPLE([d.d2h(row) for row in d.rows],        txt="base")] 
+      for budget in sorted(set([n1,n2,n3,n4,n5,n6,n7,n8])): 
         the.Budget = budget -  the.budget0 
         if budget < 100:
-           print(f"#b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
+           say(f"#b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
                                      for _   in range(repeats)],txt=f"#b{budget}")]
-           print(f"#bonr{budget}"); all +=  [SAMPLE([d.d2h(d.smo(score=lambda B,R: abs(e**B+e**R)/abs(e**B-e**R + tiny)))
+           say(f"#2b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: 2*B-R))
+                                     for _   in range(repeats)],txt=f"#2b{budget}")]
+           say(f"#bonr{budget}"); all +=  [SAMPLE([d.d2h(d.smo(score=lambda B,R: abs(e**B+e**R)/abs(e**B-e**R + tiny)))
                                      for _   in range(repeats)],txt=f"#bonr{budget}")]
         
-        print(f"#rand{budget}");all +=  [SAMPLE([d.d2h(d.clone(shuffle(d.rows)[:budget], order=True).rows[0]) 
+        say(f"#rand{budget}");all +=  [SAMPLE([d.d2h(d.clone(shuffle(d.rows)[:budget], order=True).rows[0]) 
                                     for _ in range(20)], txt=f"#rand{budget}")] 
       #-----------------------------------
-      print(f"#report{len(all)}");eg0(all)
+      print(f"\n#report{len(all)}");eg0(all)
      
     
       
