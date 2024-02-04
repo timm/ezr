@@ -58,11 +58,6 @@ class NUM(etc.struct):
     self.m2 += delta * (x -  self.mu)
     self.sd = 0 if self.n < 2 else (self.m2 / (self.n - 1))**.5
 
-  def d(self,x):
-    if x=="?": return x
-    tmp = (self.mu-x)/(self.sd*the.cohen)
-    return 0 if abs(tmp) <=1  else tmp
-
   def norm(self,x):
     return x=="?" and x or (x - self.lo) / (self.hi - self.lo + tiny)
 

@@ -56,9 +56,7 @@ class Eg:
        print(f"any{n}", r(one), r(d.d2h(one)), sep=",\t")
     #---
     all = d.clone(d.rows,order=True).rows[0]
-    print("#\n100%", r(all), r(d.d2h(all)), sep=",\t")
-
-    #print("#\nbest,",rnds(d.clone(d.rows,order=True).rows[0]),2)
+    print("#\n100%", r(all), r(d.d2h(all)), sep=",\t") 
 
   def smoy(repeats=20): 
       e=math.exp(1)
@@ -92,12 +90,8 @@ class Eg:
       #-----------------------------------
       print(f"\n#report{len(all)}");eg0(all)
      
-    
-      
-
-
 #----------------------------------------------------------------------------------------
 if __name__ == "__main__":
   the.cli()
   random.seed(the.seed)
-  getattr(Eg, the.todo,Eg.help)()
+  getattr(Eg, the.todo, Eg.help)()
