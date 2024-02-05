@@ -37,12 +37,13 @@ import etc
 the = etc.THE(__doc__)
 tiny= sys.float_info.min 
 
-#----------------------------------------------------------------------------------------
+#          _   _   |   _ 
+#         (_  (_)  |  _>                       
+
 def isGoal(s):   return s[-1] in "+-!"
 def isHeaven(s): return 0 if s[-1] == "-" else 1
 def isNum(s):    return s[0].isupper() 
 
-#----------------------------------------------------------------------------------------
 class SYM(Counter):
   def add(self,x): self[x] += 1
   
@@ -65,7 +66,9 @@ class NUM(etc.struct):
   def norm(self,x):
     return x=="?" and x or (x - self.lo) / (self.hi - self.lo + tiny)
 
-#----------------------------------------------------------------------------------------
+#         ._   _          _ 
+#         |   (_)  \/\/  _> 
+
 class DATA(etc.struct):
   def __init__(self, lsts=[], order=False):
     self.names,*rows = list(lsts) 
@@ -95,6 +98,11 @@ class DATA(etc.struct):
   def div(self):
     return [etc.entropy(col) if isa(col,SYM) else col.sd for col in self.cols]
   
+#                                  _     
+#          _  |   _.   _   _  o  _|_     
+#         (_  |  (_|  _>  _>  |   |   \/ 
+#                                     /  
+
   def loglike(self,row,nall,nh,m=1,k=2):
     def num(col,x):
       v     = col.sd**2 + tiny
@@ -111,6 +119,10 @@ class DATA(etc.struct):
         col  = self.cols[c]
         out += math.log((sym if isa(col,SYM) else num)(col, x))
     return out
+            
+#          _   ._   _|_  o  ._ _   o  _    _   /| 
+#         (_)  |_)   |_  |  | | |  |  /_  (/_   | 
+#              |                                  
 
   def smo(self, score=lambda B,R: 2*B-R, fun=None):
     def acquire(i, best, rest, rows):
@@ -136,7 +148,10 @@ class DATA(etc.struct):
                    todo)))
       data1 = self.clone(done, order=True)
     return data1.rows[0]
-
+                                     
+#          _  |        _  _|_   _   ._ 
+#         (_  |  |_|  _>   |_  (/_  |  
+                                      
   def dist(self,row1,row2):
     def sym(_,x,y): 
       return 1 if x=="?" and y=="?" else (0 if x==y else 1)
@@ -175,6 +190,11 @@ class DATA(etc.struct):
     for n,row in enumerate(sorted(rows, key=proj)):  
       (lefts if n < len(rows)/2 else rights).append(row)
     return lefts, rights, left
+
+#                                              _  
+#          _   ._   _|_  o  ._ _   o  _    _    ) 
+#         (_)  |_)   |_  |  | | |  |  /_  (/_  /_ 
+#              |                                  
 
   def branch(self, rows, stop=None, rest=None, evals=1, before=None):
     stop = stop or 2*len(rows)**the.Min
