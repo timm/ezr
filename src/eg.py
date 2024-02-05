@@ -33,6 +33,27 @@ class Eg:
       if i % 25 == 0: 
           print(i, rnds(d.d2h(row)),
                 rnds(d.loglike(row, 1000, 2, m=the.m, k=the.k)))
+          
+  def dists():
+    d = DATA( csv(the.file),order=True)
+    row1=d.rows[0]
+    for i,row3 in enumerate(sorted(d.rows,key=lambda row2:d.dist(row1,row2))):
+      if i % 25 == 0: 
+        print(i, row3, rnds(d.dist(row1,row3)))
+
+  def halfs():
+    d = DATA( csv(the.file),order=True)
+    a,b,C = d.half(d.rows)
+    print(len(a),len(b),C)
+    
+  def branch():
+    d = DATA( csv(the.file),order=True)
+    for i in range(20):
+      random.shuffle(d.rows); rows0, *_ = d.branch(d.rows)
+      random.shuffle(d.rows); 
+      rows1, *_ = d.branch(d.rows,stop=50)
+      rows2, *_ = d.branch(rows1, stop=4)
+      print(i, d.d2h(rows0[0]), d.d2h(rows1[0]), d.d2h(rows2[0]))
 
   def smos():
     repeats=20

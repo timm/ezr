@@ -49,9 +49,12 @@ See also: <a href="ez.html">ez</a> :: <a href="etc.html">etc</a> :: <a href="eg.
  -e --effectSize  non-parametric small delta = 0.2385
  -E --Experiments number of Bootstraps       = 512
  -f --file        csv data file name         = '../data/auto93.csv'  
+ -F --Far         far search outlier control = .95
  -h --help        print help                 = false
  -k --k           rare class  kludge         = 1  
  -m --m           rare attribute  kludge     = 2  
+ -M --Min         min size is N**Min         = .5
+ -p --p           distance coefficient       = 2
  -s --seed        random number seed         = 31210   
  -t --todo        start up action            = 'help'   
  -T --Top         best section               = .5
@@ -78,9 +81,12 @@ OPTIONS:
      -e --effectSize  non-parametric small delta = 0.2385
      -E --Experiments number of Bootstraps       = 512
      -f --file        csv data file name         = &#39;../data/auto93.csv&#39;  
+     -F --Far         far search outlier control = .95
      -h --help        print help                 = false
      -k --k           rare class  kludge         = 1  
      -m --m           rare attribute  kludge     = 2  
+     -M --Min         min size is N**Min         = .5
+     -p --p           distance coefficient       = 2
      -s --seed        random number seed         = 31210   
      -t --todo        start up action            = &#39;help&#39;   
      -T --Top         best section               = .5   
@@ -89,64 +95,76 @@ OPTIONS:
 import re,sys,math,random
 from collections import Counter
 from stats import sk
-from etc import o
+from etc import o,isa
 import etc
 
 the = etc.THE(__doc__)
+tiny= sys.float_info.min 
 
 #----------------------------------------------------------------------------------------
-def strOfGoal(s):   return s[-1] in &#34;+-!&#34;
-def strOfHeaven(s): return 0 if s[-1] == &#34;-&#34; else 1
-def strOfNum(s):    return s[0].isupper()
-def colOfSym(x):    return isinstance(x,Counter)
+def isGoal(s):   return s[-1] in &#34;+-!&#34;
+def isHeaven(s): return 0 if s[-1] == &#34;-&#34; else 1
+def isNum(s):    return s[0].isupper() 
 
 #----------------------------------------------------------------------------------------
+class SYM(Counter):
+  def add(self,x): self[x] += 1
+  
 class NUM(etc.struct):
-  def __init__(self,lst,txt=&#34; &#34;,rank=0):
-   self.n, self.mu, self.m2, self.sd = 0,0,0,0
-   self.txt, self.rank, self._has    = txt,rank,sorted(lst)
-   for x in lst:
-     self.n += 1
-     delta = x - self.mu
-     self.mu += delta / self.n
-     self.m2 += delta * (x -  self.mu)
-   self.heaven = 0 if txt[-1] == &#34;-&#34; else 1
-   if len(lst) &gt; 1: self.sd = (self.m2 / (self.n - 1))**.5
+  def __init__(self,lst=[],txt=&#34; &#34;):
+   self.n, self.mu, self.m2, self.sd, self.txt = 0,0,0,0,txt 
+   self.lo, self.hi = sys.maxsize, -sys.maxsize
+   self.heaven = isHeaven(txt)
+   [self.add(x) for x in lst]
 
-  def d(self,x):
-    if x==&#34;?&#34;: return x
-    tmp = (self.heaven==0 and (self.mu-x) or (x-self.mu))/(self.sd*the.cohen)
-    return 0 if -1 &lt;= tmp and tmp &lt;= 1 else tmp
-
-  def d2h(self,x):
-    return abs(self.heaven - self.norm(x))
+  def add(self,x):
+    self.lo = min(x,self.lo)
+    self.hi = max(x,self.hi)
+    self.n += 1
+    delta = x - self.mu
+    self.mu += delta / self.n
+    self.m2 += delta * (x -  self.mu)
+    self.sd = 0 if self.n &lt; 2 else (self.m2 / (self.n - 1))**.5
 
   def norm(self,x):
-    return x==&#34;?&#34; and x or (x - self._has[0]) / (self._has[-1] - self._has[0] + 1E-30)
+    return x==&#34;?&#34; and x or (x - self.lo) / (self.hi - self.lo + tiny)
 
 #----------------------------------------------------------------------------------------
 class DATA(etc.struct):
-  def __init__(self, lsts, order=False):
-    self.names,*rows = list(lsts)
-    rotated   = [[y for y in x if y !=&#34;?&#34;] for x in zip(*rows)]
-    self.cols = [NUM(lst,s) if strOfNum(s) else Counter(lst)
-                 for s,lst in zip(self.names,rotated)]
-    self.ys   = {n:c for n,(s,c) in enumerate(zip(self.names,self.cols)) if strOfGoal(s)}
-    self.rows = sorted(rows, key=lambda row:self.d2h(row)) if order else rows
+  def __init__(self, lsts=[], order=False):
+    self.names,*rows = list(lsts) 
+    self.rows = []
+    self.cols = [(NUM(txt=s) if isNum(s) else SYM()) for s in self.names] 
+    self.ys   = {n:c for n,(s,c) in enumerate(zip(self.names,self.cols)) if isGoal(s)}
+    [self.add(row) for row in rows] 
+    if order: self.ordered()
+
+  def ordered(self):
+    self.rows = sorted(self.rows, key = self.d2h)
+
+  def add(self,row): 
+    self.rows += [row] 
+    [col.add(x) for x,col in zip(row,self.cols) if x != &#34;?&#34;]
 
   def clone(self, rows=[], order=False):
     return DATA([self.names] + rows, order=order)
 
   def d2h(self,lst):
-    x =  sum((col.d2h(lst[n])**2 for n,col in self.ys.items()))
-    return (sum(col.d2h(lst[n])**2 for n,col in self.ys.items()) / len(self.ys))**.5
+    nom = sum(abs(col.heaven - col.norm(lst[n]))**2 for n,col in self.ys.items())
+    return (nom / len(self.ys))**.5
 
-  def like(self,row,nall,nh,m=1,k=2):
+  def mid(self): 
+    return [max(col,key=col.get) if isa(col,SYM) else col.mu for col in self.cols]
+
+  def div(self):
+    return [etc.entropy(col) if isa(col,SYM) else col.sd for col in self.cols]
+  
+  def loglike(self,row,nall,nh,m=1,k=2):
     def num(col,x):
-      v     = col.sd**2 + 10**-64
-      nom   = math.e**(-1*(x - col.mu)**2/(2*v)) + 10**-64
+      v     = col.sd**2 + tiny
+      nom   = math.e**(-1*(x - col.mu)**2/(2*v)) + tiny
       denom = (2*math.pi*v)**.5
-      return min(1, nom/(denom + 10**-64))
+      return min(1, nom/(denom + tiny))
     def sym(col,x):
       return (col.get(x, 0) + m*prior) / (len(self.rows) + m)
     #------------------------------------------
@@ -155,23 +173,16 @@ class DATA(etc.struct):
     for c,x in etc.slots(row):
       if x != &#34;?&#34; and c not in self.ys:
         col  = self.cols[c]
-        inc  = (sym if colOfSym(col) else num)(col, x)
-        out += math.log(inc)
+        out += math.log((sym if isa(col,SYM) else num)(col, x))
     return out
 
-  def mid(self):
-    return [max(col,key=col.get) if colOfSym(col) else col.mu for col in self.cols]
-
-  def div(self):
-    return [etc.entropy(col) if colOfSym(col) else col.sd for col in self.cols]
-
-  def smo(self, fun=None):
-    def smo1(i, best, rest, rows):
+  def smo(self, score=lambda B,R: 2*B-R, fun=None):
+    def acquire(i, best, rest, rows):
       out,most = 0,-sys.maxsize
       for k,row in enumerate(rows):
-        b = best.like(row, len(self.rows), 2, the.m, the.k)
-        r = rest.like(row, len(self.rows), 2, the.m, the.k)
-        tmp = b - r
+        b = best.loglike(row, len(self.rows), 2, the.m, the.k)
+        r = rest.loglike(row, len(self.rows), 2, the.m, the.k)
+        tmp = score(b,r)
         if tmp &gt; most: out,most = k,tmp
       if fun: fun(i, best.rows[0])
       return out
@@ -183,12 +194,59 @@ class DATA(etc.struct):
       n = int(len(done)**the.Top + .5)
       done.append(
         todo.pop(
-          smo1( i + 1 + the.budget0,
-                self.clone(data1.rows[:n]),
-                self.clone(data1.rows[n:]),
-                todo)))
+          acquire( i + 1 + the.budget0,
+                   self.clone(data1.rows[:n]),
+                   self.clone(data1.rows[n:]),
+                   todo)))
       data1 = self.clone(done, order=True)
-    return data1.rows[0]</code></pre>
+    return data1.rows[0]
+
+  def dist(self,row1,row2):
+    def sym(_,x,y): 
+      return 1 if x==&#34;?&#34; and y==&#34;?&#34; else (0 if x==y else 1)
+    def num(col,x,y):
+      if x==&#34;?&#34; and y==&#34;?&#34; : return 1 
+      x, y = col.norm(x), col.norm(y) 
+      if x==&#34;?&#34; : x= 1 if y&lt;.5 else 0
+      if y==&#34;?&#34; : y= 1 if x&lt;.5 else 0 
+      return abs(x-y) 
+    #-----------------
+    d, n, p = 0, 0, the.p
+    for c,col in  enumerate(self.cols.all):
+      if c not in self.ys:
+        n   = n + 1
+        inc = (sym if isa(col,SYM) else num)(col, row1[c],row2[c])
+        d   = d + inc**p 
+    return (d/n)**(1/p) 
+
+  def near(self, row1, rows=None):
+    return sorted(rows or self.rows, key=lambda row2: self.dist(row1,row2))
+
+  def far(self, rows, sortp=False, before=None):
+    n     = int(len(rows) * the.Far)
+    left  = before or self.near(random.choice(rows),rows)[n]
+    right = self.near(left,rows)[n]
+    if sortp and self.d2h(right) &lt; self.d2h(left): left,right = right,left
+    return left, right 
+    
+  def half(self, rows, sortp=False, before=None):
+    def dist(r1,r2): return self.dist(r1, r2)
+    def proj(row)  : return (dist(row,left)**2 + C**2 - dist(row,right)**2)/(2*C)
+    left,right = self.far(random.choices(rows, k=min(the.Half, len(rows))),
+                          sortp=sortp, before=before)
+    lefts,rights,C = [],[], dist(left,right)
+    for n,row in enumerate(rows, key=proj):  
+      (lefts if n &lt; len(rows)/2 else rights).append(row)
+    return lefts, rights, left
+
+  def branch(self, rows, stop=None, rest=None, evals=1, before=None):
+    rows = rows or self.rows
+    stop = stop or 2*len(rows)**the.Min
+    if len(rows) &gt; stop:
+      lefts,rights,left  = self.half(rows, True, before)
+      self.branch(lefts, stop, rest+rights, evals+1, left)
+    else:
+      return rows,rest,evals</code></pre>
 </details>
 </section>
 <section>
@@ -198,8 +256,8 @@ class DATA(etc.struct):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="ez.colOfSym"><code class="name flex">
-<span>def <span class="ident">colOfSym</span></span>(<span>x)</span>
+<dt id="ez.isGoal"><code class="name flex">
+<span>def <span class="ident">isGoal</span></span>(<span>s)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -207,11 +265,11 @@ class DATA(etc.struct):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def colOfSym(x):    return isinstance(x,Counter)</code></pre>
+<pre><code class="python">def isGoal(s):   return s[-1] in &#34;+-!&#34;</code></pre>
 </details>
 </dd>
-<dt id="ez.strOfGoal"><code class="name flex">
-<span>def <span class="ident">strOfGoal</span></span>(<span>s)</span>
+<dt id="ez.isHeaven"><code class="name flex">
+<span>def <span class="ident">isHeaven</span></span>(<span>s)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -219,11 +277,11 @@ class DATA(etc.struct):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def strOfGoal(s):   return s[-1] in &#34;+-!&#34;</code></pre>
+<pre><code class="python">def isHeaven(s): return 0 if s[-1] == &#34;-&#34; else 1</code></pre>
 </details>
 </dd>
-<dt id="ez.strOfHeaven"><code class="name flex">
-<span>def <span class="ident">strOfHeaven</span></span>(<span>s)</span>
+<dt id="ez.isNum"><code class="name flex">
+<span>def <span class="ident">isNum</span></span>(<span>s)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -231,19 +289,7 @@ class DATA(etc.struct):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def strOfHeaven(s): return 0 if s[-1] == &#34;-&#34; else 1</code></pre>
-</details>
-</dd>
-<dt id="ez.strOfNum"><code class="name flex">
-<span>def <span class="ident">strOfNum</span></span>(<span>s)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def strOfNum(s):    return s[0].isupper()</code></pre>
+<pre><code class="python">def isNum(s):    return s[0].isupper() </code></pre>
 </details>
 </dd>
 </dl>
@@ -253,7 +299,7 @@ class DATA(etc.struct):
 <dl>
 <dt id="ez.DATA"><code class="flex name class">
 <span>class <span class="ident">DATA</span></span>
-<span>(</span><span>lsts, order=False)</span>
+<span>(</span><span>lsts=[], order=False)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -262,27 +308,40 @@ class DATA(etc.struct):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class DATA(etc.struct):
-  def __init__(self, lsts, order=False):
-    self.names,*rows = list(lsts)
-    rotated   = [[y for y in x if y !=&#34;?&#34;] for x in zip(*rows)]
-    self.cols = [NUM(lst,s) if strOfNum(s) else Counter(lst)
-                 for s,lst in zip(self.names,rotated)]
-    self.ys   = {n:c for n,(s,c) in enumerate(zip(self.names,self.cols)) if strOfGoal(s)}
-    self.rows = sorted(rows, key=lambda row:self.d2h(row)) if order else rows
+  def __init__(self, lsts=[], order=False):
+    self.names,*rows = list(lsts) 
+    self.rows = []
+    self.cols = [(NUM(txt=s) if isNum(s) else SYM()) for s in self.names] 
+    self.ys   = {n:c for n,(s,c) in enumerate(zip(self.names,self.cols)) if isGoal(s)}
+    [self.add(row) for row in rows] 
+    if order: self.ordered()
+
+  def ordered(self):
+    self.rows = sorted(self.rows, key = self.d2h)
+
+  def add(self,row): 
+    self.rows += [row] 
+    [col.add(x) for x,col in zip(row,self.cols) if x != &#34;?&#34;]
 
   def clone(self, rows=[], order=False):
     return DATA([self.names] + rows, order=order)
 
   def d2h(self,lst):
-    x =  sum((col.d2h(lst[n])**2 for n,col in self.ys.items()))
-    return (sum(col.d2h(lst[n])**2 for n,col in self.ys.items()) / len(self.ys))**.5
+    nom = sum(abs(col.heaven - col.norm(lst[n]))**2 for n,col in self.ys.items())
+    return (nom / len(self.ys))**.5
 
-  def like(self,row,nall,nh,m=1,k=2):
+  def mid(self): 
+    return [max(col,key=col.get) if isa(col,SYM) else col.mu for col in self.cols]
+
+  def div(self):
+    return [etc.entropy(col) if isa(col,SYM) else col.sd for col in self.cols]
+  
+  def loglike(self,row,nall,nh,m=1,k=2):
     def num(col,x):
-      v     = col.sd**2 + 10**-64
-      nom   = math.e**(-1*(x - col.mu)**2/(2*v)) + 10**-64
+      v     = col.sd**2 + tiny
+      nom   = math.e**(-1*(x - col.mu)**2/(2*v)) + tiny
       denom = (2*math.pi*v)**.5
-      return min(1, nom/(denom + 10**-64))
+      return min(1, nom/(denom + tiny))
     def sym(col,x):
       return (col.get(x, 0) + m*prior) / (len(self.rows) + m)
     #------------------------------------------
@@ -291,23 +350,16 @@ class DATA(etc.struct):
     for c,x in etc.slots(row):
       if x != &#34;?&#34; and c not in self.ys:
         col  = self.cols[c]
-        inc  = (sym if colOfSym(col) else num)(col, x)
-        out += math.log(inc)
+        out += math.log((sym if isa(col,SYM) else num)(col, x))
     return out
 
-  def mid(self):
-    return [max(col,key=col.get) if colOfSym(col) else col.mu for col in self.cols]
-
-  def div(self):
-    return [etc.entropy(col) if colOfSym(col) else col.sd for col in self.cols]
-
-  def smo(self, fun=None):
-    def smo1(i, best, rest, rows):
+  def smo(self, score=lambda B,R: 2*B-R, fun=None):
+    def acquire(i, best, rest, rows):
       out,most = 0,-sys.maxsize
       for k,row in enumerate(rows):
-        b = best.like(row, len(self.rows), 2, the.m, the.k)
-        r = rest.like(row, len(self.rows), 2, the.m, the.k)
-        tmp = b - r
+        b = best.loglike(row, len(self.rows), 2, the.m, the.k)
+        r = rest.loglike(row, len(self.rows), 2, the.m, the.k)
+        tmp = score(b,r)
         if tmp &gt; most: out,most = k,tmp
       if fun: fun(i, best.rows[0])
       return out
@@ -319,12 +371,59 @@ class DATA(etc.struct):
       n = int(len(done)**the.Top + .5)
       done.append(
         todo.pop(
-          smo1( i + 1 + the.budget0,
-                self.clone(data1.rows[:n]),
-                self.clone(data1.rows[n:]),
-                todo)))
+          acquire( i + 1 + the.budget0,
+                   self.clone(data1.rows[:n]),
+                   self.clone(data1.rows[n:]),
+                   todo)))
       data1 = self.clone(done, order=True)
-    return data1.rows[0]</code></pre>
+    return data1.rows[0]
+
+  def dist(self,row1,row2):
+    def sym(_,x,y): 
+      return 1 if x==&#34;?&#34; and y==&#34;?&#34; else (0 if x==y else 1)
+    def num(col,x,y):
+      if x==&#34;?&#34; and y==&#34;?&#34; : return 1 
+      x, y = col.norm(x), col.norm(y) 
+      if x==&#34;?&#34; : x= 1 if y&lt;.5 else 0
+      if y==&#34;?&#34; : y= 1 if x&lt;.5 else 0 
+      return abs(x-y) 
+    #-----------------
+    d, n, p = 0, 0, the.p
+    for c,col in  enumerate(self.cols.all):
+      if c not in self.ys:
+        n   = n + 1
+        inc = (sym if isa(col,SYM) else num)(col, row1[c],row2[c])
+        d   = d + inc**p 
+    return (d/n)**(1/p) 
+
+  def near(self, row1, rows=None):
+    return sorted(rows or self.rows, key=lambda row2: self.dist(row1,row2))
+
+  def far(self, rows, sortp=False, before=None):
+    n     = int(len(rows) * the.Far)
+    left  = before or self.near(random.choice(rows),rows)[n]
+    right = self.near(left,rows)[n]
+    if sortp and self.d2h(right) &lt; self.d2h(left): left,right = right,left
+    return left, right 
+    
+  def half(self, rows, sortp=False, before=None):
+    def dist(r1,r2): return self.dist(r1, r2)
+    def proj(row)  : return (dist(row,left)**2 + C**2 - dist(row,right)**2)/(2*C)
+    left,right = self.far(random.choices(rows, k=min(the.Half, len(rows))),
+                          sortp=sortp, before=before)
+    lefts,rights,C = [],[], dist(left,right)
+    for n,row in enumerate(rows, key=proj):  
+      (lefts if n &lt; len(rows)/2 else rights).append(row)
+    return lefts, rights, left
+
+  def branch(self, rows, stop=None, rest=None, evals=1, before=None):
+    rows = rows or self.rows
+    stop = stop or 2*len(rows)**the.Min
+    if len(rows) &gt; stop:
+      lefts,rights,left  = self.half(rows, True, before)
+      self.branch(lefts, stop, rest+rights, evals+1, left)
+    else:
+      return rows,rest,evals</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -332,6 +431,39 @@ class DATA(etc.struct):
 </ul>
 <h3>Methods</h3>
 <dl>
+<dt id="ez.DATA.add"><code class="name flex">
+<span>def <span class="ident">add</span></span>(<span>self, row)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add(self,row): 
+  self.rows += [row] 
+  [col.add(x) for x,col in zip(row,self.cols) if x != &#34;?&#34;]</code></pre>
+</details>
+</dd>
+<dt id="ez.DATA.branch"><code class="name flex">
+<span>def <span class="ident">branch</span></span>(<span>self, rows, stop=None, rest=None, evals=1, before=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def branch(self, rows, stop=None, rest=None, evals=1, before=None):
+  rows = rows or self.rows
+  stop = stop or 2*len(rows)**the.Min
+  if len(rows) &gt; stop:
+    lefts,rights,left  = self.half(rows, True, before)
+    self.branch(lefts, stop, rest+rights, evals+1, left)
+  else:
+    return rows,rest,evals</code></pre>
+</details>
+</dd>
 <dt id="ez.DATA.clone"><code class="name flex">
 <span>def <span class="ident">clone</span></span>(<span>self, rows=[], order=False)</span>
 </code></dt>
@@ -355,8 +487,36 @@ class DATA(etc.struct):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def d2h(self,lst):
-  x =  sum((col.d2h(lst[n])**2 for n,col in self.ys.items()))
-  return (sum(col.d2h(lst[n])**2 for n,col in self.ys.items()) / len(self.ys))**.5</code></pre>
+  nom = sum(abs(col.heaven - col.norm(lst[n]))**2 for n,col in self.ys.items())
+  return (nom / len(self.ys))**.5</code></pre>
+</details>
+</dd>
+<dt id="ez.DATA.dist"><code class="name flex">
+<span>def <span class="ident">dist</span></span>(<span>self, row1, row2)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dist(self,row1,row2):
+  def sym(_,x,y): 
+    return 1 if x==&#34;?&#34; and y==&#34;?&#34; else (0 if x==y else 1)
+  def num(col,x,y):
+    if x==&#34;?&#34; and y==&#34;?&#34; : return 1 
+    x, y = col.norm(x), col.norm(y) 
+    if x==&#34;?&#34; : x= 1 if y&lt;.5 else 0
+    if y==&#34;?&#34; : y= 1 if x&lt;.5 else 0 
+    return abs(x-y) 
+  #-----------------
+  d, n, p = 0, 0, the.p
+  for c,col in  enumerate(self.cols.all):
+    if c not in self.ys:
+      n   = n + 1
+      inc = (sym if isa(col,SYM) else num)(col, row1[c],row2[c])
+      d   = d + inc**p 
+  return (d/n)**(1/p) </code></pre>
 </details>
 </dd>
 <dt id="ez.DATA.div"><code class="name flex">
@@ -369,11 +529,11 @@ class DATA(etc.struct):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def div(self):
-  return [etc.entropy(col) if colOfSym(col) else col.sd for col in self.cols]</code></pre>
+  return [etc.entropy(col) if isa(col,SYM) else col.sd for col in self.cols]</code></pre>
 </details>
 </dd>
-<dt id="ez.DATA.like"><code class="name flex">
-<span>def <span class="ident">like</span></span>(<span>self, row, nall, nh, m=1, k=2)</span>
+<dt id="ez.DATA.far"><code class="name flex">
+<span>def <span class="ident">far</span></span>(<span>self, rows, sortp=False, before=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -381,12 +541,49 @@ class DATA(etc.struct):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def like(self,row,nall,nh,m=1,k=2):
+<pre><code class="python">def far(self, rows, sortp=False, before=None):
+  n     = int(len(rows) * the.Far)
+  left  = before or self.near(random.choice(rows),rows)[n]
+  right = self.near(left,rows)[n]
+  if sortp and self.d2h(right) &lt; self.d2h(left): left,right = right,left
+  return left, right </code></pre>
+</details>
+</dd>
+<dt id="ez.DATA.half"><code class="name flex">
+<span>def <span class="ident">half</span></span>(<span>self, rows, sortp=False, before=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def half(self, rows, sortp=False, before=None):
+  def dist(r1,r2): return self.dist(r1, r2)
+  def proj(row)  : return (dist(row,left)**2 + C**2 - dist(row,right)**2)/(2*C)
+  left,right = self.far(random.choices(rows, k=min(the.Half, len(rows))),
+                        sortp=sortp, before=before)
+  lefts,rights,C = [],[], dist(left,right)
+  for n,row in enumerate(rows, key=proj):  
+    (lefts if n &lt; len(rows)/2 else rights).append(row)
+  return lefts, rights, left</code></pre>
+</details>
+</dd>
+<dt id="ez.DATA.loglike"><code class="name flex">
+<span>def <span class="ident">loglike</span></span>(<span>self, row, nall, nh, m=1, k=2)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def loglike(self,row,nall,nh,m=1,k=2):
   def num(col,x):
-    v     = col.sd**2 + 10**-64
-    nom   = math.e**(-1*(x - col.mu)**2/(2*v)) + 10**-64
+    v     = col.sd**2 + tiny
+    nom   = math.e**(-1*(x - col.mu)**2/(2*v)) + tiny
     denom = (2*math.pi*v)**.5
-    return min(1, nom/(denom + 10**-64))
+    return min(1, nom/(denom + tiny))
   def sym(col,x):
     return (col.get(x, 0) + m*prior) / (len(self.rows) + m)
   #------------------------------------------
@@ -395,8 +592,7 @@ class DATA(etc.struct):
   for c,x in etc.slots(row):
     if x != &#34;?&#34; and c not in self.ys:
       col  = self.cols[c]
-      inc  = (sym if colOfSym(col) else num)(col, x)
-      out += math.log(inc)
+      out += math.log((sym if isa(col,SYM) else num)(col, x))
   return out</code></pre>
 </details>
 </dd>
@@ -409,12 +605,12 @@ class DATA(etc.struct):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def mid(self):
-  return [max(col,key=col.get) if colOfSym(col) else col.mu for col in self.cols]</code></pre>
+<pre><code class="python">def mid(self): 
+  return [max(col,key=col.get) if isa(col,SYM) else col.mu for col in self.cols]</code></pre>
 </details>
 </dd>
-<dt id="ez.DATA.smo"><code class="name flex">
-<span>def <span class="ident">smo</span></span>(<span>self, fun=None)</span>
+<dt id="ez.DATA.near"><code class="name flex">
+<span>def <span class="ident">near</span></span>(<span>self, row1, rows=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -422,13 +618,39 @@ class DATA(etc.struct):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def smo(self, fun=None):
-  def smo1(i, best, rest, rows):
+<pre><code class="python">def near(self, row1, rows=None):
+  return sorted(rows or self.rows, key=lambda row2: self.dist(row1,row2))</code></pre>
+</details>
+</dd>
+<dt id="ez.DATA.ordered"><code class="name flex">
+<span>def <span class="ident">ordered</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ordered(self):
+  self.rows = sorted(self.rows, key = self.d2h)</code></pre>
+</details>
+</dd>
+<dt id="ez.DATA.smo"><code class="name flex">
+<span>def <span class="ident">smo</span></span>(<span>self, score=&lt;function DATA.&lt;lambda&gt;&gt;, fun=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def smo(self, score=lambda B,R: 2*B-R, fun=None):
+  def acquire(i, best, rest, rows):
     out,most = 0,-sys.maxsize
     for k,row in enumerate(rows):
-      b = best.like(row, len(self.rows), 2, the.m, the.k)
-      r = rest.like(row, len(self.rows), 2, the.m, the.k)
-      tmp = b - r
+      b = best.loglike(row, len(self.rows), 2, the.m, the.k)
+      r = rest.loglike(row, len(self.rows), 2, the.m, the.k)
+      tmp = score(b,r)
       if tmp &gt; most: out,most = k,tmp
     if fun: fun(i, best.rows[0])
     return out
@@ -440,10 +662,10 @@ class DATA(etc.struct):
     n = int(len(done)**the.Top + .5)
     done.append(
       todo.pop(
-        smo1( i + 1 + the.budget0,
-              self.clone(data1.rows[:n]),
-              self.clone(data1.rows[n:]),
-              todo)))
+        acquire( i + 1 + the.budget0,
+                 self.clone(data1.rows[:n]),
+                 self.clone(data1.rows[n:]),
+                 todo)))
     data1 = self.clone(done, order=True)
   return data1.rows[0]</code></pre>
 </details>
@@ -452,7 +674,7 @@ class DATA(etc.struct):
 </dd>
 <dt id="ez.NUM"><code class="flex name class">
 <span>class <span class="ident">NUM</span></span>
-<span>(</span><span>lst, txt=' ', rank=0)</span>
+<span>(</span><span>lst=[], txt=' ')</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -461,27 +683,23 @@ class DATA(etc.struct):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class NUM(etc.struct):
-  def __init__(self,lst,txt=&#34; &#34;,rank=0):
-   self.n, self.mu, self.m2, self.sd = 0,0,0,0
-   self.txt, self.rank, self._has    = txt,rank,sorted(lst)
-   for x in lst:
-     self.n += 1
-     delta = x - self.mu
-     self.mu += delta / self.n
-     self.m2 += delta * (x -  self.mu)
-   self.heaven = 0 if txt[-1] == &#34;-&#34; else 1
-   if len(lst) &gt; 1: self.sd = (self.m2 / (self.n - 1))**.5
+  def __init__(self,lst=[],txt=&#34; &#34;):
+   self.n, self.mu, self.m2, self.sd, self.txt = 0,0,0,0,txt 
+   self.lo, self.hi = sys.maxsize, -sys.maxsize
+   self.heaven = isHeaven(txt)
+   [self.add(x) for x in lst]
 
-  def d(self,x):
-    if x==&#34;?&#34;: return x
-    tmp = (self.heaven==0 and (self.mu-x) or (x-self.mu))/(self.sd*the.cohen)
-    return 0 if -1 &lt;= tmp and tmp &lt;= 1 else tmp
-
-  def d2h(self,x):
-    return abs(self.heaven - self.norm(x))
+  def add(self,x):
+    self.lo = min(x,self.lo)
+    self.hi = max(x,self.hi)
+    self.n += 1
+    delta = x - self.mu
+    self.mu += delta / self.n
+    self.m2 += delta * (x -  self.mu)
+    self.sd = 0 if self.n &lt; 2 else (self.m2 / (self.n - 1))**.5
 
   def norm(self,x):
-    return x==&#34;?&#34; and x or (x - self._has[0]) / (self._has[-1] - self._has[0] + 1E-30)</code></pre>
+    return x==&#34;?&#34; and x or (x - self.lo) / (self.hi - self.lo + tiny)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -489,8 +707,8 @@ class DATA(etc.struct):
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="ez.NUM.d"><code class="name flex">
-<span>def <span class="ident">d</span></span>(<span>self, x)</span>
+<dt id="ez.NUM.add"><code class="name flex">
+<span>def <span class="ident">add</span></span>(<span>self, x)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -498,23 +716,14 @@ class DATA(etc.struct):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def d(self,x):
-  if x==&#34;?&#34;: return x
-  tmp = (self.heaven==0 and (self.mu-x) or (x-self.mu))/(self.sd*the.cohen)
-  return 0 if -1 &lt;= tmp and tmp &lt;= 1 else tmp</code></pre>
-</details>
-</dd>
-<dt id="ez.NUM.d2h"><code class="name flex">
-<span>def <span class="ident">d2h</span></span>(<span>self, x)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def d2h(self,x):
-  return abs(self.heaven - self.norm(x))</code></pre>
+<pre><code class="python">def add(self,x):
+  self.lo = min(x,self.lo)
+  self.hi = max(x,self.hi)
+  self.n += 1
+  delta = x - self.mu
+  self.mu += delta / self.n
+  self.m2 += delta * (x -  self.mu)
+  self.sd = 0 if self.n &lt; 2 else (self.m2 / (self.n - 1))**.5</code></pre>
 </details>
 </dd>
 <dt id="ez.NUM.norm"><code class="name flex">
@@ -527,7 +736,93 @@ class DATA(etc.struct):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def norm(self,x):
-  return x==&#34;?&#34; and x or (x - self._has[0]) / (self._has[-1] - self._has[0] + 1E-30)</code></pre>
+  return x==&#34;?&#34; and x or (x - self.lo) / (self.hi - self.lo + tiny)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ez.SYM"><code class="flex name class">
+<span>class <span class="ident">SYM</span></span>
+<span>(</span><span>iterable=None, /, **kwds)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Dict subclass for counting hashable items.
+Sometimes called a bag
+or multiset.
+Elements are stored as dictionary keys and their counts
+are stored as dictionary values.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; c = Counter('abcdeabcdabcaba')  # count elements from a string
+</code></pre>
+<pre><code class="language-python-repl">&gt;&gt;&gt; c.most_common(3)                # three most common elements
+[('a', 5), ('b', 4), ('c', 3)]
+&gt;&gt;&gt; sorted(c)                       # list all unique elements
+['a', 'b', 'c', 'd', 'e']
+&gt;&gt;&gt; ''.join(sorted(c.elements()))   # list elements with repetitions
+'aaaaabbbbcccdde'
+&gt;&gt;&gt; sum(c.values())                 # total of all counts
+15
+</code></pre>
+<pre><code class="language-python-repl">&gt;&gt;&gt; c['a']                          # count of letter 'a'
+5
+&gt;&gt;&gt; for elem in 'shazam':           # update counts from an iterable
+...     c[elem] += 1                # by adding 1 to each element's count
+&gt;&gt;&gt; c['a']                          # now there are seven 'a'
+7
+&gt;&gt;&gt; del c['b']                      # remove all 'b'
+&gt;&gt;&gt; c['b']                          # now there are zero 'b'
+0
+</code></pre>
+<pre><code class="language-python-repl">&gt;&gt;&gt; d = Counter('simsalabim')       # make another counter
+&gt;&gt;&gt; c.update(d)                     # add in the second counter
+&gt;&gt;&gt; c['a']                          # now there are nine 'a'
+9
+</code></pre>
+<pre><code class="language-python-repl">&gt;&gt;&gt; c.clear()                       # empty the counter
+&gt;&gt;&gt; c
+Counter()
+</code></pre>
+<p>Note:
+If a count is set to zero or reduced to zero, it will remain
+in the counter until the entry is deleted or the counter is cleared:</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; c = Counter('aaabbc')
+&gt;&gt;&gt; c['b'] -= 2                     # reduce the count of 'b' by two
+&gt;&gt;&gt; c.most_common()                 # 'b' is still in, but its count is zero
+[('a', 3), ('c', 1), ('b', 0)]
+</code></pre>
+<p>Create a new, empty Counter object.
+And if given, count elements
+from an input iterable.
+Or, initialize the count from another mapping
+of elements to their counts.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; c = Counter()                           # a new, empty counter
+&gt;&gt;&gt; c = Counter('gallahad')                 # a new counter from an iterable
+&gt;&gt;&gt; c = Counter({'a': 4, 'b': 2})           # a new counter from a mapping
+&gt;&gt;&gt; c = Counter(a=4, b=2)                   # a new counter from keyword args
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SYM(Counter):
+  def add(self,x): self[x] += 1</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>collections.Counter</li>
+<li>builtins.dict</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ez.SYM.add"><code class="name flex">
+<span>def <span class="ident">add</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add(self,x): self[x] += 1</code></pre>
 </details>
 </dd>
 </dl>
@@ -550,10 +845,9 @@ class DATA(etc.struct):
 <ul id="index">
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="ez.colOfSym" href="#ez.colOfSym">colOfSym</a></code></li>
-<li><code><a title="ez.strOfGoal" href="#ez.strOfGoal">strOfGoal</a></code></li>
-<li><code><a title="ez.strOfHeaven" href="#ez.strOfHeaven">strOfHeaven</a></code></li>
-<li><code><a title="ez.strOfNum" href="#ez.strOfNum">strOfNum</a></code></li>
+<li><code><a title="ez.isGoal" href="#ez.isGoal">isGoal</a></code></li>
+<li><code><a title="ez.isHeaven" href="#ez.isHeaven">isHeaven</a></code></li>
+<li><code><a title="ez.isNum" href="#ez.isNum">isNum</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
@@ -561,20 +855,32 @@ class DATA(etc.struct):
 <li>
 <h4><code><a title="ez.DATA" href="#ez.DATA">DATA</a></code></h4>
 <ul class="two-column">
+<li><code><a title="ez.DATA.add" href="#ez.DATA.add">add</a></code></li>
+<li><code><a title="ez.DATA.branch" href="#ez.DATA.branch">branch</a></code></li>
 <li><code><a title="ez.DATA.clone" href="#ez.DATA.clone">clone</a></code></li>
 <li><code><a title="ez.DATA.d2h" href="#ez.DATA.d2h">d2h</a></code></li>
+<li><code><a title="ez.DATA.dist" href="#ez.DATA.dist">dist</a></code></li>
 <li><code><a title="ez.DATA.div" href="#ez.DATA.div">div</a></code></li>
-<li><code><a title="ez.DATA.like" href="#ez.DATA.like">like</a></code></li>
+<li><code><a title="ez.DATA.far" href="#ez.DATA.far">far</a></code></li>
+<li><code><a title="ez.DATA.half" href="#ez.DATA.half">half</a></code></li>
+<li><code><a title="ez.DATA.loglike" href="#ez.DATA.loglike">loglike</a></code></li>
 <li><code><a title="ez.DATA.mid" href="#ez.DATA.mid">mid</a></code></li>
+<li><code><a title="ez.DATA.near" href="#ez.DATA.near">near</a></code></li>
+<li><code><a title="ez.DATA.ordered" href="#ez.DATA.ordered">ordered</a></code></li>
 <li><code><a title="ez.DATA.smo" href="#ez.DATA.smo">smo</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="ez.NUM" href="#ez.NUM">NUM</a></code></h4>
 <ul class="">
-<li><code><a title="ez.NUM.d" href="#ez.NUM.d">d</a></code></li>
-<li><code><a title="ez.NUM.d2h" href="#ez.NUM.d2h">d2h</a></code></li>
+<li><code><a title="ez.NUM.add" href="#ez.NUM.add">add</a></code></li>
 <li><code><a title="ez.NUM.norm" href="#ez.NUM.norm">norm</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ez.SYM" href="#ez.SYM">SYM</a></code></h4>
+<ul class="">
+<li><code><a title="ez.SYM.add" href="#ez.SYM.add">add</a></code></li>
 </ul>
 </li>
 </ul>

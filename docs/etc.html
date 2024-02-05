@@ -36,7 +36,7 @@ See also: <a href="ez.html">ez</a> :: <a href="etc.html">etc</a> :: <a href="eg.
 </summary>
 <pre><code class="python"># vim : set et ts=2 sw=2 :
 
-import re, ast, sys, math
+import re, ast, sys, math, random
 from fileinput import FileInput as file_or_stdin
 
 class struct:
@@ -72,6 +72,8 @@ def entropy(d):
   n = sum(d.values()) 
   return -sum(v/n*math.log(v/n,2) for _,v in d.items() if v&gt;0)
 
+isa = isinstance
+
 def o(d, s = &#34;&#34;): 
   return s+&#34;{&#34;+(&#34;, &#34;.join([f&#34;:{k} {rnds(v)}&#34; for k,v in d.items() if k[0]!=&#34;_&#34;]))+&#34;}&#34; 
 
@@ -79,6 +81,10 @@ def rnds(x,n=2):
   if isinstance(x,(int,float)):  return x if int(x)==x else round(x,n)
   if isinstance(x,(list,tuple)): return [rnds(y,n) for y in x]
   return x
+
+def shuffle(lst):
+  random.shuffle(lst)
+  return lst
 
 def slots(x):
   if isinstance(x,dict):
@@ -164,6 +170,20 @@ def slots(x):
   if isinstance(x,(int,float)):  return x if int(x)==x else round(x,n)
   if isinstance(x,(list,tuple)): return [rnds(y,n) for y in x]
   return x</code></pre>
+</details>
+</dd>
+<dt id="etc.shuffle"><code class="name flex">
+<span>def <span class="ident">shuffle</span></span>(<span>lst)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def shuffle(lst):
+  random.shuffle(lst)
+  return lst</code></pre>
 </details>
 </dd>
 <dt id="etc.slots"><code class="name flex">
@@ -281,6 +301,7 @@ def slots(x):
 <li><code><a title="etc.entropy" href="#etc.entropy">entropy</a></code></li>
 <li><code><a title="etc.o" href="#etc.o">o</a></code></li>
 <li><code><a title="etc.rnds" href="#etc.rnds">rnds</a></code></li>
+<li><code><a title="etc.shuffle" href="#etc.shuffle">shuffle</a></code></li>
 <li><code><a title="etc.slots" href="#etc.slots">slots</a></code></li>
 </ul>
 </li>

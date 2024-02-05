@@ -14,11 +14,15 @@ OPTIONS:
      -c --cohen       small effect size          = .35  
      -c --confidence  statistical confidence     = .05
      -e --effectSize  non-parametric small delta = 0.2385
-     -E --Experiments number of Bootstraps       = 512
+     -E --Experiments number of Bootstraps       = 256
      -f --file        csv data file name         = '../data/auto93.csv'  
+     -F --Far         far search outlier control = .95
      -h --help        print help                 = false
+     -H --Half        #items for far search      = 256
      -k --k           rare class  kludge         = 1  
      -m --m           rare attribute  kludge     = 2  
+     -M --Min         min size is N**Min         = .5
+     -p --p           distance coefficient       = 2
      -s --seed        random number seed         = 31210   
      -t --todo        start up action            = 'help'   
      -T --Top         best section               = .5   
@@ -132,3 +136,51 @@ class DATA(etc.struct):
                    todo)))
       data1 = self.clone(done, order=True)
     return data1.rows[0]
+
+  def dist(self,row1,row2):
+    def sym(_,x,y): 
+      return 1 if x=="?" and y=="?" else (0 if x==y else 1)
+      
+    def num(col,x,y):
+      if x=="?" and y=="?" : return 1 
+      x, y = col.norm(x), col.norm(y) 
+      if x=="?" : x= 1 if y<.5 else 0
+      if y=="?" : y= 1 if x<.5 else 0 
+      return abs(x-y)  
+    #-----------------
+    d, n, p = 0, 0, the.p
+    for c,col in  enumerate(self.cols):
+      if c not in self.ys:
+        n   = n + 1
+        inc = (sym if isa(col,SYM) else num)(col, row1[c],row2[c])
+        d   = d + inc**p 
+    return (d/n)**(1/p) 
+
+  def near(self, row1, rows=None):
+    return sorted(rows or self.rows, key=lambda row2: self.dist(row1,row2))
+
+  def far(self, rows, sortp=False, before=None):
+    n     = int(len(rows) * the.Far)
+    left  = before or self.near(random.choice(rows),rows)[n]
+    right = self.near(left,rows)[n]
+    if sortp and self.d2h(right) < self.d2h(left): left,right = right,left
+    return left, right 
+    
+  def half(self, rows, sortp=False, before=None):
+    def dist(r1,r2): return self.dist(r1, r2)
+    def proj(row)  : return (dist(row,left)**2 + C**2 - dist(row,right)**2)/(2*C)
+    left,right = self.far(random.choices(rows, k=min(the.Half, len(rows))),
+                          sortp=sortp, before=before)
+    lefts,rights,C = [],[], dist(left,right)
+    for n,row in enumerate(sorted(rows, key=proj)):  
+      (lefts if n < len(rows)/2 else rights).append(row)
+    return lefts, rights, left
+
+  def branch(self, rows, stop=None, rest=None, evals=1, before=None):
+    stop = stop or 2*len(rows)**the.Min
+    rest = rest or []
+    if len(rows) > stop:
+      lefts,rights,left  = self.half(rows, True, before)
+      return self.branch(lefts, stop, rest+rights, evals+1, left)
+    else:
+      return rows,rest,evals

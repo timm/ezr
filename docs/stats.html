@@ -34,9 +34,7 @@ See also: <a href="ez.html">ez</a> :: <a href="etc.html">etc</a> :: <a href="eg.
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python"># vim : set et ts=2 sw=2 :
-
-import sys, random
+<pre><code class="python">import sys, random
 
 def of(s):
     try: return float(s)
@@ -49,36 +47,51 @@ def slurp(file):
       if isinstance(word,float):
         lst += [word]
       else:
-        if len(lst)&gt;0: nums += [NUM(lst,last)]
+        if len(lst)&gt;0: nums += [SAMPLE(lst,last)]
         lst,last =[],word
-  if len(lst)&gt;0: nums += [NUM(lst,last)]
+  if len(lst)&gt;0: nums += [SAMPLE(lst,last)]
   return nums
 
-class NUM:
+class SAMPLE:
   &#34;stores mean, standard deviation, low, high, of a list of numbers&#34;
-  def __init__(self,lst,txt=&#34;&#34;,rank=0):
-    self.has = sorted(lst)
+  def __init__(self,lst=[],txt=&#34;&#34;,rank=0):
+    self.has, self.ready = [],False
     self.txt, self.rank = txt,0
-    self.n, self.sd, self.mu, self.lo, self.hi = len(lst),0,0, sys.maxsize, -sys.maxsize
-    if self.n != 0: 
-      tmp, self.mu  = 0, sum(lst) / self.n
-      for x in lst: 
-        tmp += (x-self.mu)**2; self.hi=max(x,self.hi); self.lo=min(x,self.lo)
-      self.sd = (tmp/(self.n - 1+1E-30))**.5 
+    self.n, self.sd, self.m2,self.mu, self.lo, self.hi = 0,0,0,0,sys.maxsize, -sys.maxsize
+    [self.add(x) for x in lst]
 
-  def mid(self): return self.has[len(self.has)//2]
+  def add(self,x):
+    self.has += [x]; self.ready=False;
+    self.lo = min(x,self.lo)
+    self.hi = max(x,self.hi)
+    self.n += 1
+    delta = x - self.mu
+    self.mu += delta / self.n
+    self.m2 += delta * (x -  self.mu)
+    self.sd = 0 if self.n &lt; 2 else (self.m2 / (self.n - 1))**.5   
+  
+  def ok(self):
+    if not self.ready: 
+      self.has = sorted(self.has)
+    self.ready=True
+    return self
+  
+  def mid(self): 
+    has=self.ok().has
+    return has[len(has)//2]
 
   def bar(self, num, fmt=&#34;%8.3f&#34;, word=&#34;%10s&#34;, width=50):
     out  = [&#39; &#39;] * width
-    pos = lambda x: int(width * (x - self.has[0]) / (self.has[-1] - self.has[0] + 1E-30))
-    [a, b, c, d, e]  = [num.has[int(len(num.has)*x)] for x in [0.1,0.3,0.5,0.7,0.9]]
+    pos = lambda x: int(width * (x - self.lo) / (self.hi - self.lo + 1E-30))
+    has = num.ok().has
+    [a, b, c, d, e]  = [has[int(len(has)*x)] for x in [0.5,0.25,0.5,0.75,0.95]]
     [na,nb,nc,nd,ne] = [pos(x) for x in [a,b,c,d,e]]
-    for i in range(na,nb): out[i] = &#34;-&#34;
-    for i in range(nd,ne): out[i] = &#34;-&#34;
+    for i in range(nb,nd): out[i] = &#34;-&#34;
+    #for i in range(nd,ne): out[i] = &#34;-&#34;
     out[width//2] = &#34;|&#34;
     out[nc] = &#34;*&#34;
-    return &#39;, &#39;.join([&#34;%2d&#34; % num.rank, word % num.txt, fmt%c, fmt%(d-b),
-                      &#39;&#39;.join(out), &#39;, &#39;.join([(fmt % x) for x in [a,b,c,d,e]])])
+    return &#39;, &#39;.join([&#34;%2d&#34; % num.rank, word % num.txt, fmt%c, fmt%(d-b),  
+                      &#39;&#39;.join(out), fmt%self.lo,      fmt%self.hi ]) #, &#39;, &#39;.join([(fmt % x) for x in [a,b,c,d,e]])])
 
 def different(x,y):
   &#34;non-parametric effect size and significance test&#34;
@@ -101,14 +114,14 @@ def _bootstrap(y0,z0,confidence=.05,Experiments=512,):
   &#34;&#34;&#34;non-parametric significance test From Introduction to Bootstrap, 
      Efron and Tibshirani, 1993, chapter 20. https://doi.org/10.1201/9780429246593&#34;&#34;&#34;
   obs = lambda x,y: abs(x.mu-y.mu) / ((x.sd**2/x.n + y.sd**2/y.n)**.5 + 1E-30)
-  x, y, z = NUM(y0+z0), NUM(y0), NUM(z0)
+  x, y, z = SAMPLE(y0+z0), SAMPLE(y0), SAMPLE(z0)
   d = obs(y,z)
   yhat = [y1 - y.mu + x.mu for y1 in y0]
   zhat = [z1 - z.mu + x.mu for z1 in z0]
   n      = 0
   for _ in range(Experiments):
-    ynum = NUM(random.choices(yhat,k=len(yhat)))
-    znum = NUM(random.choices(zhat,k=len(zhat)))
+    ynum = SAMPLE(random.choices(yhat,k=len(yhat)))
+    znum = SAMPLE(random.choices(zhat,k=len(zhat)))
     if obs(ynum, znum) &gt; d:
       n += 1
   return n / Experiments &lt; confidence # true if different
@@ -117,11 +130,11 @@ def sk(nums):
   &#34;sort nums on median. give adjacent nums the same rank if they are statistically the same&#34;
   def sk1(nums, rank,lvl=1):
     all = lambda lst:  [x for num in lst for x in num.has]
-    b4, cut = NUM(all(nums)) ,None
+    b4, cut = SAMPLE(all(nums)) ,None
     max =  -1
     for i in range(1,len(nums)):  
-      lhs = NUM(all(nums[:i])); 
-      rhs = NUM(all(nums[i:])); 
+      lhs = SAMPLE(all(nums[:i])); 
+      rhs = SAMPLE(all(nums[i:])); 
       tmp = (lhs.n*abs(lhs.mid() - b4.mid()) + rhs.n*abs(rhs.mid() - b4.mid()))/b4.n 
       if tmp &gt; max:
          max,cut = tmp,i 
@@ -140,8 +153,12 @@ def egSlurp():
   eg0(slurp(&#34;stats.txt&#34;))
 
 def eg0(nums):
-  all = NUM([x for num in nums for x in num.has])
-  [print(all.bar(num,width=40,word=&#34;%4s&#34;, fmt=&#34;%5.2f&#34;)) for num in sk(nums)] 
+  all = SAMPLE([x for num in nums for x in num.has])
+  last = None
+  for num in sk(nums):
+    if num.rank != last: print(&#34;#&#34;)
+    last=num.rank
+    print(all.bar(num,width=40,word=&#34;%20s&#34;, fmt=&#34;%5.2f&#34;))
     
 def eg1():
   x=1
@@ -149,9 +166,9 @@ def eg1():
   while x&lt;1.5:
     a1 = [random.gauss(10,3) for x in range(20)]
     a2 = [y*x for y in a1]
-    n1=NUM(a1)
-    n2=NUM(a2)
-    n12=NUM(a1+a2)
+    n1=SAMPLE(a1)
+    n2=SAMPLE(a2)
+    n12=SAMPLE(a1+a2)
     t1=_cliffsDelta(a1,a2)
     t2= _bootstrap(a1,a2)
     t3= abs(n1.mu-n2.mu) &gt; n12.sd/3
@@ -159,21 +176,21 @@ def eg1():
     x *= 1.02
   
 def eg2(n=5):
-  eg0([NUM([0.34, 0.49 ,0.51, 0.6]*n,   &#34;x1&#34;),
-        NUM([0.6  ,0.7 , 0.8 , 0.89]*n,  &#34;x2&#34;),
-        NUM([0.13 ,0.23, 0.38 , 0.38]*n, &#34;x3&#34;),
-        NUM([0.6  ,0.7,  0.8 , 0.9]*n,   &#34;x4&#34;),
-        NUM([0.1  ,0.2,  0.3 , 0.4]*n,   &#34;x5&#34;)])
+  eg0([SAMPLE([0.34, 0.49 ,0.51, 0.6]*n,   &#34;x1&#34;),
+        SAMPLE([0.6  ,0.7 , 0.8 , 0.89]*n,  &#34;x2&#34;),
+        SAMPLE([0.13 ,0.23, 0.38 , 0.38]*n, &#34;x3&#34;),
+        SAMPLE([0.6  ,0.7,  0.8 , 0.9]*n,   &#34;x4&#34;),
+        SAMPLE([0.1  ,0.2,  0.3 , 0.4]*n,   &#34;x5&#34;)])
   
 def eg3():
-  eg0([NUM([0.32,  0.45,  0.50,  0.5,  0.55],&#34;one&#34;),
-        NUM([ 0.76,  0.90,  0.95,  0.99,  0.995],&#34;two&#34;)])
+  eg0([SAMPLE([0.32,  0.45,  0.50,  0.5,  0.55],&#34;one&#34;),
+        SAMPLE([ 0.76,  0.90,  0.95,  0.99,  0.995],&#34;two&#34;)])
 
 def eg4(n=5):
   eg0([
-        NUM([0.34, 0.49 ,0.51, 0.6]*n,   &#34;x1&#34;),
-        NUM([0.35, 0.52 ,0.63, 0.8]*n,   &#34;x2&#34;),
-        NUM([0.13 ,0.23, 0.38 , 0.38]*n, &#34;x4&#34;),
+        SAMPLE([0.34, 0.49 ,0.51, 0.6]*n,   &#34;x1&#34;),
+        SAMPLE([0.35, 0.52 ,0.63, 0.8]*n,   &#34;x2&#34;),
+        SAMPLE([0.13 ,0.23, 0.38 , 0.38]*n, &#34;x4&#34;),
         ])
  
 
@@ -214,8 +231,12 @@ if __name__ == &#34;__main__&#34;:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def eg0(nums):
-  all = NUM([x for num in nums for x in num.has])
-  [print(all.bar(num,width=40,word=&#34;%4s&#34;, fmt=&#34;%5.2f&#34;)) for num in sk(nums)] </code></pre>
+  all = SAMPLE([x for num in nums for x in num.has])
+  last = None
+  for num in sk(nums):
+    if num.rank != last: print(&#34;#&#34;)
+    last=num.rank
+    print(all.bar(num,width=40,word=&#34;%20s&#34;, fmt=&#34;%5.2f&#34;))</code></pre>
 </details>
 </dd>
 <dt id="stats.eg1"><code class="name flex">
@@ -233,9 +254,9 @@ if __name__ == &#34;__main__&#34;:
   while x&lt;1.5:
     a1 = [random.gauss(10,3) for x in range(20)]
     a2 = [y*x for y in a1]
-    n1=NUM(a1)
-    n2=NUM(a2)
-    n12=NUM(a1+a2)
+    n1=SAMPLE(a1)
+    n2=SAMPLE(a2)
+    n12=SAMPLE(a1+a2)
     t1=_cliffsDelta(a1,a2)
     t2= _bootstrap(a1,a2)
     t3= abs(n1.mu-n2.mu) &gt; n12.sd/3
@@ -253,11 +274,11 @@ if __name__ == &#34;__main__&#34;:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def eg2(n=5):
-  eg0([NUM([0.34, 0.49 ,0.51, 0.6]*n,   &#34;x1&#34;),
-        NUM([0.6  ,0.7 , 0.8 , 0.89]*n,  &#34;x2&#34;),
-        NUM([0.13 ,0.23, 0.38 , 0.38]*n, &#34;x3&#34;),
-        NUM([0.6  ,0.7,  0.8 , 0.9]*n,   &#34;x4&#34;),
-        NUM([0.1  ,0.2,  0.3 , 0.4]*n,   &#34;x5&#34;)])</code></pre>
+  eg0([SAMPLE([0.34, 0.49 ,0.51, 0.6]*n,   &#34;x1&#34;),
+        SAMPLE([0.6  ,0.7 , 0.8 , 0.89]*n,  &#34;x2&#34;),
+        SAMPLE([0.13 ,0.23, 0.38 , 0.38]*n, &#34;x3&#34;),
+        SAMPLE([0.6  ,0.7,  0.8 , 0.9]*n,   &#34;x4&#34;),
+        SAMPLE([0.1  ,0.2,  0.3 , 0.4]*n,   &#34;x5&#34;)])</code></pre>
 </details>
 </dd>
 <dt id="stats.eg3"><code class="name flex">
@@ -270,8 +291,8 @@ if __name__ == &#34;__main__&#34;:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def eg3():
-  eg0([NUM([0.32,  0.45,  0.50,  0.5,  0.55],&#34;one&#34;),
-        NUM([ 0.76,  0.90,  0.95,  0.99,  0.995],&#34;two&#34;)])</code></pre>
+  eg0([SAMPLE([0.32,  0.45,  0.50,  0.5,  0.55],&#34;one&#34;),
+        SAMPLE([ 0.76,  0.90,  0.95,  0.99,  0.995],&#34;two&#34;)])</code></pre>
 </details>
 </dd>
 <dt id="stats.eg4"><code class="name flex">
@@ -285,9 +306,9 @@ if __name__ == &#34;__main__&#34;:
 </summary>
 <pre><code class="python">def eg4(n=5):
   eg0([
-        NUM([0.34, 0.49 ,0.51, 0.6]*n,   &#34;x1&#34;),
-        NUM([0.35, 0.52 ,0.63, 0.8]*n,   &#34;x2&#34;),
-        NUM([0.13 ,0.23, 0.38 , 0.38]*n, &#34;x4&#34;),
+        SAMPLE([0.34, 0.49 ,0.51, 0.6]*n,   &#34;x1&#34;),
+        SAMPLE([0.35, 0.52 ,0.63, 0.8]*n,   &#34;x2&#34;),
+        SAMPLE([0.13 ,0.23, 0.38 , 0.38]*n, &#34;x4&#34;),
         ])</code></pre>
 </details>
 </dd>
@@ -331,11 +352,11 @@ if __name__ == &#34;__main__&#34;:
   &#34;sort nums on median. give adjacent nums the same rank if they are statistically the same&#34;
   def sk1(nums, rank,lvl=1):
     all = lambda lst:  [x for num in lst for x in num.has]
-    b4, cut = NUM(all(nums)) ,None
+    b4, cut = SAMPLE(all(nums)) ,None
     max =  -1
     for i in range(1,len(nums)):  
-      lhs = NUM(all(nums[:i])); 
-      rhs = NUM(all(nums[i:])); 
+      lhs = SAMPLE(all(nums[:i])); 
+      rhs = SAMPLE(all(nums[i:])); 
       tmp = (lhs.n*abs(lhs.mid() - b4.mid()) + rhs.n*abs(rhs.mid() - b4.mid()))/b4.n 
       if tmp &gt; max:
          max,cut = tmp,i 
@@ -367,9 +388,9 @@ if __name__ == &#34;__main__&#34;:
       if isinstance(word,float):
         lst += [word]
       else:
-        if len(lst)&gt;0: nums += [NUM(lst,last)]
+        if len(lst)&gt;0: nums += [SAMPLE(lst,last)]
         lst,last =[],word
-  if len(lst)&gt;0: nums += [NUM(lst,last)]
+  if len(lst)&gt;0: nums += [SAMPLE(lst,last)]
   return nums</code></pre>
 </details>
 </dd>
@@ -378,9 +399,9 @@ if __name__ == &#34;__main__&#34;:
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="stats.NUM"><code class="flex name class">
-<span>class <span class="ident">NUM</span></span>
-<span>(</span><span>lst, txt='', rank=0)</span>
+<dt id="stats.SAMPLE"><code class="flex name class">
+<span>class <span class="ident">SAMPLE</span></span>
+<span>(</span><span>lst=[], txt='', rank=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>stores mean, standard deviation, low, high, of a list of numbers</p></div>
@@ -388,35 +409,70 @@ if __name__ == &#34;__main__&#34;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class NUM:
+<pre><code class="python">class SAMPLE:
   &#34;stores mean, standard deviation, low, high, of a list of numbers&#34;
-  def __init__(self,lst,txt=&#34;&#34;,rank=0):
-    self.has = sorted(lst)
+  def __init__(self,lst=[],txt=&#34;&#34;,rank=0):
+    self.has, self.ready = [],False
     self.txt, self.rank = txt,0
-    self.n, self.sd, self.mu, self.lo, self.hi = len(lst),0,0, sys.maxsize, -sys.maxsize
-    if self.n != 0: 
-      tmp, self.mu  = 0, sum(lst) / self.n
-      for x in lst: 
-        tmp += (x-self.mu)**2; self.hi=max(x,self.hi); self.lo=min(x,self.lo)
-      self.sd = (tmp/(self.n - 1+1E-30))**.5 
+    self.n, self.sd, self.m2,self.mu, self.lo, self.hi = 0,0,0,0,sys.maxsize, -sys.maxsize
+    [self.add(x) for x in lst]
 
-  def mid(self): return self.has[len(self.has)//2]
+  def add(self,x):
+    self.has += [x]; self.ready=False;
+    self.lo = min(x,self.lo)
+    self.hi = max(x,self.hi)
+    self.n += 1
+    delta = x - self.mu
+    self.mu += delta / self.n
+    self.m2 += delta * (x -  self.mu)
+    self.sd = 0 if self.n &lt; 2 else (self.m2 / (self.n - 1))**.5   
+  
+  def ok(self):
+    if not self.ready: 
+      self.has = sorted(self.has)
+    self.ready=True
+    return self
+  
+  def mid(self): 
+    has=self.ok().has
+    return has[len(has)//2]
 
   def bar(self, num, fmt=&#34;%8.3f&#34;, word=&#34;%10s&#34;, width=50):
     out  = [&#39; &#39;] * width
-    pos = lambda x: int(width * (x - self.has[0]) / (self.has[-1] - self.has[0] + 1E-30))
-    [a, b, c, d, e]  = [num.has[int(len(num.has)*x)] for x in [0.1,0.3,0.5,0.7,0.9]]
+    pos = lambda x: int(width * (x - self.lo) / (self.hi - self.lo + 1E-30))
+    has = num.ok().has
+    [a, b, c, d, e]  = [has[int(len(has)*x)] for x in [0.5,0.25,0.5,0.75,0.95]]
     [na,nb,nc,nd,ne] = [pos(x) for x in [a,b,c,d,e]]
-    for i in range(na,nb): out[i] = &#34;-&#34;
-    for i in range(nd,ne): out[i] = &#34;-&#34;
+    for i in range(nb,nd): out[i] = &#34;-&#34;
+    #for i in range(nd,ne): out[i] = &#34;-&#34;
     out[width//2] = &#34;|&#34;
     out[nc] = &#34;*&#34;
-    return &#39;, &#39;.join([&#34;%2d&#34; % num.rank, word % num.txt, fmt%c, fmt%(d-b),
-                      &#39;&#39;.join(out), &#39;, &#39;.join([(fmt % x) for x in [a,b,c,d,e]])])</code></pre>
+    return &#39;, &#39;.join([&#34;%2d&#34; % num.rank, word % num.txt, fmt%c, fmt%(d-b),  
+                      &#39;&#39;.join(out), fmt%self.lo,      fmt%self.hi ]) #, &#39;, &#39;.join([(fmt % x) for x in [a,b,c,d,e]])])</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="stats.NUM.bar"><code class="name flex">
+<dt id="stats.SAMPLE.add"><code class="name flex">
+<span>def <span class="ident">add</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add(self,x):
+  self.has += [x]; self.ready=False;
+  self.lo = min(x,self.lo)
+  self.hi = max(x,self.hi)
+  self.n += 1
+  delta = x - self.mu
+  self.mu += delta / self.n
+  self.m2 += delta * (x -  self.mu)
+  self.sd = 0 if self.n &lt; 2 else (self.m2 / (self.n - 1))**.5   </code></pre>
+</details>
+</dd>
+<dt id="stats.SAMPLE.bar"><code class="name flex">
 <span>def <span class="ident">bar</span></span>(<span>self, num, fmt='%8.3f', word='%10s', width=50)</span>
 </code></dt>
 <dd>
@@ -427,18 +483,19 @@ if __name__ == &#34;__main__&#34;:
 </summary>
 <pre><code class="python">def bar(self, num, fmt=&#34;%8.3f&#34;, word=&#34;%10s&#34;, width=50):
   out  = [&#39; &#39;] * width
-  pos = lambda x: int(width * (x - self.has[0]) / (self.has[-1] - self.has[0] + 1E-30))
-  [a, b, c, d, e]  = [num.has[int(len(num.has)*x)] for x in [0.1,0.3,0.5,0.7,0.9]]
+  pos = lambda x: int(width * (x - self.lo) / (self.hi - self.lo + 1E-30))
+  has = num.ok().has
+  [a, b, c, d, e]  = [has[int(len(has)*x)] for x in [0.5,0.25,0.5,0.75,0.95]]
   [na,nb,nc,nd,ne] = [pos(x) for x in [a,b,c,d,e]]
-  for i in range(na,nb): out[i] = &#34;-&#34;
-  for i in range(nd,ne): out[i] = &#34;-&#34;
+  for i in range(nb,nd): out[i] = &#34;-&#34;
+  #for i in range(nd,ne): out[i] = &#34;-&#34;
   out[width//2] = &#34;|&#34;
   out[nc] = &#34;*&#34;
-  return &#39;, &#39;.join([&#34;%2d&#34; % num.rank, word % num.txt, fmt%c, fmt%(d-b),
-                    &#39;&#39;.join(out), &#39;, &#39;.join([(fmt % x) for x in [a,b,c,d,e]])])</code></pre>
+  return &#39;, &#39;.join([&#34;%2d&#34; % num.rank, word % num.txt, fmt%c, fmt%(d-b),  
+                    &#39;&#39;.join(out), fmt%self.lo,      fmt%self.hi ]) #, &#39;, &#39;.join([(fmt % x) for x in [a,b,c,d,e]])])</code></pre>
 </details>
 </dd>
-<dt id="stats.NUM.mid"><code class="name flex">
+<dt id="stats.SAMPLE.mid"><code class="name flex">
 <span>def <span class="ident">mid</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -447,7 +504,25 @@ if __name__ == &#34;__main__&#34;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def mid(self): return self.has[len(self.has)//2]</code></pre>
+<pre><code class="python">def mid(self): 
+  has=self.ok().has
+  return has[len(has)//2]</code></pre>
+</details>
+</dd>
+<dt id="stats.SAMPLE.ok"><code class="name flex">
+<span>def <span class="ident">ok</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ok(self):
+  if not self.ready: 
+    self.has = sorted(self.has)
+  self.ready=True
+  return self</code></pre>
 </details>
 </dd>
 </dl>
@@ -485,10 +560,12 @@ if __name__ == &#34;__main__&#34;:
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="stats.NUM" href="#stats.NUM">NUM</a></code></h4>
+<h4><code><a title="stats.SAMPLE" href="#stats.SAMPLE">SAMPLE</a></code></h4>
 <ul class="">
-<li><code><a title="stats.NUM.bar" href="#stats.NUM.bar">bar</a></code></li>
-<li><code><a title="stats.NUM.mid" href="#stats.NUM.mid">mid</a></code></li>
+<li><code><a title="stats.SAMPLE.add" href="#stats.SAMPLE.add">add</a></code></li>
+<li><code><a title="stats.SAMPLE.bar" href="#stats.SAMPLE.bar">bar</a></code></li>
+<li><code><a title="stats.SAMPLE.mid" href="#stats.SAMPLE.mid">mid</a></code></li>
+<li><code><a title="stats.SAMPLE.ok" href="#stats.SAMPLE.ok">ok</a></code></li>
 </ul>
 </li>
 </ul>

@@ -38,13 +38,13 @@ See also: <a href="ez.html">ez</a> :: <a href="etc.html">etc</a> :: <a href="eg.
 
 from etc  import *
 from ez import *
+from stats import eg0,SAMPLE
 import ez
 
-class Eg:
-  _all = locals()
+class Eg: 
   def all():
-    errors = [f() for s,f in Eg._all.items() if s[0] !=&#34;_&#34; and s !=&#34;all&#34;]
-    sys.exit(sum(0 if x==None else x for x in errors))
+    sys.exit(sum(1 if getattr(Eg,s)()==False else 0 
+                 for s in dir(Eg) if s[0] !=&#34;_&#34; and s !=&#34;all&#34;))
     
   def nothing(): pass
 
@@ -68,16 +68,16 @@ class Eg:
     for i,row in enumerate(d.rows): 
       if i % 25 == 0: 
           print(i, rnds(d.d2h(row)),
-                rnds(d.like(row, 1000, 2, m=the.m, k=the.k)))
+                rnds(d.loglike(row, 1000, 2, m=the.m, k=the.k)))
 
   def smos():
     repeats=20
     r=lambda x:rnds(x,2)
     print(the.seed)
     d=DATA(csv(the.file),order=False) 
-    print(&#34;names&#34;,d.names,sep=&#34;,\t&#34;)
+    print(&#34;names&#34;,d.names,&#34;D2h-&#34;,sep=&#34;,\t&#34;)
     print(&#34;mid&#34;, r(d.mid()),r(d.d2h(d.mid())), sep=&#34;,\t&#34;);
-    print(&#34;div&#34;, r(d.div()),sep=&#34;,\t&#34;); print(&#34;#&#34;)
+    print(&#34;div&#34;, r(d.div()),r(NUM([d.d2h(row) for row in d.rows]).sd), sep=&#34;,\t&#34;); print(&#34;#&#34;) 
     #---
     for one in  sorted([d.smo() for _ in range(repeats)], key=d.d2h):
       print(f&#34;smo{the.budget0+the.Budget}&#34;,r(one),r(d.d2h(one)), sep=&#34;,\t&#34;)
@@ -92,15 +92,45 @@ class Eg:
        print(f&#34;any{n}&#34;, r(one), r(d.d2h(one)), sep=&#34;,\t&#34;)
     #---
     all = d.clone(d.rows,order=True).rows[0]
-    print(&#34;#\n100%&#34;, r(all), r(d.d2h(all)), sep=&#34;,\t&#34;)
+    print(&#34;#\n100%&#34;, r(all), r(d.d2h(all)), sep=&#34;,\t&#34;) 
 
-    #print(&#34;#\nbest,&#34;,rnds(d.clone(d.rows,order=True).rows[0]),2)
-
+  def smoy(repeats=20): 
+      e=math.exp(1)
+      def say(*l): print(*l,end=&#34; &#34;,flush=True);
+      r=lambda a: &#39;, &#39;.join([str(x) for x in rnds(a,2)])
+      d=DATA(csv(the.file),order=False)  
+      n1 = int(0.5 + math.log(1 - .95)/math.log(1 - .35/6))
+      n2 = int(0.5 + math.log(n1,2))
+      n3 = int(0.5 + len(d.rows)**.5)
+      n4 = int(0.5 + min(len(d.names)*10, len(d.rows)*.9))
+      n5 = int(0.5 + len(d.rows)*.9)
+      n6 = 15
+      n7 = 9
+      n8 = 20
+      d2hs = NUM([d.d2h(row) for row in d.clone(d.rows,True).rows])
+      print(f&#34;file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},\nrows : {len(d.rows)},&#34;)
+      print(f&#34;cols : {len(d.names)},\nbest : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}&#34;)
+      say(&#34;#base&#34;);all= [SAMPLE([d.d2h(row) for row in d.rows],        txt=&#34;base&#34;)] 
+      for budget in sorted(set([n1,n2,n3,n4,n5,n6,n7,n8])): 
+        the.Budget = budget -  the.budget0 
+        if budget &lt; 100:
+           say(f&#34;#b{budget}&#34;); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
+                                     for _   in range(repeats)],txt=f&#34;#b{budget}&#34;)]
+           say(f&#34;#2b{budget}&#34;); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: 2*B-R))
+                                     for _   in range(repeats)],txt=f&#34;#2b{budget}&#34;)]
+           say(f&#34;#bonr{budget}&#34;); all +=  [SAMPLE([d.d2h(d.smo(score=lambda B,R: abs(e**B+e**R)/abs(e**B-e**R + tiny)))
+                                     for _   in range(repeats)],txt=f&#34;#bonr{budget}&#34;)]
+        
+        say(f&#34;#rand{budget}&#34;);all +=  [SAMPLE([d.d2h(d.clone(shuffle(d.rows)[:budget], order=True).rows[0]) 
+                                    for _ in range(20)], txt=f&#34;#rand{budget}&#34;)] 
+      #-----------------------------------
+      print(f&#34;\n#report{len(all)}&#34;);eg0(all)
+     
 #----------------------------------------------------------------------------------------
 if __name__ == &#34;__main__&#34;:
   the.cli()
   random.seed(the.seed)
-  getattr(Eg, the.todo,Eg.help)()</code></pre>
+  getattr(Eg, the.todo, Eg.help)()</code></pre>
 </details>
 </section>
 <section>
@@ -121,11 +151,10 @@ if __name__ == &#34;__main__&#34;:
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Eg:
-  _all = locals()
+<pre><code class="python">class Eg: 
   def all():
-    errors = [f() for s,f in Eg._all.items() if s[0] !=&#34;_&#34; and s !=&#34;all&#34;]
-    sys.exit(sum(0 if x==None else x for x in errors))
+    sys.exit(sum(1 if getattr(Eg,s)()==False else 0 
+                 for s in dir(Eg) if s[0] !=&#34;_&#34; and s !=&#34;all&#34;))
     
   def nothing(): pass
 
@@ -149,16 +178,16 @@ if __name__ == &#34;__main__&#34;:
     for i,row in enumerate(d.rows): 
       if i % 25 == 0: 
           print(i, rnds(d.d2h(row)),
-                rnds(d.like(row, 1000, 2, m=the.m, k=the.k)))
+                rnds(d.loglike(row, 1000, 2, m=the.m, k=the.k)))
 
   def smos():
     repeats=20
     r=lambda x:rnds(x,2)
     print(the.seed)
     d=DATA(csv(the.file),order=False) 
-    print(&#34;names&#34;,d.names,sep=&#34;,\t&#34;)
+    print(&#34;names&#34;,d.names,&#34;D2h-&#34;,sep=&#34;,\t&#34;)
     print(&#34;mid&#34;, r(d.mid()),r(d.d2h(d.mid())), sep=&#34;,\t&#34;);
-    print(&#34;div&#34;, r(d.div()),sep=&#34;,\t&#34;); print(&#34;#&#34;)
+    print(&#34;div&#34;, r(d.div()),r(NUM([d.d2h(row) for row in d.rows]).sd), sep=&#34;,\t&#34;); print(&#34;#&#34;) 
     #---
     for one in  sorted([d.smo() for _ in range(repeats)], key=d.d2h):
       print(f&#34;smo{the.budget0+the.Budget}&#34;,r(one),r(d.d2h(one)), sep=&#34;,\t&#34;)
@@ -173,9 +202,39 @@ if __name__ == &#34;__main__&#34;:
        print(f&#34;any{n}&#34;, r(one), r(d.d2h(one)), sep=&#34;,\t&#34;)
     #---
     all = d.clone(d.rows,order=True).rows[0]
-    print(&#34;#\n100%&#34;, r(all), r(d.d2h(all)), sep=&#34;,\t&#34;)
+    print(&#34;#\n100%&#34;, r(all), r(d.d2h(all)), sep=&#34;,\t&#34;) 
 
-    #print(&#34;#\nbest,&#34;,rnds(d.clone(d.rows,order=True).rows[0]),2)</code></pre>
+  def smoy(repeats=20): 
+      e=math.exp(1)
+      def say(*l): print(*l,end=&#34; &#34;,flush=True);
+      r=lambda a: &#39;, &#39;.join([str(x) for x in rnds(a,2)])
+      d=DATA(csv(the.file),order=False)  
+      n1 = int(0.5 + math.log(1 - .95)/math.log(1 - .35/6))
+      n2 = int(0.5 + math.log(n1,2))
+      n3 = int(0.5 + len(d.rows)**.5)
+      n4 = int(0.5 + min(len(d.names)*10, len(d.rows)*.9))
+      n5 = int(0.5 + len(d.rows)*.9)
+      n6 = 15
+      n7 = 9
+      n8 = 20
+      d2hs = NUM([d.d2h(row) for row in d.clone(d.rows,True).rows])
+      print(f&#34;file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},\nrows : {len(d.rows)},&#34;)
+      print(f&#34;cols : {len(d.names)},\nbest : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}&#34;)
+      say(&#34;#base&#34;);all= [SAMPLE([d.d2h(row) for row in d.rows],        txt=&#34;base&#34;)] 
+      for budget in sorted(set([n1,n2,n3,n4,n5,n6,n7,n8])): 
+        the.Budget = budget -  the.budget0 
+        if budget &lt; 100:
+           say(f&#34;#b{budget}&#34;); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
+                                     for _   in range(repeats)],txt=f&#34;#b{budget}&#34;)]
+           say(f&#34;#2b{budget}&#34;); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: 2*B-R))
+                                     for _   in range(repeats)],txt=f&#34;#2b{budget}&#34;)]
+           say(f&#34;#bonr{budget}&#34;); all +=  [SAMPLE([d.d2h(d.smo(score=lambda B,R: abs(e**B+e**R)/abs(e**B-e**R + tiny)))
+                                     for _   in range(repeats)],txt=f&#34;#bonr{budget}&#34;)]
+        
+        say(f&#34;#rand{budget}&#34;);all +=  [SAMPLE([d.d2h(d.clone(shuffle(d.rows)[:budget], order=True).rows[0]) 
+                                    for _ in range(20)], txt=f&#34;#rand{budget}&#34;)] 
+      #-----------------------------------
+      print(f&#34;\n#report{len(all)}&#34;);eg0(all)</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -189,8 +248,8 @@ if __name__ == &#34;__main__&#34;:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def all():
-  errors = [f() for s,f in Eg._all.items() if s[0] !=&#34;_&#34; and s !=&#34;all&#34;]
-  sys.exit(sum(0 if x==None else x for x in errors))</code></pre>
+  sys.exit(sum(1 if getattr(Eg,s)()==False else 0 
+               for s in dir(Eg) if s[0] !=&#34;_&#34; and s !=&#34;all&#34;))</code></pre>
 </details>
 </dd>
 <dt id="eg.Eg.cols"><code class="name flex">
@@ -249,7 +308,7 @@ if __name__ == &#34;__main__&#34;:
   for i,row in enumerate(d.rows): 
     if i % 25 == 0: 
         print(i, rnds(d.d2h(row)),
-              rnds(d.like(row, 1000, 2, m=the.m, k=the.k)))</code></pre>
+              rnds(d.loglike(row, 1000, 2, m=the.m, k=the.k)))</code></pre>
 </details>
 </dd>
 <dt id="eg.Eg.nothing"><code class="name flex">
@@ -291,9 +350,9 @@ if __name__ == &#34;__main__&#34;:
   r=lambda x:rnds(x,2)
   print(the.seed)
   d=DATA(csv(the.file),order=False) 
-  print(&#34;names&#34;,d.names,sep=&#34;,\t&#34;)
+  print(&#34;names&#34;,d.names,&#34;D2h-&#34;,sep=&#34;,\t&#34;)
   print(&#34;mid&#34;, r(d.mid()),r(d.d2h(d.mid())), sep=&#34;,\t&#34;);
-  print(&#34;div&#34;, r(d.div()),sep=&#34;,\t&#34;); print(&#34;#&#34;)
+  print(&#34;div&#34;, r(d.div()),r(NUM([d.d2h(row) for row in d.rows]).sd), sep=&#34;,\t&#34;); print(&#34;#&#34;) 
   #---
   for one in  sorted([d.smo() for _ in range(repeats)], key=d.d2h):
     print(f&#34;smo{the.budget0+the.Budget}&#34;,r(one),r(d.d2h(one)), sep=&#34;,\t&#34;)
@@ -308,9 +367,49 @@ if __name__ == &#34;__main__&#34;:
      print(f&#34;any{n}&#34;, r(one), r(d.d2h(one)), sep=&#34;,\t&#34;)
   #---
   all = d.clone(d.rows,order=True).rows[0]
-  print(&#34;#\n100%&#34;, r(all), r(d.d2h(all)), sep=&#34;,\t&#34;)
-
-  #print(&#34;#\nbest,&#34;,rnds(d.clone(d.rows,order=True).rows[0]),2)</code></pre>
+  print(&#34;#\n100%&#34;, r(all), r(d.d2h(all)), sep=&#34;,\t&#34;) </code></pre>
+</details>
+</dd>
+<dt id="eg.Eg.smoy"><code class="name flex">
+<span>def <span class="ident">smoy</span></span>(<span>repeats=20)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def smoy(repeats=20): 
+    e=math.exp(1)
+    def say(*l): print(*l,end=&#34; &#34;,flush=True);
+    r=lambda a: &#39;, &#39;.join([str(x) for x in rnds(a,2)])
+    d=DATA(csv(the.file),order=False)  
+    n1 = int(0.5 + math.log(1 - .95)/math.log(1 - .35/6))
+    n2 = int(0.5 + math.log(n1,2))
+    n3 = int(0.5 + len(d.rows)**.5)
+    n4 = int(0.5 + min(len(d.names)*10, len(d.rows)*.9))
+    n5 = int(0.5 + len(d.rows)*.9)
+    n6 = 15
+    n7 = 9
+    n8 = 20
+    d2hs = NUM([d.d2h(row) for row in d.clone(d.rows,True).rows])
+    print(f&#34;file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},\nrows : {len(d.rows)},&#34;)
+    print(f&#34;cols : {len(d.names)},\nbest : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}&#34;)
+    say(&#34;#base&#34;);all= [SAMPLE([d.d2h(row) for row in d.rows],        txt=&#34;base&#34;)] 
+    for budget in sorted(set([n1,n2,n3,n4,n5,n6,n7,n8])): 
+      the.Budget = budget -  the.budget0 
+      if budget &lt; 100:
+         say(f&#34;#b{budget}&#34;); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
+                                   for _   in range(repeats)],txt=f&#34;#b{budget}&#34;)]
+         say(f&#34;#2b{budget}&#34;); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: 2*B-R))
+                                   for _   in range(repeats)],txt=f&#34;#2b{budget}&#34;)]
+         say(f&#34;#bonr{budget}&#34;); all +=  [SAMPLE([d.d2h(d.smo(score=lambda B,R: abs(e**B+e**R)/abs(e**B-e**R + tiny)))
+                                   for _   in range(repeats)],txt=f&#34;#bonr{budget}&#34;)]
+      
+      say(f&#34;#rand{budget}&#34;);all +=  [SAMPLE([d.d2h(d.clone(shuffle(d.rows)[:budget], order=True).rows[0]) 
+                                  for _ in range(20)], txt=f&#34;#rand{budget}&#34;)] 
+    #-----------------------------------
+    print(f&#34;\n#report{len(all)}&#34;);eg0(all)</code></pre>
 </details>
 </dd>
 </dl>
@@ -344,6 +443,7 @@ if __name__ == &#34;__main__&#34;:
 <li><code><a title="eg.Eg.nothing" href="#eg.Eg.nothing">nothing</a></code></li>
 <li><code><a title="eg.Eg.nums" href="#eg.Eg.nums">nums</a></code></li>
 <li><code><a title="eg.Eg.smos" href="#eg.Eg.smos">smos</a></code></li>
+<li><code><a title="eg.Eg.smoy" href="#eg.Eg.smoy">smoy</a></code></li>
 </ul>
 </li>
 </ul>
