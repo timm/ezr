@@ -47,10 +47,11 @@ See also: <a href="ez.html">ez</a> :: <a href="etc.html">etc</a> :: <a href="eg.
  -c --cohen       small effect size          = .35  
  -c --confidence  statistical confidence     = .05
  -e --effectSize  non-parametric small delta = 0.2385
- -E --Experiments number of Bootstraps       = 512
+ -E --Experiments number of Bootstraps       = 256
  -f --file        csv data file name         = '../data/auto93.csv'  
  -F --Far         far search outlier control = .95
  -h --help        print help                 = false
+ -H --Half        #items for far search      = 256
  -k --k           rare class  kludge         = 1  
  -m --m           rare attribute  kludge     = 2  
  -M --Min         min size is N**Min         = .5
@@ -79,10 +80,11 @@ OPTIONS:
      -c --cohen       small effect size          = .35  
      -c --confidence  statistical confidence     = .05
      -e --effectSize  non-parametric small delta = 0.2385
-     -E --Experiments number of Bootstraps       = 512
+     -E --Experiments number of Bootstraps       = 256
      -f --file        csv data file name         = &#39;../data/auto93.csv&#39;  
      -F --Far         far search outlier control = .95
      -h --help        print help                 = false
+     -H --Half        #items for far search      = 256
      -k --k           rare class  kludge         = 1  
      -m --m           rare attribute  kludge     = 2  
      -M --Min         min size is N**Min         = .5
@@ -204,15 +206,16 @@ class DATA(etc.struct):
   def dist(self,row1,row2):
     def sym(_,x,y): 
       return 1 if x==&#34;?&#34; and y==&#34;?&#34; else (0 if x==y else 1)
+      
     def num(col,x,y):
       if x==&#34;?&#34; and y==&#34;?&#34; : return 1 
       x, y = col.norm(x), col.norm(y) 
       if x==&#34;?&#34; : x= 1 if y&lt;.5 else 0
       if y==&#34;?&#34; : y= 1 if x&lt;.5 else 0 
-      return abs(x-y) 
+      return abs(x-y)  
     #-----------------
     d, n, p = 0, 0, the.p
-    for c,col in  enumerate(self.cols.all):
+    for c,col in  enumerate(self.cols):
       if c not in self.ys:
         n   = n + 1
         inc = (sym if isa(col,SYM) else num)(col, row1[c],row2[c])
@@ -235,16 +238,16 @@ class DATA(etc.struct):
     left,right = self.far(random.choices(rows, k=min(the.Half, len(rows))),
                           sortp=sortp, before=before)
     lefts,rights,C = [],[], dist(left,right)
-    for n,row in enumerate(rows, key=proj):  
+    for n,row in enumerate(sorted(rows, key=proj)):  
       (lefts if n &lt; len(rows)/2 else rights).append(row)
     return lefts, rights, left
 
   def branch(self, rows, stop=None, rest=None, evals=1, before=None):
-    rows = rows or self.rows
     stop = stop or 2*len(rows)**the.Min
+    rest = rest or []
     if len(rows) &gt; stop:
       lefts,rights,left  = self.half(rows, True, before)
-      self.branch(lefts, stop, rest+rights, evals+1, left)
+      return self.branch(lefts, stop, rest+rights, evals+1, left)
     else:
       return rows,rest,evals</code></pre>
 </details>
@@ -381,15 +384,16 @@ class DATA(etc.struct):
   def dist(self,row1,row2):
     def sym(_,x,y): 
       return 1 if x==&#34;?&#34; and y==&#34;?&#34; else (0 if x==y else 1)
+      
     def num(col,x,y):
       if x==&#34;?&#34; and y==&#34;?&#34; : return 1 
       x, y = col.norm(x), col.norm(y) 
       if x==&#34;?&#34; : x= 1 if y&lt;.5 else 0
       if y==&#34;?&#34; : y= 1 if x&lt;.5 else 0 
-      return abs(x-y) 
+      return abs(x-y)  
     #-----------------
     d, n, p = 0, 0, the.p
-    for c,col in  enumerate(self.cols.all):
+    for c,col in  enumerate(self.cols):
       if c not in self.ys:
         n   = n + 1
         inc = (sym if isa(col,SYM) else num)(col, row1[c],row2[c])
@@ -412,16 +416,16 @@ class DATA(etc.struct):
     left,right = self.far(random.choices(rows, k=min(the.Half, len(rows))),
                           sortp=sortp, before=before)
     lefts,rights,C = [],[], dist(left,right)
-    for n,row in enumerate(rows, key=proj):  
+    for n,row in enumerate(sorted(rows, key=proj)):  
       (lefts if n &lt; len(rows)/2 else rights).append(row)
     return lefts, rights, left
 
   def branch(self, rows, stop=None, rest=None, evals=1, before=None):
-    rows = rows or self.rows
     stop = stop or 2*len(rows)**the.Min
+    rest = rest or []
     if len(rows) &gt; stop:
       lefts,rights,left  = self.half(rows, True, before)
-      self.branch(lefts, stop, rest+rights, evals+1, left)
+      return self.branch(lefts, stop, rest+rights, evals+1, left)
     else:
       return rows,rest,evals</code></pre>
 </details>
@@ -455,11 +459,11 @@ class DATA(etc.struct):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def branch(self, rows, stop=None, rest=None, evals=1, before=None):
-  rows = rows or self.rows
   stop = stop or 2*len(rows)**the.Min
+  rest = rest or []
   if len(rows) &gt; stop:
     lefts,rights,left  = self.half(rows, True, before)
-    self.branch(lefts, stop, rest+rights, evals+1, left)
+    return self.branch(lefts, stop, rest+rights, evals+1, left)
   else:
     return rows,rest,evals</code></pre>
 </details>
@@ -503,15 +507,16 @@ class DATA(etc.struct):
 <pre><code class="python">def dist(self,row1,row2):
   def sym(_,x,y): 
     return 1 if x==&#34;?&#34; and y==&#34;?&#34; else (0 if x==y else 1)
+    
   def num(col,x,y):
     if x==&#34;?&#34; and y==&#34;?&#34; : return 1 
     x, y = col.norm(x), col.norm(y) 
     if x==&#34;?&#34; : x= 1 if y&lt;.5 else 0
     if y==&#34;?&#34; : y= 1 if x&lt;.5 else 0 
-    return abs(x-y) 
+    return abs(x-y)  
   #-----------------
   d, n, p = 0, 0, the.p
-  for c,col in  enumerate(self.cols.all):
+  for c,col in  enumerate(self.cols):
     if c not in self.ys:
       n   = n + 1
       inc = (sym if isa(col,SYM) else num)(col, row1[c],row2[c])
@@ -564,7 +569,7 @@ class DATA(etc.struct):
   left,right = self.far(random.choices(rows, k=min(the.Half, len(rows))),
                         sortp=sortp, before=before)
   lefts,rights,C = [],[], dist(left,right)
-  for n,row in enumerate(rows, key=proj):  
+  for n,row in enumerate(sorted(rows, key=proj)):  
     (lefts if n &lt; len(rows)/2 else rights).append(row)
   return lefts, rights, left</code></pre>
 </details>

@@ -69,6 +69,27 @@ class Eg:
       if i % 25 == 0: 
           print(i, rnds(d.d2h(row)),
                 rnds(d.loglike(row, 1000, 2, m=the.m, k=the.k)))
+          
+  def dists():
+    d = DATA( csv(the.file),order=True)
+    row1=d.rows[0]
+    for i,row3 in enumerate(sorted(d.rows,key=lambda row2:d.dist(row1,row2))):
+      if i % 25 == 0: 
+        print(i, row3, rnds(d.dist(row1,row3)))
+
+  def halfs():
+    d = DATA( csv(the.file),order=True)
+    a,b,C = d.half(d.rows)
+    print(len(a),len(b),C)
+    
+  def branch():
+    d = DATA( csv(the.file),order=True)
+    for i in range(20):
+      random.shuffle(d.rows); rows0, *_ = d.branch(d.rows)
+      random.shuffle(d.rows); 
+      rows1, *_ = d.branch(d.rows,stop=50)
+      rows2, *_ = d.branch(rows1, stop=4)
+      print(i, d.d2h(rows0[0]), d.d2h(rows1[0]), d.d2h(rows2[0]))
 
   def smos():
     repeats=20
@@ -179,6 +200,27 @@ if __name__ == &#34;__main__&#34;:
       if i % 25 == 0: 
           print(i, rnds(d.d2h(row)),
                 rnds(d.loglike(row, 1000, 2, m=the.m, k=the.k)))
+          
+  def dists():
+    d = DATA( csv(the.file),order=True)
+    row1=d.rows[0]
+    for i,row3 in enumerate(sorted(d.rows,key=lambda row2:d.dist(row1,row2))):
+      if i % 25 == 0: 
+        print(i, row3, rnds(d.dist(row1,row3)))
+
+  def halfs():
+    d = DATA( csv(the.file),order=True)
+    a,b,C = d.half(d.rows)
+    print(len(a),len(b),C)
+    
+  def branch():
+    d = DATA( csv(the.file),order=True)
+    for i in range(20):
+      random.shuffle(d.rows); rows0, *_ = d.branch(d.rows)
+      random.shuffle(d.rows); 
+      rows1, *_ = d.branch(d.rows,stop=50)
+      rows2, *_ = d.branch(rows1, stop=4)
+      print(i, d.d2h(rows0[0]), d.d2h(rows1[0]), d.d2h(rows2[0]))
 
   def smos():
     repeats=20
@@ -252,6 +294,25 @@ if __name__ == &#34;__main__&#34;:
                for s in dir(Eg) if s[0] !=&#34;_&#34; and s !=&#34;all&#34;))</code></pre>
 </details>
 </dd>
+<dt id="eg.Eg.branch"><code class="name flex">
+<span>def <span class="ident">branch</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def branch():
+  d = DATA( csv(the.file),order=True)
+  for i in range(20):
+    random.shuffle(d.rows); rows0, *_ = d.branch(d.rows)
+    random.shuffle(d.rows); 
+    rows1, *_ = d.branch(d.rows,stop=50)
+    rows2, *_ = d.branch(rows1, stop=4)
+    print(i, d.d2h(rows0[0]), d.d2h(rows1[0]), d.d2h(rows2[0]))</code></pre>
+</details>
+</dd>
 <dt id="eg.Eg.cols"><code class="name flex">
 <span>def <span class="ident">cols</span></span>(<span>)</span>
 </code></dt>
@@ -279,6 +340,38 @@ if __name__ == &#34;__main__&#34;:
   d = DATA(csv(the.file), order=True)
   for i,row in enumerate(d.rows):
      if i % 25 == 0 : print(i,row)</code></pre>
+</details>
+</dd>
+<dt id="eg.Eg.dists"><code class="name flex">
+<span>def <span class="ident">dists</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dists():
+  d = DATA( csv(the.file),order=True)
+  row1=d.rows[0]
+  for i,row3 in enumerate(sorted(d.rows,key=lambda row2:d.dist(row1,row2))):
+    if i % 25 == 0: 
+      print(i, row3, rnds(d.dist(row1,row3)))</code></pre>
+</details>
+</dd>
+<dt id="eg.Eg.halfs"><code class="name flex">
+<span>def <span class="ident">halfs</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def halfs():
+  d = DATA( csv(the.file),order=True)
+  a,b,C = d.half(d.rows)
+  print(len(a),len(b),C)</code></pre>
 </details>
 </dd>
 <dt id="eg.Eg.help"><code class="name flex">
@@ -436,8 +529,11 @@ if __name__ == &#34;__main__&#34;:
 <h4><code><a title="eg.Eg" href="#eg.Eg">Eg</a></code></h4>
 <ul class="two-column">
 <li><code><a title="eg.Eg.all" href="#eg.Eg.all">all</a></code></li>
+<li><code><a title="eg.Eg.branch" href="#eg.Eg.branch">branch</a></code></li>
 <li><code><a title="eg.Eg.cols" href="#eg.Eg.cols">cols</a></code></li>
 <li><code><a title="eg.Eg.data" href="#eg.Eg.data">data</a></code></li>
+<li><code><a title="eg.Eg.dists" href="#eg.Eg.dists">dists</a></code></li>
+<li><code><a title="eg.Eg.halfs" href="#eg.Eg.halfs">halfs</a></code></li>
 <li><code><a title="eg.Eg.help" href="#eg.Eg.help">help</a></code></li>
 <li><code><a title="eg.Eg.likes" href="#eg.Eg.likes">likes</a></code></li>
 <li><code><a title="eg.Eg.nothing" href="#eg.Eg.nothing">nothing</a></code></li>
