@@ -211,8 +211,9 @@ class DATA(struct):
 #         (_|  |  _>  (_  |   (/_   |_  |  /_  (/_                                                
 
 class RANGE(struct):
-  def __init__(self,lo,hi,ys):
-    self.lo = self.hi = x
+  def __init__(self,lo=None,hi=None,ys=None):
+    self.lo = lo
+    self.hi = hi or lo
     self.ys = ys  
 
   def add(self,x,y): 
@@ -221,11 +222,11 @@ class RANGE(struct):
     self.ys.add(y)
 
   def merge(self,other,small):
-    both =  RANGE(self.lo, other.hi, self.ys + other.ys)
+    both =  RANGE(lo=self.lo, hi=other.hi, ys=self.ys + other.ys)
     m,n = sum(self.ys.values()), sum(other.ys.values())
     if m < small: return both
     if n < small: return both
-    if entropy(both.ys) <= (n*entropy(self.ys) + m*entropy(other.ys))/(m+n): return both
+    if entropy(both.ys) <= (m*entropy(self.ys) + n*entropy(other.ys))/(m+n): return both
 
 def discretize(c,col,rowss):
   def bin(col,x): 
@@ -240,13 +241,12 @@ def discretize(c,col,rowss):
       if x != "?": 
         n += 1
         b = bin(col,x)
-        bins[b] = bins[b] if b in bins else struct(lo=x, hi=x, ys=SYM()) 
+        bins[b] = bins[b] if b in bins else RANGE(lo=x, hi=x, ys=SYM()) 
         bins[b].add(x, y) 
   bins = bins.values().sort(key=lambda bin:bin.lo)
-  bins if isa(col,SYM) else merges(bins, n/the.bins)
+  bins if isa(col,SYM) else _merges(bins, n/the.bins)
   
-  
-def merges(bins,small): 
+def _merges(bins,small): 
   i, tmp, most =  0, [], len(bins)
   while i < most - 2:
     a = bins[i]
