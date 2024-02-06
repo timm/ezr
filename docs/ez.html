@@ -97,7 +97,7 @@ OPTIONS:
 import re,sys,math,random
 from collections import Counter
 from stats import sk
-from etc import o,isa
+from etc import o,isa,struct,entropy
 import etc
 
 the = etc.THE(__doc__)
@@ -111,9 +111,10 @@ def isHeaven(s): return 0 if s[-1] == &#34;-&#34; else 1
 def isNum(s):    return s[0].isupper() 
 
 class SYM(Counter):
+  &#34;Adds `add` to Counter&#34;
   def add(self,x): self[x] += 1
   
-class NUM(etc.struct):
+class NUM(struct):
   def __init__(self,lst=[],txt=&#34; &#34;):
    self.n, self.mu, self.m2, self.sd, self.txt = 0,0,0,0,txt 
    self.lo, self.hi = sys.maxsize, -sys.maxsize
@@ -131,11 +132,11 @@ class NUM(etc.struct):
 
   def norm(self,x):
     return x==&#34;?&#34; and x or (x - self.lo) / (self.hi - self.lo + tiny)
-
+ 
 #         ._   _          _ 
 #         |   (_)  \/\/  _&gt; 
 
-class DATA(etc.struct):
+class DATA(struct):
   def __init__(self, lsts=[], order=False):
     self.names,*rows = list(lsts) 
     self.rows = []
@@ -164,7 +165,7 @@ class DATA(etc.struct):
   def div(self):
     return [etc.entropy(col) if isa(col,SYM) else col.sd for col in self.cols]
   
-#                                  _     
+#                                  _     
 #          _  |   _.   _   _  o  _|_     
 #         (_  |  (_|  _&gt;  _&gt;  |   |   \/ 
 #                                     /  
@@ -186,7 +187,7 @@ class DATA(etc.struct):
         out += math.log((sym if isa(col,SYM) else num)(col, x))
     return out
             
-#          _   ._   _|_  o  ._ _   o  _    _   /| 
+#          _   ._   _|_  o  ._ _   o  _    _   /| 
 #         (_)  |_)   |_  |  | | |  |  /_  (/_   | 
 #              |                                  
 
@@ -269,7 +270,66 @@ class DATA(etc.struct):
       lefts,rights,left  = self.half(rows, True, before)
       return self.branch(lefts, stop, rest+rights, evals+1, left)
     else:
-      return rows,rest,evals</code></pre>
+      return rows,rest,evals
+
+                                               
+#          _|  o   _   _  ._   _   _|_  o  _    _  
+#         (_|  |  _&gt;  (_  |   (/_   |_  |  /_  (/_                                                
+
+class RANGE(struct):
+  def __init__(self,lo,hi,ys):
+    self.lo = self.hi = x
+    self.ys = ys  
+
+  def add(self,x,y): 
+    self.lo  = min(self.lo, x) 
+    self.hi  = max(self.hi, x)
+    self.ys.add(y)
+
+  def merge(self,other,small):
+    both =  RANGE(self.lo, other.hi, self.ys + other.ys)
+    m,n = sum(self.ys.values()), sum(other.ys.values())
+    if m &lt; small: return both
+    if n &lt; small: return both
+    if entropy(both.ys) &lt;= (n*entropy(self.ys) + m*entropy(other.ys))/(m+n): return both
+
+def discretize(c,col,rowss):
+  def bin(col,x): 
+    if isa(col,SYM): return x
+    tmp = (col.hi - col.lo)/(the.bins - 1)
+    return col.hi==col.lo and 0 or int(.5 + x/tmp) 
+  #------------
+  bins,n = {},0
+  for y,rows in rowss.items(): 
+    for row in rows:
+      x = row[c]
+      if x != &#34;?&#34;: 
+        n += 1
+        b = bin(col,x)
+        bins[b] = bins[b] if b in bins else struct(lo=x, hi=x, ys=SYM()) 
+        bins[b].add(x, y) 
+  bins = bins.values().sort(key=lambda bin:bin.lo)
+  bins if isa(col,SYM) else merges(bins, n/the.bins)
+  
+  
+def merges(bins,small): 
+  i, tmp, most =  0, [], len(bins)
+  while i &lt; most - 2:
+    a = bins[i]
+    if i &lt; most - 1:
+      b = bins[i+1]
+      if ab := a.merge(b, small):
+        a = ab
+        i += 1
+    tmp += [a]
+    i += 1
+  if len(tmp) &lt; len(bins): 
+    return  merges(tmp,small)
+  else:
+    for i in range(1,len(bins)): bins[i].lo = bins[i-1].hi  
+    bins[0].lo  = -sys.maxsize
+    bins[-1].hi = sys.maxsize
+    return bins  </code></pre>
 </details>
 </section>
 <section>
@@ -279,6 +339,34 @@ class DATA(etc.struct):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="ez.discretize"><code class="name flex">
+<span>def <span class="ident">discretize</span></span>(<span>c, col, rowss)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def discretize(c,col,rowss):
+  def bin(col,x): 
+    if isa(col,SYM): return x
+    tmp = (col.hi - col.lo)/(the.bins - 1)
+    return col.hi==col.lo and 0 or int(.5 + x/tmp) 
+  #------------
+  bins,n = {},0
+  for y,rows in rowss.items(): 
+    for row in rows:
+      x = row[c]
+      if x != &#34;?&#34;: 
+        n += 1
+        b = bin(col,x)
+        bins[b] = bins[b] if b in bins else struct(lo=x, hi=x, ys=SYM()) 
+        bins[b].add(x, y) 
+  bins = bins.values().sort(key=lambda bin:bin.lo)
+  bins if isa(col,SYM) else merges(bins, n/the.bins)</code></pre>
+</details>
+</dd>
 <dt id="ez.isGoal"><code class="name flex">
 <span>def <span class="ident">isGoal</span></span>(<span>s)</span>
 </code></dt>
@@ -315,6 +403,35 @@ class DATA(etc.struct):
 <pre><code class="python">def isNum(s):    return s[0].isupper() </code></pre>
 </details>
 </dd>
+<dt id="ez.merges"><code class="name flex">
+<span>def <span class="ident">merges</span></span>(<span>bins, small)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def merges(bins,small): 
+  i, tmp, most =  0, [], len(bins)
+  while i &lt; most - 2:
+    a = bins[i]
+    if i &lt; most - 1:
+      b = bins[i+1]
+      if ab := a.merge(b, small):
+        a = ab
+        i += 1
+    tmp += [a]
+    i += 1
+  if len(tmp) &lt; len(bins): 
+    return  merges(tmp,small)
+  else:
+    for i in range(1,len(bins)): bins[i].lo = bins[i-1].hi  
+    bins[0].lo  = -sys.maxsize
+    bins[-1].hi = sys.maxsize
+    return bins  </code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -330,7 +447,7 @@ class DATA(etc.struct):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class DATA(etc.struct):
+<pre><code class="python">class DATA(struct):
   def __init__(self, lsts=[], order=False):
     self.names,*rows = list(lsts) 
     self.rows = []
@@ -359,7 +476,7 @@ class DATA(etc.struct):
   def div(self):
     return [etc.entropy(col) if isa(col,SYM) else col.sd for col in self.cols]
   
-#                                  _     
+#                                  _     
 #          _  |   _.   _   _  o  _|_     
 #         (_  |  (_|  _&gt;  _&gt;  |   |   \/ 
 #                                     /  
@@ -381,7 +498,7 @@ class DATA(etc.struct):
         out += math.log((sym if isa(col,SYM) else num)(col, x))
     return out
             
-#          _   ._   _|_  o  ._ _   o  _    _   /| 
+#          _   ._   _|_  o  ._ _   o  _    _   /| 
 #         (_)  |_)   |_  |  | | |  |  /_  (/_   | 
 #              |                                  
 
@@ -724,7 +841,7 @@ class DATA(etc.struct):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class NUM(etc.struct):
+<pre><code class="python">class NUM(struct):
   def __init__(self,lst=[],txt=&#34; &#34;):
    self.n, self.mu, self.m2, self.sd, self.txt = 0,0,0,0,txt 
    self.lo, self.hi = sys.maxsize, -sys.maxsize
@@ -783,54 +900,79 @@ class DATA(etc.struct):
 </dd>
 </dl>
 </dd>
+<dt id="ez.RANGE"><code class="flex name class">
+<span>class <span class="ident">RANGE</span></span>
+<span>(</span><span>lo, hi, ys)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RANGE(struct):
+  def __init__(self,lo,hi,ys):
+    self.lo = self.hi = x
+    self.ys = ys  
+
+  def add(self,x,y): 
+    self.lo  = min(self.lo, x) 
+    self.hi  = max(self.hi, x)
+    self.ys.add(y)
+
+  def merge(self,other,small):
+    both =  RANGE(self.lo, other.hi, self.ys + other.ys)
+    m,n = sum(self.ys.values()), sum(other.ys.values())
+    if m &lt; small: return both
+    if n &lt; small: return both
+    if entropy(both.ys) &lt;= (n*entropy(self.ys) + m*entropy(other.ys))/(m+n): return both</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>etc.struct</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ez.RANGE.add"><code class="name flex">
+<span>def <span class="ident">add</span></span>(<span>self, x, y)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add(self,x,y): 
+  self.lo  = min(self.lo, x) 
+  self.hi  = max(self.hi, x)
+  self.ys.add(y)</code></pre>
+</details>
+</dd>
+<dt id="ez.RANGE.merge"><code class="name flex">
+<span>def <span class="ident">merge</span></span>(<span>self, other, small)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def merge(self,other,small):
+  both =  RANGE(self.lo, other.hi, self.ys + other.ys)
+  m,n = sum(self.ys.values()), sum(other.ys.values())
+  if m &lt; small: return both
+  if n &lt; small: return both
+  if entropy(both.ys) &lt;= (n*entropy(self.ys) + m*entropy(other.ys))/(m+n): return both</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="ez.SYM"><code class="flex name class">
 <span>class <span class="ident">SYM</span></span>
 <span>(</span><span>iterable=None, /, **kwds)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Dict subclass for counting hashable items.
-Sometimes called a bag
-or multiset.
-Elements are stored as dictionary keys and their counts
-are stored as dictionary values.</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; c = Counter('abcdeabcdabcaba')  # count elements from a string
-</code></pre>
-<pre><code class="language-python-repl">&gt;&gt;&gt; c.most_common(3)                # three most common elements
-[('a', 5), ('b', 4), ('c', 3)]
-&gt;&gt;&gt; sorted(c)                       # list all unique elements
-['a', 'b', 'c', 'd', 'e']
-&gt;&gt;&gt; ''.join(sorted(c.elements()))   # list elements with repetitions
-'aaaaabbbbcccdde'
-&gt;&gt;&gt; sum(c.values())                 # total of all counts
-15
-</code></pre>
-<pre><code class="language-python-repl">&gt;&gt;&gt; c['a']                          # count of letter 'a'
-5
-&gt;&gt;&gt; for elem in 'shazam':           # update counts from an iterable
-...     c[elem] += 1                # by adding 1 to each element's count
-&gt;&gt;&gt; c['a']                          # now there are seven 'a'
-7
-&gt;&gt;&gt; del c['b']                      # remove all 'b'
-&gt;&gt;&gt; c['b']                          # now there are zero 'b'
-0
-</code></pre>
-<pre><code class="language-python-repl">&gt;&gt;&gt; d = Counter('simsalabim')       # make another counter
-&gt;&gt;&gt; c.update(d)                     # add in the second counter
-&gt;&gt;&gt; c['a']                          # now there are nine 'a'
-9
-</code></pre>
-<pre><code class="language-python-repl">&gt;&gt;&gt; c.clear()                       # empty the counter
-&gt;&gt;&gt; c
-Counter()
-</code></pre>
-<p>Note:
-If a count is set to zero or reduced to zero, it will remain
-in the counter until the entry is deleted or the counter is cleared:</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; c = Counter('aaabbc')
-&gt;&gt;&gt; c['b'] -= 2                     # reduce the count of 'b' by two
-&gt;&gt;&gt; c.most_common()                 # 'b' is still in, but its count is zero
-[('a', 3), ('c', 1), ('b', 0)]
-</code></pre>
+<div class="desc"><p>Adds <code>add</code> to Counter</p>
 <p>Create a new, empty Counter object.
 And if given, count elements
 from an input iterable.
@@ -846,6 +988,7 @@ of elements to their counts.</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class SYM(Counter):
+  &#34;Adds `add` to Counter&#34;
   def add(self,x): self[x] += 1</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -887,9 +1030,11 @@ of elements to their counts.</p>
 <ul id="index">
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="ez.discretize" href="#ez.discretize">discretize</a></code></li>
 <li><code><a title="ez.isGoal" href="#ez.isGoal">isGoal</a></code></li>
 <li><code><a title="ez.isHeaven" href="#ez.isHeaven">isHeaven</a></code></li>
 <li><code><a title="ez.isNum" href="#ez.isNum">isNum</a></code></li>
+<li><code><a title="ez.merges" href="#ez.merges">merges</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
@@ -917,6 +1062,13 @@ of elements to their counts.</p>
 <ul class="">
 <li><code><a title="ez.NUM.add" href="#ez.NUM.add">add</a></code></li>
 <li><code><a title="ez.NUM.norm" href="#ez.NUM.norm">norm</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ez.RANGE" href="#ez.RANGE">RANGE</a></code></h4>
+<ul class="">
+<li><code><a title="ez.RANGE.add" href="#ez.RANGE.add">add</a></code></li>
+<li><code><a title="ez.RANGE.merge" href="#ez.RANGE.merge">merge</a></code></li>
 </ul>
 </li>
 <li>

@@ -31,7 +31,7 @@ OPTIONS:
 import re,sys,math,random
 from collections import Counter
 from stats import sk
-from etc import o,isa
+from etc import o,isa,struct,entropy
 import etc
 
 the = etc.THE(__doc__)
@@ -45,9 +45,10 @@ def isHeaven(s): return 0 if s[-1] == "-" else 1
 def isNum(s):    return s[0].isupper() 
 
 class SYM(Counter):
+  "Adds `add` to Counter"
   def add(self,x): self[x] += 1
   
-class NUM(etc.struct):
+class NUM(struct):
   def __init__(self,lst=[],txt=" "):
    self.n, self.mu, self.m2, self.sd, self.txt = 0,0,0,0,txt 
    self.lo, self.hi = sys.maxsize, -sys.maxsize
@@ -65,11 +66,11 @@ class NUM(etc.struct):
 
   def norm(self,x):
     return x=="?" and x or (x - self.lo) / (self.hi - self.lo + tiny)
-
+ 
 #         ._   _          _ 
 #         |   (_)  \/\/  _> 
 
-class DATA(etc.struct):
+class DATA(struct):
   def __init__(self, lsts=[], order=False):
     self.names,*rows = list(lsts) 
     self.rows = []
@@ -98,7 +99,7 @@ class DATA(etc.struct):
   def div(self):
     return [etc.entropy(col) if isa(col,SYM) else col.sd for col in self.cols]
   
-#                                  _     
+#                                  _     
 #          _  |   _.   _   _  o  _|_     
 #         (_  |  (_|  _>  _>  |   |   \/ 
 #                                     /  
@@ -120,7 +121,7 @@ class DATA(etc.struct):
         out += math.log((sym if isa(col,SYM) else num)(col, x))
     return out
             
-#          _   ._   _|_  o  ._ _   o  _    _   /| 
+#          _   ._   _|_  o  ._ _   o  _    _   /| 
 #         (_)  |_)   |_  |  | | |  |  /_  (/_   | 
 #              |                                  
 
@@ -204,3 +205,62 @@ class DATA(etc.struct):
       return self.branch(lefts, stop, rest+rights, evals+1, left)
     else:
       return rows,rest,evals
+
+                                               
+#          _|  o   _   _  ._   _   _|_  o  _    _  
+#         (_|  |  _>  (_  |   (/_   |_  |  /_  (/_                                                
+
+class RANGE(struct):
+  def __init__(self,lo,hi,ys):
+    self.lo = self.hi = x
+    self.ys = ys  
+
+  def add(self,x,y): 
+    self.lo  = min(self.lo, x) 
+    self.hi  = max(self.hi, x)
+    self.ys.add(y)
+
+  def merge(self,other,small):
+    both =  RANGE(self.lo, other.hi, self.ys + other.ys)
+    m,n = sum(self.ys.values()), sum(other.ys.values())
+    if m < small: return both
+    if n < small: return both
+    if entropy(both.ys) <= (n*entropy(self.ys) + m*entropy(other.ys))/(m+n): return both
+
+def discretize(c,col,rowss):
+  def bin(col,x): 
+    if isa(col,SYM): return x
+    tmp = (col.hi - col.lo)/(the.bins - 1)
+    return col.hi==col.lo and 0 or int(.5 + x/tmp) 
+  #------------
+  bins,n = {},0
+  for y,rows in rowss.items(): 
+    for row in rows:
+      x = row[c]
+      if x != "?": 
+        n += 1
+        b = bin(col,x)
+        bins[b] = bins[b] if b in bins else struct(lo=x, hi=x, ys=SYM()) 
+        bins[b].add(x, y) 
+  bins = bins.values().sort(key=lambda bin:bin.lo)
+  bins if isa(col,SYM) else merges(bins, n/the.bins)
+  
+  
+def merges(bins,small): 
+  i, tmp, most =  0, [], len(bins)
+  while i < most - 2:
+    a = bins[i]
+    if i < most - 1:
+      b = bins[i+1]
+      if ab := a.merge(b, small):
+        a = ab
+        i += 1
+    tmp += [a]
+    i += 1
+  if len(tmp) < len(bins): 
+    return  merges(tmp,small)
+  else:
+    for i in range(1,len(bins)): bins[i].lo = bins[i-1].hi  
+    bins[0].lo  = -sys.maxsize
+    bins[-1].hi = sys.maxsize
+    return bins  
