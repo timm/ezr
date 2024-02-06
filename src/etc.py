@@ -32,10 +32,6 @@ def csv(file=None):
       line = re.sub(r'([\n\t\r"\’ ]|#.*)', '', line)
       if line: yield [coerce(s.strip()) for s in line.split(",")]
 
-def entropy(d): 
-  n = sum(d.values()) 
-  return -sum(v/n*math.log(v/n,2) for _,v in d.items() if v>0)
-
 isa = isinstance
 
 def o(d, s = ""): 
@@ -51,7 +47,7 @@ def shuffle(lst):
   return lst
 
 def slots(x):
-  if isinstance(x,dict):
+  if isa(x,dict):
     for k,v in x.items(): yield k,v
   else:
     for k,v in enumerate(x): yield k,v

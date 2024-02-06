@@ -28,10 +28,11 @@ OPTIONS:
      -T --Top         best section               = .5   
 """
 
+from heapq import merge
 import re,sys,math,random
 from collections import Counter
 from stats import sk
-from etc import o,isa,struct,entropy
+from etc import o,isa,struct 
 import etc
 
 the = etc.THE(__doc__)
@@ -47,6 +48,10 @@ def isNum(s):    return s[0].isupper()
 class SYM(Counter):
   "Adds `add` to Counter"
   def add(self,x): self[x] += 1
+
+  def entropy(self): 
+    n = sum(self.values()) 
+    return -sum(v/n*math.log(v/n,2) for _,v in self.items() if v>0)
   
 class NUM(struct):
   def __init__(self,lst=[],txt=" "):
@@ -97,7 +102,7 @@ class DATA(struct):
     return [max(col,key=col.get) if isa(col,SYM) else col.mu for col in self.cols]
 
   def div(self):
-    return [etc.entropy(col) if isa(col,SYM) else col.sd for col in self.cols]
+    return [col.entropy() if isa(col,SYM) else col.sd for col in self.cols]
   
 #                                  _     
 #          _  |   _.   _   _  o  _|_     
@@ -155,8 +160,7 @@ class DATA(struct):
                                       
   def dist(self,row1,row2):
     def sym(_,x,y): 
-      return 1 if x=="?" and y=="?" else (0 if x==y else 1)
-      
+      return 1 if x=="?" and y=="?" else (0 if x==y else 1)     
     def num(col,x,y):
       if x=="?" and y=="?" : return 1 
       x, y = col.norm(x), col.norm(y) 
@@ -211,7 +215,8 @@ class DATA(struct):
 #         (_|  |  _>  (_  |   (/_   |_  |  /_  (/_                                                
 
 class RANGE(struct):
-  def __init__(self,lo=None,hi=None,ys=None):
+  def __init__(self,txt="",at=0,lo=None,hi=None,ys=None):
+    self.txt=""
     self.lo = lo
     self.hi = hi or lo
     self.ys = ys  
@@ -222,11 +227,18 @@ class RANGE(struct):
     self.ys.add(y)
 
   def merge(self,other,small):
-    both =  RANGE(lo=self.lo, hi=other.hi, ys=self.ys + other.ys)
+    both = RANGE(txt=self.txt, at=self.at, lo=self.lo, hi=other.hi, ys=self.ys + other.ys)
     m,n = sum(self.ys.values()), sum(other.ys.values())
     if m < small: return both
     if n < small: return both
-    if entropy(both.ys) <= (m*entropy(self.ys) + n*entropy(other.ys))/(m+n): return both
+    if both.ys.entropy() <= (m*self.ys.entropy() + n*other.ys.entropy())/(m+n): return both
+
+  def __repr__(self): 
+    lo,hi,s = self.x.lo, self.x.hi,self.txt
+    if lo == -sys.maxsize: return f"{s} <  {hi}" 
+    if hi ==  sys.maxsize: return f"{s} >= {lo}" 
+    if lo ==  hi         : return f"{s} == {lo}" 
+    return f"{lo} <= {s} < {hi}" 
 
 def discretize(c,col,rowss):
   def bin(col,x): 
@@ -241,10 +253,10 @@ def discretize(c,col,rowss):
       if x != "?": 
         n += 1
         b = bin(col,x)
-        bins[b] = bins[b] if b in bins else RANGE(lo=x, hi=x, ys=SYM()) 
+        bins[b] = bins[b] if b in bins else RANGE(txt=col.txt, at=c,lo=x, hi=x, ys=SYM()) 
         bins[b].add(x, y) 
   bins = bins.values().sort(key=lambda bin:bin.lo)
-  bins if isa(col,SYM) else _merges(bins, n/the.bins)
+  return bins if isa(col,SYM) else _merges(bins, n/the.bins)
   
 def _merges(bins,small): 
   i, tmp, most =  0, [], len(bins)
@@ -257,10 +269,40 @@ def _merges(bins,small):
         i += 1
     tmp += [a]
     i += 1
-  if len(tmp) < len(bins): 
-    return  merges(tmp,small)
-  else:
+  if len(tmp) < len(bins): return  _merges(tmp,small)
+  else: 
     for i in range(1,len(bins)): bins[i].lo = bins[i-1].hi  
     bins[0].lo  = -sys.maxsize
-    bins[-1].hi = sys.maxsize
+    bins[-1].hi =  sys.maxsize
     return bins  
+                                      
+#          _       ._   |   _.  o  ._  
+#         (/_  ><  |_)  |  (_|  |  | | 
+#                  |                   
+
+class RULE(struct):
+  def __init__(self,ranges):
+    self.parts, self.scored = {},0
+    for range in ranges:
+      self.parts[range.txt] = self.parts.get(range.txt,[])
+      self.parts[range.txt] += [range]
+
+  def _or(self,ranges,row):
+    x =  row[ranges[1].at]
+    if x== "?": return True
+    for range in ranges:
+      if self.lo==self.hi==x:    return True
+      if self.lo <= x < self.hi: return True
+    return False
+  
+  def _and(self,row):
+    for ranges in self.parts.values():
+      if  not self._or(ranges,row): return False
+    return True
+  
+  def selects(self,rows):
+    return [row for row in rows if self._and(row)]
+  
+  def selectss(rowss):
+    return {klass:rows for rows in rowss.items()}
+  
