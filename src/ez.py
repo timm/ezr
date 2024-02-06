@@ -226,13 +226,16 @@ class RANGE(struct):
     self.hi  = max(self.hi, x)
     self.ys.add(y)
 
-  def merge(self,other,small):
-    both = RANGE(txt=self.txt, at=self.at, lo=self.lo, hi=other.hi, ys=self.ys + other.ys)
-    m,n = sum(self.ys.values()), sum(other.ys.values())
-    if m < small: return both
-    if n < small: return both
-    if both.ys.entropy() <= (m*self.ys.entropy() + n*other.ys.entropy())/(m+n): return both
+  def merge(i,j,small):
+    k = i + j 
+    ni,nj = sum(i.ys.values()), sum(j.ys.values())
+    if ni < small: return k
+    if nj < small: return k
+    if k.ys.entropy() <= (ni*i.ys.entropy() + nj*j.ys.entropy())/(ni+nj): return k
 
+  def __add__(i,j):
+    return RANGE(txt=i.txt, at=i.at, lo=i.lo, hi=j.hi, ys=i.ys + j.ys)
+  
   def __repr__(self): 
     lo,hi,s = self.x.lo, self.x.hi,self.txt
     if lo == -sys.maxsize: return f"{s} <  {hi}" 
@@ -245,36 +248,36 @@ def discretize(c,col,rowss):
     if isa(col,SYM): return x
     tmp = (col.hi - col.lo)/(the.bins - 1)
     return col.hi==col.lo and 0 or int(.5 + x/tmp) 
+  #----------------------
+  def merges(b4): 
+    i, now, most =  0, [], len(b4)
+    while i < most - 1:
+      a = b4[i]
+      if i < most - 2:
+        b = b4[i+1]
+        if ab := a.merge(b, small):
+          a = ab
+          i += 1
+      now += [a]
+      i += 1
+    if len(now) < len(b4): return  merges(now)
+    else: 
+      for i in range(1,len(now)): now[i].lo = now[i-1].hi  
+      now[0].lo  = -sys.maxsize
+      now[-1].hi =  sys.maxsize
+      return now  
   #------------
-  bins,n = {},0
+  bins, small = {}, 0
   for y,rows in rowss.items(): 
     for row in rows:
       x = row[c]
       if x != "?": 
-        n += 1
+        small += 1/the.bins
         b = bin(col,x)
         bins[b] = bins[b] if b in bins else RANGE(txt=col.txt, at=c,lo=x, hi=x, ys=SYM()) 
         bins[b].add(x, y) 
   bins = bins.values().sort(key=lambda bin:bin.lo)
-  return bins if isa(col,SYM) else _merges(bins, n/the.bins)
-  
-def _merges(bins,small): 
-  i, tmp, most =  0, [], len(bins)
-  while i < most - 2:
-    a = bins[i]
-    if i < most - 1:
-      b = bins[i+1]
-      if ab := a.merge(b, small):
-        a = ab
-        i += 1
-    tmp += [a]
-    i += 1
-  if len(tmp) < len(bins): return  _merges(tmp,small)
-  else: 
-    for i in range(1,len(bins)): bins[i].lo = bins[i-1].hi  
-    bins[0].lo  = -sys.maxsize
-    bins[-1].hi =  sys.maxsize
-    return bins  
+  return bins if isa(col,SYM) else merges(bins)
                                       
 #          _       ._   |   _.  o  ._  
 #         (/_  ><  |_)  |  (_|  |  | | 
@@ -303,21 +306,28 @@ class RULE(struct):
   def selects(self,rows):
     return [row for row in rows if self._and(row)]
   
-  def selectss(rowss): 
+  def selectss(self,rowss): 
     return [row for _,rows in rowss.items() for row in self.selects(rows)]
   
   def __repr__(self):
-    all= sorted([[r.txt,r.lo,r.hi] for _,ranges in self.parts.items() for r in ranges])
-    i=1
-    while i < len(all) :
-      a  = all[i] 
-      if i < len(all)-2:
-        b=aall[i+1]
-        and a[0]==b[0] and a[2] == b[1]: 
-        a[-1]=b[-1]
-        all.pop(i+1)
-      else:
+    def less(b4):
+      i, now, most = 1,[],len(b4)
+      while i < most - 1:
+        a = b4[i] 
+        if i < most - 2:
+          b = b4[i+1]
+          if a.txt == b.txt and a.hi == b.lo: 
+            a  = a + b
+            i += 1
+        now += [a]
         i += 1
+      return now if len(now) == len(b4) else less(now)
+    # --------------------------------------------------------
+    return ' and '.join(' or '.join(_less(sorted(ors,key=lambda r:r.lo)))
+                        for ors in self.parts.values())
+
+
+   
 
 
   
