@@ -303,6 +303,21 @@ class RULE(struct):
   def selects(self,rows):
     return [row for row in rows if self._and(row)]
   
-  def selectss(rowss):
-    return {klass:rows for rows in rowss.items()}
+  def selectss(rowss): 
+    return [row for _,rows in rowss.items() for row in self.selects(rows)]
+  
+  def __repr__(self):
+    all= sorted([[r.txt,r.lo,r.hi] for _,ranges in self.parts.items() for r in ranges])
+    i=1
+    while i < len(all) :
+      a  = all[i] 
+      if i < len(all)-2:
+        b=aall[i+1]
+        and a[0]==b[0] and a[2] == b[1]: 
+        a[-1]=b[-1]
+        all.pop(i+1)
+      else:
+        i += 1
+
+
   
