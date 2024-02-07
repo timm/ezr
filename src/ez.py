@@ -260,12 +260,13 @@ def discretize(c,col,rowss):
           i += 1
       now += [a]
       i += 1
-    if len(now) < len(b4): return  merges(now)
-    else: 
-      for i in range(1,len(now)): now[i].lo = now[i-1].hi  
-      now[0].lo  = -sys.maxsize
-      now[-1].hi =  sys.maxsize
-      return now  
+    return now if len(now) == len(b4) else merges(now)   
+  #----------------------
+  def complete(bins):
+    for i in range(1,len(bins)): bins[i].lo = bins[i-1].hi  
+    bins[0].lo  = -sys.maxsize
+    bins[-1].hi =  sys.maxsize
+    return now  
   #------------
   bins, small = {}, 0
   for y,rows in rowss.items(): 
@@ -277,7 +278,7 @@ def discretize(c,col,rowss):
         bins[b] = bins[b] if b in bins else RANGE(txt=col.txt, at=c,lo=x, hi=x, ys=SYM()) 
         bins[b].add(x, y) 
   bins = bins.values().sort(key=lambda bin:bin.lo)
-  return bins if isa(col,SYM) else merges(bins)
+  return bins if isa(col,SYM) else complete(merges(bins))
                                       
 #          _       ._   |   _.  o  ._  
 #         (/_  ><  |_)  |  (_|  |  | | 
@@ -310,7 +311,7 @@ class RULE(struct):
     return [row for _,rows in rowss.items() for row in self.selects(rows)]
   
   def __repr__(self):
-    def less(b4):
+    def merges(b4):
       i, now, most = 1,[],len(b4)
       while i < most - 1:
         a = b4[i] 
@@ -321,9 +322,9 @@ class RULE(struct):
             i += 1
         now += [a]
         i += 1
-      return now if len(now) == len(b4) else less(now)
+      return now if len(now) == len(b4) else merges(now)
     # --------------------------------------------------------
-    return ' and '.join(' or '.join(_less(sorted(ors,key=lambda r:r.lo)))
+    return ' and '.join(' or '.join(merges(sorted(ors,key=lambda r:r.lo)))
                         for ors in self.parts.values())
 
 
