@@ -12,6 +12,7 @@ saved         : ## save and push to main branch
 
 FILES=$(wildcard *.py)
 docs: 
+	echo "docs..."
 	$(MAKE) -B $(addprefix ~/tmp/, $(FILES:.py=.pdf))  $(addprefix ../docs/, $(FILES:.py=.html))
  
 ~/tmp/%.pdf   : %.py  ## py ==> pdf

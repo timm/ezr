@@ -68,10 +68,6 @@ def csv(file=None):
       line = re.sub(r&#39;([\n\t\r&#34;\’ ]|#.*)&#39;, &#39;&#39;, line)
       if line: yield [coerce(s.strip()) for s in line.split(&#34;,&#34;)]
 
-def entropy(d): 
-  n = sum(d.values()) 
-  return -sum(v/n*math.log(v/n,2) for _,v in d.items() if v&gt;0)
-
 isa = isinstance
 
 def o(d, s = &#34;&#34;): 
@@ -87,7 +83,7 @@ def shuffle(lst):
   return lst
 
 def slots(x):
-  if isinstance(x,dict):
+  if isa(x,dict):
     for k,v in x.items(): yield k,v
   else:
     for k,v in enumerate(x): yield k,v</code></pre>
@@ -128,20 +124,6 @@ def slots(x):
     for line in src:
       line = re.sub(r&#39;([\n\t\r&#34;\’ ]|#.*)&#39;, &#39;&#39;, line)
       if line: yield [coerce(s.strip()) for s in line.split(&#34;,&#34;)]</code></pre>
-</details>
-</dd>
-<dt id="etc.entropy"><code class="name flex">
-<span>def <span class="ident">entropy</span></span>(<span>d)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def entropy(d): 
-  n = sum(d.values()) 
-  return -sum(v/n*math.log(v/n,2) for _,v in d.items() if v&gt;0)</code></pre>
 </details>
 </dd>
 <dt id="etc.o"><code class="name flex">
@@ -196,7 +178,7 @@ def slots(x):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def slots(x):
-  if isinstance(x,dict):
+  if isa(x,dict):
     for k,v in x.items(): yield k,v
   else:
     for k,v in enumerate(x): yield k,v</code></pre>
@@ -298,7 +280,6 @@ def slots(x):
 <ul class="two-column">
 <li><code><a title="etc.coerce" href="#etc.coerce">coerce</a></code></li>
 <li><code><a title="etc.csv" href="#etc.csv">csv</a></code></li>
-<li><code><a title="etc.entropy" href="#etc.entropy">entropy</a></code></li>
 <li><code><a title="etc.o" href="#etc.o">o</a></code></li>
 <li><code><a title="etc.rnds" href="#etc.rnds">rnds</a></code></li>
 <li><code><a title="etc.shuffle" href="#etc.shuffle">shuffle</a></code></li>
