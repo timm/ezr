@@ -96,6 +96,22 @@ class Eg:
       print(f"file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},\nrows : {len(d.rows)},")
       print(f"cols : {len(d.names)},\nbest : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}")
       say("#base");all= [SAMPLE([d.d2h(row) for row in d.rows],        txt="base")] 
+
+      def _single():
+        random.shuffle(d.rows); 
+        rows1, *_ = d.branch(d.rows) 
+        rows2, *_ = d.branch(rows1, stop=4)
+        return d.clone(rows2,order=True).rows[0] 
+      
+      def _double():
+        random.shuffle(d.rows); 
+        rows1, *_ = d.branch(d.rows,stop=50)
+        rows2, *_ = d.branch(rows1, stop=4)
+        return d.clone(rows2,order=True).rows[0] 
+      
+      say(f"#double"); all += [SAMPLE([d.d2h(_double()) for _   in range(repeats)],txt=f"#double")]
+      say(f"#single"); all += [SAMPLE([d.d2h(_single()) for _   in range(repeats)],txt=f"#single")]
+
       for budget in sorted(set([n1,n2,n3,n4,n5,n6,n7,n8])): 
         the.Budget = budget -  the.budget0 
         if budget < 100:
