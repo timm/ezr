@@ -256,7 +256,7 @@ def discretize(c,col,rowss):
       if i < most - 2:
         b = b4[i+1]
         if ab := a.merge(b, small):
-          a = ab
+          a  = ab
           i += 1
       now += [a]
       i += 1
@@ -295,13 +295,13 @@ class RULE(struct):
     x =  row[ranges[1].at]
     if x== "?": return True
     for range in ranges:
-      if self.lo==self.hi==x:    return True
-      if self.lo <= x < self.hi: return True
+      if range.lo==range.hi==x:    return True
+      if range.lo <= x < range.hi: return True
     return False
   
   def _and(self,row):
     for ranges in self.parts.values():
-      if  not self._or(ranges,row): return False
+      if not self._or(ranges,row): return False
     return True
   
   def selects(self,rows):
