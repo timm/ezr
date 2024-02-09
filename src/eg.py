@@ -1,5 +1,5 @@
 # vim : set et ts=2 sw=2 :
-
+from datetime import datetime
 from etc  import *
 from ez import *
 from stats import eg0,SAMPLE
@@ -58,8 +58,12 @@ class Eg:
   def smos():
     repeats=20
     r=lambda x:rnds(x,2)
-    print(the.seed)
     d=DATA(csv(the.file),order=False) 
+    now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    print(f"date : {now},")
+    print(f"file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},")
+    print(f"rows : {len(d.rows)},")
+    print(f"cols : {len(d.names)},")
     print("names",d.names,"D2h-",sep=",\t")
     print("mid", r(d.mid()),r(d.d2h(d.mid())), sep=",\t");
     print("div", r(d.div()),r(NUM([d.d2h(row) for row in d.rows]).sd), sep=",\t"); print("#") 
@@ -79,6 +83,36 @@ class Eg:
     all = d.clone(d.rows,order=True).rows[0]
     print("#\n100%", r(all), r(d.d2h(all)), sep=",\t") 
 
+  def smocompare(repeats=20): 
+      e=math.exp(1)
+      def say(*l): print(*l,end=" ",flush=True);
+      r=lambda a: ', '.join([str(x) for x in rnds(a,2)])
+      d=DATA(csv(the.file),order=False)  
+      n3 = int(0.5 + len(d.rows)**.5)
+      n5 = int(0.5 + len(d.rows)*.9)
+      n6 = 15
+      n7 = 9
+      n8 = 20
+      d2hs = NUM([d.d2h(row) for row in d.clone(d.rows,True).rows])
+      now = datetime.now().strftime("%B/%m/%Y %H:%M:%S")
+      print(f"date : {now},")
+      print(f"file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},")
+      print(f"rows : {len(d.rows)},")
+      print(f"cols : {len(d.names)},")
+      print(f"best : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}")
+      say("#base");all= [SAMPLE([d.d2h(row) for row in d.rows],        txt="base")] 
+
+      for budget in sorted(set([n3,15,n5,n6,n7,n8])): 
+        the.Budget = budget -  the.budget0 
+        if budget < 100:
+           say(f"#bonr{budget}"); all +=  [SAMPLE([d.d2h(d.smo(score=lambda B,R: abs(e**B+e**R)/abs(e**B-e**R + tiny)))
+                                     for _   in range(repeats)],txt=f"#bonr{budget}")]
+
+        say(f"#rand{budget}");all +=  [SAMPLE([d.d2h(d.clone(shuffle(d.rows)[:budget], order=True).rows[0]) 
+                                    for _ in range(20)], txt=f"#rand{budget}")] 
+      #-----------------------------------
+      print(f"\n#report{len(all)}");eg0(all)
+
   def smoy(repeats=20): 
       e=math.exp(1)
       def say(*l): print(*l,end=" ",flush=True);
@@ -93,8 +127,12 @@ class Eg:
       n7 = 9
       n8 = 20
       d2hs = NUM([d.d2h(row) for row in d.clone(d.rows,True).rows])
-      print(f"file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},\nrows : {len(d.rows)},")
-      print(f"cols : {len(d.names)},\nbest : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}")
+      now = datetime.now().strftime("%B/%m/%Y %H:%M:%S")
+      print(f"date : {now},")
+      print(f"file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},")
+      print(f"\nrows : {len(d.rows)},")
+      print(f"cols : {len(d.names)},")
+      print(f"\nbest : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}")
       say("#base");all= [SAMPLE([d.d2h(row) for row in d.rows],        txt="base")] 
 
       def _single():
