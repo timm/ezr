@@ -59,7 +59,12 @@ class SAMPLE:
 
 def different(x,y):
   "non-parametric effect size and significance test"
-  return _cliffsDelta(x,y) and _bootstrap(x,y)
+  return _cliffsDelta(x,y) and _bootstrap(x,y) and _cohens(x,y)
+
+def _cohens(x,y,small=.35):
+  x,y,z   = sorted(x), sorted(y), sorted(x+y)
+  mux,muy = sum(x)/len(x), sum(y)/len(y)
+  return abs(muy - mux) > small * (z[int(.9*len(z))] - z[int(.1*len(z))])/2.56
 
 def _cliffsDelta(x, y, effectSize=0.2):
   """non-parametric effect size. threshold is border between small=.11 and medium=.28 

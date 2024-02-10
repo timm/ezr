@@ -130,38 +130,46 @@ class Eg:
       now = datetime.now().strftime("%B/%m/%Y %H:%M:%S")
       print(f"date : {now},")
       print(f"file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},")
-      print(f"\nrows : {len(d.rows)},")
+      print(f"rows : {len(d.rows)},")
       print(f"cols : {len(d.names)},")
-      print(f"\nbest : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}")
-      say("#base");all= [SAMPLE([d.d2h(row) for row in d.rows],        txt="base")] 
+      print(f"best : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}")
+      say("#base");all= [SAMPLE([d.d2h(row) for row in d.rows], txt=f"base,{len(d.rows)}")] 
 
-      def _single():
-        random.shuffle(d.rows); 
-        rows1, *_ = d.branch(d.rows) 
-        rows2, *_ = d.branch(rows1, stop=4)
-        return d.clone(rows2,order=True).rows[0] 
+      def _single(all):
+        evals1 = 0
+        lst   = []
+        for _ in range(20):
+          random.shuffle(d.rows); 
+          _,__,evals1,last = d.branch(d.rows) 
+          lst +=  [d.d2h(last)]
+        all += [SAMPLE(lst, txt=f"rrp,{evals1}")]
+        return 
       
-      def _double():
-        random.shuffle(d.rows); 
-        rows1, *_ = d.branch(d.rows,stop=50)
-        rows2, *_ = d.branch(rows1, stop=4)
-        return d.clone(rows2,order=True).rows[0] 
+      def _double(all):
+        evals1,evals2 = 0,0
+        lst   = []
+        for _ in range(20):
+          random.shuffle(d.rows); 
+          rows1, _,evals1,__ = d.branch(d.rows,50) 
+          _, __, evals2,last = d.branch(rows1,4)
+          lst +=  [d.d2h(last)]
+        all += [SAMPLE(lst, txt=f"2rrp,{evals1+evals2}")]
       
-      say(f"#double"); all += [SAMPLE([d.d2h(_double()) for _   in range(repeats)],txt=f"#double")]
-      say(f"#single"); all += [SAMPLE([d.d2h(_single()) for _   in range(repeats)],txt=f"#single")]
+      say(f"#2rrp"); _double(all)
+      say(f"#rrp"); _single(all)
 
       for budget in sorted(set([n1,n2,n3,n4,n5,n6,n7,n8])): 
         the.Budget = budget -  the.budget0 
-        if budget < 100:
+        if budget <= 50:
            say(f"#b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
-                                     for _   in range(repeats)],txt=f"#b{budget}")]
+                                     for _   in range(repeats)],txt=f"b,{budget}")]
            say(f"#2b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: 2*B-R))
-                                     for _   in range(repeats)],txt=f"#2b{budget}")]
+                                     for _   in range(repeats)],txt=f"2b,{budget}")]
            say(f"#bonr{budget}"); all +=  [SAMPLE([d.d2h(d.smo(score=lambda B,R: abs(e**B+e**R)/abs(e**B-e**R + tiny)))
-                                     for _   in range(repeats)],txt=f"#bonr{budget}")]
+                                     for _   in range(repeats)],txt=f"bonr,{budget}")]
         
         say(f"#rand{budget}");all +=  [SAMPLE([d.d2h(d.clone(shuffle(d.rows)[:budget], order=True).rows[0]) 
-                                    for _ in range(20)], txt=f"#rand{budget}")] 
+                                    for _ in range(20)], txt=f"rand,{budget}")] 
       #-----------------------------------
       print(f"\n#report{len(all)}");eg0(all)
      

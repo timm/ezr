@@ -208,8 +208,7 @@ class DATA(struct):
       lefts,rights,left  = self.half(rows, True, before)
       return self.branch(lefts, stop, rest+rights, evals+1, left)
     else:
-      return rows,rest,evals
-
+      return rows,rest,evals,before
                                                
 #          _|  o   _   _  ._   _   _|_  o  _    _  
 #         (_|  |  _>  (_  |   (/_   |_  |  /_  (/_                                                
