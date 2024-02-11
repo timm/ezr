@@ -13,4 +13,4 @@ def pc(n):
   [print([round(x,3) for x in three],sep="\t") 
    for three in lst]
 
-pc(70)
+pc(30)
