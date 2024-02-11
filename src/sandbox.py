@@ -1,26 +1,16 @@
+import random
 from math import *
 def phi(x):
-    #'Cumulative distribution function for the standard normal distribution'
-    return (1.0 + erf(x / sqrt(2.0))) / 2.0
+  return (1.0 + erf(x / sqrt(2.0))) / 2.0
 
+def pc(n):
+  w = 6/n
+  def xy(i): x= -3 + i*w; return [x,phi(x),0]
+  lst = [xy(i) for i in range(n+1)]
+  for i,three in enumerate(lst):
+    if i > 0:
+      three[2] = lst[i][1] - lst[i-1][1]
+  [print([round(x,3) for x in three],sep="\t") 
+   for three in lst]
 
-def pascal(n):
-  line = [1]
-  for k in range(n):
-    line.append(line[k] * (n-k) / (k+1))
-  return line
-
-x=pascal(30)
-s=sum(x)
-y = [x1/s for x1 in x]
-cdf = y[:]
-for i in range(1,len(y)):
-  cdf[i] = cdf[i-1] + y[i]
-[print(i,"*" * int(x*50)) for i,x in enumerate(cdf)]
-
-err=0
-for x in range(-3,3):
-  a   = phi(x)
-  b   = cdf[x*5+3] 
-  err+= a-b
-  print(x,*[round(z,2) for z in [a,b,err]],sep="\t")
+pc(70)
