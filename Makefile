@@ -8,7 +8,7 @@ help          :  ## show help
 			' $(MAKEFILE_LIST)
 
 saved         : ## save and push to main branch 
-	read -p "commit msg> " note; git commit -am "$${note:-saved}"; git push;git status
+	read -p "commit msg> " note; git commit -am "$${note:-saved}"; git push;git status; echo "$${note:-saved}!"
  
 
 FILES=$(wildcard *.py)
