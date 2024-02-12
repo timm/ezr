@@ -32,7 +32,7 @@ from heapq import merge
 import re,sys,math,random
 from collections import Counter
 from stats import sk
-from etc import o,isa,struct 
+from etc import o,isa,struct,merges
 import etc
 
 the = etc.THE(__doc__)
@@ -247,37 +247,24 @@ def discretize(c,col,rowss):
     if isa(col,SYM): return x
     tmp = (col.hi - col.lo)/(the.bins - 1)
     return col.hi==col.lo and 0 or int(.5 + x/tmp) 
-  #----------------------
-  def merges(b4): 
-    i, now, most =  0, [], len(b4)
-    while i < most - 1:
-      a = b4[i]
-      if i < most - 2:
-        b = b4[i+1]
-        if ab := a.merge(b, small):
-          a  = ab
-          i += 1
-      now += [a]
-      i += 1
-    return now if len(now) == len(b4) else merges(now)   
-  #----------------------
-  def complete(bins):
+  #--------------------------
+  def fill(bins):
     for i in range(1,len(bins)): bins[i].lo = bins[i-1].hi  
     bins[0].lo  = -sys.maxsize
     bins[-1].hi =  sys.maxsize
-    return now  
+    return bins  
   #------------
-  bins, small = {}, 0
+  bins, n = {}, 0
   for y,rows in rowss.items(): 
     for row in rows:
       x = row[c]
       if x != "?": 
-        small += 1/the.bins
+        n += 1
         b = bin(col,x)
         bins[b] = bins[b] if b in bins else RANGE(txt=col.txt, at=c,lo=x, hi=x, ys=SYM()) 
         bins[b].add(x, y) 
-  bins = bins.values().sort(key=lambda bin:bin.lo)
-  return bins if isa(col,SYM) else complete(merges(bins))
+  bins = bins.values().sort(key=lambda bin:bin.lo) 
+  return bins if isa(col,SYM) else fill(merges(bins,lambda a,b: a.merge(b, n/the.bins)))
                                       
 #          _       ._   |   _.  o  ._  
 #         (/_  ><  |_)  |  (_|  |  | | 
@@ -310,24 +297,7 @@ class RULE(struct):
     return [row for _,rows in rowss.items() for row in self.selects(rows)]
   
   def __repr__(self):
-    def merges(b4):
-      i, now, most = 1,[],len(b4)
-      while i < most - 1:
-        a = b4[i] 
-        if i < most - 2:
-          b = b4[i+1]
-          if a.txt == b.txt and a.hi == b.lo: 
-            a  = a + b
-            i += 1
-        now += [a]
-        i += 1
-      return now if len(now) == len(b4) else merges(now)
-    # --------------------------------------------------------
-    return ' and '.join(' or '.join(merges(sorted(ors,key=lambda r:r.lo)))
+    def merge(a,b):
+      if a.txt == b.txt and a.hi ==b.lo: return a + b
+    return ' and '.join(' or '.join(merges(sorted(ors,key=lambda r:r.lo),merge))
                         for ors in self.parts.values())
-
-
-   
-
-
-  

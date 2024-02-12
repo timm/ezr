@@ -34,12 +34,24 @@ def csv(file=None):
 
 isa = isinstance
 
+def merges(b4, merge):
+  i, now, most = 1,[],len(b4)
+  while i < most - 1:
+    a = b4[i] 
+    if i < most - 2:
+      if tmp := merge(a, b4[i+1]):
+        a   = tmp
+        i  += 1
+    now += [a]
+    i += 1
+  return now if len(now) == len(b4) else merges(now, merge)
+
 def o(d, s = ""): 
   return s+"{"+(", ".join([f":{k} {rnds(v)}" for k,v in d.items() if k[0]!="_"]))+"}" 
 
 def rnds(x,n=2): 
-  if isinstance(x,(int,float)):  return x if int(x)==x else round(x,n)
-  if isinstance(x,(list,tuple)): return [rnds(y,n) for y in x]
+  if isa(x,(int,float)):  return x if int(x)==x else round(x,n)
+  if isa(x,(list,tuple)): return [rnds(y,n) for y in x]
   return x
 
 def shuffle(lst):
