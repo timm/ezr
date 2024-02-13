@@ -25,10 +25,12 @@ class obj:
 the = obj(bins=8)
 
 def COL(obj):
-  def __init__(i,at=0,txt=" "):
+  def make(s,n):  return (NUM if s[0].isupper else SYM)(s,n)
+
+  def __init__(i,txt=" ",at=0):
     i.n = 0; i.at = at; i.txt = txt,
-    i.goalp  = txt[-1] in "+-!",
-    i.heaven = 0 if txt[-1] == "-" else 1
+    i.heaven = -1 if s[-1] == "-" else 1
+    i.isGoal = s[-1] in "+-!"
 
 class SYM(obj):
   def __init__(i,**kw): COL.__init__(**kw); i.has = {}
@@ -58,16 +60,15 @@ def NUM(obj):
     return x if x=="?" else min(the.bins-1, int((x - i.lo) / n))
 
 class ROW(obj):
-  def __init__(i,lst, data):
-    i.cells,i.data  = lst,data
+  def __init__(i,lst, data): i.cells,i.data = lst,data
 
-  def bin(i):
-    i.bins = [col.bin(x) for col,x in zip(i.data.cols,i.cells)]
+  def bin(i): i.bins = [col.bin(x) for col,x in zip(i.data.cols,i.cells)]
 
 class DATA(obj):
   def __init__(i,lsts=[],order=False):
     head,*rows = list(lsts)
-    i.cols = [(NUM if s[-1].isupper() else SYM)(s,n) for s,n in enumerate(head)] 
+    i.cols = [COL.make(s,n) for n,s in enumerate(head)]
+    i.ys   = {col.at:col for col in i.cols if col.isGoal}
     i.rows = []
     [i.add(row) for row in rows]
     if order: i.ordered()
