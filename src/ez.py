@@ -12,7 +12,7 @@ OPTIONS:
      -b --budget0     initial evals              = 4  
      -B --Budget      subsequent evals           = 5   
      -c --cohen       small effect size          = .35  
-     -c --confidence  statistical confidence     = .05
+     -C --confidence  statistical confidence     = .05
      -e --effectSize  non-parametric small delta = 0.2385
      -E --Experiments number of Bootstraps       = 256
      -f --file        csv data file name         = '../data/auto93.csv'  
@@ -23,6 +23,7 @@ OPTIONS:
      -m --m           rare attribute  kludge     = 2  
      -M --Min         min size is N**Min         = .5
      -p --p           distance coefficient       = 2
+     -r --ranges      max number of bins         = 16
      -s --seed        random number seed         = 31210   
      -t --todo        start up action            = 'help'   
      -T --Top         best section               = .5   
@@ -47,11 +48,16 @@ def isNum(s):    return s[0].isupper()
 
 class SYM(Counter):
   "Adds `add` to Counter"
-  def add(self,x): self[x] += 1
+  def add(self,x,n=1): self[x] += n
 
   def entropy(self): 
     n = sum(self.values()) 
     return -sum(v/n*math.log(v/n,2) for _,v in self.items() if v>0)
+  
+  def __add__(i,j):
+    k=SYM()
+    [k.add(x,n) for old in [i,j] for x,n in old.items()]
+    return k
   
 class NUM(struct):
   def __init__(self,lst=[],txt=" "):
@@ -81,6 +87,8 @@ class DATA(struct):
     self.rows = []
     self.cols = [(NUM(txt=s) if isNum(s) else SYM()) for s in self.names] 
     self.ys   = {n:c for n,(s,c) in enumerate(zip(self.names,self.cols)) if isGoal(s)}
+    self.xs   = {n:c for n,(s,c) in enumerate(zip(self.names,self.cols)) 
+                 if not isGoal(s) and s[-1] != "X"}
     [self.add(row) for row in rows] 
     if order: self.ordered()
 
@@ -201,7 +209,8 @@ class DATA(struct):
 #         (_)  |_)   |_  |  | | |  |  /_  (/_  /_ 
 #              |                                  
 
-  def branch(self, rows, stop=None, rest=None, evals=1, before=None):
+  def branch(self, rows=None, stop=None, rest=None, evals=1, before=None):
+    rows = rows or self.rows
     stop = stop or 2*len(rows)**the.Min
     rest = rest or []
     if len(rows) > stop:
@@ -215,7 +224,7 @@ class DATA(struct):
 
 class RANGE(struct):
   def __init__(self,txt="",at=0,lo=None,hi=None,ys=None):
-    self.txt=""
+    self.txt, self.at = txt,at
     self.lo = lo
     self.hi = hi or lo
     self.ys = ys  
@@ -228,27 +237,29 @@ class RANGE(struct):
   def merge(i,j,small):
     k = i + j 
     ni,nj = sum(i.ys.values()), sum(j.ys.values())
-    if ni < small: return k
-    if nj < small: return k
+    if ni <= small: return k
+    if nj <= small: return k
     if k.ys.entropy() <= (ni*i.ys.entropy() + nj*j.ys.entropy())/(ni+nj): return k
 
   def __add__(i,j):
     return RANGE(txt=i.txt, at=i.at, lo=i.lo, hi=j.hi, ys=i.ys + j.ys)
   
   def __repr__(self): 
-    lo,hi,s = self.x.lo, self.x.hi,self.txt
+    lo,hi,s = self.lo, self.hi,self.txt
     if lo == -sys.maxsize: return f"{s} <  {hi}" 
     if hi ==  sys.maxsize: return f"{s} >= {lo}" 
     if lo ==  hi         : return f"{s} == {lo}" 
     return f"{lo} <= {s} < {hi}" 
 
-def discretize(c,col,rowss):
+def discretize(c,txt,col,rowss):
   def bin(col,x): 
     if isa(col,SYM): return x
-    tmp = (col.hi - col.lo)/(the.bins - 1)
-    return col.hi==col.lo and 0 or int(.5 + x/tmp) 
+    tmp = (col.hi - col.lo)/(the.ranges - 1)
+    out = col.hi==col.lo and 0 or int(.5 + (x-col.lo)/tmp)  
+    return out
   #--------------------------
   def fill(bins):
+    if bins==[]: return bins
     for i in range(1,len(bins)): bins[i].lo = bins[i-1].hi  
     bins[0].lo  = -sys.maxsize
     bins[-1].hi =  sys.maxsize
@@ -260,11 +271,11 @@ def discretize(c,col,rowss):
       x = row[c]
       if x != "?": 
         n += 1
-        b = bin(col,x)
-        bins[b] = bins[b] if b in bins else RANGE(txt=col.txt, at=c,lo=x, hi=x, ys=SYM()) 
+        b = bin(col,x) 
+        bins[b] = bins[b] if b in bins else RANGE(txt=txt, at=c,lo=x, hi=x, ys=SYM()) 
         bins[b].add(x, y) 
-  bins = bins.values().sort(key=lambda bin:bin.lo) 
-  return bins if isa(col,SYM) else fill(merges(bins,lambda a,b: a.merge(b, n/the.bins)))
+  bins = sorted(bins.values(), key=lambda bin:bin.lo)  
+  return bins if isa(col,SYM) else fill(merges(bins, lambda a,b: a.merge(b, n/the.ranges)))
                                       
 #          _       ._   |   _.  o  ._  
 #         (/_  ><  |_)  |  (_|  |  | | 

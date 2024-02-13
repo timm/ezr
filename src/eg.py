@@ -1,4 +1,5 @@
 # vim : set et ts=2 sw=2 :
+import sys
 from datetime import datetime
 from etc  import *
 from ez import *
@@ -53,7 +54,20 @@ class Eg:
       random.shuffle(d.rows); 
       rows1, *_ = d.branch(d.rows,stop=50)
       rows2, *_ = d.branch(rows1, stop=4)
-      print(i, d.d2h(rows0[0]), d.d2h(rows1[0]), d.d2h(rows2[0]))
+      print(joins([i,d.d2h(rows0[0]), d.d2h(rows1[0]), d.d2h(rows2[0])]))
+ 
+   
+  def bins():
+    d = DATA( csv(the.file),order=True) 
+    random.shuffle(d.rows); 
+    best,rest,*_  = d.branch() 
+    rest = random.choices(rest, k=len(best)*3) 
+    for c,col in enumerate(d.cols):
+      if    c   in d.xs:
+        print("")
+        for r in discretize(c,d.names[c],col,dict(best=best,rest=rest)):
+          print(r)
+      #print(joins([i,d.d2h(d.rows[0]), d.d2h(best[0]), d.d2h(rest[0])]))
 
   def smos():
     repeats=20

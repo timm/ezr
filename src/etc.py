@@ -32,14 +32,17 @@ def csv(file=None):
       line = re.sub(r'([\n\t\r"\’ ]|#.*)', '', line)
       if line: yield [coerce(s.strip()) for s in line.split(",")]
 
+def joins(lst,rnd=2,sep=","):
+  return sep.join([str(x) for x in rnds(lst,rnd)])
+
 isa = isinstance
 
 def merges(b4, merge):
-  i, now, most = 1,[],len(b4)
-  while i < most - 1:
+  i, now, most = 0,[],len(b4)
+  while i <  most:
     a = b4[i] 
-    if i < most - 2:
-      if tmp := merge(a, b4[i+1]):
+    if i <  most - 1: 
+      if tmp := merge(a, b4[i+1]): 
         a   = tmp
         i  += 1
     now += [a]
