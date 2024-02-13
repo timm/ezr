@@ -9,6 +9,8 @@ USAGE:
   
 OPTIONS:  
 
+     -a --adequate    good if over adequate*best = .1
+     -A --ample       only want this many rules  = 20
      -b --budget0     initial evals              = 4  
      -B --Budget      subsequent evals           = 5   
      -c --cohen       small effect size          = .35  
@@ -16,9 +18,7 @@ OPTIONS:
      -e --effectSize  non-parametric small delta = 0.2385
      -E --Experiments number of Bootstraps       = 256
      -f --file        csv data file name         = '../data/auto93.csv'  
-     -F --Far         far search outlier control = .95
-     -g --good        good if over good*best     = .1
-     -G --Great       most number of rules       = 20
+     -F --Far         far search outlier control = .95 
      -h --help        print help                 = false
      -H --Half        #items for far search      = 256
      -k --k           rare class  kludge         = 1  
@@ -32,7 +32,7 @@ OPTIONS:
      -T --Top         best section               = .5   
 """
 
-from heapq import merge
+
 import re,sys,math,random
 from collections import Counter
 from stats import sk
@@ -327,12 +327,14 @@ class RULE(struct):
     def __init__(self,ranges,goal,rowss,scoring):
       def count(what=None):
         return sum(len(rows) for klass,rows in rowss.items() if klass==what)
+      fun= return lambda lst: scoring(lst,self.goal,like,hate)
       like, hate = count(goal), count()
-      [scoring(range,self.goal, like, hate) for range in ranges]
+      [fun(range,self.goal, like, hate) for range in ranges]
       self.ordered = self.top(self.test(self.top(ranges)))
-      
     
-    
-    def top(self)
-      tmp= sorted(lst,key=lambda z:z.scored)
-      return [x for x in tmp if x,scored > tmp[0].scored * the.good][the.great]
+    def test(self,ranges):
+      RULE(subset) for subset in powerset(ranges) if len(subset) > 0 
+
+    def top(self,lst):
+      tmp = sorted(lst,key=lambda z:z.scored)
+      return [x for x in tmp if x.scored > tmp[0].scored * the.adequate][the.ample]

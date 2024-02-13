@@ -2,6 +2,7 @@
 
 import re, ast, sys, math, random
 from fileinput import FileInput as file_or_stdin
+from itertools import chain, combinations
 
 class struct:
   def __init__(self,**d) : self.__dict__.update(d)
@@ -66,3 +67,7 @@ def slots(x):
     for k,v in x.items(): yield k,v
   else:
     for k,v in enumerate(x): yield k,v
+
+def powerset(iterable): 
+  s = list(iterable)
+  return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
