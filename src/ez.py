@@ -17,6 +17,8 @@ OPTIONS:
      -E --Experiments number of Bootstraps       = 256
      -f --file        csv data file name         = '../data/auto93.csv'  
      -F --Far         far search outlier control = .95
+     -g --good        good if over good*best     = .1
+     -G --Great       most number of rules       = 20
      -h --help        print help                 = false
      -H --Half        #items for far search      = 256
      -k --k           rare class  kludge         = 1  
@@ -24,7 +26,8 @@ OPTIONS:
      -M --Min         min size is N**Min         = .5
      -p --p           distance coefficient       = 2
      -r --ranges      max number of bins         = 16
-     -s --seed        random number seed         = 31210   
+     -s --seed        random number seed         = 31210 
+     -S --score       support exponent for range = 2  
      -t --todo        start up action            = 'help'   
      -T --Top         best section               = .5   
 """
@@ -228,6 +231,7 @@ class RANGE(struct):
     self.lo = lo
     self.hi = hi or lo
     self.ys = ys  
+    self.scored = 0
 
   def add(self,x,y): 
     self.lo  = min(self.lo, x) 
@@ -289,12 +293,10 @@ class RULE(struct):
       self.parts[range.txt] += [range]
 
   def _or(self,ranges,row):
-    x =  row[ranges[1].at]
+    x =  row[ranges[0].at]
     if x== "?": return True
     for range in ranges:
-      if range.lo==range.hi==x:    return True
-      if range.lo <= x < range.hi: return True
-    return False
+      return range.lo==range.hi==x or range.lo <= x < range.hi 
   
   def _and(self,row):
     for ranges in self.parts.values():
@@ -312,3 +314,25 @@ class RULE(struct):
       if a.txt == b.txt and a.hi ==b.lo: return a + b
     return ' and '.join(' or '.join(merges(sorted(ors,key=lambda r:r.lo),merge))
                         for ors in self.parts.values())
+  
+  class RULES(struct):
+    def score(range,goal,LIKE,HATE):
+      like,hate=0,0
+      for klass,n in range.ys.items():
+        if klass==goal: like += n
+        else:           hate += n
+      like,hate = like/(LIKE + tiny), hate/(HATE + tiny) 
+      range.scored = 0 if hate>like else  like ** the.Score / (like + hate)
+
+    def __init__(self,ranges,goal,rowss,scoring):
+      def count(what=None):
+        return sum(len(rows) for klass,rows in rowss.items() if klass==what)
+      like, hate = count(goal), count()
+      [scoring(range,self.goal, like, hate) for range in ranges]
+      self.ordered = self.top(self.test(self.top(ranges)))
+      
+    
+    
+    def top(self)
+      tmp= sorted(lst,key=lambda z:z.scored)
+      return [x for x in tmp if x,scored > tmp[0].scored * the.good][the.great]

@@ -63,7 +63,7 @@ class Eg:
     best,rest,*_  = d.branch() 
     rest = random.choices(rest, k=len(best)*3) 
     for c,col in enumerate(d.cols):
-      if    c   in d.xs:
+      if c in d.xs:
         print("")
         for r in discretize(c,d.names[c],col,dict(best=best,rest=rest)):
           print(r)
