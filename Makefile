@@ -26,7 +26,7 @@ docs:
 		--line-numbers=1                 \
 		--borders=no                      \
 		--pro=color                        \
-		--columns  3                        \
+		--columns  2                        \
 		-M letter                            \
 		-o ~/tmp/$^.ps $^ ;                   \
 	ps2pdf ~/tmp/$^.ps $@ ;  rm ~/tmp/$^.ps; \

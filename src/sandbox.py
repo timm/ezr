@@ -26,7 +26,7 @@ class COL(obj):
     return x
 
   def bins(i,goal,rowss):
-    return i.bins1(goal, sorted([(row[i.at], klass==goal) 
+    return i.bins1(goal, sorted([(row[i.at], klass) 
                                  for klass,rows in rowss.items() 
                                  for row in rows if row[i.at] != "?"]))
 #----------------------------------------------------------------------------------------
@@ -39,9 +39,9 @@ class SYM(COL):
   def bins1(i,goal,xys):
     c={}
     for x,y in xys:  
-      c[y] = c.get(y,{})
-      c[y][x] = c[y].get(x,0) + 1
-    return sorted([(ent(c[y]),y) for y in c])[0] 
+      c[x] = c.get(x,{})
+      c[x][y] = c[x].get(y,0) + 1
+    return sorted([(ent(c[x]),x) for x in c])[0] 
 #----------------------------------------------------------------------------------------
 class NUM(COL):
   def __init__(i,**kw):
