@@ -21,6 +21,7 @@ def lt(x,y):  return x < y
 def gt(x,y):  return x > y
 
 def it(rows,w):
+  #hit it with a squre root
   lst = sorted([(i.d2h(row),row[c]) for row in rows])
   lo, op, cut    = huge, lt, lst[int(len(lst)//2)][1]
   s1, s2 =  0, sum(first(x) for x in lst)
