@@ -17,12 +17,36 @@ def nth(n): return lambda lst: lst[n] == "?"
     return (d/n)**.5
 
 def first(a): return a[0]
+def second(a): return a[1]
 def lt(x,y):  return x < y
 def gt(x,y):  return x > y
 
-def it(rows,w):
-  #hit it with a squre root
-  lst = sorted([(i.d2h(row),row[c]) for row in rows])
+def cells(col, rows, klass):
+  return [(row[col.at],klass,row) for row in rows if row[col.at] != "?"]
+
+def fft(i,rowss):
+  lst = sorted(rows in rows],key=i.d2h)
+  n   = int(.5 + len(lst)**.5)
+  for col in i.xs:
+    for rule in fft1(4,sorted(cells(col,lst[:n],True) + cells(col,lst[n:],False))):
+      yield rule
+
+def fft1(depth,xyr):
+  if depth < 0:
+    lhs,rhs,cut = {}, {}, xyr[int(len(xyr)//2)][0]
+    for x,k,_ in xyr: rhs[x] = rhs.get(x,0) + 1
+    for n,(x,k,_) in enumerate(xyr):
+      lhs[x]  = lhs.get(x,0) + 1
+      rhs[x] += 1
+      n1      = n + 1
+      n2      = len(xyr) - n1
+      tmp     = (n1*ent(lhs) + n2*ent(rhs))/(n1+n2)
+      if tmp < most: most,cut = tmp,n
+    if cut:
+      left, right = xyr[:cut], xyr[cut:]
+  
+    
+  
   lo, op, cut    = huge, lt, lst[int(len(lst)//2)][1]
   s1, s2 =  0, sum(first(x) for x in lst)
   for d,x in lst:
