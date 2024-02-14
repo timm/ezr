@@ -10,7 +10,7 @@ the = obj(bins=8)
 
 def nth(n): return lambda lst: lst[n] == "?"
 
-  def d2h(i,row):
+def d2h(i,row):
     for col in i.ys.values():
       n +=1
       d += (abs(col.norm(row[col.at]) - col.heaven)**2

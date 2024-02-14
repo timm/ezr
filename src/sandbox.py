@@ -1,79 +1,67 @@
-# import random
-# from math import *
-# def phi(x):
-#   return (1.0 + erf(x / sqrt(2.0))) / 2.0
-#
-# def pc(n):
-#   w = 6/n
-#   def xy(i): x= -3 + i*w; return [x,phi(x),0]
-#   lst = [xy(i) for i in range(n+1)]
-#   for i,three in enumerate(lst):
-#     if i > 0:
-#       three[2] = lst[i][1] - lst[i-1][1]
-#   [print([round(x,3) for x in three],sep="\t")
-#    for three in lst]
-#
-# pc(30)
-import random,math,sys 
+# vim : set et ts=2 sw=2 :
+from fileinput import FileInput as file_or_stdin
+import random,math,sys,ast,re
+#----------------------------------------------------------------------------------------
 huge = sys.maxsize
 tiny = 1 / huge
 
 class obj:
   def __init__(i,**d): i.__dict__.update(d)
   def __repr__(i)    : return i.__class__.__name__ +str(i.__dict__)
+  def adds(i,lst): [i.add(x) for x in lst]; return i 
 
-the = obj(bins=8,seed=31210,data="../data/auto93.csv")
-
+the = obj(bins=8,seed=31210,file="../data/auto93.csv")
+#----------------------------------------------------------------------------------------
 class COL(obj):
-  def make(s,n):  return (NUM if s[0].isupper else SYM)(s,n)
+  def make(txt=" ",at=""):  
+    return (NUM if txt[0].isupper() else SYM)(txt=txt,at=at)
 
   def __init__(i,txt=" ",at=0):
     i.n = 0; i.at = at; i.txt = txt
     i.heaven = -1 if txt[-1] == "-" else 1
     i.isGoal = txt[-1] in "+-!"
 
-  def adds(i,lst): [i.add(x) for x in lst];return i
+  def add(i,x):
+    if x != "?": i.n += 1; i.add1(x)
+    return x
 
-  def bins(i,rowss):
-    return i.bins1(sorted([(row[i.at], klass) 
-                           for klass,rows in rowss.items() 
-                           for row in rows if row[i.at] != "?"]))
-
+  def bins(i,goal,rowss):
+    return i.bins1(goal, sorted([(row[i.at], klass==goal) 
+                                 for klass,rows in rowss.items() 
+                                 for row in rows if row[i.at] != "?"]))
+#----------------------------------------------------------------------------------------
 class SYM(COL):
   def __init__(i,**kw): super().__init__(**kw); i.has = {}
-  def add(i,x): i.n += 1; i.has[x] = 1 + i.has.get(x,0)
+  def add1(i,x):   i.has[x] = 1 + i.has.get(x,0)
   def norm(i,x): return x
-  def ent(i)  : return -sum(v/i.n*math.log(v/i.n,2) for _,v in i.has.items() if v>0)
-  def bin1(i,xys,goal):
+  def mode(i) : return max(i.has, key=i.has.get)
+  def ent(i)  : return ent(i.has)
+  def bins1(i,goal,xys):
     c={}
-    for x,y in xys:   
-      k = y==goal
-      c[k] = c.get(k,{})
-      c[k][x] = c[k].get(x,0) + 1
-    return sorted([(ent(c[k]),k) for k in c])[0] 
-
+    for x,y in xys:  
+      c[y] = c.get(y,{})
+      c[y][x] = c[y].get(x,0) + 1
+    return sorted([(ent(c[y]),y) for y in c])[0] 
+#----------------------------------------------------------------------------------------
 class NUM(COL):
   def __init__(i,**kw):
     super().__init__(**kw)
-    i.mu,i.m2,i.sd,i.lo,i.hi = 0,0,0, huge, -huge
+    i.mu,i.m2,i.sd,i.lo,i.hi = 0,0,0, huge, -1* huge
 
-  def add(i,x):
-    if x != "?":
-      i.n  += 1
-      i.lo  = min(x,i.lo)
-      i.hi  = max(x,i.hi)
-      delta = x - i.mu
-      i.mu += delta / i.n
-      i.m2 += delta * (x -  i.mu)
-      i.sd  = 0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
+  def add1(i,x): 
+    i.lo  = min(x,i.lo)
+    i.hi  = max(x,i.hi)
+    delta = x - i.mu
+    i.mu += delta / i.n
+    i.m2 += delta * (x -  i.mu)
+    i.sd  = 0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
 
   def norm(i,x): return x=="?" and x or (x - i.lo) / (i.hi - i.lo + tiny)
 
-  def bins1(i,xys,goal):
+  def bins1(i,goal,xys):
     n1,n2,c1,c2 = 0,len(xys),{},{}
     for x,y in xys:   
-      k = y==goal
-      c2[k] = c2.get(k,0) + 1
+      c2[y] = c2.get(y,0) + 1
     small,min = len(xys)**.5, ent(c2) 
     for n,(x,y) in enumerate(xys):
       n2    -= 1; n1 += 1
@@ -83,19 +71,19 @@ class NUM(COL):
         if e < min:
           min,cut = e,x 
     return (min,cut)
-
+#----------------------------------------------------------------------------------------
 class DATA(obj):
-  def __init__(i,lsts=[],order=False):
-    head,*rows = list(lsts)
-    i.cols = [COL.make(s,n) for n,s in enumerate(head)]
-    i.ys   = {col.at:col for col in i.cols if col.isGoal}
-    i.rows = []
-    [i.add(row) for row in rows]
+  def __init__(i,src=[],order=False): 
+    i.rows, i.cols = [],[]
+    i.adds(src) 
     if order: i.rows = sorted(i.rows, key=i.d2h)
 
   def add(i,row): 
-    i.rows += [row]
-    [col.add(x) for x,col in zip(row.cells,i.cols) if x != "?"]
+    if i.cols:
+      i.rows += [[col.add(x) for x,col in zip(row,i.cols)]]
+    else:
+      i.cols = [COL.make(txt=s,at=n) for n,s in enumerate(row)] 
+      i.ys   = {col.at:col for col in i.cols if col.isGoal}
 
   def clone(i, rows=[], order=False):
     return DATA([[col.txt for col in i.cols]] + rows, order=order)
@@ -106,7 +94,6 @@ class DATA(obj):
       d += abs(col.norm(row[col.at]) - col.heaven)**2
       n += 1
     return (d/n)**.5
-
 #-----------------------------------------------------
 def ent(d):
   n = sum(d.values())
@@ -121,18 +108,44 @@ def csv(file=None):
     for line in src:
       line = re.sub(r'([\n\t\r"\’ ]|#.*)', '', line)
       if line: yield [coerce(s.strip()) for s in line.split(",")]
-
-#-----------------------------------------------------     make saved
-      
+#-----------------------------------------------------      
 class Eg: 
   def all():
     sys.exit(sum(1 if getattr(Eg,s)()==False else 0 
                  for s in dir(Eg) if s[0] !="_" and s !="all"))
     
-  def nums():  
+  def num():  
     assert 6.61  < NUM().adds([x**.5 for x in range(100)]).mu  < 6.62
     assert 13.31 < NUM().adds([46,	69	,32,	60,	52	,41]).sd < 13.32
 
-if __name__ == "__main__":  
+  def sym():
+    s = SYM().adds([1,1,1,1,2,2,3])
+    assert 1.37 < s.ent() < 1.38
+    assert s.mode() == 1 
+
+  def col():
+    print(COL.make(txt="Speed"))
+
+  def data():
+    d=DATA(csv(the.file)) 
+  
+  def order():
+    d=DATA(csv(the.file),order=True) 
+    for n,row in enumerate(d.rows):
+      if n % 20 ==0: print(">",row)
+
+  def bins():
+    d=DATA(csv(the.file),order=True) 
+    n = int(.5 + len(d.rows)**.5)
+    for col in d.cols:
+      if not col.isGoal:
+        print("")
+        print(col.at,col.txt)
+        for x in col.bins("best",dict(best=d.rows[:n], rest=d.rows[n:])):
+          print("\t",x) 
+       
+
+#----------------------------------------------------------------------------------------
+if __name__ == "__main__" and len(sys.argv)>1:
   random.seed(the.seed)
-  getattr(Eg, next(iter(sys.argv), 1), Eg.all)()
+  getattr(Eg, sys.argv[1], Eg.all)() 
