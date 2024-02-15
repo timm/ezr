@@ -10,7 +10,11 @@ class obj:
   def __repr__(i)    : return i.__class__.__name__ +str(i.__dict__)
   def adds(i,lst): [i.add(x) for x in lst]; return i 
 
-the = obj(bins=8,seed=31210,file="../data/auto93.csv")
+the = obj(bins=8,
+          seed=31210,
+          stop=1,
+          better = .5,
+          file="../data/auto93.csv")
 #----------------------------------------------------------------------------------------
 class COL(obj):
   def make(txt=" ",at=""):  
@@ -41,7 +45,7 @@ class SYM(COL):
     for x,y in xys:  
       c[x] = c.get(x,{})
       c[x][y] = c[x].get(y,0) + 1
-    return sorted([(ent(c[x]),x) for x in c])[0] 
+    return sorted([(ent(c[x]),eq,x,i.at) for x in c])[0] 
 #----------------------------------------------------------------------------------------
 class NUM(COL):
   def __init__(i,**kw):
@@ -70,13 +74,15 @@ class NUM(COL):
         e=(n1*ent(c1) + n2*ent(c2))/(n1+n2)
         if e < min:
           min,cut = e,x 
-    return (min,cut)
+    return (min,le,cut,i.at)
 #----------------------------------------------------------------------------------------
 class DATA(obj):
   def __init__(i,src=[],order=False): 
     i.rows, i.cols = [],[]
     i.adds(src) 
-    if order: i.rows = sorted(i.rows, key=i.d2h)
+    if order: i.ordered()
+    
+  def ordered(i): i.rows = sorted(i.rows, key=i.d2h)
 
   def add(i,row): 
     if i.cols:
@@ -94,7 +100,29 @@ class DATA(obj):
       d += abs(col.norm(row[col.at]) - col.heaven)**2
       n += 1
     return (d/n)**.5
-#-----------------------------------------------------
+
+  def bins(i):
+    i.ordered() 
+    n = int(.5 + len(i.rows)**the.better)
+    return sorted([col.bin("best",best=d.rows[:n],rest=d.rows[n:]) 
+                  for col in i.cols if not col.isGoal])
+  
+  # def tree(i,rows,stop,path,out): 
+  #   rows = rows or i.rows
+  #   if len(rows) < stop or the.stop: 
+  #     path.append(([True] + deepcopy(path))[::-1])
+  #   else:
+  #     _,how,x,at = i.bins()[0]
+  #     left,right=[],[]
+  #     for row in rows:
+  #       (left if how(x,at,row) else right).append(row)
+  #     for sub in i.tree(left,stop):
+  #       yield ((how,i.tree,x,at), sub, True)
+  #       yield ((how,i.tree,x,at), sub, False)
+#----------------------------------------------------- 
+def le(x,at,row): tmp=row[at]; return tmp =="?" or tmp <= x
+def eq(x,at,row): tmp=row[at]; return tmp =="?" or tmp == x
+
 def ent(d):
   n = sum(d.values())
   return - sum(v/n*math.log(v/n,2) for v in d.values() if v>0)
