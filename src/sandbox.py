@@ -36,10 +36,11 @@ class COL(obj):
 #----------------------------------------------------------------------------------------
 class SYM(COL):
   def __init__(i,**kw): super().__init__(**kw); i.has = {}
-  def add1(i,x):   i.has[x] = 1 + i.has.get(x,0)
-  def norm(i,x): return x
-  def mode(i) : return max(i.has, key=i.has.get)
-  def ent(i)  : return ent(i.has)
+  def add1(i,x):        i.has[x] = i.has.get(x,0) + 1
+  def sub(i,x):         i.has[x] = i.has.get(x,0) - 1
+  def norm(i,x):        return x
+  def mode(i) :         return max(i.has, key=i.has.get)
+  def ent(i)  :         return ent(i.has)
   def bins1(i,goal,xys):
     c={}
     for x,y in xys:  
@@ -58,6 +59,13 @@ class NUM(COL):
     delta = x - i.mu
     i.mu += delta / i.n
     i.m2 += delta * (x -  i.mu)
+    i.sd  = 0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
+
+  def sub(i,x):
+    i.n  -= 1
+    delta = x - i.mu
+    i.mu -= delta / i.n
+    i.m2 -= delta * (x - i.mu)
     i.sd  = 0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
 
   def norm(i,x): return x=="?" and x or (x - i.lo) / (i.hi - i.lo + tiny)
@@ -106,7 +114,11 @@ class DATA(obj):
     n = int(.5 + len(i.rows)**the.better)
     return sorted([col.bin("best",best=d.rows[:n],rest=d.rows[n:]) 
                   for col in i.cols if not col.isGoal])
-  
+ 
+ def div(lo,hi,rows,at,xfun,yun):
+   for  i,row in enumerate(rows): rhs.add
+ 
+ before: sort rows on c  no empites
   # def tree(i,rows,stop,path,out): 
   #   rows = rows or i.rows
   #   if len(rows) < stop or the.stop: 
