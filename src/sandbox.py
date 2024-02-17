@@ -29,6 +29,10 @@ class COL(obj):
     if x != "?": i.n += 1; i.add1(x)
     return x
 
+  def sub(i,x):
+    if x != "?": i.n -= 1; i.sub1(x)
+    return x
+
   def bins(i,goal,rowss):
     return i.bins1(goal, sorted([(row[i.at], klass) 
                                  for klass,rows in rowss.items() 
@@ -37,7 +41,7 @@ class COL(obj):
 class SYM(COL):
   def __init__(i,**kw): super().__init__(**kw); i.has = {}
   def add1(i,x):        i.has[x] = i.has.get(x,0) + 1
-  def sub(i,x):         i.has[x] = i.has.get(x,0) - 1
+  def sub1(i,x):        i.has[x] = i.has.get(x,0) - 1
   def norm(i,x):        return x
   def mode(i) :         return max(i.has, key=i.has.get)
   def ent(i)  :         return ent(i.has)
@@ -54,15 +58,14 @@ class NUM(COL):
     i.mu,i.m2,i.sd,i.lo,i.hi = 0,0,0, huge, -1* huge
 
   def add1(i,x): 
-    i.lo  = min(x,i.lo)
-    i.hi  = max(x,i.hi)
     delta = x - i.mu
     i.mu += delta / i.n
     i.m2 += delta * (x -  i.mu)
     i.sd  = 0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
+    i.lo  = min(x,i.lo)
+    i.hi  = max(x,i.hi)
 
-  def sub(i,x):
-    i.n  -= 1
+  def sub1(i,x):
     delta = x - i.mu
     i.mu -= delta / i.n
     i.m2 -= delta * (x - i.mu)
@@ -71,6 +74,7 @@ class NUM(COL):
   def norm(i,x): return x=="?" and x or (x - i.lo) / (i.hi - i.lo + tiny)
 
   def bins1(i,goal,xys):
+    "walk the range finding best worst one. return best worst"
     n1,n2,c1,c2 = 0,len(xys),{},{}
     for x,y in xys:   
       c2[y] = c2.get(y,0) + 1
