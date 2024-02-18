@@ -26,12 +26,12 @@ OPTIONS:
      -M --Min         min size is N**Min         = .5
      -p --p           distance coefficient       = 2
      -r --ranges      max number of bins         = 16
+     -R --Repeats     max number of bins         = 20
      -s --seed        random number seed         = 31210 
      -S --score       support exponent for range = 2  
      -t --todo        start up action            = 'help'   
      -T --Top         best section               = .5   
 """
-
 
 import re,sys,math,random
 from collections import Counter
@@ -224,117 +224,117 @@ class DATA(struct):
                                                
 #          _|  o   _   _  ._   _   _|_  o  _    _  
 #         (_|  |  _>  (_  |   (/_   |_  |  /_  (/_                                                
-
-class RANGE(struct):
-  def __init__(self,txt="",at=0,lo=None,hi=None,ys=None):
-    self.txt, self.at = txt,at
-    self.lo = lo
-    self.hi = hi or lo
-    self.ys = ys  
-    self.scored = 0
-
-  def add(self,x,y): 
-    self.lo  = min(self.lo, x) 
-    self.hi  = max(self.hi, x)
-    self.ys.add(y)
-
-  def merge(i,j,small):
-    k = i + j 
-    ni,nj = sum(i.ys.values()), sum(j.ys.values())
-    if ni <= small: return k
-    if nj <= small: return k
-    if k.ys.entropy() <= (ni*i.ys.entropy() + nj*j.ys.entropy())/(ni+nj): return k
-
-  def __add__(i,j):
-    return RANGE(txt=i.txt, at=i.at, lo=i.lo, hi=j.hi, ys=i.ys + j.ys)
-  
-  def __repr__(self): 
-    lo,hi,s = self.lo, self.hi,self.txt
-    if lo == -sys.maxsize: return f"{s} <  {hi}" 
-    if hi ==  sys.maxsize: return f"{s} >= {lo}" 
-    if lo ==  hi         : return f"{s} == {lo}" 
-    return f"{lo} <= {s} < {hi}" 
-
-def discretize(c,txt,col,rowss):
-  def bin(col,x): 
-    if isa(col,SYM): return x
-    tmp = (col.hi - col.lo)/(the.ranges - 1)
-    out = col.hi==col.lo and 0 or int(.5 + (x-col.lo)/tmp)  
-    return out
-  #--------------------------
-  def fill(bins):
-    if bins==[]: return bins
-    for i in range(1,len(bins)): bins[i].lo = bins[i-1].hi  
-    bins[0].lo  = -sys.maxsize
-    bins[-1].hi =  sys.maxsize
-    return bins  
-  #------------
-  bins, n = {}, 0
-  for y,rows in rowss.items(): 
-    for row in rows:
-      x = row[c]
-      if x != "?": 
-        n += 1
-        b = bin(col,x) 
-        bins[b] = bins[b] if b in bins else RANGE(txt=txt, at=c,lo=x, hi=x, ys=SYM()) 
-        bins[b].add(x, y) 
-  bins = sorted(bins.values(), key=lambda bin:bin.lo)  
-  return bins if isa(col,SYM) else fill(merges(bins, lambda a,b: a.merge(b, n/the.ranges)))
-                                      
-#          _       ._   |   _.  o  ._  
-#         (/_  ><  |_)  |  (_|  |  | | 
-#                  |                   
-
-class RULE(struct):
-  def __init__(self,ranges):
-    self.parts, self.scored = {},0
-    for range in ranges:
-      self.parts[range.txt] = self.parts.get(range.txt,[])
-      self.parts[range.txt] += [range]
-
-  def _or(self,ranges,row):
-    x =  row[ranges[0].at]
-    if x== "?": return True
-    for range in ranges:
-      return range.lo==range.hi==x or range.lo <= x < range.hi 
-  
-  def _and(self,row):
-    for ranges in self.parts.values():
-      if not self._or(ranges,row): return False
-    return True
-  
-  def selects(self,rows):
-    return [row for row in rows if self._and(row)]
-  
-  def selectss(self,rowss): 
-    return [row for _,rows in rowss.items() for row in self.selects(rows)]
-  
-  def __repr__(self):
-    def merge(a,b):
-      if a.txt == b.txt and a.hi ==b.lo: return a + b
-    return ' and '.join(' or '.join(merges(sorted(ors,key=lambda r:r.lo),merge))
-                        for ors in self.parts.values())
-  
-  class RULES(struct):
-    def score(range,goal,LIKE,HATE):
-      like,hate=0,0
-      for klass,n in range.ys.items():
-        if klass==goal: like += n
-        else:           hate += n
-      like,hate = like/(LIKE + tiny), hate/(HATE + tiny) 
-      range.scored = 0 if hate>like else  like ** the.Score / (like + hate)
-
-    def __init__(self,ranges,goal,rowss,scoring):
-      def count(what=None):
-        return sum(len(rows) for klass,rows in rowss.items() if klass==what)
-      fun= return lambda lst: scoring(lst,self.goal,like,hate)
-      like, hate = count(goal), count()
-      [fun(range,self.goal, like, hate) for range in ranges]
-      self.ordered = self.top(self.test(self.top(ranges)))
-    
-    def test(self,ranges):
-      RULE(subset) for subset in powerset(ranges) if len(subset) > 0 
-
-    def top(self,lst):
-      tmp = sorted(lst,key=lambda z:z.scored)
-      return [x for x in tmp if x.scored > tmp[0].scored * the.adequate][the.ample]
+# 
+# class RANGE(struct):
+#   def __init__(self,txt="",at=0,lo=None,hi=None,ys=None):
+#     self.txt, self.at = txt,at
+#     self.lo = lo
+#     self.hi = hi or lo
+#     self.ys = ys  
+#     self.scored = 0
+# 
+#   def add(self,x,y): 
+#     self.lo  = min(self.lo, x) 
+#     self.hi  = max(self.hi, x)
+#     self.ys.add(y)
+# 
+#   def merge(i,j,small):
+#     k = i + j 
+#     ni,nj = sum(i.ys.values()), sum(j.ys.values())
+#     if ni <= small: return k
+#     if nj <= small: return k
+#     if k.ys.entropy() <= (ni*i.ys.entropy() + nj*j.ys.entropy())/(ni+nj): return k
+# 
+#   def __add__(i,j):
+#     return RANGE(txt=i.txt, at=i.at, lo=i.lo, hi=j.hi, ys=i.ys + j.ys)
+#   
+#   def __repr__(self): 
+#     lo,hi,s = self.lo, self.hi,self.txt
+#     if lo == -sys.maxsize: return f"{s} <  {hi}" 
+#     if hi ==  sys.maxsize: return f"{s} >= {lo}" 
+#     if lo ==  hi         : return f"{s} == {lo}" 
+#     return f"{lo} <= {s} < {hi}" 
+# 
+# def discretize(c,txt,col,rowss):
+#   def bin(col,x): 
+#     if isa(col,SYM): return x
+#     tmp = (col.hi - col.lo)/(the.ranges - 1)
+#     out = col.hi==col.lo and 0 or int(.5 + (x-col.lo)/tmp)  
+#     return out
+#   #--------------------------
+#   def fill(bins):
+#     if bins==[]: return bins
+#     for i in range(1,len(bins)): bins[i].lo = bins[i-1].hi  
+#     bins[0].lo  = -sys.maxsize
+#     bins[-1].hi =  sys.maxsize
+#     return bins  
+#   #------------
+#   bins, n = {}, 0
+#   for y,rows in rowss.items(): 
+#     for row in rows:
+#       x = row[c]
+#       if x != "?": 
+#         n += 1
+#         b = bin(col,x) 
+#         bins[b] = bins[b] if b in bins else RANGE(txt=txt, at=c,lo=x, hi=x, ys=SYM()) 
+#         bins[b].add(x, y) 
+#   bins = sorted(bins.values(), key=lambda bin:bin.lo)  
+#   return bins if isa(col,SYM) else fill(merges(bins, lambda a,b: a.merge(b, n/the.ranges)))
+#                                       
+# #          _       ._   |   _.  o  ._  
+# #         (/_  ><  |_)  |  (_|  |  | | 
+# #                  |                   
+# 
+# class RULE(struct):
+#   def __init__(self,ranges):
+#     self.parts, self.scored = {},0
+#     for range in ranges:
+#       self.parts[range.txt] = self.parts.get(range.txt,[])
+#       self.parts[range.txt] += [range]
+# 
+#   def _or(self,ranges,row):
+#     x =  row[ranges[0].at]
+#     if x== "?": return True
+#     for range in ranges:
+#       return range.lo==range.hi==x or range.lo <= x < range.hi 
+#   
+#   def _and(self,row):
+#     for ranges in self.parts.values():
+#       if not self._or(ranges,row): return False
+#     return True
+#   
+#   def selects(self,rows):
+#     return [row for row in rows if self._and(row)]
+#   
+#   def selectss(self,rowss): 
+#     return [row for _,rows in rowss.items() for row in self.selects(rows)]
+#   
+#   def __repr__(self):
+#     def merge(a,b):
+#       if a.txt == b.txt and a.hi ==b.lo: return a + b
+#     return ' and '.join(' or '.join(merges(sorted(ors,key=lambda r:r.lo),merge))
+#                         for ors in self.parts.values())
+#   
+#   class RULES(struct):
+#     def score(range,goal,LIKE,HATE):
+#       like,hate=0,0
+#       for klass,n in range.ys.items():
+#         if klass==goal: like += n
+#         else:           hate += n
+#       like,hate = like/(LIKE + tiny), hate/(HATE + tiny) 
+#       range.scored = 0 if hate>like else  like ** the.Score / (like + hate)
+# 
+#     def __init__(self,ranges,goal,rowss,scoring):
+#       def count(what=None):
+#         return sum(len(rows) for klass,rows in rowss.items() if klass==what)
+#       fun= return lambda lst: scoring(lst,self.goal,like,hate)
+#       like, hate = count(goal), count()
+#       [fun(range,self.goal, like, hate) for range in ranges]
+#       self.ordered = self.top(self.test(self.top(ranges)))
+#     
+#     def test(self,ranges):
+#       RULE(subset) for subset in powerset(ranges) if len(subset) > 0 
+# 
+#     def top(self,lst):
+#       tmp = sorted(lst,key=lambda z:z.scored)
+#       return [x for x in tmp if x.scored > tmp[0].scored * the.adequate][the.ample]

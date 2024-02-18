@@ -14,7 +14,7 @@ class THE(struct):
     d = {m[1]:coerce(m[2]) for m in re.finditer(r"--(\w+)[^=]*=\s*(\S+)",txt)}
     self.__dict__.update(d)
     
-  def cli(self):
+  def cli(self): 
     for k,v in self.__dict__.items(): 
       v = str(v)
       for c,arg in enumerate(sys.argv):

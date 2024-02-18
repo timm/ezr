@@ -70,7 +70,7 @@ class Eg:
       #print(joins([i,d.d2h(d.rows[0]), d.d2h(best[0]), d.d2h(rest[0])]))
 
   def smos():
-    repeats=20
+    repeats=the.repeats
     r=lambda x:rnds(x,2)
     d=DATA(csv(the.file),order=False) 
     now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -97,7 +97,8 @@ class Eg:
     all = d.clone(d.rows,order=True).rows[0]
     print("#\n100%", r(all), r(d.d2h(all)), sep=",\t") 
 
-  def smocompare(repeats=20): 
+  def smocompare(): 
+      repeats = the.repeats
       e=math.exp(1)
       def say(*l): print(*l,end=" ",flush=True);
       r=lambda a: ', '.join([str(x) for x in rnds(a,2)])
@@ -127,7 +128,8 @@ class Eg:
       #-----------------------------------
       print(f"\n#report{len(all)}");eg0(all)
 
-  def smoy(repeats=20): 
+  def smoy():  
+      repeats=the.Repeats
       e=math.exp(1)
       def say(*l): print(*l,end=" ",flush=True);
       r=lambda a: ', '.join([str(x) for x in rnds(a,2)])
@@ -140,6 +142,7 @@ class Eg:
       n6 = 15
       n7 = 9
       n8 = 20
+      n9 = 30
       d2hs = NUM([d.d2h(row) for row in d.clone(d.rows,True).rows])
       now = datetime.now().strftime("%B/%m/%Y %H:%M:%S")
       print(f"date : {now},")
@@ -152,7 +155,7 @@ class Eg:
       def _single(all):
         evals1 = 0
         lst   = []
-        for _ in range(20):
+        for _ in range(repeats):
           random.shuffle(d.rows); 
           _,__,evals1,last = d.branch(d.rows) 
           lst +=  [d.d2h(last)]
@@ -162,7 +165,7 @@ class Eg:
       def _double(all):
         evals1,evals2 = 0,0
         lst   = []
-        for _ in range(20):
+        for _ in range(repeats):
           random.shuffle(d.rows); 
           rows1, _,evals1,__ = d.branch(d.rows,50) 
           _, __, evals2,last = d.branch(rows1,4)
@@ -172,7 +175,7 @@ class Eg:
       say(f"#2rrp"); _double(all)
       say(f"#rrp"); _single(all)
 
-      for budget in sorted(set([n1,n2,n3,n4,n5,n6,n7,n8])): 
+      for budget in sorted(set([n1,n2,n3,n4,n5,n6,n7,n8,n9])): 
         the.Budget = budget -  the.budget0 
         if budget <= 50:
            say(f"#b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
@@ -183,12 +186,12 @@ class Eg:
                                      for _   in range(repeats)],txt=f"bonr,{budget}")]
         
         say(f"#rand{budget}");all +=  [SAMPLE([d.d2h(d.clone(shuffle(d.rows)[:budget], order=True).rows[0]) 
-                                    for _ in range(20)], txt=f"rand,{budget}")] 
+                                    for _ in range(repeats)], txt=f"rand,{budget}")] 
       #-----------------------------------
       print(f"\n#report{len(all)}");eg0(all)
      
 #----------------------------------------------------------------------------------------
 if __name__ == "__main__":
-  the.cli()
+  the.cli() 
   random.seed(the.seed)
   getattr(Eg, the.todo, Eg.help)()
