@@ -14,8 +14,18 @@ flash:
 					../var/SS-F.out ../var/SS-G.out ../var/SS-H.out ../var/SS-I.out ../var/SS-J.out  \
 					../var/SS-K.out ../var/SS-L.out ../var/SS-M.out ../var/SS-N.out ../var/SS-O.out 
 
+usuals=../data
+usual:
+	$(MAKE) ../var/auto93.out   ../var/healthCloseIsses12mths0001-hard.out     \
+					../var/china.out   ../var/healthCloseIsses12mths0011-easy.out \
+				../var/coc1000.out ../var/nasa93dem.out ../var/nasa93demNums ../var/pom.out
+
+
 one:
 	echo $(bores)
+
+../var/%.out : $(usuals)/%.csv
+	echo "-- $@"; python3 eg.py -R $R -f $^ -t smoy | tee $@
 
 ../var/%.out : $(bores)/%.csv
 	echo "-- $@"; python3 eg.py -R $R -f $^ -t smoy | tee $@
