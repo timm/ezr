@@ -12,18 +12,18 @@ great('SS-C.csv',b,15)
 
 great('SS-D.csv',rand,50)         <== rand
 great('SS-D.csv',b,50)
-great('SS-D.csv',rand,20)         <== rand
+great('SS-D.csv',rand,20)         <== rand big winner
 
-great('SS-E.csv',rand,50)        <== rand
+great('SS-E.csv',rand,50)        <== rand  
 great('SS-E.csv',rand,27)        <== rand
 
 great('SS-F.csv',bonr,30)
-great('SS-F.csv',rand,30)        <== rand
-great('SS-F.csv','2b',9)
+great('SS-F.csv',rand,30)        <== rand 
+great('SS-F.csv','2b',9)         <=== winner
 
 great('SS-G.csv',bonr,30)
 great('SS-G.csv',rand,30)        <== rand
-great('SS-G.csv','2b',9)
+great('SS-G.csv','2b',9)         <== winner
 
 great('SS-H.csv',b,50)
 great('SS-H.csv',b,15)
@@ -35,7 +35,7 @@ great('SS-I.csv','2b',6)
 
 great('SS-J.csv',rand,30)       <== rand
 great('SS-J.csv','2rrp',12)
-great('SS-J.csv',rrp,6)
+great('SS-J.csv',rrp,6)         <== winner
 
 great('SS-K.csv',b,50)
 great('SS-K.csv',rand,50)       <== rand
