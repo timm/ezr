@@ -115,7 +115,9 @@ class Eg:
       print(f"rows : {len(d.rows)},")
       print(f"cols : {len(d.names)},")
       print(f"best : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}")
-      say("#base");all= [SAMPLE([d.d2h(row) for row in d.rows],        txt="base")] 
+      heavens = sorted([d.d2h(row) for row in d.rows])
+      heavens = heavens[:int(len(heavens)*.5)]
+      say("#base");all= [SAMPLE(heavens,        txt="base")] 
 
       for budget in sorted(set([n3,15,n5,n6,n7,n8])): 
         the.Budget = budget -  the.budget0 
@@ -150,7 +152,9 @@ class Eg:
       print(f"rows : {len(d.rows)},")
       print(f"cols : {len(d.names)},")
       print(f"best : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}")
-      say("#base");all= [SAMPLE([d.d2h(row) for row in d.rows], txt=f"base,{len(d.rows)}")] 
+      heavens = [d.d2h(row) for row in d.rows]
+      heavens = sorted(heavens)[:int(len(heavens)*.95)]
+      say("#base");all= [SAMPLE(heavens, txt=f"base,{len(d.rows)}")] 
 
       def _single(all):
         evals1 = 0

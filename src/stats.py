@@ -46,9 +46,10 @@ class SAMPLE:
 
   def bar(self, num, fmt="%8.3f", word="%10s", width=50):
     out  = [' '] * width
-    pos = lambda x: int(width * (x - self.lo) / (self.hi - self.lo + 1E-30))
+    cap = lambda x: 1 if x > 1 else (0 if x<0 else x)
+    pos = lambda x: int(width * cap((x - self.lo) / (self.hi - self.lo + 1E-30)))
     has = num.ok().has
-    [a, b, c, d, e]  = [has[int(len(has)*x)] for x in [0.5,0.25,0.5,0.75,0.95]]
+    [a, b, c, d, e]  = [has[int(len(has)*x)] for x in [0.05,0.25,0.5,0.75,0.95]]
     [na,nb,nc,nd,ne] = [pos(x) for x in [a,b,c,d,e]]
     for i in range(nb,nd): out[i] = "-"
     #for i in range(nd,ne): out[i] = "-"
