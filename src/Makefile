@@ -1,13 +1,14 @@
 -include ../Makefile
 R=20
 
-bores=~/gits/txt/aa24/data/Process/large
-B=-p10000-d9-o3-dataset1
+bores=~/gits/txt/aa24/data/Process/small
+
 X=-p10000-d27-o4-dataset1
 
 bore:
-	$(MAKE) ../out/POM3A$B.out ../out/POM3B$B.out ../out/POM3C$B.out ../out/POM3D$B.out \
-				  ../out/xomo_flight$X.out ../out/xomo_ground$X.out ../out/xomo_osp$X.out ../out/xomoo2$X.out
+	$(MAKE) \
+	  ../out/xomo_flight.out ../out/xomo_ground.out ../out/xomo_osp.out ../out/xomo_osp2.out \
+		../out/pom3a.out ../out/pom3b.out ../out/pom3c.out ../out/pom3d.out  
 
 flashes=~/gits/txt/aa24/data/flash
 
