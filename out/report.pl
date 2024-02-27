@@ -14,5 +14,6 @@ great(File,Rx1,Rank1,Sample1):-
         Sample2 < Sample1, Rank2 =< Rank1)).
 
 go :- G=great(File,Rx,Rank,Sample), G, G=..[_|L], print(L), nl, fail.
+go.
 
- 
+:- go,halt. 
