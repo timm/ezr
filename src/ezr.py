@@ -1,10 +1,10 @@
-# seen.py  : tiny ai teaching lab
+# ezr.py : tiny ai teaching lab. sequential model optimization (using not-so-naive bayes)
 # (c)2024, Tim Menzies, BSD2 license. Share and enjoy.
 import random,math,ast,sys,re
 from fileinput import FileInput as file_or_stdin
 
-config = dict(  begin=4,
-                budget=15,
+config = dict(  commence=4,
+                Cease=30,
                 enough=0.5,
                 file="../data/auto93.csv",
                 k=1,
@@ -22,7 +22,7 @@ tiny = 1/big
 isa  = isinstance
 r    = random.random
 
-def adds(x,lst): [x.add(y) for y in lst]; return x
+def adds(x,lst=None): [x.add(y) for y in lst or []]; return x
 
 def cli(d):
   for k,v in d.items():
@@ -109,29 +109,44 @@ class DATA(OBJ):
       i.rows += [i.cols.add(lst)]
     else: i.cols = COLS(lst)
 
-  def clone(i): return DATA([i.cols.names])
+  def clone(i,lst=None,ordered=False): 
+    tmp = adds(DATA([i.cols.names]), lst)
+    if ordered: tmp.ordered()
+    return tmp
 
+  def d2h(i,row):
+    d,n = 0,0
+    for col in i.cols.y:
+      d += abs(col.norm(row[col.at]) - col.heaven)**2
+      n += 1
+    return (d/n)**.5
+  
   def loglike(i, lst, nall, nh, m,k):
     prior = (len(i.rows) + k) / (nall + k*nh)
     likes = [c.like(lst[c.at],m,prior) for c in i.cols.x if lst[c.at] != "?"]
     return sum(math.log(x) for x in likes + [prior] if x>0)
 
+  def ordered(i): i.rows.sort(key=i.d2h); return i.rows
+
 # test cloning, sorting on d2h
   def smo(i, score=lambda B,R: B/(R+tiny)):
     def p(lst,data): 
       return data.loglike(lst,len(i.rows),2,the.m,the.m)
-    def acquire(best, rest, rows):
-      return max((score(p(r,best), p(r,rest)),j) for j,r in enumerate(rows)])[1]
+    def acquire(best, rest, rows): 
+      print("")
+      print(max([(score(p(r,best), p(r,rest)),j) for j,r in enumerate(rows)]))
+      return max((score(p(r,best), p(r,rest)),j) for j,r in enumerate(rows))[1]
     #---------------------
     random.shuffle(i.rows)
-    done, todo = i.rows[:the.begin], i.rows[the.begin:]
-    data1 = i.clone(done, order=True)
-    for _ in range(the.budget):
+    done, todo = i.rows[:the.commence], i.rows[the.commence:]
+    data1 = i.clone(done, ordered=True)
+    for step in range(the.Cease):
+      print(step)
       n = int(len(done)**the.enough + .5)
-      done.append(
-        todo.pop( 
-          acquire(i.clone(data1.rows[:n]), i.clone(data1.rows[n:]), todo)))
-      data1 = i.clone(done, order=True)
+      what2do = acquire(i.clone(data1.rows[:n]), i.clone(data1.rows[n:]), todo)
+      done.append( todo.pop(  what2do ))
+          
+      data1 = i.clone(done, ordered=True)
     return data1.rows[0]
 
 class NB(OBJ):
@@ -166,6 +181,17 @@ class eg:
     d = DATA(csv("../data/auto93.csv"), inc) 
     assert w.n == 3184
 
+  def clone(): 
+    d = DATA(csv(the.file))
+    c =d.clone()
+    print(d.cols.all[1])
+    print(c.cols.all[1])
+
+  def ordered():
+    d = DATA(csv(the.file),ordered=True)
+    for j,row in enumerate(d.rows):
+      if j%50==0: print(j,row)
+
   def nb():
     out=[]
     for k in [1,2,3]:
@@ -175,6 +201,11 @@ class eg:
         DATA(csv("../data/soybean.csv"), nb.run)
         out += [OBJ(acc = nb.report().accuracy, k=k, m=m)]
     [print(show(x,3)) for x in sorted(out,key=lambda z: z.acc)]
+
+  def smo():
+    d=DATA(csv(the.file),ordered=True)
+    print(d.d2h(d.rows[len(d.rows)//2]))
+    print(d.d2h(d.smo()))
 #----------------------------------------------------------------------------------------
 if __name__=="__main__":
   the = OBJ(**cli(config))
