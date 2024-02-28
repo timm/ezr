@@ -20,7 +20,7 @@ docs:
 	mkdir -p ~/tmp
 	echo "$@" 
 	a2ps                           \
-		-qBR                         \
+		-qBr                         \
 		--chars-per-line 100           \
 		--file-align=fill               \
 		--line-numbers=1                 \
