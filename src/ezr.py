@@ -84,7 +84,7 @@ class NUM(COL):
     denom = (2*math.pi*v)**.5
     return min(1, nom/(denom + tiny))   
 
-class COLS(OBJ):
+class COLS(OBJ):
   def __init__(i,names):
     i.x,i.y,i.all,i.names,i.klass = [],[],[],names,None
     for at,txt in enumerate(names):
