@@ -121,85 +121,52 @@ class DATA(struct):
   def div(self):
     return [col.entropy() if isa(col,SYM) else col.sd for col in self.cols]
   
-  # return all the rows binarizing all columns
   def binXRows(self):
-    # for each column, obtain the number of bins and their respective ranges if the column is not a goal
     bins = []
     for col in self.cols:
-      # check if the column is not a goal
       if col not in self.ys.values():
-        # obtain the number of bins and their respective ranges
         bins.append(self.binCol(col))
-
-    # using the number of bins create a vector of zeros with the same length as the number of bins
     vecSize = 0
     for b in bins:
       vecSize += b[0]
     binVec = [0] * vecSize
-
-    # build a matrix of zeros and ones with the same number of rows as the data set and the same number of columns as the number of bins
     binRows = [[0] * vecSize for _ in range(len(self.rows))]
-    # for each row in the data set convert transform it into a binary row
     for i, row in enumerate(self.rows):
-      # create a vector of zeros with the appropriate length for the size of each bin applied to each column
-      
       binVec = [0]  * vecSize
-      # for each column in the row
       curbin = 0
       offset = 0
       for j, col in enumerate(row):
-        #print(row)
-        # check if the column is not a goal using the index of the column
         if j not in self.ys:
           val = row[j]
-          # if the value is not missing:
           if val != "?":
-            # find the bin value of the column
             binVal = self.binColVal(self.cols[j], val, bins[curbin])
-            # set the value of the bin vector to 1
-
             binVec[offset + binVal] = 1
             offset += bins[curbin][0]
             curbin += 1
       binRows[i] = (i, binVec)
     return binRows
   
-  # return the converted value of a column into a bin vector
   def binColVal(self, col, val, bn):
-    # if the column is a symbol, find the index of the value in the range
     if isa(col, SYM):
-      #print("SYM", val, bn, bn[1].index(val))
       return bn[1].index(val)
     else:
-      # if the column is numerical, find the bin value of the value
       for i, (lo, hi) in enumerate(bn[1]):
-        # if checking the first bin, only check if the value is less than the upper bound
         if i == 0 and val < hi:
-          #print(col.txt, val, bn, i)
           return i
-        # if checking the last bin, only check if the value is greater than the lower bound
         elif i == len(bn[1]) - 1 and val >= lo:
-          #print(col.txt, val, bn, i)
           return i
         if lo <= val < hi:
-          #print(col.txt, val, bn, i)
           return i
-# return the number of bins for each column with their respective ranges
+
   def binCol(self, col):
     if isa(col, SYM):
-      #find the number of unique values
       nBins = len(col)
-      #find all the unique values and return them as self contained ranges
       ranges = [x for x in col]
       return nBins, ranges
     else:
-      #find the number of bins
       nBins = the.discretizationRange
-      #find the range of values
       ran = col.hi - col.lo
-      #find the size of each bin
       binSize = ran / nBins
-      #find the ranges for each bin
       ranges = [(col.lo + i * binSize, col.lo + (i + 1) * binSize) for i in range(nBins)]
       return nBins, ranges
 
@@ -351,7 +318,6 @@ class DATA(struct):
       return rows,rest,evals,before
     
   def rtree(self, items=None, stop=None):
-
     stop = stop or 2*len(items)**the.Min
     if len(items) > stop:
       leftN, leftR, rightN, rightR = self.halfBin(items)
@@ -361,14 +327,10 @@ class DATA(struct):
     return None, None, None, None, None, None
   
   def tree(self):
-    # convert the rows into a binary list of rows
     binRows = self.binXRows()
-
-    # create a list of items from the binary rows
     items = [Item(row) for row in binRows]
     left, lefts, leftR, right, rights, rightR, = self.rtree(items = items)
     root = Node(left, leftR, right, rightR, lefts, rights, items)
-
     return root
 
                                                
