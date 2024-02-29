@@ -138,7 +138,7 @@ class DATA(OBJ):
     random.shuffle(i.rows)
     done, todo = i.rows[:the.commence], i.rows[the.commence:]
     data1 = i.clone(done, ordered=True)
-    for step in range(the.Cease):
+    for _ in range(the.Cease):
       n = int(len(done)**the.enough + .5)
       now, *todo = acquire(i.clone(data1.rows[:n]),  
                            i.clone(data1.rows[n:]),
