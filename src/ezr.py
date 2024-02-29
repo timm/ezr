@@ -3,9 +3,9 @@
 import random,math,ast,sys,re
 from fileinput import FileInput as file_or_stdin
 
-config = dict(  beam = .75,
+config = dict(  beam = .7,
                 commence=4,
-                Cease=20,
+                Cease=40,
                 enough=0.5,
                 file="../data/auto93.csv",
                 k=1,
@@ -140,7 +140,7 @@ class DATA(OBJ):
     random.shuffle(i.rows)
     done, todo = i.rows[:the.commence], i.rows[the.commence:]
     data1 = i.clone(done, ordered=True)  
-    evals = 0
+    evals = the.commence
     for _ in range(the.Cease - the.commence):
       n = int(len(done)**the.enough + .5)
       top,*todo = acquire(i.clone(data1.rows[:n]),  
@@ -208,7 +208,7 @@ class eg:
   def smo():
     d=DATA(csv(the.file),ordered=True)
     b4   = d.rows[len(d.rows)//2]
-    for _ in range(30):
+    for _ in range(20):
       sys.stderr.write('.');  sys.stderr.flush()
       after,evals= d.smo()
       print("\n",show(dict(mid= d.d2h(b4),smo= d.d2h(after), evals=evals)),end="")

@@ -21,7 +21,7 @@ usuals=../data
 usual:
 	$(MAKE) ../out/auto93.out   ../out/healthCloseIsses12mths0001-hard.out     \
 					../out/china.out   ../out/healthCloseIsses12mths0011-easy.out \
-				../out/coc1000.out ../out/nasa93dem.out ../out/nasa93demNums ../out/pom.out
+				../out/coc1000.out ../out/nasa93dem.out  ../out/pom.out
 
 
 one:
