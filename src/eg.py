@@ -193,7 +193,10 @@ class Eg:
                                     for _ in range(repeats)], txt=f"rand,{budget}")] 
       #-----------------------------------
       print(f"\n#report{len(all)}");eg0(all)
-     
+
+  def test():
+    d = DATA(csv(the.file),order=False)
+    print(d.tree())
 #----------------------------------------------------------------------------------------
 if __name__ == "__main__":
   the.cli() 

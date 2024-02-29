@@ -15,9 +15,10 @@ OPTIONS:
      -B --Budget      subsequent evals           = 5   
      -c --cohen       small effect size          = .35  
      -C --confidence  statistical confidence     = .05
+     -d --discretizationRange    number of bins when discretizing numerical data for SNEAK = 8
      -e --effectSize  non-parametric small delta = 0.2385
      -E --Experiments number of Bootstraps       = 256
-     -f --file        csv data file name         = '../data/auto93.csv'  
+     -f --file        csv data file name         = '../data/healthCloseIsses12mths0011-easy.csv'  
      -F --Far         far search outlier control = .95 
      -h --help        print help                 = false
      -H --Half        #items for far search      = 256
@@ -38,6 +39,11 @@ from collections import Counter
 from stats import sk
 from etc import o,isa,struct,merges
 import etc
+from math import pi
+import numpy as np
+
+
+
 
 the = etc.THE(__doc__)
 tiny= sys.float_info.min 
@@ -115,6 +121,91 @@ class DATA(struct):
   def div(self):
     return [col.entropy() if isa(col,SYM) else col.sd for col in self.cols]
   
+  # return all the rows binarizing all columns
+  def binXRows(self):
+    # for each column, obtain the number of bins and their respective ranges if the column is not a goal
+    bins = []
+    for col in self.cols:
+      # check if the column is not a goal
+      if col not in self.ys.values():
+        # obtain the number of bins and their respective ranges
+        bins.append(self.binCol(col))
+
+    # using the number of bins create a vector of zeros with the same length as the number of bins
+    vecSize = 0
+    for b in bins:
+      vecSize += b[0]
+    binVec = [0] * vecSize
+
+    # build a matrix of zeros and ones with the same number of rows as the data set and the same number of columns as the number of bins
+    binRows = [[0] * vecSize for _ in range(len(self.rows))]
+    # for each row in the data set convert transform it into a binary row
+    for i, row in enumerate(self.rows):
+      # create a vector of zeros with the appropriate length for the size of each bin applied to each column
+      
+      binVec = [0]  * vecSize
+      # for each column in the row
+      curbin = 0
+      offset = 0
+      for j, col in enumerate(row):
+        #print(row)
+        # check if the column is not a goal using the index of the column
+        if j not in self.ys:
+          val = row[j]
+          # if the value is not missing:
+          if val != "?":
+            # find the bin value of the column
+            binVal = self.binColVal(self.cols[j], val, bins[curbin])
+            # set the value of the bin vector to 1
+
+            binVec[offset + binVal] = 1
+            offset += bins[curbin][0]
+            curbin += 1
+      binRows[i] = (i, binVec)
+    return binRows
+  
+  # return the converted value of a column into a bin vector
+  def binColVal(self, col, val, bn):
+    # if the column is a symbol, find the index of the value in the range
+    if isa(col, SYM):
+      #print("SYM", val, bn, bn[1].index(val))
+      return bn[1].index(val)
+    else:
+      # if the column is numerical, find the bin value of the value
+      for i, (lo, hi) in enumerate(bn[1]):
+        # if checking the first bin, only check if the value is less than the upper bound
+        if i == 0 and val < hi:
+          #print(col.txt, val, bn, i)
+          return i
+        # if checking the last bin, only check if the value is greater than the lower bound
+        elif i == len(bn[1]) - 1 and val >= lo:
+          #print(col.txt, val, bn, i)
+          return i
+        if lo <= val < hi:
+          #print(col.txt, val, bn, i)
+          return i
+# return the number of bins for each column with their respective ranges
+  def binCol(self, col):
+    if isa(col, SYM):
+      #find the number of unique values
+      nBins = len(col)
+      #find all the unique values and return them as self contained ranges
+      ranges = [x for x in col]
+      return nBins, ranges
+    else:
+      #find the number of bins
+      nBins = the.discretizationRange
+      #find the range of values
+      ran = col.hi - col.lo
+      #find the size of each bin
+      binSize = ran / nBins
+      #find the ranges for each bin
+      ranges = [(col.lo + i * binSize, col.lo + (i + 1) * binSize) for i in range(nBins)]
+      return nBins, ranges
+
+
+
+  
 #                                  _     
 #          _  |   _.   _   _  o  _|_     
 #         (_  |  (_|  _>  _>  |   |   \/ 
@@ -137,7 +228,7 @@ class DATA(struct):
         out += math.log((sym if isa(col,SYM) else num)(col, x))
     return out
             
-#          _   ._   _|_  o  ._ _   o  _    _   /| 
+#          _   ._   _|_  o  ._ _   o  _    _   /| 
 #         (_)  |_)   |_  |  | | |  |  /_  (/_   | 
 #              |                                  
 
@@ -206,7 +297,44 @@ class DATA(struct):
     for n,row in enumerate(sorted(rows, key=proj)):  
       (lefts if n < len(rows)/2 else rights).append(row)
     return lefts, rights, left
-
+  
+  def halfBin(self, items):
+    total_group=10
+    left = None
+    lefts = []
+    right = None
+    rights = []
+    rand = random.choice(items)
+    max_r = -float('inf')
+    min_r = float('inf')
+    for item in items:
+        item.r = sum(item.item)
+        item.d = sum([a_i - b_i for a_i, b_i in zip(item.item, rand.item)])
+        if item.r > max_r:
+            max_r = item.r
+        if item.r < min_r:
+            min_r = item.r
+    for item in items:
+        item.r = (item.r - min_r) / (max_r - min_r + 10 ** (-32))
+    R = {r.r for r in items}
+    for k in R:
+        group = [item for item in items if item.r == k]
+        group.sort(key=lambda z: z.d, reverse=True)
+        for i, value in enumerate(group):
+            value.theta = (2 * pi * (i + 1)) / len(group)
+    thk = max_r / total_group
+    for g_value in range(total_group):
+        group = [i for i in items if (g_value * thk) <= i.r <= ((g_value + 1) * thk)]
+        group.sort(key=lambda x: x.theta)
+        if len(group) > 0:
+            left = group[0]
+            right = group[len(group) - 1]
+            for i in group:
+                if i.theta <= pi:
+                    lefts.append(i)
+                else:
+                    rights.append(i)
+    return Node(None, None, None, None, None, None, lefts), left, Node(None, None, None, None, None, None, rights), right
 #                                              _  
 #          _   ._   _|_  o  ._ _   o  _    _    ) 
 #         (_)  |_)   |_  |  | | |  |  /_  (/_  /_ 
@@ -221,6 +349,28 @@ class DATA(struct):
       return self.branch(lefts, stop, rest+rights, evals+1, left)
     else:
       return rows,rest,evals,before
+    
+  def rtree(self, items=None, stop=None):
+
+    stop = stop or 2*len(items)**the.Min
+    if len(items) > stop:
+      leftN, leftR, rightN, rightR = self.halfBin(items)
+      leftN.left, leftN.lefts, leftN.leftR, leftN.right, leftN.rights, leftN.rightR = self.rtree(items = leftN.all, stop = stop)
+      rightN.left, rightN.lefts, rightN.leftR, rightN.right, rightN.rights, rightN.rightR = self.rtree(items = rightN.all,stop =  stop)
+      return leftN, leftN.all, leftR,  rightN, rightN.all, rightR
+    return None, None, None, None, None, None
+  
+  def tree(self):
+    # convert the rows into a binary list of rows
+    binRows = self.binXRows()
+
+    # create a list of items from the binary rows
+    items = [Item(row) for row in binRows]
+    left, lefts, leftR, right, rights, rightR, = self.rtree(items = items)
+    root = Node(left, leftR, right, rightR, lefts, rights, items)
+
+    return root
+
                                                
 #          _|  o   _   _  ._   _   _|_  o  _    _  
 #         (_|  |  _>  (_  |   (/_   |_  |  /_  (/_                                                
@@ -338,3 +488,28 @@ class DATA(struct):
 #     def top(self,lst):
 #       tmp = sorted(lst,key=lambda z:z.scored)
 #       return [x for x in tmp if x.scored > tmp[0].scored * the.adequate][the.ample]
+
+class Node(struct):
+  def __init__(self, left, leftR, right, rightR, lefts, rights, all):
+    self.left = left
+    self.leftR = leftR
+    self.right = right
+    self.rightR = rightR
+    self.lefts = lefts
+    self.rights = rights
+    self.all = all
+  def __repr__(self):
+    return f"Node(children={len(self.all)}\nleft={self.left}\nright={self.right})"
+
+
+class Item(struct):
+  def __init__(self, item):
+    self.item = item[1]
+    self.ev = []
+    self.r = -1
+    self.d = -1
+    self.theta = -1
+    self.score = 0
+    self.pos = item[0]
+    self.features = sum(self.item)
+
