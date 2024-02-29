@@ -82,7 +82,8 @@ class NUM(COL):
     v     = i.div()**2 + tiny
     nom   = math.e**(-1*(n - i.mid())**2/(2*v)) + tiny
     denom = (2*math.pi*v)**.5
-    return min(1, nom/(denom + tiny))
+    return min(1, nom/(denom + tiny))   
+
 class COLS(OBJ):
   def __init__(i,names):
     i.x,i.y,i.all,i.names,i.klass = [],[],[],names,None
@@ -128,24 +129,21 @@ class DATA(OBJ):
 
   def ordered(i): i.rows.sort(key=i.d2h); return i.rows
 
-# test cloning, sorting on d2h
-  def smo(i, score=lambda B,R: B/(R+tiny)):
-    def p(lst,data): 
-      return data.loglike(lst,len(i.rows),2,the.m,the.m)
+  def smo(i, score=lambda B,R: B - R ):
+    def like(row,data): 
+      return data.loglike(row,len(data.rows),2,the.m,the.m)
     def acquire(best, rest, rows): 
-      print("")
-      print(max([(score(p(r,best), p(r,rest)),j) for j,r in enumerate(rows)]))
-      return max((score(p(r,best), p(r,rest)),j) for j,r in enumerate(rows))[1]
+      return sorted(rows, key=lambda r: -score(like(r,best),like(r,rest)))
     #---------------------
     random.shuffle(i.rows)
     done, todo = i.rows[:the.commence], i.rows[the.commence:]
     data1 = i.clone(done, ordered=True)
     for step in range(the.Cease):
-      print(step)
       n = int(len(done)**the.enough + .5)
-      what2do = acquire(i.clone(data1.rows[:n]), i.clone(data1.rows[n:]), todo)
-      done.append( todo.pop(  what2do ))
-          
+      now, *todo = acquire(i.clone(data1.rows[:n]),  
+                           i.clone(data1.rows[n:]),
+                           todo)
+      done.append(now)  
       data1 = i.clone(done, ordered=True)
     return data1.rows[0]
 
