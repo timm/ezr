@@ -3,8 +3,9 @@
 import random,math,ast,sys,re
 from fileinput import FileInput as file_or_stdin
 
-config = dict(  commence=4,
-                Cease=30,
+config = dict(  beam = .75,
+                commence=4,
+                Cease=20,
                 enough=0.5,
                 file="../data/auto93.csv",
                 k=1,
@@ -83,7 +84,7 @@ class NUM(COL):
     nom   = math.e**(-1*(n - i.mid())**2/(2*v)) + tiny
     denom = (2*math.pi*v)**.5
     return min(1, nom/(denom + tiny))   
-
+#----------------------------------------------------------------------------------------
 class COLS(OBJ):
   def __init__(i,names):
     i.x,i.y,i.all,i.names,i.klass = [],[],[],names,None
@@ -133,19 +134,23 @@ class DATA(OBJ):
     def like(row,data): 
       return data.loglike(row,len(data.rows),2,the.m,the.m)
     def acquire(best, rest, rows): 
-      return sorted(rows, key=lambda r: -score(like(r,best),like(r,rest)))
+      chop=int(len(rows) * the.beam)
+      return sorted(rows, key=lambda r: -score(like(r,best),like(r,rest)))[:chop]
     #---------------------
     random.shuffle(i.rows)
     done, todo = i.rows[:the.commence], i.rows[the.commence:]
-    data1 = i.clone(done, ordered=True)
-    for _ in range(the.Cease):
+    data1 = i.clone(done, ordered=True)  
+    evals = 0
+    for _ in range(the.Cease - the.commence):
       n = int(len(done)**the.enough + .5)
-      now, *todo = acquire(i.clone(data1.rows[:n]),  
-                           i.clone(data1.rows[n:]),
-                           todo)
-      done.append(now)  
+      top,*todo = acquire(i.clone(data1.rows[:n]),  
+                          i.clone(data1.rows[n:]),
+                          todo) 
+      done.append(top)
+      evals += 1
       data1 = i.clone(done, ordered=True)
-    return data1.rows[0]
+      if len(todo) < 3: break
+    return data1.rows[0],evals
 
 class NB(OBJ):
   def __init__(i): i.correct,i.nall,i.datas = 0,0,{}
@@ -163,7 +168,7 @@ class NB(OBJ):
     i.datas[klass].add(lst)
 
   def report(i): return OBJ(accuracy = i.correct / i.nall)
-#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
 class eg:
   def unknown(): print(f"W> unknown action [{the.todo}].")
   
@@ -202,8 +207,11 @@ class eg:
 
   def smo():
     d=DATA(csv(the.file),ordered=True)
-    print(d.d2h(d.rows[len(d.rows)//2]))
-    print(d.d2h(d.smo()))
+    b4   = d.rows[len(d.rows)//2]
+    for _ in range(30):
+      sys.stderr.write('.');  sys.stderr.flush()
+      after,evals= d.smo()
+      print("\n",show(dict(mid= d.d2h(b4),smo= d.d2h(after), evals=evals)),end="")
 #----------------------------------------------------------------------------------------
 if __name__=="__main__":
   the = OBJ(**cli(config))
