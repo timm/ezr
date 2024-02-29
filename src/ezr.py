@@ -82,7 +82,7 @@ class NUM(COL):
   def like(i,n,*_):
     v     = i.div()**2 + tiny
     nom   = math.e**(-1*(n - i.mid())**2/(2*v)) + tiny
-    denom = (2*math.pi*v)**.5
+    denom = (2*math.pi*v)**.5  
     return min(1, nom/(denom + tiny))   
 #----------------------------------------------------------------------------------------
 class COLS(OBJ):
