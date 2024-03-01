@@ -139,18 +139,17 @@ class DATA(OBJ):
     #---------------------
     random.shuffle(i.rows)
     done, todo = i.rows[:the.commence], i.rows[the.commence:]
-    data1 = i.clone(done, ordered=True)  
-    evals = the.commence
+    data1 = i.clone(done, ordered=True)   
     for _ in range(the.Cease - the.commence):
       n = int(len(done)**the.enough + .5)
       top,*todo = acquire(i.clone(data1.rows[:n]),  
                           i.clone(data1.rows[n:]),
                           todo) 
-      done.append(top)
-      evals += 1
+      done.append(top) 
       data1 = i.clone(done, ordered=True)
+
       if len(todo) < 3: break
-    return data1.rows[0],evals
+    return data1.rows[0],len(data1.rows)
 
 class NB(OBJ):
   def __init__(i): i.correct,i.nall,i.datas = 0,0,{}
@@ -207,11 +206,15 @@ class eg:
 
   def smo():
     d=DATA(csv(the.file),ordered=True)
-    b4   = d.rows[len(d.rows)//2]
+    best = d.d2h(d.rows[0])
+    mid  = d.d2h(d.rows[len(d.rows)//2])
+    out  = []
     for _ in range(20):
       sys.stderr.write('.');  sys.stderr.flush()
       after,evals= d.smo()
-      print("\n",show(dict(mid= d.d2h(b4),smo= d.d2h(after), evals=evals)),end="")
+      out += [OBJ(mid= mid, best=best, smo= d.d2h(after), evals=evals)]
+    print("")
+    [print(show(x)) for x in  sorted(out,key=lambda z:z.smo)]
 #----------------------------------------------------------------------------------------
 if __name__=="__main__":
   the = OBJ(**cli(config))
