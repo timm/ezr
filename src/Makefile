@@ -28,11 +28,11 @@ one:
 	echo $(bores)
 
 ../out/%.out : $(usuals)/%.csv
-	echo "-- $@"; python3 eg.py -R $R -f $^ -t smoy | tee $@
+	echo "-- $@"; python3 eg.py -R $R -f $^ -g smoy | tee $@
 
 ../out/%.out : $(bores)/%.csv
 	echo $^
-	echo "-- $@"; python3 eg.py -R $R -f $^ -t smoy | tee $@
+	echo "-- $@"; python3 eg.py -R $R -f $^ -g smoy | tee $@
 
 ../out/%.out : $(flashes)/%.csv
-	echo "-- $@"; python3 eg.py -R $R -f $^ -t smoy | tee $@
+	echo "-- $@"; python3 eg.py -R $R -f $^ -g smoy | tee $@

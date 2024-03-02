@@ -8,10 +8,10 @@ config = dict(  beam = .7,
                 Cease=40,
                 enough=0.5,
                 file="../data/auto93.csv",
+                go="the",
                 k=1,
                 m=2,
-                seed=1234567891,
-                todo="the")
+                seed=1234567891)
 #----------------------------------------------------------------------------------------
 class OBJ:
   def __init__(i,**d): i.__dict__.update(d)
@@ -168,8 +168,8 @@ class NB(OBJ):
 
   def report(i): return OBJ(accuracy = i.correct / i.nall)
 #----------------------------------------------------------------------------------------
-class eg:
-  def unknown(): print(f"W> unknown action [{the.todo}].")
+class go:
+  def unknown(): print(f"W> unknown action [{the.go}].")
   
   def the():  print(the)
 
@@ -219,4 +219,4 @@ class eg:
 if __name__=="__main__":
   the = OBJ(**cli(config))
   random.seed(the.seed)
-  getattr(eg, the.todo, eg.unknown)()
+  getattr(go, the.go, go.unknown)()
