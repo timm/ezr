@@ -2,6 +2,7 @@
 # (c)2024, Tim Menzies, BSD2 license. Share and enjoy.
 import random,math,ast,sys,re
 from fileinput import FileInput as file_or_stdin
+from collections import Counter
 
 config = dict(  beam = .75,
                 Bins = 16,
@@ -66,19 +67,6 @@ class COL(OBJ):
   def __init__(i,at=0,txt=" "):
     i.n,i.at,i.txt = 0,at,txt
     i.heaven = 0 if txt[-1]=="-" else 1
-
-  def bin(i,x): return x if x=="?" else i.bin1(x)   
-
-  def bins(i,rowss,goal,BEST,REST):
-    xy = {}
-    for y,rows in rowss.items():
-      for row in rows:
-        x = row[col.at]
-        if x != "?": 
-          k = i.bin(x)
-          if k not in xy: xy[k] = RANGE(i.at, x)
-          xy[k].add(x,y)
-    return i.cut(sorted(xy.values(), key=lambda z:z.lo),goal,BEST,REST) 
   
   def score(d,goal,BEST,REST):
     rest=0
@@ -96,7 +84,15 @@ class SYM(COL):
   def mid(i)           : return max(i.has, key=i.has.get)
   def div(i):
     return -sum(n/i.n * math.log(n/i.n,2) for n in i.has.values() if n > 0)
-  def cuts(i,ranges,goal,BEST,REST):
+  def cuts(i,rowss,goal,BEST,REST):
+    x = lambda row:row[i.at]
+    lhs, rhs = Counter(), Counter()
+reds      for row in rows:
+        if x(row) != "?": xy=[(x(row),y)]
+        Counter()
+    rows = sorted(rows, key=lambda r: -big if x(r) == "?" else x(r))
+    left,right = Counter(),Counter([])
+    
     return max(ranges, key=lambda r: score(range.has,goal,BEST,REST))
 
 class NUM(COL):
