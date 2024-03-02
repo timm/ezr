@@ -1,6 +1,6 @@
 # ezr.py : tiny ai teaching lab. sequential model optimization (using not-so-naive bayes)
 # (c)2024, Tim Menzies, BSD2 license. Share and enjoy.
-import random,math,ast,sys,re
+import traceback,random,math,ast,sys,re
 from fileinput import FileInput as file_or_stdin
 
 config = dict(  beam = .7,
@@ -8,7 +8,7 @@ config = dict(  beam = .7,
                 Cease=40,
                 enough=0.5,
                 file="../data/auto93.csv",
-                go="the",
+                main="the",
                 k=1,
                 m=2,
                 seed=1234567891)
@@ -168,14 +168,14 @@ class NB(OBJ):
 
   def report(i): return OBJ(accuracy = i.correct / i.nall)
 #----------------------------------------------------------------------------------------
-class go:
-  def unknown(): print(f"W> unknown action [{the.go}].")
+class main:
+  def unknown(): print(f"W> unknown action [{the.main}].")
   
   def the():  print(the)
 
-  def sym():
+  def sym(): 
     s = adds(SYM(),"aaaabbc")
-    assert round(s.div(),2) == 1.38 and s.mid() == "a" 
+    assert 1.38==round(s.div(),2) and s.mid() == "a" ,"sym"
 
   def one():
     w = OBJ(n=0)
@@ -219,4 +219,5 @@ class go:
 if __name__=="__main__":
   the = OBJ(**cli(config))
   random.seed(the.seed)
-  getattr(go, the.go, go.unknown)()
+  try:   getattr(main, the.main, main.unknown)() 
+  except Exception:   traceback.print_exc()
