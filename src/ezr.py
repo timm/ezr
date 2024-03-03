@@ -15,14 +15,18 @@ OPTIONS:
 """ 
 import traceback,random,math,ast,sys,re
 from fileinput import FileInput as file_or_stdin
+options = {m[1]:m[2] for m in re.finditer("--(\S+)[^=]*=\s*(\S+)",__doc__)}
 #----------------------------------------------------------------------------------------
 class OBJ:
-  def __init__(i,**d): i.__dict__.update(d)
-  def __repr__(i)    : return i.__class__.__name__+'{'+show(i.__dict__)+'}'
-  def fromCli(i)     : cli(i.__dict__); return i
-  def fromDoc(i)     :
-    pat="--(\S+)[^=]*=\s*(\S+)"
-    for m in re.finditer(pat,__doc__): i.__dict__[m[1]] = coerce(m[2]); return i
+  def __init__(i,**d) : i.__dict__.update(d)
+  def __repr__(i)     : return i.__class__.__name__+'{'+show(i.__dict__)+'}' 
+  def cliUpdate(i)    : cli(i.__dict__)
+
+the     = OBJ(**options) 
+big     = 1E30
+tiny    = 1/big 
+r       = random.random
+isa     = isinstance 
 
 def adds(x,lst=None): [x.add(y) for y in lst or []]; return x
 
@@ -33,7 +37,7 @@ def cli(d):
       if arg in ["-"+k[0], "--"+k]:
        x = str(v)
        x = "False" if v==True else ("True" if v==False else after)
-       d[k] = coerce(x) 
+       d[k] = coerce(x)  
 
 def coerce(s):
   try: return ast.literal_eval(s)
@@ -46,18 +50,10 @@ def csv(file=None):
       if line: yield [coerce(s.strip()) for s in line.split(",")]
 
 def show(x,n=2):
-  if isa(x,(int,float)) : return x if int(x)==x else round(x,n)
-  if isa(x,(list,tuple)): return [show(y,n) for y in x][:10]
-  if isa(x,dict): 
-    return ' '.join(f":{k} {show(v,n)}" for k,v in x.items() if k[0]!="_")
+  if   isa(x,(int,float)) : x= x if int(x)==x else round(x,n)
+  elif isa(x,(list,tuple)): x= [show(y,n) for y in x][:10]
+  elif isa(x,dict)        : x= ', '.join(f"{k}={show(v,n)}" for k,v in x.items() if k[0]!="_")
   return x
-
-the  = OBJ().fromDoc().fromCli()
-big  = 1E30
-tiny = 1/big
-isa  = isinstance
-r    = random.random
-print(the.seed)
 #----------------------------------------------------------------------------------------
 class COL(OBJ):
   def __init__(i,at=0,txt=" "):
@@ -164,13 +160,13 @@ class NB(OBJ):
   def loglike(i,data,lst):
     return data.loglike(lst, i.nall, len(i.datas), the.m, the.k)
 
-  def run(i,data,lst):
+  def run(i,data,lst): 
     klass = lst[data.cols.klass.at]
     i.nall += 1
     if i.nall > 10:
       guess = max((i.loglike(data,lst),klass1) for klass1,data in i.datas.items())
       i.correct += klass == guess[1] 
-    if klass not in i.datas: i.datas[klass] =  data.clone()
+    if klass not in i.datas: i.datas[klass] =  data.clone() 
     i.datas[klass].add(lst)
 
   def report(i): return OBJ(accuracy = i.correct / i.nall)
@@ -203,11 +199,11 @@ class main:
 
   def nb():
     out=[]
-    for k in [1,2,3]:
-      for m in [1,2,3]: 
+    for k in [0,1,2,3]:
+      for m in [0.001,1,2,3]: 
         the.k, the.m = k,m
         nb = NB()
-        DATA(csv("../data/soybean.csv"), nb.run)
+        DATA(csv(the.file), nb.run)
         out += [OBJ(acc = nb.report().accuracy, k=k, m=m)]
     [print(show(x,3)) for x in sorted(out,key=lambda z: z.acc)]
 
@@ -224,7 +220,6 @@ class main:
     [print(show(x)) for x in  sorted(out,key=lambda z:z.smo)]
 #----------------------------------------------------------------------------------------
 if __name__=="__main__":
-  the = OBJ().fromDoc()
+  the.cliUpdate()
   random.seed(the.seed)
-  try:   getattr(main, the.main, main.unknown)() 
-  except Exception:   traceback.print_exc()
+  getattr(main, the.main, main.unknown)()
