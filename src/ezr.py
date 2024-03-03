@@ -19,22 +19,21 @@ from fileinput import FileInput as file_or_stdin
 class OBJ:
   def __init__(i,**d): i.__dict__.update(d)
   def __repr__(i)    : return i.__class__.__name__+'{'+show(i.__dict__)+'}'
-  def fromCli(i)    : cli(i.__dict__); return i
-  def fromDoc(i, s=__doc__, pat="--(\S+)[^=]*=\s*(\S+)"):
-    for m in re.finditer(pat,s): i.__dict__[m[1]] = coerce(m[2]); return i
+  def fromCli(i)     : cli(i.__dict__); return i
+  def fromDoc(i)     :
+    pat="--(\S+)[^=]*=\s*(\S+)"
+    for m in re.finditer(pat,__doc__): i.__dict__[m[1]] = coerce(m[2]); return i
 
 def adds(x,lst=None): [x.add(y) for y in lst or []]; return x
 
 def cli(d):
-  for c,arg in enumerate(sys.argv):
-    x = None
-    for k,v in d.items():
+  for k,v in d.items():
+    for c,arg in enumerate(sys.argv):
       after = "" if c >= len(sys.argv) - 1 else sys.argv[c+1]
       if arg in ["-"+k[0], "--"+k]:
        x = str(v)
        x = "False" if v==True else ("True" if v==False else after)
-       d[k] = coerce(x)
-    assert x!=None, f"unknown command-line flag {arg}"
+       d[k] = coerce(x) 
 
 def coerce(s):
   try: return ast.literal_eval(s)
