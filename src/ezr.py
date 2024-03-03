@@ -1,39 +1,40 @@
-# ezr.py : tiny ai teaching lab. sequential model optimization (using not-so-naive bayes)
-# (c)2024, Tim Menzies, BSD2 license. Share and enjoy.
+"""
+ezr.py : tiny ai teaching lab. sequential model optimization (using not-so-naive bayes)
+(c)2024, Tim Menzies, BSD2 license. Share and enjoy."
+
+OPTIONS:
+  --beam      how much to keep                  = .7
+  --commence  initial number of evaluations     = 4
+  --Cease     total number of evaluations       = 20
+  --enough    use is N**enough                  =.5
+  --file      csv file with row1 column names   =  "../data/auto93.csv"
+  --main      start up action                   = the
+  --k         Bayes low attribute count kludge  = 1
+  --m         Bayes low class frequency kludge  = 2
+  --seed      random number seed                = 1234567891
+""" 
 import traceback,random,math,ast,sys,re
 from fileinput import FileInput as file_or_stdin
-
-config = dict(  beam = .7,
-                commence=4,
-                Cease=40,
-                enough=0.5,
-                file="../data/auto93.csv",
-                main="the",
-                k=1,
-                m=2,
-                seed=1234567891)
 #----------------------------------------------------------------------------------------
 class OBJ:
   def __init__(i,**d): i.__dict__.update(d)
-  def __repr__(i): return i.__class__.__name__+'{'+show(i.__dict__)+'}'
-
-the  = OBJ(**config)
-big  = 1E30
-tiny = 1/big
-isa  = isinstance
-r    = random.random
+  def __repr__(i)    : return i.__class__.__name__+'{'+show(i.__dict__)+'}'
+  def fromCli(i)    : cli(i.__dict__); return i
+  def fromDoc(i, s=__doc__, pat="--(\S+)[^=]*=\s*(\S+)"):
+    for m in re.finditer(pat,s): i.__dict__[m[1]] = coerce(m[2]); return i
 
 def adds(x,lst=None): [x.add(y) for y in lst or []]; return x
 
 def cli(d):
-  for k,v in d.items():
-    for c,arg in enumerate(sys.argv):
+  for c,arg in enumerate(sys.argv):
+    x = None
+    for k,v in d.items():
       after = "" if c >= len(sys.argv) - 1 else sys.argv[c+1]
       if arg in ["-"+k[0], "--"+k]:
-        v = str(v)
-        v = "False" if v==True else ("True" if v==False else after)
-        d[k] = coerce(v)
-  return d
+       x = str(v)
+       x = "False" if v==True else ("True" if v==False else after)
+       d[k] = coerce(x)
+    assert x!=None, f"unknown command-line flag {arg}"
 
 def coerce(s):
   try: return ast.literal_eval(s)
@@ -51,6 +52,13 @@ def show(x,n=2):
   if isa(x,dict): 
     return ' '.join(f":{k} {show(v,n)}" for k,v in x.items() if k[0]!="_")
   return x
+
+the  = OBJ().fromDoc().fromCli()
+big  = 1E30
+tiny = 1/big
+isa  = isinstance
+r    = random.random
+print(the.seed)
 #----------------------------------------------------------------------------------------
 class COL(OBJ):
   def __init__(i,at=0,txt=" "):
@@ -217,7 +225,7 @@ class main:
     [print(show(x)) for x in  sorted(out,key=lambda z:z.smo)]
 #----------------------------------------------------------------------------------------
 if __name__=="__main__":
-  the = OBJ(**cli(config))
+  the = OBJ().fromDoc()
   random.seed(the.seed)
   try:   getattr(main, the.main, main.unknown)() 
   except Exception:   traceback.print_exc()
