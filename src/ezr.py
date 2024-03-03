@@ -198,6 +198,9 @@ class main:
       if j%50==0: print(j,row)
 
   def nb():
+    if the.file != "../data/soybean.csv":
+      val= input(f"Expected soybean, got {the.file}. Type 'y' to continue. ")
+      if val !="y": return 
     out=[]
     for k in [0,1,2,3]:
       for m in [0.001,1,2,3]: 
