@@ -33,11 +33,9 @@ def adds(x,lst=None): [x.add(y) for y in lst or []]; return x
 def cli(d):
   for k,v in d.items():
     for c,arg in enumerate(sys.argv):
-      after = "" if c >= len(sys.argv) - 1 else sys.argv[c+1]
       if arg in ["-"+k[0], "--"+k]:
-       x = str(v)
-       x = "False" if v==True else ("True" if v==False else after)
-       d[k] = coerce(x)  
+        v =  "False" if v==True else ("True" if v==False else sys.argv[c+1])
+        d[k] = coerce(v)
 
 def coerce(s):
   try: return ast.literal_eval(s)
