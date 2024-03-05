@@ -162,12 +162,14 @@ class DATA(struct):
     if isa(col, SYM):
       nBins = len(col)
       ranges = [x for x in col]
+      print(nBins, ranges, "Sym")
       return nBins, ranges
     else:
       nBins = the.discretizationRange
       ran = col.hi - col.lo
       binSize = ran / nBins
       ranges = [(col.lo + i * binSize, col.lo + (i + 1) * binSize) for i in range(nBins)]
+      print(nBins, ranges, "Num")
       return nBins, ranges
 
 

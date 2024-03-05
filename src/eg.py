@@ -196,7 +196,7 @@ class Eg:
 
   def test():
     d = DATA(csv(the.file),order=False)
-    print(d.tree())
+    d.binXRows()
 #----------------------------------------------------------------------------------------
 if __name__ == "__main__":
   the.cli() 
