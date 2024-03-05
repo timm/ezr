@@ -1,28 +1,22 @@
-"""
+import traceback,random,math,ast, sys,re
+from fileinput import FileInput as file_or_stdin
+help="""
 ezr.py : tiny ai teaching lab. sequential model optimization (using not-so-naive bayes)
 (c)2024, Tim Menzies, BSD2 license. Share and enjoy."
 
 OPTIONS:
-  --beam      how much to keep                  = .7
-  --commence  initial number of evaluations     = 4
-  --Cease     total number of evaluations       = 20
-  --enough    use is N**enough                  =.5
-  --file      csv file with row1 column names   =  "../data/auto93.csv"
-  --main      start up action                   = the
-  --k         Bayes low attribute count kludge  = 1
-  --m         Bayes low class frequency kludge  = 2
-  --seed      random number seed                = 1234567891
+  --beam      -b  how much to keep                  = .7
+  --commence  -c  initial number of evaluations     = 4
+  --Cease     -C  total number of evaluations       = 20
+  --enough    -e  use is N**enough                  =.5
+  --file      -f  csv file with row1 column names   =  "../data/auto93.csv"
+  --help      -h  show help text                    = False
+  --main      -m  start up action                   = the
+  --k         -k  Bayes low attribute count kludge  = 1
+  --m         -m  Bayes low class frequency kludge  = 2
+  --seed      -s  random number seed                = 1234567891
 """ 
-import traceback,random,math,ast,sys,re
-from fileinput import FileInput as file_or_stdin
-options = {m[1]:m[2] for m in re.finditer("--(\S+)[^=]*=\s*(\S+)",__doc__)}
 #----------------------------------------------------------------------------------------
-class OBJ:
-  def __init__(i,**d) : i.__dict__.update(d)
-  def __repr__(i)     : return i.__class__.__name__+'{'+show(i.__dict__)+'}' 
-  def cliUpdate(i)    : cli(i.__dict__)
-
-the     = OBJ(**options) 
 big     = 1E30
 tiny    = 1/big 
 r       = random.random
@@ -30,17 +24,20 @@ isa     = isinstance
 
 def adds(x,lst=None): [x.add(y) for y in lst or []]; return x
 
+# tag::cli[]   
+def coerce(s):
+  try: return ast.literal_eval(s)
+  except Exception:  return s 
+  
 def cli(d):
   for k,v in d.items():
     for c,arg in enumerate(sys.argv):
       if arg in ["-"+k[0], "--"+k]:
-        v =  "False" if v==True else ("True" if v==False else sys.argv[c+1])
+        v = str(v)
+        v = "False" if v=="True" else ("True" if v=="False" else sys.argv[c+1])
         d[k] = coerce(v)
-
-def coerce(s):
-  try: return ast.literal_eval(s)
-  except Exception: return s
-
+# end::cli[]
+               
 def csv(file=None):
   with file_or_stdin(file) as src:
     for line in src:
@@ -52,6 +49,14 @@ def show(x,n=2):
   elif isa(x,(list,tuple)): x= [show(y,n) for y in x][:10]
   elif isa(x,dict)        : x= ', '.join(f"{k}={show(v,n)}" for k,v in x.items() if k[0]!="_")
   return x
+ 
+class OBJ:
+  def __init__(i,**d) : i.__dict__.update(d)
+  def __repr__(i)     : return i.__class__.__name__+'{'+show(i.__dict__)+'}' 
+  def cliUpdate(i)    : cli(i.__dict__)
+
+options = {m[1]:coerce(m[2]) for m in re.finditer("--(\S+)[^=]*=\s*(\S+)",help)}
+the     = OBJ(**options) 
 #----------------------------------------------------------------------------------------
 class COL(OBJ):
   def __init__(i,at=0,txt=" "):
@@ -222,5 +227,6 @@ class main:
 #----------------------------------------------------------------------------------------
 if __name__=="__main__":
   the.cliUpdate()
+  if the.help:  sys.exit(print(help))  #<1> 
   random.seed(the.seed)
-  getattr(main, the.main, main.unknown)()
+  getattr(main, the.main, main.unknown)() #<2>

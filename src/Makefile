@@ -1,6 +1,9 @@
 -include ../Makefile
 R=20
 
+
+
+
 bores=~/gits/txt/aa24/data/Process/small
 
 X=-p10000-d27-o4-dataset1
@@ -36,3 +39,7 @@ one:
 
 ../out/%.out : $(flashes)/%.csv
 	echo "-- $@"; python3 eg.py -R $R -f $^ -g smoy | tee $@
+
+
+../%.html : %.adoc
+	asciidoctor  -o $@ $^
