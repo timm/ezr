@@ -1,0 +1,4 @@
+extends: default
+base:
+  font_size: 5
+  line_height_length: 6

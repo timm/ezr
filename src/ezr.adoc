@@ -1,0 +1,55 @@
+= 101 tips for Human-Level AI
+Tim Menzies <timm@ieee.org>
+:reproducible:
+:sidebar: sidebar
+:listing-caption: Listing
+:source-highlighter: rouge
+:rouge-style:  github 
+//:pdf-page-layout: landscape
+//:pdf-themesdir: ./
+:pdf-theme: some
+:toc:
+// Uncomment next line to add a title page (or set doctype to book)
+:title-page:
+// Uncomment next line to set page size (default is A4)
+:pdf-page-size: Letter
+ 
+==   A Bounty of Basic Principles for SE and AI   
+
+As we learn Computer Science, students explore 
+advanced topics in  many areas like Operating Systems and Programming Languages 
+and Machine Learning. Often, we focus on the hard stuff, since its cool or fashionable.  Which means
+sometimes we skip over certain simpler ideas that are very useful.
+
+So let's try something different. 
+
+Over the years, while working with  teach several classes at MIT, and over and over we have seen that many students have limited knowledge of the tools available to them. Computers were built to automate manual tasks, yet students often perform repetitive tasks by hand or fail to take full advantage of powerful tools such as version control and text editors. In the best case, this results in inefficiencies and wasted time; in the worst case, it results in issues like data loss or inability to complete certain tasks.
+
+These topics are not taught as part of the university curriculum: students are never shown how to use these tools, or at least not how to use them efficiently, and thus waste time and effort on tasks that should be simple. The standard CS curriculum is missing critical topics about the computing ecosystem that could make students’ lives significantly easier.
+
+
+The other year, when I asked my grad class "who knows about regular expressions" As teaching methods change, and computer science is marketed to a broader audience,
+certain basics sometimes get skipped over. 
+
+A paragraph followed by an unordered list{empty}footnote:[AsciiDoc supports unordered, ordered, and description lists.] with square bullets.footnote:[You may choose from square, disc, and circle for the bullet style.]
+
+[square]
+* item 1
+* item 2
+* item 3
+
+== Main
+
+Here's how you say "`Hello, World!`" in Prawn:
+
+.Create a basic PDF document using Prawn
+[source,python]
+----
+include::ezr.py[tag=cli]
+----
+<1> asdsadasasa asdasd  asdasddasas
+<2> asdasdsdasds 
+
+== Conclusion
+
+That's all, folks!

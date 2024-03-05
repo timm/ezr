@@ -1,0 +1,1252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>ezr API documentation</title>
+<meta name="description" content="ezr.py : tiny ai teaching lab. sequential model optimization (using not-so-naive bayes)
+(c)2024, Tim Menzies, BSD2 license. Share and enjoy.&#34; …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<div style="background-color: #EEE; margin: 10px; padding-left:10px; padding-right:10px">
+<p style="text-align:right">
+<span style="float:left">
+<a href="https://github.com/timm/easy/blob/main/LICENSE.md">&copy;2024</a> Tim Menzies
+</span>
+See also: <a href="ez.html">ez</a> :: <a href="etc.html">etc</a> :: <a href="eg.html">eg</a>
+</p>
+</div>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>ezr</code></h1>
+</header>
+<section id="section-intro">
+<p>ezr.py : tiny ai teaching lab. sequential model optimization (using not-so-naive bayes)
+(c)2024, Tim Menzies, BSD2 license. Share and enjoy."</p>
+<h2 id="options">Options</h2>
+<p>&ndash;beam
+-b
+how much to keep
+= .7
+&ndash;commence
+-c
+initial number of evaluations
+= 4
+&ndash;Cease
+-C
+total number of evaluations
+= 20
+&ndash;enough
+-e
+use is N**enough
+=.5
+&ndash;file
+-f
+csv file with row1 column names
+=
+"../data/auto93.csv"
+&ndash;help
+-h
+show help text
+= False
+&ndash;main
+-m
+start up action
+= the
+&ndash;k
+-k
+Bayes low attribute count kludge
+= 1
+&ndash;m
+-m
+Bayes low class frequency kludge
+= 2
+&ndash;seed
+-s
+random number seed
+= 1234567891</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+ezr.py : tiny ai teaching lab. sequential model optimization (using not-so-naive bayes)
+(c)2024, Tim Menzies, BSD2 license. Share and enjoy.&#34;
+
+OPTIONS:
+  --beam      -b  how much to keep                  = .7
+  --commence  -c  initial number of evaluations     = 4
+  --Cease     -C  total number of evaluations       = 20
+  --enough    -e  use is N**enough                  =.5
+  --file      -f  csv file with row1 column names   =  &#34;../data/auto93.csv&#34;
+  --help      -h  show help text                    = False
+  --main      -m  start up action                   = the
+  --k         -k  Bayes low attribute count kludge  = 1
+  --m         -m  Bayes low class frequency kludge  = 2
+  --seed      -s  random number seed                = 1234567891
+&#34;&#34;&#34; 
+import traceback,random,math,ast, sys,re
+from fileinput import FileInput as file_or_stdin
+#----------------------------------------------------------------------------------------
+big     = 1E30
+tiny    = 1/big 
+r       = random.random
+isa     = isinstance 
+
+def adds(x,lst=None): [x.add(y) for y in lst or []]; return x
+
+def cli(d):
+  for k,v in d.items():
+    for c,arg in enumerate(sys.argv):
+      if arg in [&#34;-&#34;+k[0], &#34;--&#34;+k]:
+        v = str(v)
+        v = &#34;False&#34; if v==&#34;True&#34; else (&#34;True&#34; if v==&#34;False&#34; else sys.argv[c+1])
+        d[k] = coerce(v)
+  
+def coerce(s):
+  try: return ast.literal_eval(s)
+  except Exception:  return s 
+
+def csv(file=None):
+  with file_or_stdin(file) as src:
+    for line in src:
+      line = re.sub(r&#39;([\n\t\r&#34;\’ ]|#.*)&#39;, &#39;&#39;, line)
+      if line: yield [coerce(s.strip()) for s in line.split(&#34;,&#34;)]
+
+def show(x,n=2):
+  if   isa(x,(int,float)) : x= x if int(x)==x else round(x,n)
+  elif isa(x,(list,tuple)): x= [show(y,n) for y in x][:10]
+  elif isa(x,dict)        : x= &#39;, &#39;.join(f&#34;{k}={show(v,n)}&#34; for k,v in x.items() if k[0]!=&#34;_&#34;)
+  return x
+
+class OBJ:
+  def __init__(i,**d) : i.__dict__.update(d)
+  def __repr__(i)     : return i.__class__.__name__+&#39;{&#39;+show(i.__dict__)+&#39;}&#39; 
+  def cliUpdate(i)    : cli(i.__dict__)
+
+options = {m[1]:coerce(m[2]) for m in re.finditer(&#34;--(\S+)[^=]*=\s*(\S+)&#34;,__doc__)}
+the     = OBJ(**options) 
+#----------------------------------------------------------------------------------------
+class COL(OBJ):
+  def __init__(i,at=0,txt=&#34; &#34;):
+    i.n,i.at,i.txt = 0,at,txt
+    i.heaven = 0 if txt[-1]==&#34;-&#34; else 1
+
+class SYM(COL):
+  def __init__(i,**d)  : super().__init__(**d); i.has={}
+  def add(i,x)         : i.n += 1; i.has[x] = 1 + i.has.get(x,0)
+  def like(i,x,m,prior): return (i.has.get(x, 0) + m*prior) / (i.n + m)
+  def mid(i)           : return max(i.has, key=i.has.get)
+  def div(i):
+    return -sum(n/i.n * math.log(n/i.n,2) for n in i.has.values() if n &gt; 0)
+
+class NUM(COL):
+  def __init__(i,**d): super().__init__(**d); i.mu,i.m2,i.lo,i.hi = 0,0,big,-big
+  def div(i)         : return 0 if i.n &lt; 2 else (i.m2 / (i.n - 1))**.5
+  def mid(i)         : return i.mu
+  def norm(i,n)      : return n==&#34;?&#34; and n or (n - i.lo) / (i.hi - i.lo + tiny)
+
+  def add(i,n):
+    i.n += 1
+    i.lo = min(n,i.lo)
+    i.hi = max(n,i.hi)
+    delta = n - i.mu
+    i.mu += delta / i.n
+    i.m2 += delta * (n -  i.mu)
+
+  def like(i,n,*_):
+    v     = i.div()**2 + tiny
+    nom   = math.e**(-1*(n - i.mid())**2/(2*v)) + tiny
+    denom = (2*math.pi*v)**.5  
+    return min(1, nom/(denom + tiny))   
+#----------------------------------------------------------------------------------------
+class COLS(OBJ):
+  def __init__(i,names):
+    i.x,i.y,i.all,i.names,i.klass = [],[],[],names,None
+    for at,txt in enumerate(names):
+      a,z = txt[0], txt[-1]
+      col = (NUM if a.isupper() else SYM)(at=at,txt=txt)
+      i.all.append(col)
+      if z != &#34;X&#34;:
+        (i.y if z in &#34;!+-&#34; else i.x).append(col)
+        if z == &#34;!&#34;: i.klass= col
+
+  def add(i,lst): 
+    [col.add(lst[col.at]) for col in i.all if lst[col.at] != &#34;?&#34;]; return lst
+
+class DATA(OBJ):
+  def __init__(i,src=[],fun=None,ordered=False):
+    i.rows, i.cols = [],[]
+    [i.add(lst,fun) for lst in src]
+    if ordered: i.ordered()
+
+  def add(i,lst,fun=None):
+    if i.cols:
+      if fun: fun(i,lst)
+      i.rows += [i.cols.add(lst)]
+    else: i.cols = COLS(lst)
+
+  def clone(i,lst=None,ordered=False): 
+    tmp = adds(DATA([i.cols.names]), lst)
+    if ordered: tmp.ordered()
+    return tmp
+
+  def d2h(i,row):
+    d,n = 0,0
+    for col in i.cols.y:
+      d += abs(col.norm(row[col.at]) - col.heaven)**2
+      n += 1
+    return (d/n)**.5
+  
+  def loglike(i, lst, nall, nh, m,k):
+    prior = (len(i.rows) + k) / (nall + k*nh)
+    likes = [c.like(lst[c.at],m,prior) for c in i.cols.x if lst[c.at] != &#34;?&#34;]
+    return sum(math.log(x) for x in likes + [prior] if x&gt;0)
+
+  def ordered(i): i.rows.sort(key=i.d2h); return i.rows
+
+  def smo(i, score=lambda B,R: B - R ):
+    def like(row,data): 
+      return data.loglike(row,len(data.rows),2,the.m,the.m)
+    def acquire(best, rest, rows): 
+      chop=int(len(rows) * the.beam)
+      return sorted(rows, key=lambda r: -score(like(r,best),like(r,rest)))[:chop]
+    #---------------------
+    random.shuffle(i.rows)
+    done, todo = i.rows[:the.commence], i.rows[the.commence:]
+    data1 = i.clone(done, ordered=True)   
+    for _ in range(the.Cease - the.commence):
+      n = int(len(done)**the.enough + .5)
+      top,*todo = acquire(i.clone(data1.rows[:n]),  
+                          i.clone(data1.rows[n:]),
+                          todo) 
+      done.append(top) 
+      data1 = i.clone(done, ordered=True)
+
+      if len(todo) &lt; 3: break
+    return data1.rows[0],len(data1.rows)
+
+class NB(OBJ):
+  def __init__(i): i.correct,i.nall,i.datas = 0,0,{}
+
+  def loglike(i,data,lst):
+    return data.loglike(lst, i.nall, len(i.datas), the.m, the.k)
+
+  def run(i,data,lst): 
+    klass = lst[data.cols.klass.at]
+    i.nall += 1
+    if i.nall &gt; 10:
+      guess = max((i.loglike(data,lst),klass1) for klass1,data in i.datas.items())
+      i.correct += klass == guess[1] 
+    if klass not in i.datas: i.datas[klass] =  data.clone() 
+    i.datas[klass].add(lst)
+
+  def report(i): return OBJ(accuracy = i.correct / i.nall)
+#----------------------------------------------------------------------------------------
+class main:
+  def unknown(): print(f&#34;W&gt; unknown action [{the.main}].&#34;)
+  
+  def the():  print(the)
+
+  def sym(): 
+    s = adds(SYM(),&#34;aaaabbc&#34;)
+    assert 1.38==round(s.div(),2) and s.mid() == &#34;a&#34; ,&#34;sym&#34;
+
+  def one():
+    w = OBJ(n=0)
+    def inc(_,r): w.n += len(r)
+    d = DATA(csv(&#34;../data/auto93.csv&#34;), inc) 
+    assert w.n == 3184
+
+  def clone(): 
+    d = DATA(csv(the.file))
+    c =d.clone()
+    print(d.cols.all[1])
+    print(c.cols.all[1])
+
+  def ordered():
+    d = DATA(csv(the.file),ordered=True)
+    for j,row in enumerate(d.rows):
+      if j%50==0: print(j,row)
+
+  def nb():
+    if the.file != &#34;../data/soybean.csv&#34;:
+      val= input(f&#34;Expected soybean, got {the.file}. Type &#39;y&#39; to continue. &#34;)
+      if val !=&#34;y&#34;: return 
+    out=[]
+    for k in [0,1,2,3]:
+      for m in [0.001,1,2,3]: 
+        the.k, the.m = k,m
+        nb = NB()
+        DATA(csv(the.file), nb.run)
+        out += [OBJ(acc = nb.report().accuracy, k=k, m=m)]
+    [print(show(x,3)) for x in sorted(out,key=lambda z: z.acc)]
+
+  def smo():
+    d=DATA(csv(the.file),ordered=True)
+    best = d.d2h(d.rows[0])
+    mid  = d.d2h(d.rows[len(d.rows)//2])
+    out  = []
+    for _ in range(20):
+      sys.stderr.write(&#39;.&#39;);  sys.stderr.flush()
+      after,evals= d.smo()
+      out += [OBJ(mid= mid, best=best, smo= d.d2h(after), evals=evals)]
+    print(&#34;&#34;)
+    [print(show(x)) for x in  sorted(out,key=lambda z:z.smo)]
+#----------------------------------------------------------------------------------------
+if __name__==&#34;__main__&#34;:
+  the.cliUpdate()
+  if the.help:  sys.exit(print(__doc__))
+  random.seed(the.seed)
+  getattr(main, the.main, main.unknown)()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="ezr.adds"><code class="name flex">
+<span>def <span class="ident">adds</span></span>(<span>x, lst=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def adds(x,lst=None): [x.add(y) for y in lst or []]; return x</code></pre>
+</details>
+</dd>
+<dt id="ezr.cli"><code class="name flex">
+<span>def <span class="ident">cli</span></span>(<span>d)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cli(d):
+  for k,v in d.items():
+    for c,arg in enumerate(sys.argv):
+      if arg in [&#34;-&#34;+k[0], &#34;--&#34;+k]:
+        v = str(v)
+        v = &#34;False&#34; if v==&#34;True&#34; else (&#34;True&#34; if v==&#34;False&#34; else sys.argv[c+1])
+        d[k] = coerce(v)</code></pre>
+</details>
+</dd>
+<dt id="ezr.coerce"><code class="name flex">
+<span>def <span class="ident">coerce</span></span>(<span>s)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def coerce(s):
+  try: return ast.literal_eval(s)
+  except Exception:  return s </code></pre>
+</details>
+</dd>
+<dt id="ezr.csv"><code class="name flex">
+<span>def <span class="ident">csv</span></span>(<span>file=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def csv(file=None):
+  with file_or_stdin(file) as src:
+    for line in src:
+      line = re.sub(r&#39;([\n\t\r&#34;\’ ]|#.*)&#39;, &#39;&#39;, line)
+      if line: yield [coerce(s.strip()) for s in line.split(&#34;,&#34;)]</code></pre>
+</details>
+</dd>
+<dt id="ezr.r"><code class="name flex">
+<span>def <span class="ident">r</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>random() -&gt; x in the interval [0, 1).</p></div>
+</dd>
+<dt id="ezr.show"><code class="name flex">
+<span>def <span class="ident">show</span></span>(<span>x, n=2)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def show(x,n=2):
+  if   isa(x,(int,float)) : x= x if int(x)==x else round(x,n)
+  elif isa(x,(list,tuple)): x= [show(y,n) for y in x][:10]
+  elif isa(x,dict)        : x= &#39;, &#39;.join(f&#34;{k}={show(v,n)}&#34; for k,v in x.items() if k[0]!=&#34;_&#34;)
+  return x</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="ezr.COL"><code class="flex name class">
+<span>class <span class="ident">COL</span></span>
+<span>(</span><span>at=0, txt=' ')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class COL(OBJ):
+  def __init__(i,at=0,txt=&#34; &#34;):
+    i.n,i.at,i.txt = 0,at,txt
+    i.heaven = 0 if txt[-1]==&#34;-&#34; else 1</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ezr.OBJ" href="#ezr.OBJ">OBJ</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="ezr.NUM" href="#ezr.NUM">NUM</a></li>
+<li><a title="ezr.SYM" href="#ezr.SYM">SYM</a></li>
+</ul>
+</dd>
+<dt id="ezr.COLS"><code class="flex name class">
+<span>class <span class="ident">COLS</span></span>
+<span>(</span><span>names)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class COLS(OBJ):
+  def __init__(i,names):
+    i.x,i.y,i.all,i.names,i.klass = [],[],[],names,None
+    for at,txt in enumerate(names):
+      a,z = txt[0], txt[-1]
+      col = (NUM if a.isupper() else SYM)(at=at,txt=txt)
+      i.all.append(col)
+      if z != &#34;X&#34;:
+        (i.y if z in &#34;!+-&#34; else i.x).append(col)
+        if z == &#34;!&#34;: i.klass= col
+
+  def add(i,lst): 
+    [col.add(lst[col.at]) for col in i.all if lst[col.at] != &#34;?&#34;]; return lst</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ezr.OBJ" href="#ezr.OBJ">OBJ</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ezr.COLS.add"><code class="name flex">
+<span>def <span class="ident">add</span></span>(<span>i, lst)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add(i,lst): 
+  [col.add(lst[col.at]) for col in i.all if lst[col.at] != &#34;?&#34;]; return lst</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ezr.DATA"><code class="flex name class">
+<span>class <span class="ident">DATA</span></span>
+<span>(</span><span>src=[], fun=None, ordered=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DATA(OBJ):
+  def __init__(i,src=[],fun=None,ordered=False):
+    i.rows, i.cols = [],[]
+    [i.add(lst,fun) for lst in src]
+    if ordered: i.ordered()
+
+  def add(i,lst,fun=None):
+    if i.cols:
+      if fun: fun(i,lst)
+      i.rows += [i.cols.add(lst)]
+    else: i.cols = COLS(lst)
+
+  def clone(i,lst=None,ordered=False): 
+    tmp = adds(DATA([i.cols.names]), lst)
+    if ordered: tmp.ordered()
+    return tmp
+
+  def d2h(i,row):
+    d,n = 0,0
+    for col in i.cols.y:
+      d += abs(col.norm(row[col.at]) - col.heaven)**2
+      n += 1
+    return (d/n)**.5
+  
+  def loglike(i, lst, nall, nh, m,k):
+    prior = (len(i.rows) + k) / (nall + k*nh)
+    likes = [c.like(lst[c.at],m,prior) for c in i.cols.x if lst[c.at] != &#34;?&#34;]
+    return sum(math.log(x) for x in likes + [prior] if x&gt;0)
+
+  def ordered(i): i.rows.sort(key=i.d2h); return i.rows
+
+  def smo(i, score=lambda B,R: B - R ):
+    def like(row,data): 
+      return data.loglike(row,len(data.rows),2,the.m,the.m)
+    def acquire(best, rest, rows): 
+      chop=int(len(rows) * the.beam)
+      return sorted(rows, key=lambda r: -score(like(r,best),like(r,rest)))[:chop]
+    #---------------------
+    random.shuffle(i.rows)
+    done, todo = i.rows[:the.commence], i.rows[the.commence:]
+    data1 = i.clone(done, ordered=True)   
+    for _ in range(the.Cease - the.commence):
+      n = int(len(done)**the.enough + .5)
+      top,*todo = acquire(i.clone(data1.rows[:n]),  
+                          i.clone(data1.rows[n:]),
+                          todo) 
+      done.append(top) 
+      data1 = i.clone(done, ordered=True)
+
+      if len(todo) &lt; 3: break
+    return data1.rows[0],len(data1.rows)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ezr.OBJ" href="#ezr.OBJ">OBJ</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ezr.DATA.add"><code class="name flex">
+<span>def <span class="ident">add</span></span>(<span>i, lst, fun=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add(i,lst,fun=None):
+  if i.cols:
+    if fun: fun(i,lst)
+    i.rows += [i.cols.add(lst)]
+  else: i.cols = COLS(lst)</code></pre>
+</details>
+</dd>
+<dt id="ezr.DATA.clone"><code class="name flex">
+<span>def <span class="ident">clone</span></span>(<span>i, lst=None, ordered=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clone(i,lst=None,ordered=False): 
+  tmp = adds(DATA([i.cols.names]), lst)
+  if ordered: tmp.ordered()
+  return tmp</code></pre>
+</details>
+</dd>
+<dt id="ezr.DATA.d2h"><code class="name flex">
+<span>def <span class="ident">d2h</span></span>(<span>i, row)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def d2h(i,row):
+  d,n = 0,0
+  for col in i.cols.y:
+    d += abs(col.norm(row[col.at]) - col.heaven)**2
+    n += 1
+  return (d/n)**.5</code></pre>
+</details>
+</dd>
+<dt id="ezr.DATA.loglike"><code class="name flex">
+<span>def <span class="ident">loglike</span></span>(<span>i, lst, nall, nh, m, k)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def loglike(i, lst, nall, nh, m,k):
+  prior = (len(i.rows) + k) / (nall + k*nh)
+  likes = [c.like(lst[c.at],m,prior) for c in i.cols.x if lst[c.at] != &#34;?&#34;]
+  return sum(math.log(x) for x in likes + [prior] if x&gt;0)</code></pre>
+</details>
+</dd>
+<dt id="ezr.DATA.ordered"><code class="name flex">
+<span>def <span class="ident">ordered</span></span>(<span>i)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ordered(i): i.rows.sort(key=i.d2h); return i.rows</code></pre>
+</details>
+</dd>
+<dt id="ezr.DATA.smo"><code class="name flex">
+<span>def <span class="ident">smo</span></span>(<span>i, score=&lt;function DATA.&lt;lambda&gt;&gt;)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def smo(i, score=lambda B,R: B - R ):
+  def like(row,data): 
+    return data.loglike(row,len(data.rows),2,the.m,the.m)
+  def acquire(best, rest, rows): 
+    chop=int(len(rows) * the.beam)
+    return sorted(rows, key=lambda r: -score(like(r,best),like(r,rest)))[:chop]
+  #---------------------
+  random.shuffle(i.rows)
+  done, todo = i.rows[:the.commence], i.rows[the.commence:]
+  data1 = i.clone(done, ordered=True)   
+  for _ in range(the.Cease - the.commence):
+    n = int(len(done)**the.enough + .5)
+    top,*todo = acquire(i.clone(data1.rows[:n]),  
+                        i.clone(data1.rows[n:]),
+                        todo) 
+    done.append(top) 
+    data1 = i.clone(done, ordered=True)
+
+    if len(todo) &lt; 3: break
+  return data1.rows[0],len(data1.rows)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ezr.NB"><code class="flex name class">
+<span>class <span class="ident">NB</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NB(OBJ):
+  def __init__(i): i.correct,i.nall,i.datas = 0,0,{}
+
+  def loglike(i,data,lst):
+    return data.loglike(lst, i.nall, len(i.datas), the.m, the.k)
+
+  def run(i,data,lst): 
+    klass = lst[data.cols.klass.at]
+    i.nall += 1
+    if i.nall &gt; 10:
+      guess = max((i.loglike(data,lst),klass1) for klass1,data in i.datas.items())
+      i.correct += klass == guess[1] 
+    if klass not in i.datas: i.datas[klass] =  data.clone() 
+    i.datas[klass].add(lst)
+
+  def report(i): return OBJ(accuracy = i.correct / i.nall)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ezr.OBJ" href="#ezr.OBJ">OBJ</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ezr.NB.loglike"><code class="name flex">
+<span>def <span class="ident">loglike</span></span>(<span>i, data, lst)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def loglike(i,data,lst):
+  return data.loglike(lst, i.nall, len(i.datas), the.m, the.k)</code></pre>
+</details>
+</dd>
+<dt id="ezr.NB.report"><code class="name flex">
+<span>def <span class="ident">report</span></span>(<span>i)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def report(i): return OBJ(accuracy = i.correct / i.nall)</code></pre>
+</details>
+</dd>
+<dt id="ezr.NB.run"><code class="name flex">
+<span>def <span class="ident">run</span></span>(<span>i, data, lst)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run(i,data,lst): 
+  klass = lst[data.cols.klass.at]
+  i.nall += 1
+  if i.nall &gt; 10:
+    guess = max((i.loglike(data,lst),klass1) for klass1,data in i.datas.items())
+    i.correct += klass == guess[1] 
+  if klass not in i.datas: i.datas[klass] =  data.clone() 
+  i.datas[klass].add(lst)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ezr.NUM"><code class="flex name class">
+<span>class <span class="ident">NUM</span></span>
+<span>(</span><span>**d)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NUM(COL):
+  def __init__(i,**d): super().__init__(**d); i.mu,i.m2,i.lo,i.hi = 0,0,big,-big
+  def div(i)         : return 0 if i.n &lt; 2 else (i.m2 / (i.n - 1))**.5
+  def mid(i)         : return i.mu
+  def norm(i,n)      : return n==&#34;?&#34; and n or (n - i.lo) / (i.hi - i.lo + tiny)
+
+  def add(i,n):
+    i.n += 1
+    i.lo = min(n,i.lo)
+    i.hi = max(n,i.hi)
+    delta = n - i.mu
+    i.mu += delta / i.n
+    i.m2 += delta * (n -  i.mu)
+
+  def like(i,n,*_):
+    v     = i.div()**2 + tiny
+    nom   = math.e**(-1*(n - i.mid())**2/(2*v)) + tiny
+    denom = (2*math.pi*v)**.5  
+    return min(1, nom/(denom + tiny))   </code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ezr.COL" href="#ezr.COL">COL</a></li>
+<li><a title="ezr.OBJ" href="#ezr.OBJ">OBJ</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ezr.NUM.add"><code class="name flex">
+<span>def <span class="ident">add</span></span>(<span>i, n)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add(i,n):
+  i.n += 1
+  i.lo = min(n,i.lo)
+  i.hi = max(n,i.hi)
+  delta = n - i.mu
+  i.mu += delta / i.n
+  i.m2 += delta * (n -  i.mu)</code></pre>
+</details>
+</dd>
+<dt id="ezr.NUM.div"><code class="name flex">
+<span>def <span class="ident">div</span></span>(<span>i)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def div(i)         : return 0 if i.n &lt; 2 else (i.m2 / (i.n - 1))**.5</code></pre>
+</details>
+</dd>
+<dt id="ezr.NUM.like"><code class="name flex">
+<span>def <span class="ident">like</span></span>(<span>i, n, *_)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def like(i,n,*_):
+  v     = i.div()**2 + tiny
+  nom   = math.e**(-1*(n - i.mid())**2/(2*v)) + tiny
+  denom = (2*math.pi*v)**.5  
+  return min(1, nom/(denom + tiny))   </code></pre>
+</details>
+</dd>
+<dt id="ezr.NUM.mid"><code class="name flex">
+<span>def <span class="ident">mid</span></span>(<span>i)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mid(i)         : return i.mu</code></pre>
+</details>
+</dd>
+<dt id="ezr.NUM.norm"><code class="name flex">
+<span>def <span class="ident">norm</span></span>(<span>i, n)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def norm(i,n)      : return n==&#34;?&#34; and n or (n - i.lo) / (i.hi - i.lo + tiny)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ezr.OBJ"><code class="flex name class">
+<span>class <span class="ident">OBJ</span></span>
+<span>(</span><span>**d)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OBJ:
+  def __init__(i,**d) : i.__dict__.update(d)
+  def __repr__(i)     : return i.__class__.__name__+&#39;{&#39;+show(i.__dict__)+&#39;}&#39; 
+  def cliUpdate(i)    : cli(i.__dict__)</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="ezr.COL" href="#ezr.COL">COL</a></li>
+<li><a title="ezr.COLS" href="#ezr.COLS">COLS</a></li>
+<li><a title="ezr.DATA" href="#ezr.DATA">DATA</a></li>
+<li><a title="ezr.NB" href="#ezr.NB">NB</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ezr.OBJ.cliUpdate"><code class="name flex">
+<span>def <span class="ident">cliUpdate</span></span>(<span>i)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cliUpdate(i)    : cli(i.__dict__)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ezr.SYM"><code class="flex name class">
+<span>class <span class="ident">SYM</span></span>
+<span>(</span><span>**d)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SYM(COL):
+  def __init__(i,**d)  : super().__init__(**d); i.has={}
+  def add(i,x)         : i.n += 1; i.has[x] = 1 + i.has.get(x,0)
+  def like(i,x,m,prior): return (i.has.get(x, 0) + m*prior) / (i.n + m)
+  def mid(i)           : return max(i.has, key=i.has.get)
+  def div(i):
+    return -sum(n/i.n * math.log(n/i.n,2) for n in i.has.values() if n &gt; 0)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="ezr.COL" href="#ezr.COL">COL</a></li>
+<li><a title="ezr.OBJ" href="#ezr.OBJ">OBJ</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="ezr.SYM.add"><code class="name flex">
+<span>def <span class="ident">add</span></span>(<span>i, x)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add(i,x)         : i.n += 1; i.has[x] = 1 + i.has.get(x,0)</code></pre>
+</details>
+</dd>
+<dt id="ezr.SYM.div"><code class="name flex">
+<span>def <span class="ident">div</span></span>(<span>i)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def div(i):
+  return -sum(n/i.n * math.log(n/i.n,2) for n in i.has.values() if n &gt; 0)</code></pre>
+</details>
+</dd>
+<dt id="ezr.SYM.like"><code class="name flex">
+<span>def <span class="ident">like</span></span>(<span>i, x, m, prior)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def like(i,x,m,prior): return (i.has.get(x, 0) + m*prior) / (i.n + m)</code></pre>
+</details>
+</dd>
+<dt id="ezr.SYM.mid"><code class="name flex">
+<span>def <span class="ident">mid</span></span>(<span>i)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mid(i)           : return max(i.has, key=i.has.get)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="ezr.main"><code class="flex name class">
+<span>class <span class="ident">main</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class main:
+  def unknown(): print(f&#34;W&gt; unknown action [{the.main}].&#34;)
+  
+  def the():  print(the)
+
+  def sym(): 
+    s = adds(SYM(),&#34;aaaabbc&#34;)
+    assert 1.38==round(s.div(),2) and s.mid() == &#34;a&#34; ,&#34;sym&#34;
+
+  def one():
+    w = OBJ(n=0)
+    def inc(_,r): w.n += len(r)
+    d = DATA(csv(&#34;../data/auto93.csv&#34;), inc) 
+    assert w.n == 3184
+
+  def clone(): 
+    d = DATA(csv(the.file))
+    c =d.clone()
+    print(d.cols.all[1])
+    print(c.cols.all[1])
+
+  def ordered():
+    d = DATA(csv(the.file),ordered=True)
+    for j,row in enumerate(d.rows):
+      if j%50==0: print(j,row)
+
+  def nb():
+    if the.file != &#34;../data/soybean.csv&#34;:
+      val= input(f&#34;Expected soybean, got {the.file}. Type &#39;y&#39; to continue. &#34;)
+      if val !=&#34;y&#34;: return 
+    out=[]
+    for k in [0,1,2,3]:
+      for m in [0.001,1,2,3]: 
+        the.k, the.m = k,m
+        nb = NB()
+        DATA(csv(the.file), nb.run)
+        out += [OBJ(acc = nb.report().accuracy, k=k, m=m)]
+    [print(show(x,3)) for x in sorted(out,key=lambda z: z.acc)]
+
+  def smo():
+    d=DATA(csv(the.file),ordered=True)
+    best = d.d2h(d.rows[0])
+    mid  = d.d2h(d.rows[len(d.rows)//2])
+    out  = []
+    for _ in range(20):
+      sys.stderr.write(&#39;.&#39;);  sys.stderr.flush()
+      after,evals= d.smo()
+      out += [OBJ(mid= mid, best=best, smo= d.d2h(after), evals=evals)]
+    print(&#34;&#34;)
+    [print(show(x)) for x in  sorted(out,key=lambda z:z.smo)]</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="ezr.main.clone"><code class="name flex">
+<span>def <span class="ident">clone</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clone(): 
+  d = DATA(csv(the.file))
+  c =d.clone()
+  print(d.cols.all[1])
+  print(c.cols.all[1])</code></pre>
+</details>
+</dd>
+<dt id="ezr.main.nb"><code class="name flex">
+<span>def <span class="ident">nb</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def nb():
+  if the.file != &#34;../data/soybean.csv&#34;:
+    val= input(f&#34;Expected soybean, got {the.file}. Type &#39;y&#39; to continue. &#34;)
+    if val !=&#34;y&#34;: return 
+  out=[]
+  for k in [0,1,2,3]:
+    for m in [0.001,1,2,3]: 
+      the.k, the.m = k,m
+      nb = NB()
+      DATA(csv(the.file), nb.run)
+      out += [OBJ(acc = nb.report().accuracy, k=k, m=m)]
+  [print(show(x,3)) for x in sorted(out,key=lambda z: z.acc)]</code></pre>
+</details>
+</dd>
+<dt id="ezr.main.one"><code class="name flex">
+<span>def <span class="ident">one</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def one():
+  w = OBJ(n=0)
+  def inc(_,r): w.n += len(r)
+  d = DATA(csv(&#34;../data/auto93.csv&#34;), inc) 
+  assert w.n == 3184</code></pre>
+</details>
+</dd>
+<dt id="ezr.main.ordered"><code class="name flex">
+<span>def <span class="ident">ordered</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ordered():
+  d = DATA(csv(the.file),ordered=True)
+  for j,row in enumerate(d.rows):
+    if j%50==0: print(j,row)</code></pre>
+</details>
+</dd>
+<dt id="ezr.main.smo"><code class="name flex">
+<span>def <span class="ident">smo</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def smo():
+  d=DATA(csv(the.file),ordered=True)
+  best = d.d2h(d.rows[0])
+  mid  = d.d2h(d.rows[len(d.rows)//2])
+  out  = []
+  for _ in range(20):
+    sys.stderr.write(&#39;.&#39;);  sys.stderr.flush()
+    after,evals= d.smo()
+    out += [OBJ(mid= mid, best=best, smo= d.d2h(after), evals=evals)]
+  print(&#34;&#34;)
+  [print(show(x)) for x in  sorted(out,key=lambda z:z.smo)]</code></pre>
+</details>
+</dd>
+<dt id="ezr.main.sym"><code class="name flex">
+<span>def <span class="ident">sym</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sym(): 
+  s = adds(SYM(),&#34;aaaabbc&#34;)
+  assert 1.38==round(s.div(),2) and s.mid() == &#34;a&#34; ,&#34;sym&#34;</code></pre>
+</details>
+</dd>
+<dt id="ezr.main.the"><code class="name flex">
+<span>def <span class="ident">the</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def the():  print(the)</code></pre>
+</details>
+</dd>
+<dt id="ezr.main.unknown"><code class="name flex">
+<span>def <span class="ident">unknown</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def unknown(): print(f&#34;W&gt; unknown action [{the.main}].&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<center>
+<p><img src="easy.png"></p>
+<p><img src="https://img.shields.io/badge/purpose-teach-red">
+<img src="https://img.shields.io/badge/task-optimize-blue">
+<img src="https://img.shields.io/badge/language-python-yellow"><br>
+<a href="https://github.com/timm/easy/blob/main/src/"><img height=45 src="https://iconspng.com/uploads/download-button-black.png"></a></p>
+</center>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="ezr.adds" href="#ezr.adds">adds</a></code></li>
+<li><code><a title="ezr.cli" href="#ezr.cli">cli</a></code></li>
+<li><code><a title="ezr.coerce" href="#ezr.coerce">coerce</a></code></li>
+<li><code><a title="ezr.csv" href="#ezr.csv">csv</a></code></li>
+<li><code><a title="ezr.r" href="#ezr.r">r</a></code></li>
+<li><code><a title="ezr.show" href="#ezr.show">show</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="ezr.COL" href="#ezr.COL">COL</a></code></h4>
+</li>
+<li>
+<h4><code><a title="ezr.COLS" href="#ezr.COLS">COLS</a></code></h4>
+<ul class="">
+<li><code><a title="ezr.COLS.add" href="#ezr.COLS.add">add</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ezr.DATA" href="#ezr.DATA">DATA</a></code></h4>
+<ul class="two-column">
+<li><code><a title="ezr.DATA.add" href="#ezr.DATA.add">add</a></code></li>
+<li><code><a title="ezr.DATA.clone" href="#ezr.DATA.clone">clone</a></code></li>
+<li><code><a title="ezr.DATA.d2h" href="#ezr.DATA.d2h">d2h</a></code></li>
+<li><code><a title="ezr.DATA.loglike" href="#ezr.DATA.loglike">loglike</a></code></li>
+<li><code><a title="ezr.DATA.ordered" href="#ezr.DATA.ordered">ordered</a></code></li>
+<li><code><a title="ezr.DATA.smo" href="#ezr.DATA.smo">smo</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ezr.NB" href="#ezr.NB">NB</a></code></h4>
+<ul class="">
+<li><code><a title="ezr.NB.loglike" href="#ezr.NB.loglike">loglike</a></code></li>
+<li><code><a title="ezr.NB.report" href="#ezr.NB.report">report</a></code></li>
+<li><code><a title="ezr.NB.run" href="#ezr.NB.run">run</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ezr.NUM" href="#ezr.NUM">NUM</a></code></h4>
+<ul class="">
+<li><code><a title="ezr.NUM.add" href="#ezr.NUM.add">add</a></code></li>
+<li><code><a title="ezr.NUM.div" href="#ezr.NUM.div">div</a></code></li>
+<li><code><a title="ezr.NUM.like" href="#ezr.NUM.like">like</a></code></li>
+<li><code><a title="ezr.NUM.mid" href="#ezr.NUM.mid">mid</a></code></li>
+<li><code><a title="ezr.NUM.norm" href="#ezr.NUM.norm">norm</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ezr.OBJ" href="#ezr.OBJ">OBJ</a></code></h4>
+<ul class="">
+<li><code><a title="ezr.OBJ.cliUpdate" href="#ezr.OBJ.cliUpdate">cliUpdate</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ezr.SYM" href="#ezr.SYM">SYM</a></code></h4>
+<ul class="">
+<li><code><a title="ezr.SYM.add" href="#ezr.SYM.add">add</a></code></li>
+<li><code><a title="ezr.SYM.div" href="#ezr.SYM.div">div</a></code></li>
+<li><code><a title="ezr.SYM.like" href="#ezr.SYM.like">like</a></code></li>
+<li><code><a title="ezr.SYM.mid" href="#ezr.SYM.mid">mid</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="ezr.main" href="#ezr.main">main</a></code></h4>
+<ul class="two-column">
+<li><code><a title="ezr.main.clone" href="#ezr.main.clone">clone</a></code></li>
+<li><code><a title="ezr.main.nb" href="#ezr.main.nb">nb</a></code></li>
+<li><code><a title="ezr.main.one" href="#ezr.main.one">one</a></code></li>
+<li><code><a title="ezr.main.ordered" href="#ezr.main.ordered">ordered</a></code></li>
+<li><code><a title="ezr.main.smo" href="#ezr.main.smo">smo</a></code></li>
+<li><code><a title="ezr.main.sym" href="#ezr.main.sym">sym</a></code></li>
+<li><code><a title="ezr.main.the" href="#ezr.main.the">the</a></code></li>
+<li><code><a title="ezr.main.unknown" href="#ezr.main.unknown">unknown</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
