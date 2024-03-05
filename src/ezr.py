@@ -26,7 +26,7 @@ def adds(x,lst=None): [x.add(y) for y in lst or []]; return x
 
 # tag::cli[]   
 def coerce(s):
-  try: return ast.literal_eval(s)
+  try: return ast.literal_eval(s) # <1>
   except Exception:  return s 
   
 def cli(d):

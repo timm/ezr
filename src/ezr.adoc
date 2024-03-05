@@ -1,14 +1,15 @@
 = 101 tips for Human-Level AI
 Tim Menzies <timm@ieee.org>
 :reproducible:
+:stylesheet: ezr.css
 :sidebar: sidebar
+:toc: left
 :listing-caption: Listing
 :source-highlighter: rouge
 :rouge-style:  github 
 //:pdf-page-layout: landscape
 //:pdf-themesdir: ./
 :pdf-theme: some
-:toc:
 // Uncomment next line to add a title page (or set doctype to book)
 :title-page:
 // Uncomment next line to set page size (default is A4)
