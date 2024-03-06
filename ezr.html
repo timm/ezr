@@ -6,27 +6,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.20">
 <meta name="author" content="Tim Menzies">
-<title>101 tips for Human-Level AI</title>
+<title>Easier AI Engineering: 101 tips and tricls</title>
 <style>
-@import "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700";
+@ximport "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700";
 @import "https://cdn.jsdelivr.net/gh/asciidoctor/asciidoctor@2.0/data/stylesheets/asciidoctor-default.css";
 
 
 @import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
 
-.sidebar::before {
-    content: "asdaas"; /* FontAwesome icon code */
-    font-family: 'Font Awesome 5 Free'; /* Adjust based on FontAwesome version */
-    font-weight: 900; /* Ensure solid style icons */
-    position: absolute;
-    top: 10px; /* Adjust as needed */
-    left: 10px; /* Adjust as needed */
-    font-size: 20px; /* Icon size */
-    color: #333; /* Icon color */
+body { font-size: 8px;
+       line-height: 10px; 
 }
 
-
-
+pre { font-size: 7px; }
 .conum { /* Callout number class */
   color: white; /* White text color */
   background-color: black; /* Black background color */
@@ -155,17 +147,17 @@ pre.rouge .gs {
 }
 </style>
 </head>
-<body class="article toc2 toc-left">
+<body class="article">
 <div id="header">
-<h1>101 tips for Human-Level AI</h1>
+<h1>Easier AI Engineering: 101 tips and tricls</h1>
 <div class="details">
 <span id="author" class="author">Tim Menzies</span><br>
 <span id="email" class="email"><a href="mailto:timm@ieee.org">timm@ieee.org</a></span><br>
 </div>
-<div id="toc" class="toc2">
+<div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_a_bounty_of_basic_principles_for_se_and_ai">A Bounty of Basic Principles for SE and AI</a></li>
+<li><a href="#_take_it_easy">Take it easy</a></li>
 <li><a href="#_main">Main</a></li>
 <li><a href="#_conclusion">Conclusion</a></li>
 </ul>
@@ -173,29 +165,43 @@ pre.rouge .gs {
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_a_bounty_of_basic_principles_for_se_and_ai">A Bounty of Basic Principles for SE and AI</h2>
+<h2 id="_take_it_easy">Take it easy</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>As we learn Computer Science, students explore
-advanced topics in  many areas like Operating Systems and Programming Languages
-and Machine Learning. Often, we focus on the hard stuff, since its cool or fashionable.  Which means
-sometimes we skip over certain simpler ideas that are very useful.</p>
+<p>Some kinds of AI are very hard-- hard to build, hard to change, hard to understand.
+Currently, everyone&#8217;s favorite large language model has 70 trillion parameters (and this
+is expected to grow larger in the near future). Such models are so expensive to build
+and tune that only a handful of large organizations can attempt it. And good luck
+looking  trying to understand how those systems work.</p>
 </div>
 <div class="paragraph">
-<p>So let&#8217;s try something different.</p>
+<p>But not all AI is  way. There are  other kinds of useful AI tools that programmers
+can understand and quickly build and modify. For example, consider an explanation system for
+semi-supervised multi-objectve sequential model optimzation. Does that sound like
+a complex task? Well, it isn&#8217;t. This doucment show how to build that system in under
+300 lines of Python.</p>
 </div>
 <div class="paragraph">
-<p>Over the years, while working with  teach several classes at MIT, and over and over we have seen that many students have limited knowledge of the tools available to them. Computers were built to automate manual tasks, yet students often perform repetitive tasks by hand or fail to take full advantage of powerful tools such as version control and text editors. In the best case, this results in inefficiencies and wasted time; in the worst case, it results in issues like data loss or inability to complete certain tasks.</p>
+<p>See,
+after 30 years of work in SE and AI, I know all the tricks that make
+it real simple to apply SE principles to AI. This document divide those tricks into:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>23 scripting tips and tricks;</p>
+</li>
+<li>
+<p>41 SE tips and tricks;</p>
+</li>
+<li>
+<p>32 AI tips and tricks.</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>These topics are not taught as part of the university curriculum: students are never shown how to use these tools, or at least not how to use them efficiently, and thus waste time and effort on tasks that should be simple. The standard CS curriculum is missing critical topics about the computing ecosystem that could make students’ lives significantly easier.</p>
-</div>
-<div class="paragraph">
-<p>The other year, when I asked my grad class "who knows about regular expressions" As teaching methods change, and computer science is marketed to a broader audience,
-certain basics sometimes get skipped over.</p>
-</div>
-<div class="paragraph">
-<p>A paragraph followed by an unordered list<sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> with square bullets.<sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnotedef_2" title="View footnote.">2</a>]</sup></p>
+<p>I use this code for teachin graduate AI and SE, as well as training my Ph.D. students
+on how to AI easier (usually for SE applications).</p>
 </div>
 <div class="ulist square">
 <ul class="square">
@@ -253,15 +259,6 @@ certain basics sometimes get skipped over.</p>
 <p>That&#8217;s all, folks!</p>
 </div>
 </div>
-</div>
-</div>
-<div id="footnotes">
-<hr>
-<div class="footnote" id="_footnotedef_1">
-<a href="#_footnoteref_1">1</a>. AsciiDoc supports unordered, ordered, and description lists.
-</div>
-<div class="footnote" id="_footnotedef_2">
-<a href="#_footnoteref_2">2</a>. You may choose from square, disc, and circle for the bullet style.
 </div>
 </div>
 <div id="footer">

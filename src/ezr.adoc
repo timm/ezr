@@ -1,38 +1,46 @@
-= 101 tips for Human-Level AI
+= Easier AI Engineering: 101 tips and tricls
 Tim Menzies <timm@ieee.org>
 :reproducible:
 :stylesheet: ezr.css
-:sidebar: sidebar
-:toc: left
+//:sidebar: sidebar
+:toc:
 :listing-caption: Listing
 :source-highlighter: rouge
 :rouge-style:  github 
 //:pdf-page-layout: landscape
 //:pdf-themesdir: ./
-:pdf-theme: some
+//:pdf-theme: some
 // Uncomment next line to add a title page (or set doctype to book)
-:title-page:
+//:title-page:
 // Uncomment next line to set page size (default is A4)
-:pdf-page-size: Letter
+//:pdf-page-size: Letter
  
-==   A Bounty of Basic Principles for SE and AI   
+==   Take it easy
 
-As we learn Computer Science, students explore 
-advanced topics in  many areas like Operating Systems and Programming Languages 
-and Machine Learning. Often, we focus on the hard stuff, since its cool or fashionable.  Which means
-sometimes we skip over certain simpler ideas that are very useful.
+Some kinds of AI are very hard-- hard to build, hard to change, hard to understand. 
+Currently, everyone's favorite large language model has 70 trillion parameters (and this
+is expected to grow larger in the near future). Such models are so expensive to build
+and tune that only a handful of large organizations can attempt it. And good luck 
+looking  trying to understand how those systems work.
 
-So let's try something different. 
+But not all AI is  way. There are  other kinds of useful AI tools that programmers
+can understand and quickly build and modify. For example, consider an explanation system for 
+semi-supervised multi-objectve sequential model optimzation. Does that sound like
+a complex task? Well, it isn't. This doucment show how to build that system in under
+300 lines of Python.
 
-Over the years, while working with  teach several classes at MIT, and over and over we have seen that many students have limited knowledge of the tools available to them. Computers were built to automate manual tasks, yet students often perform repetitive tasks by hand or fail to take full advantage of powerful tools such as version control and text editors. In the best case, this results in inefficiencies and wasted time; in the worst case, it results in issues like data loss or inability to complete certain tasks.
+See,
+after 30 years of work in SE and AI, I know all the tricks that make
+it real simple to apply SE principles to AI. This document divide those tricks into:
 
-These topics are not taught as part of the university curriculum: students are never shown how to use these tools, or at least not how to use them efficiently, and thus waste time and effort on tasks that should be simple. The standard CS curriculum is missing critical topics about the computing ecosystem that could make students’ lives significantly easier.
+- 23 scripting tips and tricks;
+- 41 SE tips and tricks;
+- 32 AI tips and tricks.
+
+I use this code for teachin graduate AI and SE, as well as training my Ph.D. students
+on how to AI easier (usually for SE applications).
 
 
-The other year, when I asked my grad class "who knows about regular expressions" As teaching methods change, and computer science is marketed to a broader audience,
-certain basics sometimes get skipped over. 
-
-A paragraph followed by an unordered list{empty}footnote:[AsciiDoc supports unordered, ordered, and description lists.] with square bullets.footnote:[You may choose from square, disc, and circle for the bullet style.]
 
 [square]
 * item 1
