@@ -14,9 +14,6 @@
 
 @import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
 
-body { font-size: 8px;
-       line-height: 10px; 
-}
 
 pre { font-size: 7px; }
 .conum { /* Callout number class */
@@ -30,6 +27,13 @@ pre { font-size: 7px; }
   xline-height: 1.5em; /* Center the number vertically */
   font-weight: bold; /* Optional: makes the number bold */
 }
+
+body {
+    font-family: 'Arial', sans-serif; /* Change the font */
+    line-height: 0.7; /* Adjust the line height */
+    font-size: small;
+}
+
 
 </style>
 <style>
@@ -229,8 +233,8 @@ on how to AI easier (usually for SE applications).</p>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="python"><span class="k">def</span> <span class="nf">coerce</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
   <span class="k">try</span><span class="p">:</span> <span class="k">return</span> <span class="n">ast</span><span class="p">.</span><span class="nf">literal_eval</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> # <b class="conum">(1)</b>
-  <span class="k">except</span> <span class="nb">Exception</span><span class="p">:</span>  <span class="k">return</span> <span class="n">s</span> 
-  
+  <span class="k">except</span> <span class="nb">Exception</span><span class="p">:</span>  <span class="k">return</span> <span class="n">s</span>
+
 <span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
   <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="p">.</span><span class="nf">items</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">arg</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">sys</span><span class="p">.</span><span class="n">argv</span><span class="p">):</span>

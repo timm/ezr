@@ -3,7 +3,7 @@ Tim Menzies <timm@ieee.org>
 :reproducible:
 :stylesheet: ezr.css
 //:sidebar: sidebar
-:toc:
+:toc: manual
 :listing-caption: Listing
 :source-highlighter: rouge
 :rouge-style:  github 
@@ -27,7 +27,7 @@ But not all AI is  way. There are  other kinds of useful AI tools that programme
 can understand and quickly build and modify. For example, consider an explanation system for 
 semi-supervised multi-objectve sequential model optimzation. Does that sound like
 a complex task? Well, it isn't. This doucment show how to build that system in under
-300 lines of Python.
+300 lines of Python. As we shall see, this code is also good for XXX. Not bad 
 
 See,
 after 30 years of work in SE and AI, I know all the tricks that make

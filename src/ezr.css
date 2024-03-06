@@ -4,9 +4,6 @@
 
 @import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
 
-body { font-size: 8px;
-       line-height: 10px; 
-}
 
 pre { font-size: 7px; }
 .conum { /* Callout number class */
@@ -20,3 +17,10 @@ pre { font-size: 7px; }
   xline-height: 1.5em; /* Center the number vertically */
   font-weight: bold; /* Optional: makes the number bold */
 }
+
+body {
+    font-family: 'Arial', sans-serif; /* Change the font */
+    line-height: 0.7; /* Adjust the line height */
+    font-size: small;
+}
+
