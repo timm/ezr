@@ -1,10 +1,10 @@
-= Easier   AI: 101 tips and tricks for software engineers
+= Intelligent Scripting: 101 tips and tricks for software engineers
 Tim Menzies  <timm@ieee.org>  
 :stylesheet: ezr.css
 :toc: 
 :toc-title:  
  
-==   Can we make AI easier?
+==  Working Smarter, not Harder
 
 Some kinds of AI are very hard-- hard to build, hard to change, hard to understand. 
 Currently, everyone's favorite large language model (used in generative AI) has 70 trillion parameters (and this
