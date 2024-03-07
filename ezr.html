@@ -4,164 +4,53 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 2.0.20">
+<meta name="generator" content="Asciidoctor 2.0.21">
 <meta name="author" content="Tim Menzies">
-<title>Easier AI Engineering: 101 tips and tricls</title>
+<title>Easier   AI: 101 tips and tricks for software engineers</title>
 <style>
-@ximport "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700";
-@import "https://cdn.jsdelivr.net/gh/asciidoctor/asciidoctor@2.0/data/stylesheets/asciidoctor-default.css";
+body.article  {
+ padding-left: 10px;
+  padding-right:10px;
+}
+
+
+pre   {
+	padding: 5px;
+	xborder-left: 1px dotted black;
+	background-image: linear-gradient(to right, #EEE, white);
+	margin-left: 10px;
+	padding: 5px;
+}
+
+b.conum { /* Callout number class */
+  background-color: black; /* Black background color */
+  color: white;
+  paddiing:3px;
+  font-weight: xbold; /* Optional: makes the number bold */
+}
 
 
 @import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+@ximport "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700";
+@ximport "https://cdn.jsdelivr.net/gh/asciidoctor/asciidoctor@2.0/data/stylesheets/asciidoctor-default.css";
 
 
-pre { font-size: 7px; }
-.conum { /* Callout number class */
-  color: white; /* White text color */
-  background-color: black; /* Black background color */
-  border-radius: 50%; /* Circular shape */
-  display: inline-block;
-  text-align: center;
-  xwidth: 1.4em; /* Adjust size as needed */
-  xheight: 1.4em; /* Adjust size as needed */
-  xline-height: 1.5em; /* Center the number vertically */
-  font-weight: bold; /* Optional: makes the number bold */
-}
-
-body {
-    font-family: 'Arial', sans-serif; /* Change the font */
-    line-height: 0.7; /* Adjust the line height */
-    font-size: small;
-}
 
 
-</style>
-<style>
-pre.rouge table td { padding: 5px; }
-pre.rouge table pre { margin: 0; }
-pre.rouge, pre.rouge .w {
-  color: #24292f;
-  background-color: #f6f8fa;
-}
-pre.rouge .k, pre.rouge .kd, pre.rouge .kn, pre.rouge .kp, pre.rouge .kr, pre.rouge .kt, pre.rouge .kv {
-  color: #cf222e;
-}
-pre.rouge .gr {
-  color: #f6f8fa;
-}
-pre.rouge .gd {
-  color: #82071e;
-  background-color: #ffebe9;
-}
-pre.rouge .nb {
-  color: #953800;
-}
-pre.rouge .nc {
-  color: #953800;
-}
-pre.rouge .no {
-  color: #953800;
-}
-pre.rouge .nn {
-  color: #953800;
-}
-pre.rouge .sr {
-  color: #116329;
-}
-pre.rouge .na {
-  color: #116329;
-}
-pre.rouge .nt {
-  color: #116329;
-}
-pre.rouge .gi {
-  color: #116329;
-  background-color: #dafbe1;
-}
-pre.rouge .kc {
-  color: #0550ae;
-}
-pre.rouge .l, pre.rouge .ld, pre.rouge .m, pre.rouge .mb, pre.rouge .mf, pre.rouge .mh, pre.rouge .mi, pre.rouge .il, pre.rouge .mo, pre.rouge .mx {
-  color: #0550ae;
-}
-pre.rouge .sb {
-  color: #0550ae;
-}
-pre.rouge .bp {
-  color: #0550ae;
-}
-pre.rouge .ne {
-  color: #0550ae;
-}
-pre.rouge .nl {
-  color: #0550ae;
-}
-pre.rouge .py {
-  color: #0550ae;
-}
-pre.rouge .nv, pre.rouge .vc, pre.rouge .vg, pre.rouge .vi, pre.rouge .vm {
-  color: #0550ae;
-}
-pre.rouge .o, pre.rouge .ow {
-  color: #0550ae;
-}
-pre.rouge .gh {
-  color: #0550ae;
-  font-weight: bold;
-}
-pre.rouge .gu {
-  color: #0550ae;
-  font-weight: bold;
-}
-pre.rouge .s, pre.rouge .sa, pre.rouge .sc, pre.rouge .dl, pre.rouge .sd, pre.rouge .s2, pre.rouge .se, pre.rouge .sh, pre.rouge .sx, pre.rouge .s1, pre.rouge .ss {
-  color: #0a3069;
-}
-pre.rouge .nd {
-  color: #8250df;
-}
-pre.rouge .nf, pre.rouge .fm {
-  color: #8250df;
-}
-pre.rouge .err {
-  color: #f6f8fa;
-  background-color: #82071e;
-}
-pre.rouge .c, pre.rouge .ch, pre.rouge .cd, pre.rouge .cm, pre.rouge .cp, pre.rouge .cpf, pre.rouge .c1, pre.rouge .cs {
-  color: #6e7781;
-}
-pre.rouge .gl {
-  color: #6e7781;
-}
-pre.rouge .gt {
-  color: #6e7781;
-}
-pre.rouge .ni {
-  color: #24292f;
-}
-pre.rouge .si {
-  color: #24292f;
-}
-pre.rouge .ge {
-  color: #24292f;
-  font-style: italic;
-}
-pre.rouge .gs {
-  color: #24292f;
-  font-weight: bold;
-}
+
 </style>
 </head>
 <body class="article">
 <div id="header">
-<h1>Easier AI Engineering: 101 tips and tricls</h1>
+<h1>Easier   AI: 101 tips and tricks for software engineers</h1>
 <div class="details">
 <span id="author" class="author">Tim Menzies</span><br>
 <span id="email" class="email"><a href="mailto:timm@ieee.org">timm@ieee.org</a></span><br>
 </div>
 <div id="toc" class="toc">
-<div id="toctitle">Table of Contents</div>
+<div id="toctitle"></div>
 <ul class="sectlevel1">
-<li><a href="#_take_it_easy">Take it easy</a></li>
+<li><a href="#_can_we_make_ai_easier">Can we make AI easier?</a></li>
 <li><a href="#_main">Main</a></li>
 <li><a href="#_conclusion">Conclusion</a></li>
 </ul>
@@ -169,56 +58,47 @@ pre.rouge .gs {
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_take_it_easy">Take it easy</h2>
+<h2 id="_can_we_make_ai_easier">Can we make AI easier?</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Some kinds of AI are very hard-- hard to build, hard to change, hard to understand.
-Currently, everyone&#8217;s favorite large language model has 70 trillion parameters (and this
+Currently, everyone&#8217;s favorite large language model (used in generative AI) has 70 trillion parameters (and this
 is expected to grow larger in the near future). Such models are so expensive to build
 and tune that only a handful of large organizations can attempt it. And good luck
-looking  trying to understand how those systems work.</p>
+looking inside trying to understand how those systems work.</p>
 </div>
 <div class="paragraph">
-<p>But not all AI is  way. There are  other kinds of useful AI tools that programmers
-can understand and quickly build and modify. For example, consider an explanation system for
-semi-supervised multi-objectve sequential model optimzation. Does that sound like
-a complex task? Well, it isn&#8217;t. This doucment show how to build that system in under
-300 lines of Python.</p>
+<p>But not all AI is  generative AI- so not all AI is hard AI. With the right tips
+and tricks, software engineers can quickly code tools they are readily understandable
+for all manner of AI tasks (like optimization, prediction, classification, planning, monitoring, explanation, anomaly detection,
+privacy, data sharing. and everything else discussed below).</p>
 </div>
 <div class="paragraph">
-<p>See,
-after 30 years of work in SE and AI, I know all the tricks that make
-it real simple to apply SE principles to AI. This document divide those tricks into:</p>
+<p>For example, consider an explanation system for
+semi-supervised multi-objective   sequential model optimization. Does that sound like
+a complex task? Well, it isn&#8217;t. This document show how to build that system in under
+300 lines of Python using:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>23 scripting tips and tricks;</p>
+<p>45 scripting tips and tricks;</p>
 </li>
 <li>
-<p>41 SE tips and tricks;</p>
+<p>34 SE tips and tricks;</p>
 </li>
 <li>
-<p>32 AI tips and tricks.</p>
+<p>22 AI tips and tricks.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>I use this code for teachin graduate AI and SE, as well as training my Ph.D. students
-on how to AI easier (usually for SE applications).</p>
+<p>So have a read, see what you think. I use this code for teaching graduate AI and SE, as well as training my Ph.D. students
+on how to AI easier (usually for some SE applications). You could use this code for all manner of things
+such as quickly delivering an initial prototype. Or, indeed, or working out that all you need is that prototype, since it does most of what you need.</p>
 </div>
-<div class="ulist square">
-<ul class="square">
-<li>
-<p>item 1</p>
-</li>
-<li>
-<p>item 2</p>
-</li>
-<li>
-<p>item 3</p>
-</li>
-</ul>
+<div class="paragraph">
+<p>Share and enjoy. And if I missed any tips and tricks, then I&#8217;d love to hear about it. Drop me a line!</p>
 </div>
 </div>
 </div>
@@ -229,19 +109,18 @@ on how to AI easier (usually for SE applications).</p>
 <p>Here&#8217;s how you say &#8220;Hello, World!&#8221; in Prawn:</p>
 </div>
 <div class="listingblock">
-<div class="title">Listing 1. Create a basic PDF document using Prawn</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="python"><span class="k">def</span> <span class="nf">coerce</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-  <span class="k">try</span><span class="p">:</span> <span class="k">return</span> <span class="n">ast</span><span class="p">.</span><span class="nf">literal_eval</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> # <b class="conum">(1)</b>
-  <span class="k">except</span> <span class="nb">Exception</span><span class="p">:</span>  <span class="k">return</span> <span class="n">s</span>
+<pre>def coerce(s):
+  try: return ast.literal_eval(s) # <b class="conum">(1)</b>
+  except Exception:  return s
 
-<span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-  <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="p">.</span><span class="nf">items</span><span class="p">():</span>
-    <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">arg</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">sys</span><span class="p">.</span><span class="n">argv</span><span class="p">):</span>
-      <span class="k">if</span> <span class="n">arg</span> <span class="ow">in</span> <span class="p">[</span><span class="sh">"</span><span class="s">-</span><span class="sh">"</span><span class="o">+</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="sh">"</span><span class="s">--</span><span class="sh">"</span><span class="o">+</span><span class="n">k</span><span class="p">]:</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="nf">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="sh">"</span><span class="s">False</span><span class="sh">"</span> <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="sh">"</span><span class="s">True</span><span class="sh">"</span> <span class="nf">else </span><span class="p">(</span><span class="sh">"</span><span class="s">True</span><span class="sh">"</span> <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="sh">"</span><span class="s">False</span><span class="sh">"</span> <span class="k">else</span> <span class="n">sys</span><span class="p">.</span><span class="n">argv</span><span class="p">[</span><span class="n">c</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nf">coerce</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></code></pre>
+def cli(d):
+  for k,v in d.items():
+    for c,arg in enumerate(sys.argv):
+      if arg in ["-"+k[0], "--"+k]:
+        v = str(v)
+        v = "False" if v=="True" else ("True" if v=="False" else sys.argv[c+1])
+        d[k] = coerce(v)</pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -267,6 +146,7 @@ on how to AI easier (usually for SE applications).</p>
 </div>
 <div id="footer">
 <div id="footer-text">
+Last updated 2024-03-06 14:11:22 -0500
 </div>
 </div>
 </body>
