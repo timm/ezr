@@ -19,6 +19,7 @@ plot \
 "trends/bSS-L.csv" title "SS-L" with lines lw 1,\
 "trends/bSS-M.csv" title "SS-M" with lines lw 1,\
 "trends/bSS-N.csv" title "SS-N" with lines lw 1,\
+"trends/bSS-O.csv" title "SS-O" with lines lw 1,\
 "trends/bauto93.csv" title "auto93" with lines lw 8,\
 "trends/bcoc1000.csv" title "coc1000" with lines lw 1,\
 "trends/bhealthCloseIsses12mths0001-hard.csv" title "hard" with lines lw 1,\
@@ -54,6 +55,7 @@ plot \
 "trends/randSS-L.csv" title "SS-L" with lines lw 1,\
 "trends/randSS-M.csv" title "SS-M" with lines lw 1,\
 "trends/randSS-N.csv" title "SS-N" with lines lw 1,\
+"trends/randSS-O.csv" title "SS-O" with lines lw 1,\
 "trends/randauto93.csv" title "auto93" with lines lw 1,\
 "trends/randcoc1000.csv" title "coc1000" with lines lw 1,\
 "trends/randhealthCloseIsses12mths0001-hard.csv" title "hard" with lines lw 1,\
