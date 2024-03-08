@@ -1,10 +1,21 @@
-= Intelligent Scripting: 101 tips and tricks for software engineers
+= 101 Tips and Tricks for Smarter  Coding
 Tim Menzies  <timm@ieee.org>  
 :stylesheet: ezr.css
 :toc: 
 :toc-title:  
  
 ==  Working Smarter, not Harder
+
+Good programmers know how to make code easier and smarter. Really good  programmers
+make hard tasks look simple, to do less with more, even for seemingly complex tasks.
+
+So how do you get good?  Without having to work for
+decades or read a hundred books or a million web pages?
+
+Or, if you are an educator (like me), how do you find and teach those good ideas?
+
+Let's try this. I'm going to explain my favorite tips and tricks for coding to a smart, but inexperienced
+graduate student. 
 
 Some kinds of AI are very hard-- hard to build, hard to change, hard to understand. 
 Currently, everyone's favorite large language model (used in generative AI) has 70 trillion parameters (and this
