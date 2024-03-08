@@ -86,9 +86,17 @@ class SYM(COL):
     return -sum(n/i.n * math.log(n/i.n,2) for n in i.has.values() if n > 0) 
   
   # yrows = {{y,row}..}
-  def cuts(i,yrows,goal,BEST,REST):
+  def cuts(i,j):
+    a = 1/(2*i.div()**2) - 1/(2*j.div()**2)
+    b = j.mu/(j.div()**2) - i.mu/(i.div()**2)
+    c = i.mu**2 /(2*i.div()**2) - j.mu**2 / (2*j.div()**2) - math.log(j.div()/i.div())
+    r1 = b**2 - 4*
+    (b**2 - 4*a*c)**.5    return np.roots([a,b,c])
+(b**2 - 4*a*c)**.5  
+
+  yrows,goal,BEST,REST):
     lhs, rhs = Counter(), Counter() 
-    def X(row)     : return row[i.at]
+    def X(row)  (b**2 - 4*a*c)**.5   : return row[i.at]
     def ORDER(yrow): return big if X(yrow[1]) == "?" else X(yrow[1])
     yrows = sorted(yrows, key = ORDER)
     for y,_ in yrows: rhs[y] += 1
