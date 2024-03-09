@@ -1,42 +1,29 @@
-= 101 Tips and Tricks for Smarter  Coding
+= Tiny scripts for smarter AI tools: 101 tips and tricks
 Tim Menzies  <timm@ieee.org>  
 :stylesheet: ezr.css
 :toc: 
 :toc-title:  
- 
-==  Working Smarter, not Harder
 
-Good programmers know how to make code easier and smarter. Really good  programmers
-make hard tasks look simple, to do less with more, even for seemingly complex tasks.
+If you understand your code, you can rewrite it  in less code. 
+You know what is essential and what is superfluous.
+And you know
+how to do multiple tasks, just by calling your code a slightly different way.
 
-So how do you get good?  Without having to work for
-decades or read a hundred books or a million web pages?
+This site presents EZR, a  Python AI tool kit  that implements numerous AI tasks, in a tiny codebase
+(less than 1000 lines).
+It supports  optimization, prediction, classification, planning, monitoring, explanation, anomaly detection,
+semi-supervised learning, active learning, sequential model optimization, multi-objective reasoning,
+privacy, data sharing,  and everything else discussed below. Sound complex, right? Well, as we shall see,
+many of these AI tasks shre a common base which means one we get one of them going, the rest mostly fall into place.
 
-Or, if you are an educator (like me), how do you find and teach those good ideas?
+Not only that, but all the code can be used as teaching examples for good practices in software engineering
+like encapsulation, polymorphism, DRY (don't repeat yourself), test-driven development, patterns, domain-specific languages,
+declarative programming, functional programming, object-oriented programming (and everything else discussed below).
 
-Let's try this. I'm going to explain my favorite tips and tricks for coding to a smart, but inexperienced
-graduate student. 
+Lastly, this code is usual as a sample of some of the more powerful features of Python like list comprehensions,
+regular expressions, etc. etc.
 
-Some kinds of AI are very hard-- hard to build, hard to change, hard to understand. 
-Currently, everyone's favorite large language model (used in generative AI) has 70 trillion parameters (and this
-is expected to grow larger in the near future). Such models are so expensive to build
-and tune that only a handful of large organizations can attempt it. And good luck 
-looking inside trying to understand how those systems work.
-
-
-But not all AI is  generative AI- so not all AI is hard AI. With the right tips
-and tricks, software engineers can quickly code tools they are readily understandable
-for all manner of AI tasks (like optimization, prediction, classification, planning, monitoring, explanation, anomaly detection,
-privacy, data sharing. and everything else discussed below). 
-
-
-For example, consider an explanation system for 
-semi-supervised multi-objective   sequential model optimization. Does that sound like
-a complex task? Well, it isn't. This document show how to build that system in under
-300 lines of Python using: 
-
- 
-- 45 scripting tips and tricks;
+- 45 Pythons tips and tricks;
 - 34 SE tips and tricks;
 - 22 AI tips and tricks.
 
@@ -46,12 +33,8 @@ such as quickly delivering an initial prototype. Or, indeed, or working out that
 
 Share and enjoy. And if I missed any tips and tricks, then I'd love to hear about it. Drop me a line!
 
- 
 == Main
 
-Here's how you say "`Hello, World!`" in Prawn:
-
- 
 ----
 include::ezr.py[tag=cli]
 ----
