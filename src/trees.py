@@ -1,4 +1,5 @@
 import sys,math
+from collections import Counter
 
 big = 1E30
 tiny = 1/big
@@ -7,46 +8,69 @@ class OBJ:
   def __init__(i,**d) : i.__dict__.update(d)
   def __repr__(i)     : return i.__class__.__name__+'{'+str(i.__dict__)+'}'
 
-the = OBJ(k=1,m=2)
+the = OBJ(k=1, m=2, bins=16)
 
-class SYM(OBJ):
-  def __init__(i,at=0,txt=" "): i.n,i.at,i.txt,i.has = 0,at,txt,{}
+class BIN(OBJ):
+  def __init__(i,lo):  i.lo,i.hi,i.ys = lo,lo,Counter()  
+
+  def add(i,x,y):
+    i.lo = min(x, i.lo)
+    i.hi = max(x, i.hi)
+    i.ys[y] += 1
+
+  def merge(i,j,enough):
+    k     = BIN(lo=min(i.lo,j.lo), hi=max(i.hi,j.hi), ys=i.ys+j.ys)
+    ei,ni = entropy(i.ys)
+    ej,nj = entropy(j.ys)
+    ek,nk = entropy(k.ys)
+    if ni < enough or nj < enough: return k
+    if ek <= (ni*ei + nj*ej)/nk  : return k
+
+class COL(OBJ):
+  def __init__(i,at=0,txt=" "): i.n,i.at,i.txt = 0,at,txt
+  def bins(i,pos,neg):
+    d, enough = {}, (len(pos)+len(neg))/the.bins
+    def add(x,y):
+      if x != "?":
+        k = i.bin(x)
+        if k not in d: d[k] = BIN(x)
+        d[k].add(x,y)
+    [add(row[i.at],y) for y,rows in [("+",pos),("-",neg)] for row in rows] 
+    return i.bins1(sorted(d.values(), key=lambda z:z.lo), enough)
+
+class SYM(COL):
+  def __init__(i,*kw): super().__init__(**kw); i.has = {}
   def add(i,x):
     if x != "?":
       i.n += 1
       i.has[x] = i.has.get(x,0) + 1
   def like(i,x,m,prior):
     return (i.has.get(x, 0) + m*prior) / (i.n + m)
+  def bin(i,x):  return x
+  def bins1(i,bins,_): return bins
 
-class NUM(OBJ):
-  def __init__(i,at=0,txt=" "): i.n,i.at,i.txt,i.mu,i.m2, = 0,at,txt,0,0
+class NUM(COL):
+  def __init__(i,*kw): super().__init__(**kw); i.mu,i.m2 = 0,0
   def add(i,x):
     if x != "?":
       i.n += 1
       d = x - i.mu
       i.mu += d/i.n
       i.m2 += d * (x -  i.mu)
+
+  def bin(i,x):
+    gap = (i.hi - i.lo)/the.bins
+    return int((x - i.lo) / (gap + tiny))  
+  
+  def bins1(i, bins, enough): return merges(bins, lambda x,y: x.merge(y,enough))
   def div(i): return  0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
-  def norm(i,x): return x=="?" and x or (x - i.lo) / (i.hi - i.lo + tiny) 
+  def norm(i,x): return x=="?" and x or (x - i.lo) / (i.hi - i.lo + tiny)   
+
   def like(i, x, *_):
     v     = i.div()**2 + tiny
     nom   = math.e**(-1*(x - i.mu)**2/(2*v)) + tiny
     denom = (2*math.pi*v)**.5
     return min(1, nom/(denom + tiny))
-  def weight(i,j)
-    return abs(i.mu - j.mu) / (((i.div()**2/i.n  - j.div()**2)/j.n)**.5 + tiny)
-
-  def span(i,j,goal):
-    root  = lambda a,b,c,w: (-b + w*(b**2 - 4*a*c)**.5) / (2*a)
-    m1,m2 = i.mu,j.mu
-    std1,std2 = i.div(), j.div()
-    if std1==0 or std2==0: return (m1+m2)/2
-    a     = 1/(2*std1**2) - 1/(2*std2**2)
-    b     = m2/(std2**2) - m1/(std1**2)
-    c     = m1**2 /(2*std1**2) - m2**2 / (2*std2**2) - np.log(std2/std1)
-    root1 = root(a,b,c, 1)
-    root2 = root(a,b,c,-1)
-    return root1 if m1 <= root1 <= m2 else root2
 
 class COLS(OBJ):
   def __init__(i,names):
@@ -92,6 +116,21 @@ class NB(OBJ):
     i.nall += 1
     if klass not in i.datas: i.datas[klass] =  data.clone()
     i.datas[klass].add(lst)
+#-------------------------------------------------------------------------------
+def entropy(d):
+  N = sum(n for n in d.values())
+  return -sum(n/N*math.log(n/N,2) for n in d.values() if n>0),N
+
+def merges(b4, merge):
+  i, now, most = 0,[],len(b4)
+  while i <  most:
+    a = b4[i] 
+    if i <  most - 1: 
+      if tmp := merge(a, b4[i+1]):  a,i = tmp, i+1
+    now += [a]
+    i += 1
+  return now if len(now) == len(b4) else merges(now, merge)
+#-------------------------------------------------------------------------------
 
 class MAIN:
   def opt(): print(the)
@@ -104,12 +143,7 @@ class MAIN:
     d=DATA(data)
     print(sorted(round(d.loglike(row,len(d.rows),1, the.m, the.k),3) for row in d.rows)[::50])
 
-  def klasses():
-    nb=NB()
-    d=DATA(data, fun=nb.run)
-    print([len(data.rows) for data in nb.datas.values()])
-
-  
+  def bins():
     
 #-------------------------------------------------------------------------------
 data =[
