@@ -60,9 +60,10 @@ class NUM(COL):
 
   def bin(i,x):
     gap = (i.hi - i.lo)/the.bins
-    return int((x - i.lo) / (gap + tiny))  
+    tmp = int((x - i.lo) / (gap + tiny)) 
+    return the.bins - 1 if tmp==the.bins else tmp 
   
-  def bins1(i, bins, enough): return merges(bins, lambda x,y: x.merge(y,enough))
+  def bins1(i, bins, enough): return merges(bins)
   def div(i): return  0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
   def norm(i,x): return x=="?" and x or (x - i.lo) / (i.hi - i.lo + tiny)   
 
@@ -121,14 +122,14 @@ def entropy(d):
   N = sum(n for n in d.values())
   return -sum(n/N*math.log(n/N,2) for n in d.values() if n>0),N
 
-def merges(b4, merge):
-  i, now, most = 0,[],len(b4)
-  while i <  most:
-    a = b4[i] 
-    if i <  most - 1: 
-      if tmp := merge(a, b4[i+1]):  a,i = tmp, i+1
+def merges(b4, merge=lambda x,y: x.merge(y)):
+  j, now, most = 0,[],len(b4)
+  while j <  most:
+    a = b4[j] 
+    if j <  most - 1: 
+      if tmp := merge(a, b4[j+1]):  a,j = tmp, j+1
     now += [a]
-    i += 1
+    j += 1
   return now if len(now) == len(b4) else merges(now, merge)
 #-------------------------------------------------------------------------------
 
@@ -143,7 +144,7 @@ class MAIN:
     d=DATA(data)
     print(sorted(round(d.loglike(row,len(d.rows),1, the.m, the.k),3) for row in d.rows)[::50])
 
-  def bins():
+   
     
 #-------------------------------------------------------------------------------
 data =[
