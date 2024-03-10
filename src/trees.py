@@ -11,32 +11,37 @@ class OBJ:
 the = OBJ(k=1, m=2, bins=16)
 
 class BIN(OBJ):
-  def __init__(i,lo):  i.lo,i.hi,i.ys = lo,lo,Counter()  
+  def __init__(i,at,lo):  i.at,i.lo,i.hi,i.ys = at,lo,lo,Counter()  
 
   def add(i,x,y):
     i.lo = min(x, i.lo)
     i.hi = max(x, i.hi)
     i.ys[y] += 1
 
-  def merge(i,j,enough):
-    k     = BIN(lo=min(i.lo,j.lo), hi=max(i.hi,j.hi), ys=i.ys+j.ys)
-    ei,ni = entropy(i.ys)
-    ej,nj = entropy(j.ys)
-    ek,nk = entropy(k.ys)
-    if ni < enough or nj < enough: return k
-    if ek <= (ni*ei + nj*ej)/nk  : return k
+  def merge(i,j,xpect):
+    if i.at == j.at:
+      k     = BIN(at=i.at, lo=min(i.lo,j.lo), hi=max(i.hi,j.hi), ys=i.ys+j.ys)
+      ei,ni = entropy(i.ys)
+      ej,nj = entropy(j.ys)
+      ek,nk = entropy(k.ys)
+      if ni < xpect or nj < xpect: return k
+      if ek <= (ni*ei + nj*ej)/nk  : return k
+
+  def selects(i,lst): 
+    return  lst[i.at]=="?" or i.lo <= lst[i.at] <= i.hi
 
 class COL(OBJ):
   def __init__(i,at=0,txt=" "): i.n,i.at,i.txt = 0,at,txt
+
   def bins(i,pos,neg):
-    d, enough = {}, (len(pos)+len(neg))/the.bins
-    def add(x,y):
+    d, xpect = {}, (len(pos)+len(neg))/the.bins
+    def send2bin(x,y):
       if x != "?":
         k = i.bin(x)
-        if k not in d: d[k] = BIN(x)
+        if k not in d: d[k] = BIN(i.at,x)
         d[k].add(x,y)
-    [add(row[i.at],y) for y,rows in [("+",pos),("-",neg)] for row in rows] 
-    return i.bins1(sorted(d.values(), key=lambda z:z.lo), enough)
+    [send2bin(row[i.at],y) for y,rows in [("+",pos),("-",neg)] for row in rows] 
+    return i._bins(sorted(d.values(), key=lambda z:z.lo), xpect)
 
 class SYM(COL):
   def __init__(i,*kw): super().__init__(**kw); i.has = {}
@@ -44,10 +49,12 @@ class SYM(COL):
     if x != "?":
       i.n += 1
       i.has[x] = i.has.get(x,0) + 1
-  def like(i,x,m,prior):
-    return (i.has.get(x, 0) + m*prior) / (i.n + m)
-  def bin(i,x):  return x
-  def bins1(i,bins,_): return bins
+ 
+  def _bins(i,bins,_)  : return bins
+  def bin(i,x)         : return x
+  def div(i)           : return entropy(i.has)
+  def like(i,x,m,prior): return (i.has.get(x, 0) + m*prior) / (i.n + m)
+  def mid(i):          : return max(d, key=d.get)
 
 class NUM(COL):
   def __init__(i,*kw): super().__init__(**kw); i.mu,i.m2 = 0,0
@@ -58,13 +65,13 @@ class NUM(COL):
       i.mu += d/i.n
       i.m2 += d * (x -  i.mu)
 
-  def bin(i,x):
-    gap = (i.hi - i.lo)/the.bins
-    tmp = int((x - i.lo) / (gap + tiny)) 
+  def _bins(i, bins, xpect): return merges(bins,merge=lambda x,y:x.merge(y,xpect))
+  def bin(i,x): 
+    tmp = int(the.bins * i.norm(x))
     return the.bins - 1 if tmp==the.bins else tmp 
   
-  def bins1(i, bins, enough): return merges(bins)
-  def div(i): return  0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
+  def div(i)   : return  0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
+  def mid(i)   : return i.mu
   def norm(i,x): return x=="?" and x or (x - i.lo) / (i.hi - i.lo + tiny)   
 
   def like(i, x, *_):
@@ -119,18 +126,20 @@ class NB(OBJ):
     i.datas[klass].add(lst)
 #-------------------------------------------------------------------------------
 def entropy(d):
-  N = sum(n for n in d.values())
-  return -sum(n/N*math.log(n/N,2) for n in d.values() if n>0),N
+  N = sum(n for n in d.values()if n>0)
+  return -sum(n/N*math.log(n/N,2) for n in d.values() if n>0), N
 
-def merges(b4, merge=lambda x,y: x.merge(y)):
-  j, now, most = 0,[],len(b4)
+def merges(b4, merge):
+  "Bottom up clustering. While we can merge adjacent items, merge then repeat."
+  j, now, most, repeat  = 0, [], len(b4), False 
   while j <  most:
     a = b4[j] 
     if j <  most - 1: 
-      if tmp := merge(a, b4[j+1]):  a,j = tmp, j+1
+      if tmp := merge(a, b4[j+1]):  
+        a, j, repeat = tmp, j+1, True  # skip merged item, search down rest of list
     now += [a]
     j += 1
-  return now if len(now) == len(b4) else merges(now, merge)
+  return merges(now, merge) if repeat else b4 
 #-------------------------------------------------------------------------------
 
 class MAIN:
