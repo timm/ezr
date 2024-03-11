@@ -20,13 +20,13 @@ docs:
 	mkdir -p ~/tmp
 	echo "$@" 
 	a2ps                           \
-		-qBr                         \
+		-qBR                         \
 		--chars-per-line 100           \
 		--file-align=fill               \
 		--line-numbers=1                 \
 		--borders=no                      \
 		--pro=color                        \
-		--columns  3                        \
+		--columns  2                        \
 		-M letter                            \
 		-o ~/tmp/$^.ps $^ ;                   \
 	ps2pdf ~/tmp/$^.ps $@ ;  rm ~/tmp/$^.ps; \
