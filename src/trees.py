@@ -12,7 +12,7 @@ Explore a `todo` set, within fewest queries to labels:
 6. Goto step 2.
 """
 from __future__ import annotations
-from typing import List, Dict,Union
+from typing import Any
 import re,ast,sys,math,random
 from collections import Counter
 from fileinput import FileInput as file_or_stdin 
@@ -31,7 +31,7 @@ class BIN(OBJ):
   def __init__(i, at:int, lo:float, hi:float=None, ys:Counter=None):  
     i.at,i.lo,i.hi,i.ys = at,lo,hi or lo,ys or Counter()  
 
-  def add(i, x:float, y:any) -> None:
+  def add(i, x:float, y:Any) -> None:
     i.lo = min(x, i.lo)
     i.hi = max(x, i.hi)
     i.ys[y] += 1
@@ -67,15 +67,15 @@ class COL(OBJ):
 #----------------------------------------------------------------------------------------
 class SYM(COL):
   def __init__(i,**kw): super().__init__(**kw); i.has = {}
-  def add(i, x:any):
+  def add(i, x:Any):
     if x != "?":
       i.n += 1
       i.has[x] = i.has.get(x,0) + 1
  
   def _bins(i,bins:list[BIN],_)          : return bins
-  def bin(i,x:any)                       : return x
+  def bin(i,x:Any)                       : return x
   def div(i)                             : return entropy(i.has)
-  def like(i, x:any, m:int ,prior:float) : return (i.has.get(x, 0) + m*prior) / (i.n + m)
+  def like(i, x:Any, m:int ,prior:float) : return (i.has.get(x, 0) + m*prior) / (i.n + m)
   def mid(i)                             : return max(i.has, key=i.has.get)
 #----------------------------------------------------------------------------------------
 class NUM(COL):
