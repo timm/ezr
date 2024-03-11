@@ -67,16 +67,16 @@ class COL(OBJ):
 #----------------------------------------------------------------------------------------
 class SYM(COL):
   def __init__(i,**kw): super().__init__(**kw); i.has = {}
-  def add(i,x):
+  def add(i, x:any):
     if x != "?":
       i.n += 1
       i.has[x] = i.has.get(x,0) + 1
  
-  def _bins(i,bins,_)  : return bins
-  def bin(i,x)         : return x
-  def div(i)           : return entropy(i.has)
-  def like(i,x,m,prior): return (i.has.get(x, 0) + m*prior) / (i.n + m)
-  def mid(i)           : return max(i.has, key=i.has.get)
+  def _bins(i,bins:list[BIN],_)          : return bins
+  def bin(i,x:any)                       : return x
+  def div(i)                             : return entropy(i.has)
+  def like(i, x:any, m:int ,prior:float) : return (i.has.get(x, 0) + m*prior) / (i.n + m)
+  def mid(i)                             : return max(i.has, key=i.has.get)
 #----------------------------------------------------------------------------------------
 class NUM(COL):
   def __init__(i,**kw): 
