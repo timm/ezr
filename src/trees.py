@@ -23,9 +23,9 @@ tiny = 1/big
 
 class OBJ:
   def __init__(i,**d): i.__dict__.update(d)
-  def __repr__(i)    : return i.__class__.__name__+'{'+show(i.__dict__)+'}'
+  def __repr__(i)    : return i.__class__.__name__+show(i.__dict__)
 
-the = OBJ(k=1, m=2, bins=8, file="../data/auto93.csv")
+the = OBJ(k=1, m=2, bins=10, file="../data/auto93.csv")
 #----------------------------------------------------------------------------------------
 class BIN(OBJ):
   def __init__(i, at:int, lo:float, hi:float=None, ys:Counter=None):  
@@ -214,7 +214,7 @@ def csv(file=None):
 def show(x,n=3):
   if   isa(x,(int,float)) : x= x if int(x)==x else round(x,n)
   elif isa(x,(list,tuple)): x= [show(y,n) for y in x][:10]
-  elif isa(x,dict): x= ', '.join(f":{k} {show(v,n)}" for k,v in x.items() if k[0]!="_")
+  elif isa(x,dict): x= "{"+', '.join(f":{k} {show(v,n)}" for k,v in sorted(x.items()) if k[0]!="_")+"}"
   return x
 #----------------------------------------------------------------------------------------
 class MAIN:
