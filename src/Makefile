@@ -1,7 +1,8 @@
 -include ../Makefile
 R=20
 
-
+silly:
+		pdoc --logo ~/tmp/tree.png  --no-search  -o ~/tmp/t1 trees.py
 
 
 bores=~/gits/txt/aa24/data/Process/small
