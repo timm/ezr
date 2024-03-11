@@ -9,7 +9,7 @@ class OBJ:
   def __repr__(i)     : return i.__class__.__name__+'{'+str(i.__dict__)+'}'
 
 the = OBJ(k=1, m=2, bins=16)
-
+#----------------------------------------------------------------------------------------
 class BIN(OBJ):
   def __init__(i,at,lo):  i.at,i.lo,i.hi,i.ys = at,lo,lo,Counter()  
 
@@ -29,7 +29,7 @@ class BIN(OBJ):
 
   def selects(i,lst): 
     return  lst[i.at]=="?" or i.lo <= lst[i.at] <= i.hi
-
+#----------------------------------------------------------------------------------------
 class COL(OBJ):
   def __init__(i,at=0,txt=" "): i.n,i.at,i.txt = 0,at,txt
 
@@ -42,7 +42,7 @@ class COL(OBJ):
         d[k].add(x,y)
     [send2bin(row[i.at],y) for y,rows in [("+",pos),("-",neg)] for row in rows] 
     return i._bins(sorted(d.values(), key=lambda z:z.lo), xpect)
-
+#----------------------------------------------------------------------------------------
 class SYM(COL):
   def __init__(i,*kw): super().__init__(**kw); i.has = {}
   def add(i,x):
@@ -55,9 +55,12 @@ class SYM(COL):
   def div(i)           : return entropy(i.has)
   def like(i,x,m,prior): return (i.has.get(x, 0) + m*prior) / (i.n + m)
   def mid(i):          : return max(d, key=d.get)
-
+#----------------------------------------------------------------------------------------
 class NUM(COL):
-  def __init__(i,*kw): super().__init__(**kw); i.mu,i.m2 = 0,0
+  def __init__(i,*kw): 
+    super().__init__(**kw); i.mu,i.m2 = 0,0
+    i.heaven = 0 if i.txt[-1]=="-" else 1
+
   def add(i,x):
     if x != "?":
       i.n += 1
@@ -79,7 +82,7 @@ class NUM(COL):
     nom   = math.e**(-1*(x - i.mu)**2/(2*v)) + tiny
     denom = (2*math.pi*v)**.5
     return min(1, nom/(denom + tiny))
-
+#----------------------------------------------------------------------------------------
 class COLS(OBJ):
   def __init__(i,names):
     i.x,i.y,i.all,i.names,i.klass = [],[],[],names,None
@@ -93,7 +96,7 @@ class COLS(OBJ):
 
   def add(i,lst):
     [col.add(lst[col.at]) for col in i.all if lst[col.at] != "?"]; return lst
-
+#----------------------------------------------------------------------------------------
 class DATA(OBJ):
   def __init__(i,src=[],fun=None):
     i.rows, i.cols = [],[]
@@ -112,7 +115,7 @@ class DATA(OBJ):
     prior = (len(i.rows) + k) / (nall + k*nh)
     likes = [c.like(lst[c.at],m,prior) for c in i.cols.x if lst[c.at] != "?"]
     return sum(math.log(x) for x in likes + [prior] if x>0)
-
+#----------------------------------------------------------------------------------------
 class NB(OBJ):
   def __init__(i): i.nall, i.datas = 0,{}
 
@@ -124,7 +127,7 @@ class NB(OBJ):
     i.nall += 1
     if klass not in i.datas: i.datas[klass] =  data.clone()
     i.datas[klass].add(lst)
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
 def entropy(d):
   N = sum(n for n in d.values()if n>0)
   return -sum(n/N*math.log(n/N,2) for n in d.values() if n>0), N
@@ -140,8 +143,7 @@ def merges(b4, merge):
     now += [a]
     j += 1
   return merges(now, merge) if repeat else b4 
-#-------------------------------------------------------------------------------
-
+#----------------------------------------------------------------------------------------
 class MAIN:
   def opt(): print(the)
 
@@ -152,10 +154,7 @@ class MAIN:
   def rows():
     d=DATA(data)
     print(sorted(round(d.loglike(row,len(d.rows),1, the.m, the.k),3) for row in d.rows)[::50])
-
-   
-    
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------
 data =[
 ["Preg","Plas","Pres","Skin","Insu","Mass","Pedi","Age","class!"],
 [6,148,72,35,0,33.6,0.627,50,"positive"],
