@@ -1,3 +1,4 @@
+#!/usr/bin/env python3 -B
 """
 Explore a `todo` set, within fewest queries to labels:
 
@@ -10,21 +11,23 @@ Explore a `todo` set, within fewest queries to labels:
    (b) move  the first item into `done`.
 6. Goto step 2.
 """
-import sys,math
+import re,ast,sys,math,random
 from collections import Counter
 from fileinput import FileInput as file_or_stdin 
 
-big = 1E30
+isa = isinstance
+big = 1E32
 tiny = 1/big
 
 class OBJ:
-  def __init__(i,**d) : i.__dict__.update(d)
-  def __repr__(i)     : return i.__class__.__name__+'{'+str(i.__dict__)+'}'
+  def __init__(i,**d): i.__dict__.update(d)
+  def __repr__(i)    : return i.__class__.__name__+'{'+show(i.__dict__)+'}'
 
 the = OBJ(k=1, m=2, bins=8, file="../data/auto93.csv")
 #----------------------------------------------------------------------------------------
 class BIN(OBJ):
-  def __init__(i,at,lo):  i.at,i.lo,i.hi,i.ys = at,lo,lo,Counter()  
+  def __init__(i, at, lo, hi=None, ys=None):  
+    i.at,i.lo,i.hi,i.ys = at,lo,hi or lo,ys or Counter()  
 
   def add(i,x,y):
     i.lo = min(x, i.lo)
@@ -33,15 +36,24 @@ class BIN(OBJ):
 
   def merge(i,j,xpect):
     if i.at == j.at:
-      k     = BIN(at=i.at, lo=min(i.lo,j.lo), hi=max(i.hi,j.hi), ys=i.ys+j.ys)
+      k     = BIN(i.at, min(i.lo,j.lo), hi=max(i.hi,j.hi), ys=i.ys+j.ys)
       ei,ni = entropy(i.ys)
       ej,nj = entropy(j.ys)
       ek,nk = entropy(k.ys)
       if ni < xpect or nj < xpect: return k
       if ek <= (ni*ei + nj*ej)/nk  : return k
 
+  def score(i, BEST, REST, goal="+", how=lambda B,R: B - R):
+    b,r = 0,0
+    for k,n in i.ys.items():
+      if k==goal: b += n
+      else      : r += n
+    b,r = b/(BEST+tiny), r/(REST+tiny)
+    return how(b,r)
+
   def selects(i,lst): 
-    return  lst[i.at]=="?" or i.lo <= lst[i.at] <= i.hi
+    x = lst[i.at]
+    return  x=="?" or i.lo == x == i.hi and i.lo <= x < i.hi
 #----------------------------------------------------------------------------------------
 class COL(OBJ):
   def __init__(i,at=0,txt=" "): i.n,i.at,i.txt = 0,at,txt
@@ -57,7 +69,7 @@ class COL(OBJ):
     return i._bins(sorted(d.values(), key=lambda z:z.lo), xpect)
 #----------------------------------------------------------------------------------------
 class SYM(COL):
-  def __init__(i,*kw): super().__init__(**kw); i.has = {}
+  def __init__(i,**kw): super().__init__(**kw); i.has = {}
   def add(i,x):
     if x != "?":
       i.n += 1
@@ -70,8 +82,9 @@ class SYM(COL):
   def mid(i)           : return max(i.has, key=i.has.get)
 #----------------------------------------------------------------------------------------
 class NUM(COL):
-  def __init__(i,*kw): 
-    super().__init__(**kw); i.mu,i.m2 = 0,0
+  def __init__(i,**kw): 
+    super().__init__(**kw)
+    i.mu,i.m2,i.lo,i.hi = 0,0,big, -big
     i.heaven = 0 if i.txt[-1]=="-" else 1
 
   def add(i,x):
@@ -80,8 +93,16 @@ class NUM(COL):
       d = x - i.mu
       i.mu += d/i.n
       i.m2 += d * (x -  i.mu)
+      i.lo  = min(x, i.lo)
+      i.hi  = max(x, i.hi)
 
-  def _bins(i, bins, xpect): return merges(bins,merge=lambda x,y:x.merge(y,xpect))
+  def _bins(i, bins, xpect): 
+    bins = merges(bins,merge=lambda x,y:x.merge(y,xpect))
+    bins[0].lo  = -big
+    bins[-1].hi =  big
+    for j in range(1,len(bins)): bins[j].lo = bins[j-1].hi
+    return bins
+  
   def bin(i,x): 
     tmp = int(the.bins * i.norm(x))
     return the.bins - 1 if tmp==the.bins else tmp 
@@ -109,12 +130,14 @@ class COLS(OBJ):
         if z == "!": i.klass= col
 
   def add(i,lst):
-    [col.add(lst[col.at]) for col in i.all if lst[col.at] != "?"]; return lst
+    [col.add(lst[col.at]) for col in i.all if lst[col.at] != "?"]
+    return lst
 #----------------------------------------------------------------------------------------
 class DATA(OBJ):
   def __init__(i,src=[],order=False,fun=None):
-    i.rows, i.cols = [],[]
+    i.rows, i.cols = [],None
     [i.add(lst,fun) for lst in src]
+    if order: i.order()
 
   def add(i,lst,fun=None):
     if i.cols: 
@@ -136,7 +159,7 @@ class DATA(OBJ):
     return sum(math.log(x) for x in likes + [prior] if x>0)
   
   def order(i):
-    i.rows = sorted(i.rows, key=i.d2h)
+    i.rows = sorted(i.rows, key=i.d2h, reverse=False)
     return i.rows
 #----------------------------------------------------------------------------------------
 class NB(OBJ):
@@ -151,6 +174,12 @@ class NB(OBJ):
     if klass not in i.datas: i.datas[klass] =  data.clone()
     i.datas[klass].add(lst)
 #----------------------------------------------------------------------------------------
+def printm(matrix,sep=' | '):
+  s    = [[str(e) for e in row] for row in matrix]
+  lens = [max(map(len, col)) for col in zip(*s)]
+  fmt  = sep.join('{{:{}}}'.format(x) for x in lens)
+  for row in [fmt.format(*row) for row in s]: print(row)
+    
 def entropy(d):
   N = sum(n for n in d.values()if n>0)
   return -sum(n/N*math.log(n/N,2) for n in d.values() if n>0), N
@@ -176,17 +205,42 @@ def csv(file=None):
     for line in src:
       line = re.sub(r'([\n\t\r"\’ ]|#.*)', '', line)
       if line: yield [coerce(s.strip()) for s in line.split(",")]
+
+def show(x,n=3):
+  if   isa(x,(int,float)) : x= x if int(x)==x else round(x,n)
+  elif isa(x,(list,tuple)): x= [show(y,n) for y in x][:10]
+  elif isa(x,dict): x= ', '.join(f":{k} {show(v,n)}" for k,v in x.items() if k[0]!="_")
+  return x
 #----------------------------------------------------------------------------------------
 class MAIN:
   def opt(): print(the)
 
+  def header():
+    top=["Clndrs","Volume","HpX","Model","origin","Lbs-","Acc+","Mpg+"]
+    d=DATA([top])
+    [print(col) for col in d.cols.all]
+
   def data(): 
    d=DATA(csv(the.file))
-   print(d.cols.x[1].div()) 
+   print(d.cols.x[1])
 
   def rows():
     d=DATA(csv(the.file))
-    print(sorted(round(d.loglike(row,len(d.rows),1, the.m, the.k),3) for row in d.rows)[::50])
+    print(sorted(show(d.loglike(r,len(d.rows),1, the.m, the.k)) for r in d.rows)[::50])
+
+  def bore():
+    d=DATA(csv(the.file),order=True)
+    printm([r for r in d.rows[::25]])
+
+  def bore2():
+    d    = DATA(csv(the.file),order=True)
+    n    = int(len(d.rows)*.1)
+    best = d.rows[:n]
+    rest = random.sample(d.rows[n:],n*3)
+    for col in d.cols.x: 
+      print("")
+      for bin in col.bins(best,rest):
+        print(bin, show(bin.score(n,n*3)))
 
 if __name__=="__main__" and len(sys.argv) > 1: 
 	getattr(MAIN, sys.argv[1], MAIN.opt)()
