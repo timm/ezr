@@ -43,14 +43,6 @@ class BIN(OBJ):
       if ni < xpect or nj < xpect: return k
       if ek <= (ni*ei + nj*ej)/nk  : return k
 
-  def score(i, BEST, REST, goal="+", how=lambda B,R: B - R):
-    b,r = 0,0
-    for k,n in i.ys.items():
-      if k==goal: b += n
-      else      : r += n
-    b,r = b/(BEST+tiny), r/(REST+tiny)
-    return how(b,r)
-
   def selects(i,lst): 
     x = lst[i.at]
     return  x=="?" or i.lo == x == i.hi and i.lo <= x < i.hi
@@ -174,6 +166,14 @@ class NB(OBJ):
     if klass not in i.datas: i.datas[klass] =  data.clone()
     i.datas[klass].add(lst)
 #----------------------------------------------------------------------------------------
+def score(d, BEST, REST, goal="+", how=lambda B,R: B - R):
+  b,r = 0,0
+  for k,n in d.items():
+    if k==goal: b += n
+    else      : r += n
+  b,r = b/(BEST+tiny), r/(REST+tiny)
+  return how(b,r)
+
 def printm(matrix,sep=' | '):
   s    = [[str(e) for e in row] for row in matrix]
   lens = [max(map(len, col)) for col in zip(*s)]
@@ -240,7 +240,7 @@ class MAIN:
     for col in d.cols.x: 
       print("")
       for bin in col.bins(best,rest):
-        print(bin, show(bin.score(n,n*3)))
+        print(show(score(bin.ys, n,n*3)),bin,sep="\t")
 
 if __name__=="__main__" and len(sys.argv) > 1: 
 	getattr(MAIN, sys.argv[1], MAIN.opt)()
