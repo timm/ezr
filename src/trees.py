@@ -1,5 +1,6 @@
 import sys,math
 from collections import Counter
+from fileinput import FileInput as file_or_stdin 
 
 big = 1E30
 tiny = 1/big
@@ -8,7 +9,7 @@ class OBJ:
   def __init__(i,**d) : i.__dict__.update(d)
   def __repr__(i)     : return i.__class__.__name__+'{'+str(i.__dict__)+'}'
 
-the = OBJ(k=1, m=2, bins=16)
+the = OBJ(k=1, m=2, bins=8, file="../data/auto93.csv")
 #----------------------------------------------------------------------------------------
 class BIN(OBJ):
   def __init__(i,at,lo):  i.at,i.lo,i.hi,i.ys = at,lo,lo,Counter()  
@@ -54,7 +55,7 @@ class SYM(COL):
   def bin(i,x)         : return x
   def div(i)           : return entropy(i.has)
   def like(i,x,m,prior): return (i.has.get(x, 0) + m*prior) / (i.n + m)
-  def mid(i):          : return max(d, key=d.get)
+  def mid(i)           : return max(i.has, key=i.has.get)
 #----------------------------------------------------------------------------------------
 class NUM(COL):
   def __init__(i,*kw): 
@@ -143,12 +144,22 @@ def merges(b4, merge):
     now += [a]
     j += 1
   return merges(now, merge) if repeat else b4 
+
+def coerce(s):
+  try: return ast.literal_eval(s) # <1>
+  except Exception:  return s
+
+def csv(file=None):
+  with file_or_stdin(file) as src:
+    for line in src:
+      line = re.sub(r'([\n\t\r"\’ ]|#.*)', '', line)
+      if line: yield [coerce(s.strip()) for s in line.split(",")]
 #----------------------------------------------------------------------------------------
 class MAIN:
   def opt(): print(the)
 
   def data(): 
-   d=DATA(data)
+   d=DATA(csv(the.file))
    print(d.cols.x[1].div()) 
 
   def rows():
