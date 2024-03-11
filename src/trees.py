@@ -11,6 +11,8 @@ Explore a `todo` set, within fewest queries to labels:
    (b) move  the first item into `done`.
 6. Goto step 2.
 """
+from __future__ import annotations
+from typing import List, Dict,Union
 import re,ast,sys,math,random
 from collections import Counter
 from fileinput import FileInput as file_or_stdin 
@@ -26,15 +28,15 @@ class OBJ:
 the = OBJ(k=1, m=2, bins=8, file="../data/auto93.csv")
 #----------------------------------------------------------------------------------------
 class BIN(OBJ):
-  def __init__(i, at, lo, hi=None, ys=None):  
+  def __init__(i, at:int, lo:float, hi:float=None, ys:Counter=None):  
     i.at,i.lo,i.hi,i.ys = at,lo,hi or lo,ys or Counter()  
 
-  def add(i,x,y):
+  def add(i, x:float, y:any) -> None:
     i.lo = min(x, i.lo)
     i.hi = max(x, i.hi)
     i.ys[y] += 1
 
-  def merge(i,j,xpect):
+  def merge(i, j:BIN, xpect:float) -> BIN: # or None if nothing merged
     if i.at == j.at:
       k     = BIN(i.at, min(i.lo,j.lo), hi=max(i.hi,j.hi), ys=i.ys+j.ys)
       ei,ni = entropy(i.ys)
@@ -43,22 +45,25 @@ class BIN(OBJ):
       if ni < xpect or nj < xpect: return k
       if ek <= (ni*ei + nj*ej)/nk  : return k
 
-  def selects(i,lst): 
+  def selectss(i, klasses: dict[str,list]) -> dict[str,list]:
+    return {klass:[lst for lst in lsts if i.selects(lst)] for klass,lsts in klasses.items()}
+  
+  def selects(i, lst: list) -> bool: 
     x = lst[i.at]
     return  x=="?" or i.lo == x == i.hi and i.lo <= x < i.hi
 #----------------------------------------------------------------------------------------
 class COL(OBJ):
-  def __init__(i,at=0,txt=" "): i.n,i.at,i.txt = 0,at,txt
+  def __init__(i, at:int=0, txt:str=" "): i.n,i.at,i.txt = 0,at,txt
 
-  def bins(i,pos,neg):
-    d, xpect = {}, (len(pos)+len(neg))/the.bins
-    def send2bin(x,y):
-      if x != "?":
-        k = i.bin(x)
-        if k not in d: d[k] = BIN(i.at,x)
-        d[k].add(x,y)
-    [send2bin(row[i.at],y) for y,rows in [("+",pos),("-",neg)] for row in rows] 
-    return i._bins(sorted(d.values(), key=lambda z:z.lo), xpect)
+  def bins(i, klasses: dict[str,list]) -> list[BIN]:
+    out = {}
+    def send2bin(x,y): 
+      k = i.bin(x)
+      if k not in out: out[k] = BIN(i.at,x)
+      out[k].add(x,y)
+    [send2bin(lst[i.at],y) for y,lsts in klasses.items() for lst in lsts if lst[i.at]!="?"] 
+    return i._bins(sorted(out.values(), key=lambda z:z.lo), 
+                   (sum(len(lst) for lst in klasses.values())/the.bins))
 #----------------------------------------------------------------------------------------
 class SYM(COL):
   def __init__(i,**kw): super().__init__(**kw); i.has = {}
@@ -174,7 +179,7 @@ def score(d, BEST, REST, goal="+", how=lambda B,R: B - R):
   b,r = b/(BEST+tiny), r/(REST+tiny)
   return how(b,r)
 
-def printm(matrix,sep=' | '):
+def prints(matrix,sep=' | '):
   s    = [[str(e) for e in row] for row in matrix]
   lens = [max(map(len, col)) for col in zip(*s)]
   fmt  = sep.join('{{:{}}}'.format(x) for x in lens)
@@ -230,7 +235,7 @@ class MAIN:
 
   def bore():
     d=DATA(csv(the.file),order=True)
-    printm([r for r in d.rows[::25]])
+    prints([r for r in d.rows[::25]])
 
   def bore2():
     d    = DATA(csv(the.file),order=True)
@@ -239,8 +244,8 @@ class MAIN:
     rest = random.sample(d.rows[n:],n*3)
     for col in d.cols.x: 
       print("")
-      for bin in col.bins(best,rest):
-        print(show(score(bin.ys, n,n*3)),bin,sep="\t")
+      for bin in col.bins(dict(best=best,rest=rest)):
+        print(show(score(bin.ys, n,n*3,goal="best")),bin,sep="\t")
 
 if __name__=="__main__" and len(sys.argv) > 1: 
 	getattr(MAIN, sys.argv[1], MAIN.opt)()
