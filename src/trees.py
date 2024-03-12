@@ -17,17 +17,21 @@ import re,ast,sys,math,random
 from collections import Counter
 from fileinput import FileInput as file_or_stdin 
 
-isa = isinstance
 big = 1E32
 tiny = 1/big
 
 class OBJ:
+  "Base class, defines simple initialization and pretty print."
   def __init__(i,**d): i.__dict__.update(d)
   def __repr__(i)    : return i.__class__.__name__+show(i.__dict__)
 
 the = OBJ(k=1, m=2, bins=10, file="../data/auto93.csv")
 #----------------------------------------------------------------------------------------
 class BIN(OBJ):
+  """Stores in `ys` the klass symbols see between `lo` and `hi`. 
+  - `merge` combines two BINs, if they are too small or they have similar distributions;
+  - `selects` returns true when this BIN matches a row.
+  """
   def __init__(i, at:int, lo:float, hi:float=None, ys:Counter=None):  
     i.at,i.lo,i.hi,i.ys = at,lo,hi or lo,ys or Counter()  
 
@@ -45,7 +49,7 @@ class BIN(OBJ):
       if ni < xpect or nj < xpect: return k
       if ek <= (ni*ei + nj*ej)/nk  : return k
 
-  def selectss(i, klasses: dict[str,list]) -> dict[str,list]:
+  def selectss(i, klasses: dict[str,list[list]]) -> dict[str,list[list]]:
     return {klass:[lst for lst in lsts if i.selects(lst)] for klass,lsts in klasses.items()}
   
   def selects(i, lst: list) -> bool: 
@@ -171,6 +175,8 @@ class NB(OBJ):
     if klass not in i.datas: i.datas[klass] =  data.clone()
     i.datas[klass].add(lst)
 #----------------------------------------------------------------------------------------
+def isa(x,y): return isinstance(x,y)
+
 def score(d, BEST, REST, goal="+", how=lambda B,R: B - R):
   b,r = 0,0
   for k,n in d.items():

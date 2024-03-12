@@ -2,8 +2,8 @@
 R=20
 
 silly:
-	cp ../etc/smoothie.png ~/tmp
-	python3 -m pdoc --logo smoothie.png  --no-search  -o ~/tmp trees.py
+	cp ../etc/tree.jpeg ~/tmp
+	python3 -m pdoc --logo tree.jpeg  --no-search  -o ~/tmp trees.py
 
 
 bores=~/gits/txt/aa24/data/Process/small
