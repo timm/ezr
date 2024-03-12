@@ -55,7 +55,7 @@ class BIN(OBJ):
       if ni < minSize or nj < minSize: return k # merge bins that are too small
       if ek <= (ni*ei + nj*ej)/nk    : return k # merge bins if combo not as complex
 
-  # find relevent rules
+  # find relevant rules
   def selectss(i, klasses: Klasses) -> Klasses:
     return {klass:[row for row in lst if i.selects(row)] for klass,lst in klasses.items()}
   
@@ -137,8 +137,8 @@ class NUM(COL):
   def div(i) -> float : return  0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
   def mid(i) -> float : return i.mu
   
-  # baeyes
-  def like(i, x, *_):
+  # bayes
+  def like(i, x:float, *_) -> float:
     v     = i.div()**2 + tiny
     nom   = math.e**(-1*(x - i.mu)**2/(2*v)) + tiny
     denom = (2*math.pi*v)**.5
@@ -155,7 +155,7 @@ class COLS(OBJ):
         (i.y if z in "!+-" else i.x).append(col)
         if z == "!": i.klass= col
 
-  def add(i,row: Row):
+  def add(i,row: Row) -> Row:
     [col.add(row[col.at]) for col in i.all if row[col.at] != "?"]
     return row
 #----------------------------------------------------------------------------------------
@@ -175,32 +175,32 @@ class DATA(OBJ):
   # creation
   def clone(i,lst:Iterable[Row]=[],ordered=False) -> DATA:  
     return DATA([i.cols.names]+lst)
-  def order(i):
+  def order(i) -> Rows:
     i.rows = sorted(i.rows, key=i.d2h, reverse=False)
     return i.rows
   
   # distance
-  def d2h(i, row:Row):
+  def d2h(i, row:Row) -> float:
     d = sum(col.d2h( row[col.at] )**2 for col in i.cols.y)
     return (d/len(i.cols.y))**.5
 
   # bayes
-  def loglike(i, row:Row, nall:int, nh:int, m:int, k:int):
+  def loglike(i, row:Row, nall:int, nh:int, m:int, k:int) -> float:
     prior = (len(i.rows) + k) / (nall + k*nh)
     likes = [c.like(row[c.at],m,prior) for c in i.cols.x if row[c.at] != "?"]
     return sum(math.log(x) for x in likes + [prior] if x>0)
 #----------------------------------------------------------------------------------------
 class NB(OBJ):
-  def __init__(i): i.nall, i.datas = 0,{}
+  def __init__(i): i.nall=0; i.datas:Klasses = {}
 
-  def loglike(i,data,lst):
-    return data.loglike(lst, i.nall, len(i.datas), the.m, the.k)
+  def loglike(i, data:DATA, row:Row):
+    return data.loglike(row, i.nall, len(i.datas), the.m, the.k)
 
-  def run(i,data,lst):
-    klass = lst[data.cols.klass.at]
+  def run(i,data:DATA, row:Row):
+    klass = row[data.cols.klass.at]
     i.nall += 1
     if klass not in i.datas: i.datas[klass] =  data.clone()
-    i.datas[klass].add(lst)
+    i.datas[klass].add(row)
 #----------------------------------------------------------------------------------------
 def isa(x,y): return isinstance(x,y)
 
@@ -222,8 +222,7 @@ def entropy(d):
   N = sum(n for n in d.values()if n>0)
   return -sum(n/N*math.log(n/N,2) for n in d.values() if n>0), N
 
-def merges(b4, merge):
-  "Bottom up clustering. While we can merge adjacent items, merge then repeat."
+def merges(b4, merge): 
   j, now, most, repeat  = 0, [], len(b4), False 
   while j <  most:
     a = b4[j] 
