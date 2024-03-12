@@ -160,6 +160,11 @@ class COLS(OBJ):
     return row
 #----------------------------------------------------------------------------------------
 class DATA(OBJ):
+  """
+  Stores `rows`, summarized into `cols`. Optionally, `rows` can be sorted by distance to
+  heaven (`d2h()``).  A `clone()` is a new `DATA` of the same structure. Can compute
+  `loglike()`lihood of  a `Row` belonging to this `DATA`.
+  """
   def __init__(i,src=Iterable[Row],order=False,fun=None):
     i.rows, i.cols = [],None
     [i.add(lst,fun) for lst in src]
@@ -204,7 +209,7 @@ class NB(OBJ):
 #----------------------------------------------------------------------------------------
 def isa(x,y): return isinstance(x,y)
 
-def score(d:dist, BEST:int, REST:int, goal="+", how=lambda B,R: B - R) -> float:
+def score(d:dict, BEST:int, REST:int, goal="+", how=lambda B,R: B - R) -> float:
   b,r = 0,0
   for k,n in d.items():
     if k==goal: b += n
