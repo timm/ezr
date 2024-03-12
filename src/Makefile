@@ -2,7 +2,8 @@
 R=20
 
 silly:
-		pdoc --logo ~/tmp/tree.png  --no-search  -o ~/tmp/t1 trees.py
+	cp ../etc/tree.png ~/tmp
+	python3 -m pdoc --logo tree.png  --no-search  -o ~/tmp trees.py
 
 
 bores=~/gits/txt/aa24/data/Process/small
