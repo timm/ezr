@@ -30,7 +30,7 @@ the = OBJ(k=1, m=2, bins=10, file="../data/auto93.csv")
 class BIN(OBJ):
   """Stores in `ys` the klass symbols see between `lo` and `hi`. 
   - `merge` combines two BINs, if they are too small or they have similar distributions;
-  - `selects` returns true when this BIN matches a row.
+  - `selects` returns true when a BIN matches a row.
   """
   def __init__(i, at:int, lo:float, hi:float=None, ys:Counter=None):  
     i.at,i.lo,i.hi,i.ys = at,lo,hi or lo,ys or Counter()  
@@ -57,6 +57,9 @@ class BIN(OBJ):
     return  x=="?" or i.lo == x == i.hi and i.lo <= x < i.hi
 #----------------------------------------------------------------------------------------
 class COL(OBJ):
+  """Abstract class above NUM and SYM.   
+  - `bins()` reports how col values are spread over a list of BINs.
+  """
   def __init__(i, at:int=0, txt:str=" "): i.n,i.at,i.txt = 0,at,txt
 
   def bins(i, klasses: dict[str,list]) -> list[BIN]:
@@ -70,6 +73,12 @@ class COL(OBJ):
                    (sum(len(lst) for lst in klasses.values())/the.bins))
 #----------------------------------------------------------------------------------------
 class SYM(COL):
+  """Summarizes a stream of symbols.
+  - the `div()`ersity of the summary is the `entropy`;
+  - the `mid()`dle of the summary is the mode value;
+  - `like()` returns the likelihood of a value belongs in this distribution;
+  - `bin()` and `_bin()` are used for generating BINs (for SYMs there is not much to do with BINs) 
+  """
   def __init__(i,**kw): super().__init__(**kw); i.has = {}
   def add(i, x:Any):
     if x != "?":

@@ -4,6 +4,7 @@ R=20
 silly:
 	cp ../etc/tree.jpeg ~/tmp
 	python3 -m pdoc --logo tree.jpeg  --no-search  -o ~/tmp trees.py
+	rm ~/tmp/index.html
 
 
 bores=~/gits/txt/aa24/data/Process/small
