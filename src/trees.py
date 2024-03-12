@@ -11,8 +11,8 @@ Explore a `todo` set, within fewest queries to labels:
    (b) move  the first item into `done`.
 6. Goto step 2.
 """
-from __future__ import annotations
-from typing import Any
+from __future__ import annotations 
+from typing import Any 
 import re,ast,sys,math,random
 from collections import Counter
 from fileinput import FileInput as file_or_stdin 
@@ -49,7 +49,7 @@ class BIN(OBJ):
       if ni < xpect or nj < xpect: return k
       if ek <= (ni*ei + nj*ej)/nk  : return k
 
-  def selectss(i, klasses: dict[str,list[list]]) -> dict[str,list[list]]:
+  def selectss(i, klasses: dict[str,'lists']) -> dict[str,'lists']:
     return {klass:[lst for lst in lsts if i.selects(lst)] for klass,lsts in klasses.items()}
   
   def selects(i, lst: list) -> bool: 
