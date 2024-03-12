@@ -229,10 +229,10 @@ def entropy(d: dict) -> float:
   return -sum(n/N*math.log(n/N,2) for n in d.values() if n>0), N
 
 def merges(b4: list[BIN], merge:Callable) -> list[BIN]:
-  j, now, most, repeat  = 0, [], len(b4), False 
-  while j <  most:
+  j, now, repeat  = 0, [], False 
+  while j <  len(b4):
     a = b4[j] 
-    if j <  most - 1: 
+    if j <  len(b4) - 1: 
       if tmp := merge(a, b4[j+1]):  
         a, j, repeat = tmp, j+1, True  # skip merged item, search down rest of list
     now += [a]
@@ -263,7 +263,7 @@ class MAIN:
     sys.exit(sum(MAIN._one(s) == False for s in sorted(dir(MAIN)) if s[0] != "_"))
 
   def _one(s):
-    global the;  the = OBJ( **options )
+    global the; the = OBJ( **options )
     random.seed(the.seed) 
     return getattr(MAIN, s)() 
 
