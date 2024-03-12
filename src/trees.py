@@ -30,7 +30,8 @@ class OBJ:
   def __init__(i,**d)    : i.__dict__.update(d)
   def __repr__(i) -> str : return i.__class__.__name__+show(i.__dict__)
 
-the = OBJ(k=1, m=2, bins=10, file="../data/auto93.csv")
+options = dict(k=1, m=2, bins=10, file="../data/auto93.csv", seed=1234567891)
+the     = OBJ( **options )
 #----------------------------------------------------------------------------------------
 class BIN(OBJ):
   """Stores in `ys` the klass symbols see between `lo` and `hi`. 
@@ -251,10 +252,21 @@ def csv(file=None) -> Iterable[Row]:
 def show(x:Any, n=3) -> Any:
   if   isa(x,(int,float)) : x= x if int(x)==x else round(x,n)
   elif isa(x,(list,tuple)): x= [show(y,n) for y in x][:10]
-  elif isa(x,dict): x= "{"+', '.join(f":{k} {show(v,n)}" for k,v in sorted(x.items()) if k[0]!="_")+"}"
+  elif isa(x,dict): 
+          x= "{"+', '.join(f":{k} {show(v,n)}" for k,v in sorted(x.items()) if k[0]!="_")+"}"
   return x
 #----------------------------------------------------------------------------------------
 class MAIN:
+  """`./trees.py _all` : run all functions , return to operating system the count of failures.   
+  `MAIN._one()` : reset all options to defaults, then run one start-up action."""
+  def _all(): 
+    sys.exit(sum(MAIN._one(s) == False for s in sorted(dir(MAIN)) if s[0] != "_"))
+
+  def _one(s):
+    global the;  the = OBJ( **options )
+    random.seed(the.seed) 
+    return getattr(MAIN, s)() 
+
   def opt(): print(the)
 
   def header():
