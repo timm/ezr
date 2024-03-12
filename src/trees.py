@@ -204,7 +204,7 @@ class NB(OBJ):
 #----------------------------------------------------------------------------------------
 def isa(x,y): return isinstance(x,y)
 
-def score(d, BEST, REST, goal="+", how=lambda B,R: B - R):
+def score(d:dist, BEST:int, REST:int, goal="+", how=lambda B,R: B - R) -> float:
   b,r = 0,0
   for k,n in d.items():
     if k==goal: b += n
@@ -212,17 +212,17 @@ def score(d, BEST, REST, goal="+", how=lambda B,R: B - R):
   b,r = b/(BEST+tiny), r/(REST+tiny)
   return how(b,r)
 
-def prints(matrix,sep=' | '):
+def prints(matrix: list[list],sep=' | '):
   s    = [[str(e) for e in row] for row in matrix]
   lens = [max(map(len, col)) for col in zip(*s)]
   fmt  = sep.join('{{:{}}}'.format(x) for x in lens)
   for row in [fmt.format(*row) for row in s]: print(row)
     
-def entropy(d):
+def entropy(d: dict) -> float:
   N = sum(n for n in d.values()if n>0)
   return -sum(n/N*math.log(n/N,2) for n in d.values() if n>0), N
 
-def merges(b4, merge): 
+def merges(b4: list[BIN], merge:Callable) -> list[BIN]:
   j, now, most, repeat  = 0, [], len(b4), False 
   while j <  most:
     a = b4[j] 
@@ -233,17 +233,17 @@ def merges(b4, merge):
     j += 1
   return merges(now, merge) if repeat else b4 
 
-def coerce(s):
+def coerce(s:str) -> Any:
   try: return ast.literal_eval(s) # <1>
   except Exception:  return s
 
-def csv(file=None):
+def csv(file=None) -> Iterable[Row]:
   with file_or_stdin(file) as src:
     for line in src:
       line = re.sub(r'([\n\t\r"\’ ]|#.*)', '', line)
       if line: yield [coerce(s.strip()) for s in line.split(",")]
 
-def show(x,n=3):
+def show(x:Any, n=3) -> Any:
   if   isa(x,(int,float)) : x= x if int(x)==x else round(x,n)
   elif isa(x,(list,tuple)): x= [show(y,n) for y in x][:10]
   elif isa(x,dict): x= "{"+', '.join(f":{k} {show(v,n)}" for k,v in sorted(x.items()) if k[0]!="_")+"}"
