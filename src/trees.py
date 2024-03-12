@@ -49,7 +49,7 @@ class BIN(OBJ):
       if ni < xpect or nj < xpect: return k
       if ek <= (ni*ei + nj*ej)/nk  : return k
 
-  def selectss(i, klasses: dict[str,'lists']) -> dict[str,'lists']:
+  def selectss(i, klasses: dict[str,list]) -> dict[str,list]:
     return {klass:[lst for lst in lsts if i.selects(lst)] for klass,lsts in klasses.items()}
   
   def selects(i, lst: list) -> bool: 
