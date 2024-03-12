@@ -12,7 +12,7 @@ Explore a `todo` set, within fewest queries to labels:
 6. Goto step 2.
 """
 from __future__ import annotations 
-from typing import Any 
+from typing import Any,Iterable,Callable
 import re,ast,sys,math,random
 from collections import Counter
 from fileinput import FileInput as file_or_stdin 
@@ -20,10 +20,15 @@ from fileinput import FileInput as file_or_stdin
 big = 1E32
 tiny = 1/big
 
+# some types. just written here for documentation purposes
+class Row    : has:list[Any]
+class Rows   : has:list[Row]
+class Klasses: has:dict[str, Rows]
+
 class OBJ:
   "Base class, defines simple initialization and pretty print."
-  def __init__(i,**d): i.__dict__.update(d)
-  def __repr__(i)    : return i.__class__.__name__+show(i.__dict__)
+  def __init__(i,**d)    : i.__dict__.update(d)
+  def __repr__(i) -> str : return i.__class__.__name__+show(i.__dict__)
 
 the = OBJ(k=1, m=2, bins=10, file="../data/auto93.csv")
 #----------------------------------------------------------------------------------------
@@ -35,25 +40,27 @@ class BIN(OBJ):
   def __init__(i, at:int, lo:float, hi:float=None, ys:Counter=None):  
     i.at,i.lo,i.hi,i.ys = at,lo,hi or lo,ys or Counter()  
 
-  def add(i, x:float, y:Any) -> None:
+  def add(i, x:float, y:Any):
     i.lo = min(x, i.lo)
     i.hi = max(x, i.hi)
     i.ys[y] += 1
 
-  def merge(i, j:BIN, xpect:float) -> BIN: # or None if nothing merged
+  # combine bins
+  def merge(i, j:BIN, minSize:float) -> BIN: # or None if nothing merged
     if i.at == j.at:
       k     = BIN(i.at, min(i.lo,j.lo), hi=max(i.hi,j.hi), ys=i.ys+j.ys)
       ei,ni = entropy(i.ys)
       ej,nj = entropy(j.ys)
       ek,nk = entropy(k.ys)
-      if ni < xpect or nj < xpect: return k
-      if ek <= (ni*ei + nj*ej)/nk  : return k
+      if ni < minSize or nj < minSize: return k # merge bins that are too small
+      if ek <= (ni*ei + nj*ej)/nk    : return k # merge bins if combo not as complex
 
-  def selectss(i, klasses: dict[str,list]) -> dict[str,list]:
-    return {klass:[lst for lst in lsts if i.selects(lst)] for klass,lsts in klasses.items()}
+  # find relevent rules
+  def selectss(i, klasses: Klasses) -> Klasses:
+    return {klass:[row for row in lst if i.selects(row)] for klass,lst in klasses.items()}
   
-  def selects(i, lst: list) -> bool: 
-    x = lst[i.at]
+  def selects(i, row: Row) -> bool: 
+    x = row[i.at]
     return  x=="?" or i.lo == x == i.hi and i.lo <= x < i.hi
 #----------------------------------------------------------------------------------------
 class COL(OBJ):
@@ -62,15 +69,16 @@ class COL(OBJ):
   """
   def __init__(i, at:int=0, txt:str=" "): i.n,i.at,i.txt = 0,at,txt
 
-  def bins(i, klasses: dict[str,list]) -> list[BIN]:
+  # discretization
+  def bins(i, klasses: Klasses) -> list[BIN]:
     out = {}
     def send2bin(x,y): 
       k = i.bin(x)
       if k not in out: out[k] = BIN(i.at,x)
       out[k].add(x,y)
-    [send2bin(lst[i.at],y) for y,lsts in klasses.items() for lst in lsts if lst[i.at]!="?"] 
+    [send2bin(row[i.at],y) for y,lst in klasses.items() for row in lst if row[i.at]!="?"] 
     return i._bins(sorted(out.values(), key=lambda z:z.lo), 
-                   (sum(len(lst) for lst in klasses.values())/the.bins))
+                   minSize = (sum(len(lst) for lst in klasses.values())/the.bins))
 #----------------------------------------------------------------------------------------
 class SYM(COL):
   """Summarizes a stream of symbols.
@@ -85,11 +93,17 @@ class SYM(COL):
       i.n += 1
       i.has[x] = i.has.get(x,0) + 1
  
-  def _bins(i,bins:list[BIN],_)          : return bins
-  def bin(i,x:Any)                       : return x
-  def div(i)                             : return entropy(i.has)
-  def like(i, x:Any, m:int, prior:float) : return (i.has.get(x, 0) + m*prior) / (i.n + m)
-  def mid(i)                             : return max(i.has, key=i.has.get)
+  # discretization
+  def _bins(i,bins:list[BIN],**_) -> list[BIN] : return bins
+  def bin(i,x:Any) -> Any       : return x
+
+  # stats
+  def div(i)  -> float : return entropy(i.has)
+  def mid(i)  -> Any   : return max(i.has, key=i.has.get)
+  
+  # bayes
+  def like(i, x:Any, m:int, prior:float) -> float : 
+    return (i.has.get(x, 0) + m*prior) / (i.n + m)
 #----------------------------------------------------------------------------------------
 class NUM(COL):
   def __init__(i,**kw): 
@@ -97,7 +111,7 @@ class NUM(COL):
     i.mu,i.m2,i.lo,i.hi = 0,0,big, -big
     i.heaven = 0 if i.txt[-1]=="-" else 1
 
-  def add(i,x):
+  def add(i, x:Any):
     if x != "?":
       i.n += 1
       d = x - i.mu
@@ -106,22 +120,24 @@ class NUM(COL):
       i.lo  = min(x, i.lo)
       i.hi  = max(x, i.hi)
 
-  def _bins(i, bins, xpect): 
-    bins = merges(bins,merge=lambda x,y:x.merge(y,xpect))
+  # discretization 
+  def bin(i, x:float) -> int: return min(the.bins - 1, int(the.bins * i.norm(x)))
+  def _bins(i, bins: list[BIN], minSize=2) -> list[BIN]: 
+    bins = merges(bins,merge=lambda x,y:x.merge(y,minSize))
     bins[0].lo  = -big
     bins[-1].hi =  big
     for j in range(1,len(bins)): bins[j].lo = bins[j-1].hi
     return bins
   
-  def bin(i,x): 
-    tmp = int(the.bins * i.norm(x))
-    return the.bins - 1 if tmp==the.bins else tmp 
-  
-  def d2h(i,x) : return abs(i.norm(x) - i.heaven)
-  def div(i)   : return  0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
-  def mid(i)   : return i.mu
-  def norm(i,x): return x=="?" and x or (x - i.lo) / (i.hi - i.lo + tiny)   
+  # distance
+  def d2h(i, x:float) -> float: return abs(i.norm(x) - i.heaven)
+  def norm(i,x:float) -> float: return x=="?" and x or (x - i.lo) / (i.hi - i.lo + tiny)   
 
+  # stats
+  def div(i) -> float : return  0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
+  def mid(i) -> float : return i.mu
+  
+  # baeyes
   def like(i, x, *_):
     v     = i.div()**2 + tiny
     nom   = math.e**(-1*(x - i.mu)**2/(2*v)) + tiny
@@ -129,7 +145,7 @@ class NUM(COL):
     return min(1, nom/(denom + tiny))
 #----------------------------------------------------------------------------------------
 class COLS(OBJ):
-  def __init__(i,names):
+  def __init__(i, names: list[str]):
     i.x,i.y,i.all,i.names,i.klass = [],[],[],names,None
     for at,txt in enumerate(names):
       a,z = txt[0], txt[-1]
@@ -139,38 +155,40 @@ class COLS(OBJ):
         (i.y if z in "!+-" else i.x).append(col)
         if z == "!": i.klass= col
 
-  def add(i,lst):
-    [col.add(lst[col.at]) for col in i.all if lst[col.at] != "?"]
-    return lst
+  def add(i,row: Row):
+    [col.add(row[col.at]) for col in i.all if row[col.at] != "?"]
+    return row
 #----------------------------------------------------------------------------------------
 class DATA(OBJ):
-  def __init__(i,src=[],order=False,fun=None):
+  def __init__(i,src=Iterable[Row],order=False,fun=None):
     i.rows, i.cols = [],None
     [i.add(lst,fun) for lst in src]
     if order: i.order()
 
-  def add(i,lst,fun=None):
+  def add(i, row:Row, fun:Callable=None):
     if i.cols: 
-      if fun: fun(i,lst)
-      i.rows += [i.cols.add(lst)]
+      if fun: fun(i,row)
+      i.rows += [i.cols.add(row)]
     else: 
-      i.cols = COLS(lst)
+      i.cols = COLS(row)
 
-  def clone(i,lst=[],ordered=False):
+  # creation
+  def clone(i,lst:Iterable[Row]=[],ordered=False) -> DATA:  
     return DATA([i.cols.names]+lst)
-  
-  def d2h(i, lst):
-    d = sum(col.d2h( lst[col.at] )**2 for col in i.cols.y)
-    return (d/len(i.cols.y))**.5
-
-  def loglike(i, lst, nall, nh, m,k):
-    prior = (len(i.rows) + k) / (nall + k*nh)
-    likes = [c.like(lst[c.at],m,prior) for c in i.cols.x if lst[c.at] != "?"]
-    return sum(math.log(x) for x in likes + [prior] if x>0)
-  
   def order(i):
     i.rows = sorted(i.rows, key=i.d2h, reverse=False)
     return i.rows
+  
+  # distance
+  def d2h(i, row:Row):
+    d = sum(col.d2h( row[col.at] )**2 for col in i.cols.y)
+    return (d/len(i.cols.y))**.5
+
+  # bayes
+  def loglike(i, row:Row, nall:int, nh:int, m:int, k:int):
+    prior = (len(i.rows) + k) / (nall + k*nh)
+    likes = [c.like(row[c.at],m,prior) for c in i.cols.x if row[c.at] != "?"]
+    return sum(math.log(x) for x in likes + [prior] if x>0)
 #----------------------------------------------------------------------------------------
 class NB(OBJ):
   def __init__(i): i.nall, i.datas = 0,{}
