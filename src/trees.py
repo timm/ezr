@@ -17,6 +17,8 @@ import re,ast,sys,math,random
 from collections import Counter
 from fileinput import FileInput as file_or_stdin 
 
+options = dict(k=1, m=2, bins=10, file="../data/auto93.csv", seed=1234567891) 
+
 big = 1E32
 tiny = 1/big
 
@@ -29,34 +31,31 @@ class OBJ:
   "Base class, defines simple initialization and pretty print."
   def __init__(i,**d)    : i.__dict__.update(d)
   def __repr__(i) -> str : return i.__class__.__name__+show(i.__dict__)
-
-options = dict(k=1, m=2, bins=10, file="../data/auto93.csv", seed=1234567891)
-the     = OBJ( **options )
 #----------------------------------------------------------------------------------------
 class BIN(OBJ):
   """Stores in `ys` the klass symbols see between `lo` and `hi`. 
   - `merge` combines two BINs, if they are too small or they have similar distributions;
   - `selects` returns true when a BIN matches a row.
   """
-  def __init__(i, at:int, lo:float, hi:float=None, ys:Counter=None):  
-    i.at,i.lo,i.hi,i.ys = at,lo,hi or lo,ys or Counter()  
+  def __init__(i, at:int, txt:str, lo:float, hi:float=None, ys:Counter=None):  
+    i.at,i.txt,i.lo,i.hi,i.ys = at,txt, lo,hi or lo,ys or Counter()  
 
   def add(i, x:float, y:Any):
     i.lo = min(x, i.lo)
     i.hi = max(x, i.hi)
     i.ys[y] += 1
 
-  # combine bins
+  # combine bins ---------------------
   def merge(i, j:BIN, minSize:float) -> BIN: # or None if nothing merged
     if i.at == j.at:
-      k     = BIN(i.at, min(i.lo,j.lo), hi=max(i.hi,j.hi), ys=i.ys+j.ys)
+      k     = BIN(i.at, i.txt, min(i.lo,j.lo), hi=max(i.hi,j.hi), ys=i.ys+j.ys)
       ei,ni = entropy(i.ys)
       ej,nj = entropy(j.ys)
       ek,nk = entropy(k.ys)
       if ni < minSize or nj < minSize: return k # merge bins that are too small
       if ek <= (ni*ei + nj*ej)/nk    : return k # merge bins if combo not as complex
 
-  # find relevant rules
+  # find relevant rules ---------------------
   def selectss(i, klasses: Klasses) -> Klasses:
     return {klass:[row for row in lst if i.selects(row)] for klass,lst in klasses.items()}
   
@@ -70,12 +69,12 @@ class COL(OBJ):
   """
   def __init__(i, at:int=0, txt:str=" "): i.n,i.at,i.txt = 0,at,txt
 
-  # discretization
+  # discretization ---------------------
   def bins(i, klasses: Klasses) -> list[BIN]:
     out = {}
     def send2bin(x,y): 
       k = i.bin(x)
-      if k not in out: out[k] = BIN(i.at,x)
+      if k not in out: out[k] = BIN(i.at,i.txt,x)
       out[k].add(x,y)
     [send2bin(row[i.at],y) for y,lst in klasses.items() for row in lst if row[i.at]!="?"] 
     return i._bins(sorted(out.values(), key=lambda z:z.lo), 
@@ -94,15 +93,15 @@ class SYM(COL):
       i.n += 1
       i.has[x] = i.has.get(x,0) + 1
  
-  # discretization
+  # discretization ---------------------
   def _bins(i,bins:list[BIN],**_) -> list[BIN] : return bins
-  def bin(i,x:Any) -> Any       : return x
+  def bin(i,x:Any) -> Any  : return x
 
-  # stats
+  # stats ---------------------
   def div(i)  -> float : return entropy(i.has)
   def mid(i)  -> Any   : return max(i.has, key=i.has.get)
   
-  # bayes
+  # bayes ---------------------
   def like(i, x:Any, m:int, prior:float) -> float : 
     return (i.has.get(x, 0) + m*prior) / (i.n + m)
 #----------------------------------------------------------------------------------------
@@ -121,8 +120,9 @@ class NUM(COL):
       i.lo  = min(x, i.lo)
       i.hi  = max(x, i.hi)
 
-  # discretization 
+  # discretization ---------------------
   def bin(i, x:float) -> int: return min(the.bins - 1, int(the.bins * i.norm(x)))
+
   def _bins(i, bins: list[BIN], minSize=2) -> list[BIN]: 
     bins = merges(bins,merge=lambda x,y:x.merge(y,minSize))
     bins[0].lo  = -big
@@ -130,15 +130,15 @@ class NUM(COL):
     for j in range(1,len(bins)): bins[j].lo = bins[j-1].hi
     return bins
   
-  # distance
+  # distance ---------------------
   def d2h(i, x:float) -> float: return abs(i.norm(x) - i.heaven)
   def norm(i,x:float) -> float: return x=="?" and x or (x - i.lo) / (i.hi - i.lo + tiny)   
 
-  # stats
+  # stats ---------------------
   def div(i) -> float : return  0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
   def mid(i) -> float : return i.mu
   
-  # bayes
+  # bayes ---------------------
   def like(i, x:float, *_) -> float:
     v     = i.div()**2 + tiny
     nom   = math.e**(-1*(x - i.mu)**2/(2*v)) + tiny
@@ -178,25 +178,27 @@ class DATA(OBJ):
     else: 
       i.cols = COLS(row)
 
-  # creation
+  # creation ---------------------
   def clone(i,lst:Iterable[Row]=[],ordered=False) -> DATA:  
     return DATA([i.cols.names]+lst)
   def order(i) -> Rows:
     i.rows = sorted(i.rows, key=i.d2h, reverse=False)
     return i.rows
   
-  # distance
+  # distance ---------------------
   def d2h(i, row:Row) -> float:
     d = sum(col.d2h( row[col.at] )**2 for col in i.cols.y)
     return (d/len(i.cols.y))**.5
 
-  # bayes
+  # bayes ---------------------
   def loglike(i, row:Row, nall:int, nh:int, m:int, k:int) -> float:
     prior = (len(i.rows) + k) / (nall + k*nh)
     likes = [c.like(row[c.at],m,prior) for c in i.cols.x if row[c.at] != "?"]
     return sum(math.log(x) for x in likes + [prior] if x>0)
 #----------------------------------------------------------------------------------------
 class NB(OBJ):
+  """Visitor object carried along by a DATA. Internally maintains its own `DATA` for rows
+  from different class."""
   def __init__(i): i.nall=0; i.datas:Klasses = {}
 
   def loglike(i, data:DATA, row:Row):
@@ -265,7 +267,7 @@ class MAIN:
   def _one(s):
     global the; the = OBJ( **options )
     random.seed(the.seed) 
-    return getattr(MAIN, s)() 
+    return getattr(MAIN, s, lambda :print(f"E> '{s}' unknown."))() 
 
   def opt(): print(the)
 
@@ -288,13 +290,20 @@ class MAIN:
 
   def bore2():
     d    = DATA(csv(the.file),order=True)
-    n    = int(len(d.rows)*.1)
+    n    = int(len(d.rows)**.5)
     best = d.rows[:n]
-    rest = random.sample(d.rows[n:],n*3)
-    for col in d.cols.x: 
-      print("")
-      for bin in col.bins(dict(best=best,rest=rest)):
-        print(show(score(bin.ys, n,n*3,goal="best")),bin,sep="\t")
+    #rest = random.sample(d.rows[-n:],n*3)
+    rest = d.rows[-n:] 
+    bins = [(score(bin.ys, n,n, goal="best"),bin)
+            for col in d.cols.x for bin in col.bins(dict(best=best,rest=rest))]
+    now=None
+    for n, bin in bins:
+      if now != bin.at: print("")
+      now = bin.at
+      print(show(n), bin, sep="\t")
+    print("")
+    [print(show(n), bin, sep="\t") for n, bin in sorted(bins, key=lambda z:z[0])]
 
-if __name__=="__main__" and len(sys.argv) > 1: 
-	getattr(MAIN, sys.argv[1], MAIN.opt)()
+if __name__=="__main__":
+  if len(sys.argv) > 1: 
+    MAIN._one(sys.argv[1]) 
