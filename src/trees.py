@@ -35,8 +35,18 @@ class OBJ:
 class BIN(OBJ):
   """Stores in `ys` the klass symbols see between `lo` and `hi`. 
   - `merge` combines two BINs, if they are too small or they have similar distributions;
-  - `selects` returns true when a BIN matches a row.
+  - `selects` returns true when a BIN matches a row.   
+  To  build decision trees,  split Rows on the best scoring bin, then recurse on each half.
   """
+  @staticmethod
+  def score(d:dict, BEST:int, REST:int, goal="+", how=lambda B,R: B - R) -> float:
+    b,r = 0,0
+    for k,n in d.items():
+      if k==goal: b += n
+      else      : r += n
+    b,r = b/(BEST+tiny), r/(REST+tiny)
+    return how(b,r) 
+  
   def __init__(i, at:int, txt:str, lo:float, hi:float=None, ys:Counter=None):  
     i.at,i.txt,i.lo,i.hi,i.ys = at,txt, lo,hi or lo,ys or Counter()  
 
@@ -82,9 +92,9 @@ class COL(OBJ):
 #----------------------------------------------------------------------------------------
 class SYM(COL):
   """Summarizes a stream of symbols.
-  - the `div()`ersity of the summary is the `entropy`;
-  - the `mid()`dle of the summary is the mode value;
-  - `like()` returns the likelihood of a value belongs in this distribution;
+  - the `div()`ersity of a SYM summary is the `entropy`;
+  - the `mid()`dle of a SYM summary is the mode value;
+  - `like()` returns the likelihood of a value belongs in a SYM distribution;
   - `bin()` and `_bin()` are used for generating BINs (for SYMs there is not much to do with BINs) 
   """
   def __init__(i,**kw): super().__init__(**kw); i.has = {}
@@ -106,6 +116,14 @@ class SYM(COL):
     return (i.has.get(x, 0) + m*prior) / (i.n + m)
 #----------------------------------------------------------------------------------------
 class NUM(COL):
+  """Summarizes a stream of numbers.
+  - the `div()`ersity of a NUM summary is the standard deviation;
+  - the `mid()`dle of a NUM summary is the mean value;
+  - `like()` returns the likelihood of a value belongs in a NUM distribution;
+  - `bin(n)`  places `n` in  one equal width bin (spread from `lo` to `hi`)
+    `_bin(bins)` tries to merge numeric bins
+  - `d2h(n)`  reports how far n` is from `heaven` (which is 0 when minimizing, 1 otherwise
+  - `norm(n)` maps `n` into 0..1 (min..max)"""
   def __init__(i,**kw): 
     super().__init__(**kw)
     i.mu,i.m2,i.lo,i.hi = 0,0,big, -big
@@ -210,27 +228,13 @@ class NB(OBJ):
     if klass not in i.datas: i.datas[klass] =  data.clone()
     i.datas[klass].add(row)
 #----------------------------------------------------------------------------------------
-def isa(x,y): return isinstance(x,y)
-
-def score(d:dict, BEST:int, REST:int, goal="+", how=lambda B,R: B - R) -> float:
-  b,r = 0,0
-  for k,n in d.items():
-    if k==goal: b += n
-    else      : r += n
-  b,r = b/(BEST+tiny), r/(REST+tiny)
-  return how(b,r)
-
-def prints(matrix: list[list],sep=' | '):
-  s    = [[str(e) for e in row] for row in matrix]
-  lens = [max(map(len, col)) for col in zip(*s)]
-  fmt  = sep.join('{{:{}}}'.format(x) for x in lens)
-  for row in [fmt.format(*row) for row in s]: print(row)
-    
+# Misc functions
+# data mining tricks --------------------- 
 def entropy(d: dict) -> float:
   N = sum(n for n in d.values()if n>0)
   return -sum(n/N*math.log(n/N,2) for n in d.values() if n>0), N
 
-def merges(b4: list[BIN], merge:Callable) -> list[BIN]:
+def merges(b4: list[BIN], merge:Callable) -> list[BIN]: 
   j, now, repeat  = 0, [], False 
   while j <  len(b4):
     a = b4[j] 
@@ -241,6 +245,7 @@ def merges(b4: list[BIN], merge:Callable) -> list[BIN]:
     j += 1
   return merges(now, merge) if repeat else b4 
 
+# strings to things ----------------------
 def coerce(s:str) -> Any:
   try: return ast.literal_eval(s) # <1>
   except Exception:  return s
@@ -251,12 +256,19 @@ def csv(file=None) -> Iterable[Row]:
       line = re.sub(r'([\n\t\r"\’ ]|#.*)', '', line)
       if line: yield [coerce(s.strip()) for s in line.split(",")]
 
+# printing -------------------
 def show(x:Any, n=3) -> Any:
-  if   isa(x,(int,float)) : x= x if int(x)==x else round(x,n)
-  elif isa(x,(list,tuple)): x= [show(y,n) for y in x][:10]
-  elif isa(x,dict): 
-          x= "{"+', '.join(f":{k} {show(v,n)}" for k,v in sorted(x.items()) if k[0]!="_")+"}"
+  if   isinstance(x,(int,float)) : x= x if int(x)==x else round(x,n)
+  elif isinstance(x,(list,tuple)): x= [show(y,n) for y in x][:10]
+  elif isinstance(x,dict): 
+        x= "{"+', '.join(f":{k} {show(v,n)}" for k,v in sorted(x.items()) if k[0]!="_")+"}"
   return x
+
+def prints(matrix: list[list],sep=' | '):
+  s    = [[str(e) for e in row] for row in matrix]
+  lens = [max(map(len, col)) for col in zip(*s)]
+  fmt  = sep.join('{{:{}}}'.format(x) for x in lens)
+  [print(fmt.format(*row)) for row in s]
 #----------------------------------------------------------------------------------------
 class MAIN:
   """`./trees.py _all` : run all functions , return to operating system the count of failures.   
@@ -294,7 +306,7 @@ class MAIN:
     best = d.rows[:n]
     #rest = random.sample(d.rows[-n:],n*3)
     rest = d.rows[-n:] 
-    bins = [(score(bin.ys, n,n, goal="best"),bin)
+    bins = [(BIN.score(bin.ys, n,n, goal="best"),bin)
             for col in d.cols.x for bin in col.bins(dict(best=best,rest=rest))]
     now=None
     for n, bin in bins:
@@ -304,6 +316,5 @@ class MAIN:
     print("")
     [print(show(n), bin, sep="\t") for n, bin in sorted(bins, key=lambda z:z[0])]
 
-if __name__=="__main__":
-  if len(sys.argv) > 1: 
+if __name__=="__main__" and len(sys.argv) > 1: 
     MAIN._one(sys.argv[1]) 
