@@ -270,8 +270,10 @@ def show(x:Any, n=3) -> Any:
 def prints(matrix: list[list],sep=' | '):
   s    = [[str(e) for e in row] for row in matrix]
   lens = [max(map(len, col)) for col in zip(*s)]
-  fmt  = sep.join('{{:{}}}'.format(x) for x in lens)
+  fmt  = sep.join('{{:>{}}}'.format(x) for x in lens)
   [print(fmt.format(*row)) for row in s]
+
+ 
 #----------------------------------------------------------------------------------------
 class MAIN:
   """`./trees.py _all` : run all functions , return to operating system the count of failures.   
@@ -300,8 +302,8 @@ class MAIN:
     print(sorted(show(d.loglike(r,len(d.rows),1, the.m, the.k)) for r in d.rows)[::50])
 
   def bore():
-    d=DATA(csv(the.file),order=True)
-    prints([r for r in d.rows[::25]])
+    d=DATA(csv(the.file),order=True); print("")
+    prints([d.cols.names] + [r for r in d.rows[::25]])
 
   def bore2():
     d    = DATA(csv(the.file),order=True)
