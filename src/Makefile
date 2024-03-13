@@ -2,8 +2,11 @@
 R=20
 
 silly:
-	cp ../etc/tree.jpeg ~/tmp
-	python3 -m pdoc --logo tree.jpeg  --no-search  -o ~/tmp trees.py
+	cp ../etc/tree.jpeg ../etc/icons8-globe-24.png ../etc/art1.png ~/tmp
+	python3 -m pdoc \
+	        --footer-text "(c)2024, Tim Menzies <timm@ieee.org>" \
+					--favicon icons8-globe-24.png \
+	        --logo art1.png  --no-search  -o ~/tmp trees.py
 	rm ~/tmp/index.html
 
 
