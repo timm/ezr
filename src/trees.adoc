@@ -1,0 +1,30 @@
+= trees.py
+Tim Menzies  <timm@ieee.org>  
+:stylesheet: ezr.css
+:toc: 
+:toc-title:  
+
+Trees is a tool for finding better or worse itesm
+
+todo:
+
+- stats
+- trees
+  - dump json
+  - dump pretty
+
+== Demos
+
+cat file.csv | tree.py -t # print tree
+cat file.csv | tree.py -T # print pretty tree
+
+----
+include::trees.py[tag=cli]
+----
+<1> asdsadasasa asdasd  asdasddasas
+<2> asdasdsdasds 
+
+== Conclusion
+
+That's all, folks!
+
