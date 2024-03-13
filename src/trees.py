@@ -164,6 +164,9 @@ class NUM(COL):
     return min(1, nom/(denom + tiny))
 #----------------------------------------------------------------------------------------
 class COLS(OBJ):
+  """Factory for building  and storing COLs from column names. All columns are in `all`.
+  References to the independent and dependent variables are in `x` and `y` (respectively].  
+  If there is a klass, that is  referenced in `klass`. And all the names are stored in `names`."""
   def __init__(i, names: list[str]):
     i.x,i.y,i.all,i.names,i.klass = [],[],[],names,None
     for at,txt in enumerate(names):
