@@ -7,14 +7,14 @@ def ediv(lst, tiny=2):
     e0,n0   = entropy(rhs)
     at,cut  = None, None
     for j,(x,y) in enumerate(xys): 
+      rhs[y] -= 1
+      lhs[y] += 1 
       if n(lhs) > tiny and n(rhs) > tiny: 
         e1,n1 = entropy(lhs)
         e2,n2 = entropy(rhs)
         maybe = (n1*e1 + n2*e2)/n0
         if maybe < least: 
           cut,at,least,one,two = j,x,maybe,(xys[0][0],x),(x,xys[-1][0])
-      rhs[y] -= 1
-      lhs[y] += 1 
     return cut,at,one,two
     
   # gain  = e0 - maybe
