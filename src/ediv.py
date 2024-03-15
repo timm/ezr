@@ -3,18 +3,18 @@ import sys,random,math
 def ediv(klasses, at, tiny=2): 
   def div(xys):     
     lhs,rhs = Counter(), Counter(y for (_,y) in xys)
-    least,n  = entropy(rhs)
-    e0,cut = least,None
+    e0,n0  = entropy(rhs)
+    least,cut = e0,None
     k0,ke0 = len(rhs), len(rhs)*least
     for j,(x,y) in enumerate(xys): 
-      if lhs.total() > tiny and rhs.total() > tiny and x != xys[j-1][0]:
+      if j > tiny and j < n0 - tiny and x != xys[j-1][0]:
         eLhs,nLhs = entropy(lhs)
         eRhs,nRhs = entropy(rhs)
-        tmp = (nLhs*eLhs + nRhs*eRhs) / n
+        tmp = (nLhs*eLhs + nRhs*eRhs) / n0
         if tmp < least:
           gain = e0 - tmp
           delta = math.log(3**k0-2,2)-(ke0 - len(rhs)*eRhs - len(lhs)*eLhs)
-          if gain >= (math.log(n-1,2) + delta)/n:  
+          if gain >= (math.log(n0-1,2) + delta)/n0:  
             cut,least  = j,tmp  
       rhs[y] -= 1 
       lhs[y] += 1 
