@@ -74,7 +74,12 @@ class BIN(OBJ):
 
   # ### Find relevant rules 
   def selectss(i, klasses: Klasses) -> Klasses:
-    return {klass:[row for row in lst if i.selects(row)] for klass,lst in klasses.items()}
+    yes,no = {},{}
+    for klass,lst in klasses.items(): yes[klass],no[klass] = [],[]
+    for klass,lst in klasses.items():
+      for row in list:
+        (yes[klass] if i.selects(row) else no[klass]).append(row) 
+    return yes,no
   
   def selects(i, row: Row) -> bool: 
     x = row[i.at]
@@ -88,7 +93,7 @@ class COL(OBJ):
   """
   def __init__(i, at:int=0, txt:str=" "): i.n,i.at,i.txt = 0,at,txt
 
-  def bins(i, klasses: Klasses) -> list[BIN]:
+  def bins(i, klasses: Klasses, minSize=None) -> list[BIN]:
     def send2bin(x,y): 
       k = i.bin(x)
       if k not in out: out[k] = BIN(i.at,i.txt,x)
@@ -96,7 +101,7 @@ class COL(OBJ):
     out = {}
     [send2bin(row[i.at],y) for y,lst in klasses.items() for row in lst if row[i.at]!="?"] 
     return i._bins(sorted(out.values(), key=lambda z:z.lo), 
-                   minSize = (sum(len(lst) for lst in klasses.values())/the.bins))
+                   minSize = minSize or (sum(len(lst) for lst in klasses.values())/the.bins))
 #----------------------------------------------------------------------------------------
 class SYM(COL):
   """## SYM 
@@ -248,6 +253,16 @@ class NB(OBJ):
     if klass not in i.datas: i.datas[klass] =  data.clone()
     i.datas[klass].add(row)
 #----------------------------------------------------------------------------------------
+class TREE(obj):
+  def __init__(i,data:DATA, klasses:Klasses, best:str="BEST", rest:str="REST"):
+    i.BEST = len(klasses[best]) 
+    i.REST = len(klasses[rest]) 
+    rows = data.order()
+    klasses = dict(best=best,rest=rest)
+
+  def tree(i,klasses):
+    bins = [BIN.score(bin.ys, n,n, goal="best") for c in data.cols.x for bin in c.bins(data)]
+#----------------------------------------------------------------------------------------
 # ## Misc functions
 # ### Data mining tricks 
 def entropy(d: dict) -> float:
@@ -288,9 +303,7 @@ def prints(matrix: list[list],sep=' | '):
   s    = [[str(e) for e in row] for row in matrix]
   lens = [max(map(len, col)) for col in zip(*s)]
   fmt  = sep.join('{{:>{}}}'.format(x) for x in lens)
-  [print(fmt.format(*row)) for row in s]
-
- 
+  [print(fmt.format(*row)) for row in s] 
 #----------------------------------------------------------------------------------------
 class MAIN:
   """`./trees.py _all` : run all functions , return to operating system the count of failures.   
@@ -321,7 +334,7 @@ class MAIN:
 
   def bore():
     d=DATA(csv(the.file),order=True); print("")
-    prints([d.cols.names] + [r for r in d.rows[::25]])
+    prints([d.cols.names] + [r for r in d.rows[::50]])
 
   def bore2():
     d    = DATA(csv(the.file),order=True)
