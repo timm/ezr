@@ -45,6 +45,7 @@ class BIN(OBJ):
   - `selects()` returns true when a BIN matches a row.   
   To  build decision trees,  split Rows on the best scoring bin, then recurse on each half.
   """
+  id=0
   @staticmethod
   def score(d:dict, BEST:int, REST:int, goal="+", how=lambda B,R: B - R) -> float:
     b,r = 0,0
@@ -56,6 +57,7 @@ class BIN(OBJ):
   
   def __init__(i, at:int, txt:str, lo:float, hi:float=None, ys:Counter=None):  
     i.at,i.txt,i.lo,i.hi,i.ys = at,txt, lo,hi or lo,ys or Counter()  
+    i.id = BIN.id = BIN.id + 1
 
   def add(i, x:float, y:Any):
     i.lo = min(x, i.lo)
@@ -75,8 +77,8 @@ class BIN(OBJ):
   # ### Find relevant rules 
   def selectss(i, klasses: Klasses) -> Klasses:
     yes,no = {},{}
-    for klass,lst in klasses.items(): yes[klass],no[klass] = [],[]
-    for klass,lst in klasses.items():
+    for klass,_ in klasses.items(): yes[klass],no[klass] = [],[]
+    for klass,_ in klasses.items():
       for row in list:
         (yes[klass] if i.selects(row) else no[klass]).append(row) 
     return yes,no
@@ -259,9 +261,15 @@ class TREE(obj):
     i.REST = len(klasses[rest]) 
     rows = data.order()
     klasses = dict(best=best,rest=rest)
+    bins = [BIN.score(bin.ys, n,n, goal="best") for c in data.cols.x for bin in c.bins(klasses)]
 
-  def tree(i,klasses):
-    bins = [BIN.score(bin.ys, n,n, goal="best") for c in data.cols.x for bin in c.bins(data)]
+  def tree(i,klasses,bins,BEST,REST):
+    for bin in bins:
+      yes,no = bin.selects(klasses)
+      yes1 = {k:len(rows) for k,rows in yes.items()}
+      no1  = {k:len(rows) for k,rows in no.items()}
+      s1   = BIN.score(yes1,BEST,REST,goal="best")
+      s2  = BIN.score(no1,BEST,REST,goal="best")
 #----------------------------------------------------------------------------------------
 # ## Misc functions
 # ### Data mining tricks 
