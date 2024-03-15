@@ -1,33 +1,33 @@
 import sys,random,math
 
-def ediv(lst, tiny=2): 
-  def div(xys):   
-    def n(z): return sum(n for n in z.values())
+def ediv(klasses, at, tiny=2): 
+  def div(xys):     
     lhs,rhs = Counter(), Counter(y for (_,y) in xys)
-    e0,n0   = entropy(rhs)
-    at,cut  = None, None
+    least,n  = entropy(rhs)
+    e0,cut = least,None
+    k0,ke0 = len(rhs), len(rhs)*least
     for j,(x,y) in enumerate(xys): 
-      rhs[y] -= 1
+      if lhs.total() > tiny and rhs.total() > tiny and x != xys[j-1][0]:
+        eLhs,nLhs = entropy(lhs)
+        eRhs,nRhs = entropy(rhs)
+        tmp = (nLhs*eLhs + nRhs*eRhs) / n
+        if tmp < least:
+          gain = e0 - tmp
+          delta = math.log(3**k0-2,2)-(ke0 - len(rhs)*eRhs - len(lhs)*eLhs)
+          if gain >= (math.log(n-1,2) + delta)/n:  
+            cut,least  = j,tmp  
+      rhs[y] -= 1 
       lhs[y] += 1 
-      if n(lhs) > tiny and n(rhs) > tiny: 
-        e1,n1 = entropy(lhs)
-        e2,n2 = entropy(rhs)
-        maybe = (n1*e1 + n2*e2)/n0
-        if maybe < least: 
-          cut,at,least,one,two = j,x,maybe,(xys[0][0],x),(x,xys[-1][0])
-    return cut,at,one,two
-    
-  # gain  = e0 - maybe
-  #         delta = log2(3**k0-2)-(ke0- ke(rhs)-ke(lhs))
-          # if gain >= (log2(n0-1) + delta)/n0: 
+    return cut  
+     
   #----------------------------------------------
-  def recurse(this, cuts):
-    cut,at,one,two = div(this)
-    if cut: 
-      recurse(this[:cut], cuts)
-      recurse(this[cut:], cuts)
+  def recurse(xys, cuts):
+    if cut := div(xys):
+      recurse(xys[:cut], cuts)
+      recurse(xys[cut:], cuts)
     else:   
-      cuts += [at]
+      cuts += [xys[0][0]]
     return cuts
   #---| main |-----------------------------------
-  return recurse(sorted(lst,key=lambda z:z[0]),[])
+  xys = [(row[at],y) for y,rows in klasses.items() for row in rows if row[at] != "?"]
+  return recurse(sorted(xys),div)
