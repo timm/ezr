@@ -15,14 +15,14 @@ bores=~/gits/txt/aa24/data/Process/small
 X=-p10000-d27-o4-dataset1
 
 bore:
-	$(MAKE) \
+	$(MAKE) -j 8 -B  \
 	  ../out/xomo_flight.out ../out/xomo_ground.out ../out/xomo_osp.out ../out/xomo_osp2.out \
 		../out/pom3a.out ../out/pom3b.out ../out/pom3c.out ../out/pom3d.out  
 
 flashes=~/gits/txt/aa24/data/flash
 
 flash:
-	$(MAKE) ../out/SS-A.out ../out/SS-B.out ../out/SS-C.out ../out/SS-D.out ../out/SS-E.out  \
+	$(MAKE) -j 8 -B ../out/SS-A.out ../out/SS-B.out ../out/SS-C.out ../out/SS-D.out ../out/SS-E.out  \
 					../out/SS-F.out ../out/SS-G.out ../out/SS-H.out ../out/SS-I.out ../out/SS-J.out  \
 					../out/SS-K.out ../out/SS-L.out ../out/SS-M.out ../out/SS-N.out ../out/SS-O.out 
 
@@ -41,10 +41,10 @@ one:
 
 ../out/%.out : $(bores)/%.csv
 	echo $^
-	echo "-- $@"; python3 eg.py -R $R -f $^ -g smoy | tee $@
+	echo "-- $@"; python3 eg.py -R $R -f $^ -t smoy | tee $@
 
 ../out/%.out : $(flashes)/%.csv
-	echo "-- $@"; python3 eg.py -R $R -f $^ -g smoy | tee $@
+	echo "-- $@"; python3 eg.py -R $R -f $^ -t smoy | tee $@
 
 
 ../%.html : %.adoc

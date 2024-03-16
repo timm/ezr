@@ -1,34 +1,40 @@
-
-ez: ai can be easy, let me show you how   
-(c) 2023, Tim Menzies, <timm@ieee.org>, BSD-2  
-  
-USAGE:    
-1. download ez.py, etc.py, eg.py    
-2. python3 eg.py [OPTIONS]   
-  
-OPTIONS:  
-
-     -a --adequate    good if over adequate*best = .1
-     -A --ample       only want this many rules  = 20
-     -b --budget0     initial evals              = 4  
-     -B --Budget      subsequent evals           = 5   
-     -c --cohen       small effect size          = .35  
-     -C --confidence  statistical confidence     = .05
-     -e --effectSize  non-parametric small delta = 0.2385
-     -E --Experiments number of Bootstraps       = 256
-     -f --file        csv data file name         = '../data/auto93.csv'  
-     -F --Far         far search outlier control = .95 
-     -h --help        print help                 = false
-     -H --Half        #items for far search      = 256
-     -k --k           rare class  kludge         = 1  
-     -m --m           rare attribute  kludge     = 2  
-     -M --Min         min size is N**Min         = .5
-     -p --p           distance coefficient       = 2
-     -r --ranges      max number of bins         = 16
-     -R --Repeats     max number of bins         = 20
-     -s --seed        random number seed         = 31210 
-     -S --score       support exponent for range = 2  
-     -t --todo        start up action            = 'help'   
-     -T --Top         best section               = .5 
-     -u --upper       in SMO, keep upper ratio   = .8  
-
+date : March/03/2024 21:11:01,
+file : ../data/china.csv,
+repeats  : 20,
+seed : 31210,
+rows : 499,
+cols : 19,
+best : 0.0,
+tiny : 0.05
+#base #2rrp #rrp #b6 #2b6 #bonr6 #rand6 #b12 #2b12 #bonr12 #rand12 #b25 #2b25 #bonr25 #rand25 #b50 #2b50 #bonr50 #rand50 #rand100 #rand200 #rand400 
+#report22
+#
+ 0,             rand,400,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+#
+ 1,             rand,200,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+#
+ 2,             rand,100,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+ 2,                 b,25,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+ 2,                2b,25,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+ 2,                 b,50,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+ 2,                2b,50,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+#
+ 3,              rand,50,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+#
+ 4,                 b,12,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+ 4,                2b,12,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+ 4,              bonr,25,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+ 4,              bonr,50,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+ 4,              rand,25,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+#
+ 5,              bonr,12,  0.00,  0.00, *                   |                   ,  0.00,  0.31
+ 5,                 2b,6,  0.00,  0.01, *                   |                   ,  0.00,  0.31
+ 5,                rrp,5,  0.01,  0.01, *                   |                   ,  0.00,  0.31
+ 5,               2rrp,9,  0.01,  0.01, *                   |                   ,  0.00,  0.31
+ 5,              rand,12,  0.01,  0.00, *                   |                   ,  0.00,  0.31
+#
+ 6,                  b,6,  0.01,  0.01, -*                  |                   ,  0.00,  0.31
+ 6,               rand,6,  0.01,  0.01, -*                  |                   ,  0.00,  0.31
+ 6,               bonr,6,  0.01,  0.02, -*                  |                   ,  0.00,  0.31
+#
+ 7,             base,499,  0.03,  0.06,  ---*----           |                   ,  0.00,  0.31
