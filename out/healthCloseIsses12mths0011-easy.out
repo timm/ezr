@@ -1,42 +1,34 @@
-date : February/02/2024 10:17:46,
-file : ../data/healthCloseIsses12mths0011-easy.csv,
-repeats  : 20,
-seed : 31210,
-rows : 10000,
-cols : 8,
-best : 0.0,
-tiny : 0.12
-#base #2rrp #rrp #b6 #2b6 #bonr6 #rand6 #b9 #2b9 #bonr9 #rand9 #b15 #2b15 #bonr15 #rand15 #b20 #2b20 #bonr20 #rand20 #b30 #2b30 #bonr30 #rand30 #b50 #2b50 #bonr50 #rand50 #rand80 #rand100 #rand9000 
-#report30
-#
- 0,              2rrp,14,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,                rrp,7,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,                  b,6,  0.00,  0.71, *-------------------|-------            ,  0.00,  0.98
- 0,                 2b,6,  0.00,  0.85, *-------------------|-------------      ,  0.00,  0.98
- 0,               bonr,6,  0.00,  0.71, *-------------------|-------            ,  0.00,  0.98
- 0,               rand,6,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,                  b,9,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,                 2b,9,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,               bonr,9,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,               rand,9,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,                 b,15,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,                2b,15,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,              bonr,15,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,              rand,15,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,                 b,20,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,                2b,20,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,              bonr,20,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,              rand,20,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,                 b,30,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,                2b,30,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,              bonr,30,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,              rand,30,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,                 b,50,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,                2b,50,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,              bonr,50,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,              rand,50,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,              rand,80,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,             rand,100,  0.00,  0.00, *                   |                   ,  0.00,  0.98
- 0,            rand,9000,  0.00,  0.00, *                   |                   ,  0.00,  0.98
-#
- 1,           base,10000,  0.86,  0.16,                     |       ------*     ,  0.00,  0.98
+
+ez: ai can be easy, let me show you how   
+(c) 2023, Tim Menzies, <timm@ieee.org>, BSD-2  
+  
+USAGE:    
+1. download ez.py, etc.py, eg.py    
+2. python3 eg.py [OPTIONS]   
+  
+OPTIONS:  
+
+     -a --adequate    good if over adequate*best = .1
+     -A --ample       only want this many rules  = 20
+     -b --budget0     initial evals              = 4  
+     -B --Budget      subsequent evals           = 5   
+     -c --cohen       small effect size          = .35  
+     -C --confidence  statistical confidence     = .05
+     -e --effectSize  non-parametric small delta = 0.2385
+     -E --Experiments number of Bootstraps       = 256
+     -f --file        csv data file name         = '../data/auto93.csv'  
+     -F --Far         far search outlier control = .95 
+     -h --help        print help                 = false
+     -H --Half        #items for far search      = 256
+     -k --k           rare class  kludge         = 1  
+     -m --m           rare attribute  kludge     = 2  
+     -M --Min         min size is N**Min         = .5
+     -p --p           distance coefficient       = 2
+     -r --ranges      max number of bins         = 16
+     -R --Repeats     max number of bins         = 20
+     -s --seed        random number seed         = 31210 
+     -S --score       support exponent for range = 2  
+     -t --todo        start up action            = 'help'   
+     -T --Top         best section               = .5 
+     -u --upper       in SMO, keep upper ratio   = .8  
+
