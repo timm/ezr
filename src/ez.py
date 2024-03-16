@@ -30,7 +30,8 @@ OPTIONS:
      -s --seed        random number seed         = 31210 
      -S --score       support exponent for range = 2  
      -t --todo        start up action            = 'help'   
-     -T --Top         best section               = .5   
+     -T --Top         best section               = .5 
+     -u --upper       in SMO, keep upper ratio   = .8  
 """
 
 import re,sys,math,random
@@ -142,27 +143,22 @@ class DATA(struct):
 #              |                                  
 
   def smo(self, score=lambda B,R: 2*B-R, fun=None):
-    def acquire(i, best, rest, rows):
-      out,most = 0,-sys.maxsize
-      for k,row in enumerate(rows):
-        b = best.loglike(row, len(self.rows), 2, the.m, the.k)
-        r = rest.loglike(row, len(self.rows), 2, the.m, the.k)
-        tmp = score(b,r)
-        if tmp > most: out,most = k,tmp
-      if fun: fun(i, best.rows[0])
-      return out
+    def like(row,data):
+      return data.loglike(row,len(data.rows),2,the.m,the.m)
+    def acquire(best, rest, rows):
+      chop=int(len(rows) * the.upper)
+      return sorted(rows, key=lambda r: -score(like(r,best),like(r,rest)))[:chop]
     #-----------
     random.shuffle(self.rows)
     done, todo = self.rows[:the.budget0], self.rows[the.budget0:]
     data1 = self.clone(done, order=True)
     for i in range(the.Budget):
+      if len(todo) < 3: break
       n = int(len(done)**the.Top + .5)
-      done.append(
-        todo.pop(
-          acquire( i + 1 + the.budget0,
-                   self.clone(data1.rows[:n]),
-                   self.clone(data1.rows[n:]),
-                   todo)))
+      top,*todo = acquire(self.clone(data1.rows[:n]),
+                          self.clone(data1.rows[n:]),
+                          todo)
+      done.append(top)
       data1 = self.clone(done, order=True)
     return data1.rows[0]
                                      

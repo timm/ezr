@@ -136,15 +136,15 @@ class Eg:
       def say(*l): print(*l,end=" ",flush=True);
       r=lambda a: ', '.join([str(x) for x in rnds(a,2)])
       d=DATA(csv(the.file),order=False)  
-      n1 = int(0.5 + math.log(1 - .95)/math.log(1 - .35/6))
-      n2 = int(0.5 + math.log(n1,2))
-      n3 = int(0.5 + len(d.rows)**.5)
-      n4 = int(0.5 + min(len(d.names)*10, len(d.rows)*.9))
-      n5 = int(0.5 + len(d.rows)*.9)
-      n6 = 15
-      n7 = 9
-      n8 = 20
-      n9 = 30
+      # n1 = int(0.5 + math.log(1 - .95)/math.log(1 - .35/6))
+      # n2 = int(0.5 + math.log(n1,2))
+      # n3 = int(0.5 + len(d.rows)**.5)
+      # n4 = int(0.5 + min(len(d.names)*10, len(d.rows)*.9))
+      # n5 = int(0.5 + len(d.rows)*.9)
+      # n6 = 15
+      # n7 = 9
+      # n8 = 20
+      # n9 = 30
       d2hs = NUM([d.d2h(row) for row in d.clone(d.rows,True).rows])
       now = datetime.now().strftime("%B/%m/%Y %H:%M:%S")
       print(f"date : {now},")
@@ -179,9 +179,10 @@ class Eg:
       say(f"#2rrp"); _double(all)
       say(f"#rrp"); _single(all)
 
-      for budget in sorted(set([n1,n2,n3,n4,n5,n6,n7,n8,n9])): 
+      for budget in sorted(set([6,12,25,50,100,200,400,800])): 
+        if budget > len(d.rows): continue
         the.Budget = budget -  the.budget0 
-        if budget <= 50:
+        if budget <= 80:
            say(f"#b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
                                      for _   in range(repeats)],txt=f"b,{budget}")]
            say(f"#2b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: 2*B-R))
