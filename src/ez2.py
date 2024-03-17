@@ -11,12 +11,12 @@ Explore a `todo` set, within fewest queries to labels:
    (b) move  the first item into `done`.
 6. Goto step 2.
 """
-from __future__ import annotations   
+from __future__ import annotations   # <1> ## types  
 from typing import Any,Iterable,Callable
 import re,ast,sys,math,random
 from collections import Counter
 from fileinput import FileInput as file_or_stdin 
-#----------------------------------------------------------------------------------------
+## ----------------------------------------------------------------------------------------
 # # System Inits
 options = dict(k=1, m=2, bins=10, file="../data/auto93.csv", seed=1234567891) 
 
@@ -149,7 +149,7 @@ class NUM(COL):
     i.mu,i.m2,i.lo,i.hi = 0,0,big, -big
     i.heaven = 0 if i.txt[-1]=="-" else 1
 
-  def add(i, x:Any):
+  def add(i, x:Any): #= sd
     if x != "?":
       i.n += 1
       d = x - i.mu
@@ -158,7 +158,7 @@ class NUM(COL):
       i.lo  = min(x, i.lo)
       i.hi  = max(x, i.hi)
 
-  # ### Discretization 
+  #= ### Discretization 
   def bin(i, x:float) -> int: return min(the.bins - 1, int(the.bins * i.norm(x)))
 
   def _bins(i, bins: list[BIN], minSize=2) -> list[BIN]: 
