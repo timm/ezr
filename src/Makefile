@@ -49,3 +49,16 @@ one:
 
 ../%.html : %.adoc
 	asciidoctor  -o $@ $^
+
+
+../docs/%.pdf : %.md
+	echo "# $^ ==> $@"
+	pandoc "$^" \
+	    -f gfm \
+		-V toc-title:"$^" \
+  	  -V geometry:margin=1cm \
+		-V fontsize=7pt \
+		-V 'fontfamily:dejavu' \
+		--highlight-style tango \
+		-o "$@"
+
