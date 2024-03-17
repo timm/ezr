@@ -1,15 +1,6 @@
 #!/usr/bin/env python3 -B
 """
-Explore a `todo` set, within fewest queries to labels:
-
-1. Label and move a few `initial` items to a `done`.
-2. Sort the `done` into sqrt(n) `best` and `rest`.
-3. Build a model that reports likelihood `b,r` of an item being in `best` or `rest`. 
-4. Sort `todo` by `-b/r`. 
-5. From that sorted `todo` space,   
-   (a) delete the last `forget` percent (e.g. 20%);    
-   (b) move  the first item into `done`.
-6. Goto step 2.
+ez2.py: active learning, sumamrize best/rest examples seen so far via a Bayes classifier
 """
 from __future__ import annotations   # <1> ## types  
 from typing import Any,Iterable,Callable
@@ -255,23 +246,9 @@ class NB(OBJ):
     if klass not in i.datas: i.datas[klass] =  data.clone()
     i.datas[klass].add(row)
 #----------------------------------------------------------------------------------------
-class TREE(obj):
-  def __init__(i,data:DATA, klasses:Klasses, best:str="BEST", rest:str="REST"):
-    i.BEST = len(klasses[best]) 
-    i.REST = len(klasses[rest]) 
-    rows = data.order()
-    klasses = dict(best=best,rest=rest)
-    bins = [BIN.score(bin.ys, n,n, goal="best") for c in data.cols.x for bin in c.bins(klasses)]
-
-  def tree(i,klasses,bins,BEST,REST):
-    for bin in bins:
-      yes,no = bin.selects(klasses)
-      yes1 = {k:len(rows) for k,rows in yes.items()}
-      no1  = {k:len(rows) for k,rows in no.items()}
-      s1   = BIN.score(yes1,BEST,REST,goal="best")
-      s2  = BIN.score(no1,BEST,REST,goal="best")
-#----------------------------------------------------------------------------------------
 # ## Misc functions
+def first(lst): return lst[0]
+
 # ### Data mining tricks 
 def entropy(d: dict) -> float:
   N = sum(n for n in d.values()if n>0)
@@ -357,8 +334,21 @@ class MAIN:
       now = bin.at
       print(show(n), bin, sep="\t")
     print("")
-    [print(show(n), bin, sep="\t") for n, bin in sorted(bins, key=lambda z:z[0])]
+    [print(show(n), bin, sep="\t") for n, bin in sorted(bins, key=first)]
+  
+# def TREE(i, klasses, bins, goal="best"):
+#   BEST = sum(len(row) for k,rows in klasses.items() if k==goal)
+#   REST = sum(len(row) for k,rows in klasses.items() if k!=goal)
+#   bin  = sorted([(BIN.score(bin.ys, BEST, REST, goal=goal), bin)
+#                 for col in i.cols.x for bin in col.bins(klasses)],
+#                 key=first,reverse=True)[0]
+#   yes,no = bin.selectss(klasses)
+#   return dict(  at=bin.at, txt=bin.txt, lo=bin.lo, hi=bin.lo},
+#                 yes=TREE(i, yes), goal=goal,
+#                 no =TREE(i, no), goal=goal)
+  
+  
 
-# -----------------------
+# --------------------------------------------
 if __name__=="__main__" and len(sys.argv) > 1: 
-    MAIN._one(sys.argv[1]) 
+  MAIN._one(sys.argv[1]) 

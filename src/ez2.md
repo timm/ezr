@@ -62,6 +62,19 @@ some binary search procedure. In that case, we'd only need
 $log_2(50)=6$ comparisons [^guess].
 
 
+"""
+Explore a `todo` set, within fewest queries to labels:
+
+1. Label and move a few `initial` items to a `done`.
+2. Sort the `done` into sqrt(n) `best` and `rest`.
+3. Build a model that reports likelihood `b,r` of an item being in `best` or `rest`. 
+4. Sort `todo` by `-b/r`. 
+5. From that sorted `todo` space,   
+   (a) delete the last `forget` percent (e.g. 20%);    
+   (b) move  the first item into `done`.
+6. Goto step 2.
+"""
+
 
 
 
