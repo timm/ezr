@@ -1,6 +1,7 @@
 #!/usr/bin/env python3 -B
 """
-ez2.py: active learning, sumamrize best/rest examples seen so far via a Bayes classifier
+ez2.py: active learning, models the best/rest seen so far in a Bayes classifier
+(c) 2024 Tim Menzies <timm@ieee.org>
 """
 from __future__ import annotations   # <1> ## types  
 from typing import Any,Iterable,Callable
@@ -66,7 +67,7 @@ class BIN(OBJ):
       if ek <= (ni*ei + nj*ej)/nk    : return k # merge bins if combo not as complex
 
   # ### Find relevant rules 
-  def selectss(i, klasses: Klasses) -> Klasses:
+  def selectssRejectss(i, klasses: Klasses) -> tuple(Klasses,Klasses):
     yes,no = {},{}
     for klass,_ in klasses.items(): yes[klass],no[klass] = [],[]
     for klass,_ in klasses.items():
@@ -74,6 +75,11 @@ class BIN(OBJ):
         (yes[klass] if i.selects(row) else no[klass]).append(row) 
     return yes,no
   
+  # ### Find relevant rules 
+  def selectss(i, klasses: Klasses) -> dict: 
+    return {k:len([row for row in rows if i.selects(row)]) 
+            for k,rows in klasses.items()}
+   
   def selects(i, row: Row) -> bool: 
     x = row[i.at]
     return  x=="?" or i.lo == x == i.hi and i.lo <= x < i.hi
@@ -336,18 +342,18 @@ class MAIN:
     print("")
     [print(show(n), bin, sep="\t") for n, bin in sorted(bins, key=first)]
   
-# def TREE(i, klasses, bins, goal="best"):
-#   BEST = sum(len(row) for k,rows in klasses.items() if k==goal)
-#   REST = sum(len(row) for k,rows in klasses.items() if k!=goal)
-#   bin  = sorted([(BIN.score(bin.ys, BEST, REST, goal=goal), bin)
-#                 for col in i.cols.x for bin in col.bins(klasses)],
-#                 key=first,reverse=True)[0]
-#   yes,no = bin.selectss(klasses)
-#   return dict(  at=bin.at, txt=bin.txt, lo=bin.lo, hi=bin.lo},
-#                 yes=TREE(i, yes), goal=goal,
-#                 no =TREE(i, no), goal=goal)
-  
-  
+def tree(i, klasses, BEST:int,REST:int, best:str, rest:str, stop, bins=NONE):
+  bins = bins or [bin for col in i.cols.x for bin in col.bins(klasses)] 
+  if klasses.get(best,0) < stop: return dict(leaf=True, has=klasses)
+  if klasses.get(rest,0) < stop: return dist(leaf=False, has=klasses)
+  yes,no,n = None,None,0
+  for bin in bins:
+    yes0,no0 = bin.selectssRejectss(klasses)
+    n0 =  -BIN.score(yes, BEST, REST, best)
+    if n > n0: yes,no,n=yes0,n0,n0
+  return dict(  leaf=False, at=bin.at, txt=bin.txt, lo=bin.lo, hi=bin.hi,
+                yes= i.tree(yes, BEST,REST,best,rest,stop, bins), 
+                no=  i.tree(no,  BEST,REST,rest,rest,stop, bins))
 
 # --------------------------------------------
 if __name__=="__main__" and len(sys.argv) > 1: 
