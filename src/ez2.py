@@ -350,7 +350,7 @@ def tree(i, klasses, BEST:int,REST:int, best:str, rest:str, stop, bins=NONE):
   for bin in bins:
     yes0,no0 = bin.selectssRejectss(klasses)
     n0 =  -BIN.score(yes, BEST, REST, best)
-    if n > n0: yes,no,n=yes0,n0,n0
+    if n > n0: yes,no,n=yes0,no0,n0
   return dict(  leaf=False, at=bin.at, txt=bin.txt, lo=bin.lo, hi=bin.hi,
                 yes= i.tree(yes, BEST,REST,best,rest,stop, bins), 
                 no=  i.tree(no,  BEST,REST,rest,rest,stop, bins))
