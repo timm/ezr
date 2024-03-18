@@ -67,7 +67,7 @@ class BIN(OBJ):
       if ek <= (ni*ei + nj*ej)/nk    : return k # merge bins if combo not as complex
 
   # ### Find relevant rules 
-  def selectssRejectss(i, klasses: Klasses) -> tuple(Klasses,Klasses):
+  def selectssRejectss(i, klasses: Klasses) -> tuple[Klasses,Klasses]:
     yes,no = {},{}
     for klass,_ in klasses.items(): yes[klass],no[klass] = [],[]
     for klass,_ in klasses.items():
@@ -342,19 +342,20 @@ class MAIN:
     print("")
     [print(show(n), bin, sep="\t") for n, bin in sorted(bins, key=first)]
   
-def tree(i, klasses, BEST:int,REST:int, best:str, rest:str, stop, bins=NONE):
+def tree(i, klasses, BEST:int,REST:int, best:str, rest:str, stop=2, how=None,bins=None):
   bins = bins or [bin for col in i.cols.x for bin in col.bins(klasses)] 
-  if klasses.get(best,0) < stop: return dict(leaf=True, has=klasses)
-  if klasses.get(rest,0) < stop: return dist(leaf=False, has=klasses)
-  yes,no,n = None,None,0
-  for bin in bins:
-    yes0,no0 = bin.selectssRejectss(klasses)
-    n0 =  -BIN.score(yes, BEST, REST, best)
-    if n > n0: yes,no,n=yes0,no0,n0
-  return dict(  leaf=False, at=bin.at, txt=bin.txt, lo=bin.lo, hi=bin.hi,
-                yes= i.tree(yes, BEST,REST,best,rest,stop, bins), 
-                no=  i.tree(no,  BEST,REST,rest,rest,stop, bins))
-
+  def fun(klasses1):
+    if klasses1.get(best,0) < stop: return dict(leaf=True,  has=klasses1)
+    if klasses1.get(rest,0) < stop: return dict(leaf=True, has=klasses1)
+    yes,no,n = None,None,0
+    for bin in bins:
+      yes0,no0 = bin.selectssRejectss(klasses1)
+      n0 =  -BIN.score({yes:len(rows) for yes,rows in yes0.items()}, 
+                       BEST, REST, best, how)
+      if n > n0: yes,no,n=yes0,no0,n0
+    return dict(leaf=False, at=bin.at, txt=bin.txt,
+                lo=bin.lo, hi=bin.hi, yes=fun(yes),no=fun(no))
+  return fun(klasses)
 # --------------------------------------------
 if __name__=="__main__" and len(sys.argv) > 1: 
   MAIN._one(sys.argv[1]) 
