@@ -20,6 +20,7 @@ assd sa as as asd asssss
 
 # scripting
 
+- automate everything (makefile)
 - test engine
 - documentation (docstrings)
   - tuning
