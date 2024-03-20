@@ -16,7 +16,7 @@ assd sa as as asd asssss
   - ranking (SK)
 
 # SE
-- little languages (regx, data models)
+- little languages (regx, data models headers, __d__2options)
 
 # scripting
 
