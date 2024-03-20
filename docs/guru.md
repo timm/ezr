@@ -10,8 +10,21 @@ assd sa as as asd asssss
 - standard deviation
   - incremental
   - non-parametric
+- stats
+  - effect size
+  - significance
+  - ranking (SK)
 
 # SE
+- little languages (regx, data models)
+- 
+
+# scripting
+
+- test engine
+- documentation (docstrings)
+- decomposition (pipes, stdio)
+- less is more (technical debt, my DATA model)
 
 # KE
 
