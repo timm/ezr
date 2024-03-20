@@ -343,18 +343,21 @@ class MAIN:
     [print(show(n), bin, sep="\t") for n, bin in sorted(bins, key=first)]
   
 def tree(i, klasses, BEST:int,REST:int, best:str, rest:str, stop=2, how=None,bins=None):
-  bins = bins or [bin for col in i.cols.x for bin in col.bins(klasses)] 
+  def counts(klasses1): return {k:len(rows) for k,rows in klasses1.items()} 
+
   def fun(klasses1):
-    if klasses1.get(best,0) < stop: return dict(leaf=True,  has=klasses1)
-    if klasses1.get(rest,0) < stop: return dict(leaf=True, has=klasses1)
-    yes,no,n = None,None,0
+    if klasses1.get(best,0) < stop: return dict(leaf=True, has=counts(klasses1))
+    if klasses1.get(rest,0) < stop: return dict(leaf=True, has=counts(klasses1))
+    yes,no,n = None,None,-1
     for bin in bins:
       yes0,no0 = bin.selectssRejectss(klasses1)
-      n0 =  -BIN.score({yes:len(rows) for yes,rows in yes0.items()}, 
+      n0 =  -BIN.score(counts(yes0)
                        BEST, REST, best, how)
       if n > n0: yes,no,n=yes0,no0,n0
     return dict(leaf=False, at=bin.at, txt=bin.txt,
-                lo=bin.lo, hi=bin.hi, yes=fun(yes),no=fun(no))
+                lo=bin.lo, hi=bin.hi, yes=fun(yes),no=fun(no)) 
+  
+  bins = [bin for col in i.cols.x for bin in col.bins(klasses)] 
   return fun(klasses)
 # --------------------------------------------
 if __name__=="__main__" and len(sys.argv) > 1: 
