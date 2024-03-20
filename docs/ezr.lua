@@ -81,7 +81,7 @@ function cols(cols1,a)
 
 
 -- DATA are places to store cols and rows of data. 
-local DATA,d2h,norm
+local DATA,data,d2h,norm
 function DATA(src,  order,    data)
   data0 = {rows={}, cols=nil}
   if   type(src)=="string"
@@ -90,6 +90,11 @@ function DATA(src,  order,    data)
   if order then l.keysort(data.rows, d2h, data) end
   return data end
 
+function data(data1, a)
+  if   data1.cols
+  then l.push(data1.rows, cols(data1.cols, a))
+  else data1.cols = COLS(a) end end
+  
 -- Inside DATA, rows can be sorted by how the distance of
 -- goal values to `heaven` (0 for minimize, 1 for maximize).
 function d2h(a,data,     n,dist)
@@ -101,7 +106,3 @@ function d2h(a,data,     n,dist)
 
 function norm(col1, x) return (x-col1.lo)/ (col1.hi - col1.lo + 1E-30) end
 
-function data(data1, a)
-  if   data1.cols
-  then l.push(data1.rows, cols(data1.cols, a))
-  else data1.cols = COLS(a) end end
