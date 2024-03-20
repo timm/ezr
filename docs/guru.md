@@ -17,17 +17,18 @@ assd sa as as asd asssss
 
 # SE
 - little languages (regx, data models)
-- 
 
 # scripting
 
 - test engine
 - documentation (docstrings)
+  - tuning
 - decomposition (pipes, stdio)
 - less is more (technical debt, my DATA model)
 
 # KE
 
+- active learning (one thing per leaf)
 Data
 
 classifier
