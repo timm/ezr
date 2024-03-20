@@ -36,12 +36,6 @@ function is.minimize(s)   return s:find"-$" end
 function is.ignorable(s)  return s:find"X$" end
 function is.klass(s)      return s:find"!$" end
 
---[[
-(**ASIDE:** To read this code, note the following conventions. `s`,`n` denote
-strings and numbers. `d` and `a` are for arrays with symbolic or integer keys.
-`ds,as` and `dn,an` are  arrays of strings or numbers (respectively). 
-Constructors are functions with UPPER CASE names. In function argument
-lists, two spaces denote optional args while four spaces denote local vars.) ]]--
 
 function NUM(   s,n) 
   return {this=NUM, txt=s or " ", at=n or 0, n=0, mu=0, m2=0, hi=-1E30, lo=1E30,
@@ -105,29 +99,3 @@ function cell(col, a)
     col.n = col.n + 1
     (col.this==NUM and num or sym)() end end
 
--------------
--- push `x` onto `a` and return `x`.
-function l.push(a,x) a[#a+1]=x; return x end
-
--- Schwartzian transform:  decorate, sort, undecorate
-function l.keysort(a,fun,...)
-  local u,v
-  u={}; for _,x in pairs(a) do u[1+#u]={x=x, y=fun(x,...)} end -- decorate
-  table.sort(u, function(one,two) return one.y < two.y end) -- sort
-  v={}; for _,xy in pairs(u) do v[1+#v] = xy.x end -- undecoreate
-  return v end
-
--- String to some thing
-function l.coerce(s,    fun) 
-  function fun(s1)
-    return s1=="true" or (s1~="false" and s1) or false end 
-  return math.tointeger(s) or tonumber(s) or fun(s:match'^%s*(.*%S)') end
-
--- Return rows of a csv file.
-function l.csv(src,    parse)
-  function parse(s,   a)
-    a={}; for s1 in s:gmatch("([^,]+)") do a[1+#a]=l.coerce(s1) end; return a end
-  src  = src=="-" and io.stdin or io.input(src)
-  return function(      s)
-    s=io.read()
-    if s then return parse(s) else io.close(src) end end end
