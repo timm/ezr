@@ -38,29 +38,55 @@ function is.klass(s)      return s:find"!$" end
 
 
 function NUM(   s,n) 
-  return {this=NUM, txt=s or " ", at=n or 0, n=0, mu=0, m2=0, hi=-1E30, lo=1E30,
+  return {is=NUM, txt=s or " ", at=n or 0, n=0, mu=0, m2=0, hi=-1E30, lo=1E30,
           heaven = (s or ""):find"-$" and 0 or 1} end 
 
 function SYM(  s,n)
-  return {this=SYM, txt=s or " ", at=n or 0, n=0, has={}, mode=nil, most=0} end 
+  return {is=SYM, txt=s or " ", at=n or 0, n=0, has={}, mode=nil, most=0} end 
+
+-- udpate NUM or SYM
+local function col(col1, x)
+  function num(     d)
+    d      = x - col1.mu
+    col1.mu = col1.mu + d/col1.n
+    col1.m2 = col1.m2 + d*(x - col1.mu)
+    col1.lo = math.min(x, col1.lo)
+    col1.hi = math.max(x, col1.hi) end
+  function sym()
+    col1.has[x] = 1 + (col1.has[x] or 0)
+    if col1.has[x] > col1.most then 
+      col1.most, col1.mode = col1.has[x], x end end
+  if x ~= "?" then 
+    col1.n = col1.n + 1
+    (col1.is==NUM and num or sym)() end end
 
 -- COLS are places to store NUMs or SYMs
-local function COLS(as,      cols,col)
-  cols = {this=COLS, all={}, x={}, y={}, klass=nil}
+local COLS,cols
+local function COLS(as,      cols0,col)
+  cols0 = {is=COLS, all={}, x={}, y={}, klass=nil}
   for n,s in pairs(as) do
-    col = l.push(cols.all,  is.what(s)(s,n))
+    col = l.push(cols0.all,  is.what(s)(s,n))
     if not is.ignorable(s) then
-      l.push( is.goal(s) and cols.y or cols.x, col)
-      if is.klass(s) then cols.klass = col end end end 
-  return cols end
+      l.push( is.goal(s) and cols0.y or cols0.x, col)
+      if is.klass(s) then cols0.klass = col end end end 
+  return cols0 end 
+
+function cols(cols1,a)
+  for _,cols in pairs(cols1.cols.x, cols1.cols.y) do
+    for _,col1 in pairs(cols) do
+      col(col1, a[col.at]) end end 
+  return a end
+
+-- update NUM or SYM
+
 
 -- DATA are places to store cols and rows of data. 
 local DATA,d2h,norm
 function DATA(src,  order,    data)
-  data = {rows={}, cols=nil}
+  data0 = {rows={}, cols=nil}
   if   type(src)=="string"
-  then for   a in l.csv(src) do cells(data,a) end
-  else for _,a in pairs(src) do cells(data,a) end end
+  then for   a in l.csv(src) do data(data,a) end
+  else for _,a in pairs(src) do data(data,a) end end
   if order then l.keysort(data.rows, d2h, data) end
   return data end
 
@@ -68,34 +94,14 @@ function DATA(src,  order,    data)
 -- goal values to `heaven` (0 for minimize, 1 for maximize).
 function d2h(a,data,     n,dist)
   n,dist = 0,0
-  for _,col in pairs(data.cols.y) do
+  for _,col1 in pairs(data.cols.y) do
     n    = n+1
-    dist = dist + math.abs(col.heaven - norm(col, a[col.at]))^2 end
+    dist = dist + math.abs(col1.heaven - norm(col1, a[col.at]))^2 end
   return (dist/n)^0.5 end
 
-function norm(col, x) return (x-col.lo)/ (col.hi - col.lo + 1E-30) end
+function norm(col1, x) return (x-col1.lo)/ (col1.hi - col1.lo + 1E-30) end
 
-function cells(data,a)
-  if data.cols
-  then l.push(data.rows, a)
-       for _,cols in pairs(data.cols.x, data.cols.y) do
-         for _,col in pairs(cols) do
-           cell(col, a[col.at]) end end
-  else data.cols = COLS(a) end end
-
--- update NUM or SYM
-function cell(col, a)
-  function num(     d)
-    d      = x - col.mu
-    col.mu = col.mu + d/col.n
-    col.m2 = col.m2 + d*(x - col.mu)
-    col.lo = math.min(x, col.lo)
-    col.hi = math.max(x, col.hi) end
-  function sym()
-    col.has[x] = 1 + (col.has[x] or 0)
-    if col.has[x] > col.most then 
-      col.most,col.mode = col.has[x], x end end
-  if x ~= "?" then 
-    col.n = col.n + 1
-    (col.this==NUM and num or sym)() end end
-
+function data(data1, a)
+  if   data1.cols
+  then l.push(data1.rows, cols(data1.cols, a))
+  else data1.cols = COLS(a) end end
