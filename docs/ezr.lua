@@ -13,7 +13,7 @@ Let's  start by
 - building a model that can guess  `b=prob(best)` and `r=prob(rest)`. 
 The remaining  990 examples can be sorted by the formula `-b/r`, the 
 worse can be pruned, and the top one labelled.  Repeating this  a few 
-times results in  a model that knows `best` from `rest'. ]]--
+times results in  a model that knows `best` from `rest'. --]]
 
 local options={k=1, m=2, bins=10, file="../data/auto03.csv",
                 seed=1234567891,start=10, repeats=20, prunes=0.2}
