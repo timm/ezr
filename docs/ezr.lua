@@ -1,5 +1,6 @@
-local b4={}; for k, _ in pairs(_ENV) do b4[k]=k end
-local l,b4,help = {}, {}, [[
+
+local b4 = {}; for k, _ in pairs(_ENV) do b4[k]=k end
+local help = [[
 ezr.lua easier AI
 (c) 2024, Tim Menzies, <timm@ieee.org>]]
 --[[
@@ -28,7 +29,9 @@ these csv files, the column names in row1 indicate if the columns are:
 - goals we want to minimize of maximize (these end with `+` or `-`);
 - things  we just want to skip over (these end with `X`). ]]--
 
-local NUM,SYM
+local l,the,eg = {},{},{}
+local NUM,SYM,COLS,DATA,BIN = {},{}
+
 local is={}
 function is.what(s)       return s:find"^[A-Z]" and NUM or SYM end
 function is.goal(s)       return s:find"[!+-]$" end
@@ -36,58 +39,55 @@ function is.minimize(s)   return s:find"-$" end
 function is.ignorable(s)  return s:find"X$" end
 function is.klass(s)      return s:find"!$" end
 
+function NUM:new(   s,n) 
+  return setmetatable({txt=s or " ", at=n or 0, n=0, mu=0, m2=0, hi=-1E30, lo=1E30,
+          heaven = ako.minimize(s or "") and 0 or 1},NUM) end 
 
-function NUM(   s,n) 
-  return {is=NUM, txt=s or " ", at=n or 0, n=0, mu=0, m2=0, hi=-1E30, lo=1E30,
-          heaven = (s or ""):find"-$" and 0 or 1} end 
+function SYM:new(  s,n)
+  return setmetatable({txt=s or " ", at=n or 0, n=0, has={}, mode=nil, most=0},SYM) end 
 
-function SYM(  s,n)
-  return {is=SYM, txt=s or " ", at=n or 0, n=0, has={}, mode=nil, most=0} end 
+function NUM:add(x,     d)
+  if x ~="?" then
+    self.n = self.n + 1
+    d      = x - self.mu
+    self.mu = col1.mu + d/self.n
+    self.m2 = col1.m2 + d*(x - self.mu)
+    self.lo = math.min(x, self.lo)
+    self.hi = math.max(x, self.hi) end end
 
--- udpate NUM or SYM
-local function col(col1, x)
-  function num(     d)
-    d      = x - col1.mu
-    col1.mu = col1.mu + d/col1.n
-    col1.m2 = col1.m2 + d*(x - col1.mu)
-    col1.lo = math.min(x, col1.lo)
-    col1.hi = math.max(x, col1.hi) end
-  function sym()
-    col1.has[x] = 1 + (col1.has[x] or 0)
-    if col1.has[x] > col1.most then 
-      col1.most, col1.mode = col1.has[x], x end end
-  if x ~= "?" then 
-    col1.n = col1.n + 1
-    (col1.is==NUM and num or sym)() end end
+function SYM:add(x)  
+  if x ~="?" then
+    self.n = self.n + 1
+    self.has[x] = 1 + (self.has[x] or 0)
+    if self.has[x] > self.most then 
+      self.most, self.mode = self.has[x], x end end end
 
 -- COLS are places to store NUMs or SYMs
-local COLS,cols
-local function COLS(as,      cols0,col)
-  cols0 = {is=COLS, all={}, x={}, y={}, klass=nil}
+local COLS={}
+function COLS:new(as,      col,all,x,y,klass)
+  all,x,y,klass = {},{},{},{}
   for n,s in pairs(as) do
-    col = l.push(cols0.all,  is.what(s)(s,n))
+    col = l.push(all,  is.what(s)(s,n))
     if not is.ignorable(s) then
-      l.push( is.goal(s) and cols0.y or cols0.x, col)
-      if is.klass(s) then cols0.klass = col end end end 
-  return cols0 end 
+      l.push( is.goal(s) and  y or  x, col)
+      if is.klass(s) then  klass = col end end end 
+  return {all=all, x=x, y=y, klass=klass} end 
 
-function cols(cols1,a)
-  for _,cols in pairs(cols1.cols.x, cols1.cols.y) do
-    for _,col1 in pairs(cols) do
-      col(col1, a[col.at]) end end 
+function COLS:add(a)
+  for _,cols in pairs(self.cols.x, self.cols.y) do
+    for _,col in pairs(cols) do
+      col.add(a[col.at]) end end 
   return a end
 
--- update NUM or SYM
-
-
+ 
 -- DATA are places to store cols and rows of data. 
 local DATA,data,d2h,norm
-function DATA(src,  order,    data)
-  data0 = {rows={}, cols=nil}
+function DATA:new (src,  order,    rows)
+  self.rows={}
   if   type(src)=="string"
-  then for   a in l.csv(src) do data(data,a) end
-  else for _,a in pairs(src) do data(data,a) end end
-  if order then l.keysort(data.rows, d2h, data) end
+  then for   a in l.csv(src) do self:add(a)  end
+  else for _,a in pairs(src) do self:add(a)   end end
+  if order then l.keysort(data.rows, d2h, self) end
   return data end
 
 function data(data1, a)
@@ -106,3 +106,10 @@ function d2h(a,data,     n,dist)
 
 function norm(col1, x) return (x-col1.lo)/ (col1.hi - col1.lo + 1E-30) end
 
+function l._new(klass,...)   
+  local inst=setmetatable({},klass);
+  return setmetatable(klass.new(inst,...) or inst,klass) end
+
+function l.obj(s, t) 
+  t={__tostring = function(x) return s..o(x) end} 
+  t.__index = t;return setmetatable(t,{__call=l._new}) end
