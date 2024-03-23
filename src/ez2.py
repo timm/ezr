@@ -5,7 +5,7 @@ ez2.py: active learning, models the best/rest seen so far in a Bayes classifier
 """
 from __future__ import annotations   # <1> ## types  
 from typing import Any,Iterable,Callable
-import re,ast,sys,math,random
+import re,ast,sys, json,math,random
 from collections import Counter
 from fileinput import FileInput as file_or_stdin 
 ## ----------------------------------------------------------------------------------------
@@ -65,15 +65,6 @@ class BIN(OBJ):
       ek,nk = entropy(k.ys)
       if ni < minSize or nj < minSize: return k # merge bins that are too small
       if ek <= (ni*ei + nj*ej)/nk    : return k # merge bins if combo not as complex
-
-  # ### Find relevant rules 
-  def selectssRejectss(i, klasses: Klasses) -> tuple[Klasses,Klasses]:
-    yes,no = {},{}
-    for klass,_ in klasses.items(): yes[klass],no[klass] = [],[]
-    for klass,_ in klasses.items():
-      for row in list:
-        (yes[klass] if i.selects(row) else no[klass]).append(row) 
-    return yes,no
   
   # ### Find relevant rules 
   def selectss(i, klasses: Klasses) -> dict: 
@@ -82,7 +73,7 @@ class BIN(OBJ):
    
   def selects(i, row: Row) -> bool: 
     x = row[i.at]
-    return  x=="?" or i.lo == x == i.hi and i.lo <= x < i.hi
+    return  x=="?" or i.lo == x == i.hi or i.lo <= x < i.hi
 #----------------------------------------------------------------------------------------
 class COL(OBJ):
   """## COL  
@@ -235,6 +226,44 @@ class DATA(OBJ):
     prior = (len(i.rows) + k) / (nall + k*nh)
     likes = [c.like(row[c.at],m,prior) for c in i.cols.x if row[c.at] != "?"]
     return sum(math.log(x) for x in likes + [prior] if x>0)
+#---------------------------------------------------------------------------------------- 
+# ### Tree
+  
+class TREE(OBJ):
+  def __init__(self,data:DATA, klasses, BEST:int, REST:int, 
+              best:str, rest:str, stop=2, how=None):
+    self.best, self.rest, self.stop = best,rest,stop
+    self.bins  = [bin for col in data.cols.x for bin in col.bins(klasses)] 
+    self.score = lambda x: -BIN.score(self.lst2len(x),BEST,REST,
+                                      goal=best,how=lambda B,R: B - R)
+    self.root  = self.step(klasses)
+    
+  def lst2len(self,klasses): return {k:len(rows) for k,rows in klasses.items()} 
+
+  def leaf(self,klasses):    return dict(leaf=True, has=self.lst2len(klasses))
+
+  def step(self,klasses,lvl=0,above=1E30):
+    #print('|.. '*lvl)
+    best0 = klasses[self.best]
+    rest0 = klasses[self.rest]
+    here = len(best0)  
+    if here <= self.stop or here==above: return self.leaf(klasses)
+    yes,no,most = None,None,-1
+    for bin in self.bins:
+      yes0 = dict(best=[], rest=[]) 
+      no0  = dict(best=[], rest=[]) 
+      for row in best0: (yes0["best"] if bin.selects(row) else no0["best"]).append(row)
+      for row in rest0: (yes0["rest"] if bin.selects(row) else no0["rest"]).append(row)
+      tmp = self.score(yes0)
+      if tmp > most: yes,no,most = yes0,no0,tmp
+    return dict(leaf=False, at=bin.at, txt=bin.txt,
+                lo=bin.lo, hi=bin.hi, yes=self.step(yes,lvl+1,here),no=self.step(no,lvl+1,here)) 
+  
+  def node(i,d):
+    yield d
+    for d1 in [d.yes,d.no]:
+      for node1 in i.node(d1): yield node1
+
 #----------------------------------------------------------------------------------------
 class NB(OBJ):
   """## NB 
@@ -341,24 +370,15 @@ class MAIN:
       print(show(n), bin, sep="\t")
     print("")
     [print(show(n), bin, sep="\t") for n, bin in sorted(bins, key=first)]
-  
-def tree(i, klasses, BEST:int,REST:int, best:str, rest:str, stop=2, how=None,bins=None):
-  def counts(klasses1): return {k:len(rows) for k,rows in klasses1.items()} 
 
-  def fun(klasses1):
-    if klasses1.get(best,0) < stop: return dict(leaf=True, has=counts(klasses1))
-    if klasses1.get(rest,0) < stop: return dict(leaf=True, has=counts(klasses1))
-    yes,no,n = None,None,-1
-    for bin in bins:
-      yes0,no0 = bin.selectssRejectss(klasses1)
-      n0 =  -BIN.score(counts(yes0)
-                       BEST, REST, best, how)
-      if n > n0: yes,no,n=yes0,no0,n0
-    return dict(leaf=False, at=bin.at, txt=bin.txt,
-                lo=bin.lo, hi=bin.hi, yes=fun(yes),no=fun(no)) 
-  
-  bins = [bin for col in i.cols.x for bin in col.bins(klasses)] 
-  return fun(klasses)
+  def tree():
+    d    = DATA(csv(the.file),order=True)
+    n    = int(len(d.rows)**.5)
+    best = d.rows[:n] 
+    rest = d.rows[-n:] 
+    tree = TREE(d,dict(best=best,rest=rest), n,n,"best","rest").root
+    print(json.dumps(tree, indent=2))
+
 # --------------------------------------------
 if __name__=="__main__" and len(sys.argv) > 1: 
   MAIN._one(sys.argv[1]) 

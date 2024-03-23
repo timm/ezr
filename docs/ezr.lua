@@ -30,7 +30,7 @@ these csv files, the column names in row1 indicate if the columns are:
 - things  we just want to skip over (these end with `X`). ]]--
 
 local l,the,eg = {},{},{}
-local NUM,SYM,COLS,DATA,BIN = {},{}
+local NUM,SYM,COLS,DATA,BIN = {},{},{},{},{}
 
 local is={}
 function is.what(s)       return s:find"^[A-Z]" and NUM or SYM end
