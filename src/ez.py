@@ -335,6 +335,21 @@ class DATA(struct):
     root = Node(left, leftR, right, rightR, lefts, rights, items)
     return root
 
+  def findGood(self, root):
+    #for each node calculate the good score
+    #return the node with the highest good score
+    return 0
+  
+
+  def decide(self, node):
+    #check whether the node is a leaf
+    #if its a leaf do nothing
+    #else, check whether left or right is better
+    #prune the worse one
+    #recalculate entropy after removing data points
+    return 0
+  
+
                                                
 #          _|  o   _   _  ._   _   _|_  o  _    _  
 #         (_|  |  _>  (_  |   (/_   |_  |  /_  (/_                                                
