@@ -341,10 +341,10 @@ class DATA(struct):
   def goodNode(self, node, goodV):
     good = 0
     for i in range(len(goodV)):
-      good += xor(bool(node.left[i]), bool(node.right[i])* goodV[i]) * (1 - node.asked)
+      good += xor(bool(node.left.item[i]), bool(node.right.item[i])* goodV[i]) * (1 - node.asked)
     denom = 0
     for i in range(len(goodV)):
-      denom += xor(bool(node.left[i]), bool(node.right[i]))
+      denom += xor(bool(node.left.item[i]), bool(node.right.item[i]))
     return good/denom
 
   def calculateGoodV(self, dfd, entropy):
@@ -358,6 +358,7 @@ class DATA(struct):
 
   def calculateDfd(self, root):
     #walk the tree and calculate the depth of the first occurence of a difference in the left and right variables for each column in the data
+
     return []
   
 
