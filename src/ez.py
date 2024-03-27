@@ -41,6 +41,7 @@ from etc import o,isa,struct,merges
 import etc
 from math import pi
 import numpy as np
+from operator import xor
 
 
 
@@ -335,19 +336,55 @@ class DATA(struct):
     root = Node(left, leftR, right, rightR, lefts, rights, items)
     return root
 
+
+  
+  def goodNode(self, node, goodV):
+    good = 0
+    for i in range(len(goodV)):
+      good += xor(bool(node.left[i]), bool(node.right[i])* goodV[i]) * (1 - node.asked)
+    denom = 0
+    for i in range(len(goodV)):
+      denom += xor(bool(node.left[i]), bool(node.right[i]))
+    return good/denom
+
+  def calculateGoodV(self, dfd, entropy):
+    goodV = []
+    for i in range(len(dfd)):
+      goodV.append(entropy[i]* (1 - dfd[i]))
+    return goodV
+
+    
+
+
+  def calculateDfd(self, root):
+    #walk the tree and calculate the depth of the first occurence of a difference in the left and right variables for each column in the data
+    return []
+  
+
   def findGood(self, root):
     #for each node calculate the good score
     #return the node with the highest good score
-    return 0
-  
+    dfd = calculateDfd(root)
+    entropy = getEntropy(root)
+    goodV = calculateGoodV(dfd, entropy)
+    #walk the tree and calculate goodNode for each node keeping track of the best node
 
-  def decide(self, node):
+
+
+    return None
+
+  def decide(self, node, root):
     #check whether the node is a leaf
     #if its a leaf do nothing
     #else, check whether left or right is better
     #prune the worse one
     #recalculate entropy after removing data points
+    #return 0 if left is better, 1 if right is better
     return 0
+  
+  def gatherSurvivors(self, root):
+    # once the tree is pruned and there is no more good nodes 
+    # return all the data points that are left
   
 
                                                
@@ -477,6 +514,7 @@ class Node(struct):
     self.lefts = lefts
     self.rights = rights
     self.all = all
+    self.asked = 0
   def __repr__(self):
     return f"Node(children={len(self.all)}\nleft={self.left}\nright={self.right})"
 
