@@ -166,6 +166,8 @@ class Eg:
         all += [SAMPLE(lst, txt=f"rrp,{evals1}")]
         return 
       
+      say(f"#SNEAK");all +=  [SAMPLE([d.d2h(d.SNEAK()) for _ in range(repeats)],txt=f"SNEAK,{(int(len(d.rows)**.5))}")] 
+
       def _double(all):
         evals1,evals2 = 0,0
         lst   = []
@@ -178,6 +180,7 @@ class Eg:
       
       say(f"#2rrp"); _double(all)
       say(f"#rrp"); _single(all)
+
 
       for budget in sorted(set([6,12,25,50,100,200,400,800])): 
         if budget > len(d.rows): continue
@@ -192,9 +195,14 @@ class Eg:
         
         say(f"#rand{budget}");all +=  [SAMPLE([d.d2h(d.clone(shuffle(d.rows)[:budget], order=True).rows[0]) 
                                     for _ in range(repeats)], txt=f"rand,{budget}")] 
+        
+      
       #-----------------------------------
       print(f"\n#report{len(all)}");eg0(all)
-     
+
+  def test():
+    d = DATA(csv(the.file),order=False)
+    print(d.SNEAK())
 #----------------------------------------------------------------------------------------
 if __name__ == "__main__":
   the.cli() 
