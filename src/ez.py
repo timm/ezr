@@ -18,7 +18,7 @@ OPTIONS:
      -d --discretizationRange    number of bins when discretizing numerical data for SNEAK = 8
      -e --effectSize  non-parametric small delta = 0.2385
      -E --Experiments number of Bootstraps       = 256
-     -f --file        csv data file name         = '../data/healthCloseIsses12mths0011-easy.csv'  
+     -f --file        csv data file name         = '../data/china.csv'  
      -F --Far         far search outlier control = .95 
      -h --help        print help                 = false
      -H --Half        #items for far search      = 256
@@ -124,15 +124,24 @@ class DATA(struct):
   
   def binXRows(self):
     bins = []
-    for col in self.cols:
+    names = []
+    yNames = []
+    for i, col in enumerate(self.cols):
       if col not in self.ys.values():
-        bins.append(self.binCol(col))
+        b = self.binCol(col, self.names[i])
+        bins.append(b)
+        names += b[2]
+      if col in self.ys.values():
+        yNames.append(self.names[i])
     vecSize = 0
     for b in bins:
       vecSize += b[0]
     binVec = [0] * vecSize
     binRows = [[0] * vecSize for _ in range(len(self.rows))]
+    yMatrix = []
+    binVecs = []
     for i, row in enumerate(self.rows):
+      ys = []
       binVec = [0]  * vecSize
       curbin = 0
       offset = 0
@@ -144,7 +153,14 @@ class DATA(struct):
             binVec[offset + binVal] = 1
             offset += bins[curbin][0]
             curbin += 1
-      binRows[i] = (i, binVec)
+        if j in self.ys:
+          ys.append(row[j])
+        binVecs.append(binVec)
+        yMatrix.append(ys)
+    yMatrix = np.array(yMatrix)
+    yMatrix = (yMatrix - yMatrix.min(0)) / yMatrix.ptp(0)
+    for i, row in enumerate(self.rows):
+      binRows[i] = (i, binVecs[i], names, yMatrix[i], yNames)
     return binRows
   
   def binColVal(self, col, val, bn):
@@ -159,19 +175,21 @@ class DATA(struct):
         if lo <= val < hi:
           return i
 
-  def binCol(self, col):
+  def binCol(self, col, name):
     if isa(col, SYM):
       nBins = len(col)
       ranges = [x for x in col]
-      print(nBins, ranges, "Sym")
-      return nBins, ranges
+      #print(nBins, ranges, "Sym")
+      names = [name+"_"+str(i) for i in range(nBins)]
+      return nBins, ranges, names
     else:
       nBins = the.discretizationRange
       ran = col.hi - col.lo
       binSize = ran / nBins
       ranges = [(col.lo + i * binSize, col.lo + (i + 1) * binSize) for i in range(nBins)]
-      print(nBins, ranges, "Num")
-      return nBins, ranges
+      names = [name.lower()+"_"+str(i) for i in range(nBins)]
+      #print(nBins, ranges, "Num")
+      return nBins, ranges, names
 
 
 
@@ -335,176 +353,174 @@ class DATA(struct):
     left, lefts, leftR, right, rights, rightR, = self.rtree(items = items)
     root = Node(left, leftR, right, rightR, lefts, rights, items)
     return root
-
-
   
-  def goodNode(self, node, goodV):
+  def SNEAK(self):
+    #create a tree
+    root = self.tree()
+    dfd = self.calculateDfd(root)
+    best, bestS = self.findGood(root, dfd)
+    while bestS != 0 and best != None:
+      self.decide(best, root)
+      best, bestS = self.findGood(root, dfd)
+    survivors = self.gatherSurvivors(root)
+    #print("Sneak left ", len(survivors), "candidate survivors")
+    # sort survivors using the better function
+    survivors.sort()
+    #print(survivors[0])
+    return self.rows[survivors[0].pos]
+    
+  def findGood(self, root, dfd):
+    #for each node calculate the good score
+    #return the node with the highest good score
+    entropy = self.getEntropy(root)
+    goodV = self.calculateGoodV(dfd, entropy)
+    goodNode = root
+    goodScore = self.goodScore(root, goodV)
+    if root.left != None:
+      goodNodeL, goodScoreL = self.findGoodR(root.left, goodV, goodScore)
+      if goodScoreL > goodScore:
+        goodNode = goodNodeL
+        goodScore = goodScoreL
+    if root.right != None:
+      goodNodeR, goodScoreR = self.findGoodR(root.right, goodV, goodScore)
+      if goodScoreR > goodScore:
+        goodNode = goodNodeR
+        goodScore = goodScoreR
+    return goodNode, goodScore
+    
+    #walk the tree and calculate goodNode for each node keeping track of the best node
+
+  def findGoodR(self, node, goodV, goodScore):
+    goodNode = None
+    goodScore = 0
+    if node.left != None and node.right != None:
+      goodScore = self.goodScore(node, goodV)
+      goodNode = node
+    if node.left != None:
+      goodNodeL, goodScoreL = self.findGoodR(node.left, goodV, goodScore)
+      if goodScoreL > goodScore:
+        goodNode = goodNodeL
+        goodScore = goodScoreL
+    if node.right != None:
+      goodNodeR, goodScoreR = self.findGoodR(node.right, goodV, goodScore)
+      if goodScoreR > goodScore:
+        goodNode = goodNodeR
+        goodScore = goodScoreR
+    return goodNode, goodScore
+
+  def goodScore(self, node, goodV):
+    asked = 1 - node.asked
     good = 0
-    for i in range(len(goodV)):
-      good += xor(bool(node.left.item[i]), bool(node.right.item[i])* goodV[i]) * (1 - node.asked)
+    for i, v in enumerate(goodV):
+      good += xor(bool(node.leftR.item[i]), bool(node.rightR.item[i]))* v
+    good = good * asked 
     denom = 0
     for i in range(len(goodV)):
-      denom += xor(bool(node.left.item[i]), bool(node.right.item[i]))
+      denom += xor(bool(node.leftR.item[i]), bool(node.rightR.item[i]))
+    if denom == 0:
+      return 0
     return good/denom
 
+  
   def calculateGoodV(self, dfd, entropy):
     goodV = []
     for i in range(len(dfd)):
       goodV.append(entropy[i]* (1 - dfd[i]))
     return goodV
 
-    
-
-
   def calculateDfd(self, root):
     #walk the tree and calculate the depth of the first occurence of a difference in the left and right variables for each column in the data
-
-    return []
+    dfd = [0]*len(root.all[0].item)
+    if root.left != None:
+      dfdl = self.recursiveDfd(root.left, dfd, 1)
+    if root.right != None:
+      dfdr = self.recursiveDfd(root.right, dfd, 1)
+    # merge dfdl and dfdr into dfd
+    for i in range(len(dfd)):
+      if dfdl[i] != 0 and dfdr[i] != 0:
+        dfd[i] = min(dfdl[i], dfdr[i])
+      elif dfdl[i] != 0:
+        dfd[i] = dfdl[i]
+      elif dfdr[i] != 0:
+        dfd[i] = dfdr[i]
+    #normalize dfd 0 to 1
+    max_dfd = max(dfd)
+    for i in range(len(dfd)):
+      dfd[i] = dfd[i] / max_dfd
+    return dfd
   
-
-  def findGood(self, root):
-    #for each node calculate the good score
-    #return the node with the highest good score
-    dfd = calculateDfd(root)
-    entropy = getEntropy(root)
-    goodV = calculateGoodV(dfd, entropy)
-    #walk the tree and calculate goodNode for each node keeping track of the best node
-
-
-
-    return None
-
+  def recursiveDfd(self, node, dfd, depth):
+    if node.right != None and node.left != None:
+      for i in range(len(node.all[0].item)):
+        if node.leftR.item[i] != node.rightR.item[i] and (dfd[i] == 0 or dfd[i] > depth):
+          dfd[i] = depth
+      if node.left != None:
+        dfdl = self.recursiveDfd(node.left, dfd, depth + 1)
+      if node.right != None:
+        dfdr = self.recursiveDfd(node.right, dfd, depth + 1)
+      # merge dfdl, dfdr and dfd into dfd
+      for i in range(len(dfd)):
+        if dfdl[i] != 0 and dfdr[i] != 0 and dfd[i] != 0:
+          dfd[i] = min(dfdl[i], dfdr[i], dfd[i])
+        elif dfdl[i] != 0 and dfdr[i] != 0:
+          dfd[i] = min(dfdl[i], dfdr[i])
+        elif dfdl[i] != 0 and dfd[i] != 0:
+          dfd[i] = min(dfdl[i], dfd[i])
+        elif dfdr[i] != 0 and dfd[i] != 0:
+          dfd[i] = min(dfdr[i], dfd[i])
+    return dfd
+  
+  def getEntropy(self, root):
+    rows = [item.item for item in root.all]
+    names = root.all[0].names
+    data = DATA([names])
+    for row in rows:
+      data.add(row)
+    entropy = [0] * len(data.cols)
+    for i, col in enumerate(data.cols):
+      if i not in data.ys:
+        entropy[i] = data.cols[i].entropy()
+    return entropy
+    
   def decide(self, node, root):
-    #check whether the node is a leaf
-    #if its a leaf do nothing
-    #else, check whether left or right is better
-    #prune the worse one
-    #recalculate entropy after removing data points
-    #return 0 if left is better, 1 if right is better
-    return 0
+    node.asked = 1
+    # better returns 1 if left is better and 0 if right is better
+    if self.better(node):
+      self.prune(node.left, root)
+      node.left = None
+    else:
+      self.prune(node.right, root)
+      node.right = None
+    return
   
+  def better(self, node):
+    # dynamic ziztler predicate comparing left and right representatives
+    evNames = node.leftR.evNames
+    left = node.leftR.ev
+    right = node.rightR.ev
+    s1, s2, n = 0, 0, len(evNames)
+    for i, name in enumerate(evNames):
+      a = left[i]
+      b = right[i]
+      multi = 1 if name[-1] == "+" else -1
+      s1 -= math.e**(multi * (a-b)/n)
+      s2 -= math.e**(multi * (b-a)/n)
+    return s1 / n < s2 / n
+  
+  def prune(self, node, root):
+    pruned = node.all
+    for item in pruned:
+      for ogItem in root.all:
+        if item.item == ogItem.item:
+          root.all.remove(ogItem)
+          break
+    #print("Pruned", len(pruned), "items now root has", len(root.all), "items")
+
   def gatherSurvivors(self, root):
-    # once the tree is pruned and there is no more good nodes 
-    # return all the data points that are left
+    return root.all
   
 
-                                               
-#          _|  o   _   _  ._   _   _|_  o  _    _  
-#         (_|  |  _>  (_  |   (/_   |_  |  /_  (/_                                                
-# 
-# class RANGE(struct):
-#   def __init__(self,txt="",at=0,lo=None,hi=None,ys=None):
-#     self.txt, self.at = txt,at
-#     self.lo = lo
-#     self.hi = hi or lo
-#     self.ys = ys  
-#     self.scored = 0
-# 
-#   def add(self,x,y): 
-#     self.lo  = min(self.lo, x) 
-#     self.hi  = max(self.hi, x)
-#     self.ys.add(y)
-# 
-#   def merge(i,j,small):
-#     k = i + j 
-#     ni,nj = sum(i.ys.values()), sum(j.ys.values())
-#     if ni <= small: return k
-#     if nj <= small: return k
-#     if k.ys.entropy() <= (ni*i.ys.entropy() + nj*j.ys.entropy())/(ni+nj): return k
-# 
-#   def __add__(i,j):
-#     return RANGE(txt=i.txt, at=i.at, lo=i.lo, hi=j.hi, ys=i.ys + j.ys)
-#   
-#   def __repr__(self): 
-#     lo,hi,s = self.lo, self.hi,self.txt
-#     if lo == -sys.maxsize: return f"{s} <  {hi}" 
-#     if hi ==  sys.maxsize: return f"{s} >= {lo}" 
-#     if lo ==  hi         : return f"{s} == {lo}" 
-#     return f"{lo} <= {s} < {hi}" 
-# 
-# def discretize(c,txt,col,rowss):
-#   def bin(col,x): 
-#     if isa(col,SYM): return x
-#     tmp = (col.hi - col.lo)/(the.ranges - 1)
-#     out = col.hi==col.lo and 0 or int(.5 + (x-col.lo)/tmp)  
-#     return out
-#   #--------------------------
-#   def fill(bins):
-#     if bins==[]: return bins
-#     for i in range(1,len(bins)): bins[i].lo = bins[i-1].hi  
-#     bins[0].lo  = -sys.maxsize
-#     bins[-1].hi =  sys.maxsize
-#     return bins  
-#   #------------
-#   bins, n = {}, 0
-#   for y,rows in rowss.items(): 
-#     for row in rows:
-#       x = row[c]
-#       if x != "?": 
-#         n += 1
-#         b = bin(col,x) 
-#         bins[b] = bins[b] if b in bins else RANGE(txt=txt, at=c,lo=x, hi=x, ys=SYM()) 
-#         bins[b].add(x, y) 
-#   bins = sorted(bins.values(), key=lambda bin:bin.lo)  
-#   return bins if isa(col,SYM) else fill(merges(bins, lambda a,b: a.merge(b, n/the.ranges)))
-#                                       
-# #          _       ._   |   _.  o  ._  
-# #         (/_  ><  |_)  |  (_|  |  | | 
-# #                  |                   
-# 
-# class RULE(struct):
-#   def __init__(self,ranges):
-#     self.parts, self.scored = {},0
-#     for range in ranges:
-#       self.parts[range.txt] = self.parts.get(range.txt,[])
-#       self.parts[range.txt] += [range]
-# 
-#   def _or(self,ranges,row):
-#     x =  row[ranges[0].at]
-#     if x== "?": return True
-#     for range in ranges:
-#       return range.lo==range.hi==x or range.lo <= x < range.hi 
-#   
-#   def _and(self,row):
-#     for ranges in self.parts.values():
-#       if not self._or(ranges,row): return False
-#     return True
-#   
-#   def selects(self,rows):
-#     return [row for row in rows if self._and(row)]
-#   
-#   def selectss(self,rowss): 
-#     return [row for _,rows in rowss.items() for row in self.selects(rows)]
-#   
-#   def __repr__(self):
-#     def merge(a,b):
-#       if a.txt == b.txt and a.hi ==b.lo: return a + b
-#     return ' and '.join(' or '.join(merges(sorted(ors,key=lambda r:r.lo),merge))
-#                         for ors in self.parts.values())
-#   
-#   class RULES(struct):
-#     def score(range,goal,LIKE,HATE):
-#       like,hate=0,0
-#       for klass,n in range.ys.items():
-#         if klass==goal: like += n
-#         else:           hate += n
-#       like,hate = like/(LIKE + tiny), hate/(HATE + tiny) 
-#       range.scored = 0 if hate>like else  like ** the.Score / (like + hate)
-# 
-#     def __init__(self,ranges,goal,rowss,scoring):
-#       def count(what=None):
-#         return sum(len(rows) for klass,rows in rowss.items() if klass==what)
-#       fun= return lambda lst: scoring(lst,self.goal,like,hate)
-#       like, hate = count(goal), count()
-#       [fun(range,self.goal, like, hate) for range in ranges]
-#       self.ordered = self.top(self.test(self.top(ranges)))
-#     
-#     def test(self,ranges):
-#       RULE(subset) for subset in powerset(ranges) if len(subset) > 0 
-# 
-#     def top(self,lst):
-#       tmp = sorted(lst,key=lambda z:z.scored)
-#       return [x for x in tmp if x.scored > tmp[0].scored * the.adequate][the.ample]
+
 
 class Node(struct):
   def __init__(self, left, leftR, right, rightR, lefts, rights, all):
@@ -523,11 +539,31 @@ class Node(struct):
 class Item(struct):
   def __init__(self, item):
     self.item = item[1]
-    self.ev = []
+    self.names = item[2]
+    self.ev = item[3]
+    self.evNames = item[4]
     self.r = -1
     self.d = -1
     self.theta = -1
     self.score = 0
     self.pos = item[0]
     self.features = sum(self.item)
+
+
+  def better(self, other):
+    # dynamic ziztler predicate comparing left and right representatives
+    evNames = self.evNames
+    left = self.ev
+    right = other.ev
+    s1, s2, n = 0, 0, len(evNames)
+    for i, name in enumerate(evNames):
+      a = left[i]
+      b = right[i]
+      multi = 1 if name[-1] == "+" else -1
+      s1 -= math.e**(multi * (a-b)/n)
+      s2 -= math.e**(multi * (b-a)/n)
+    return s1 / n < s2 / n
+  
+  def __lt__(self, other):
+    return self.better(other)
 

@@ -165,7 +165,8 @@ class Eg:
           lst +=  [d.d2h(last)]
         all += [SAMPLE(lst, txt=f"rrp,{evals1}")]
         return 
-      
+      say(f"#SNEAK");all +=  [SAMPLE([d.d2h(d.SNEAK()) for _ in range(repeats)],txt=f"SNEAK,{(int(len(d.rows)**.5))}")] 
+
       def _double(all):
         evals1,evals2 = 0,0
         lst   = []
@@ -179,7 +180,7 @@ class Eg:
       say(f"#2rrp"); _double(all)
       say(f"#rrp"); _single(all)
 
-      for budget in sorted(set([n1,n2,n3,n4,n5,n6,n7,n8,n9])): 
+      for budget in sorted(set([n1,n2,n3,n4])): 
         the.Budget = budget -  the.budget0 
         if budget <= 50:
            say(f"#b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
@@ -191,12 +192,14 @@ class Eg:
         
         say(f"#rand{budget}");all +=  [SAMPLE([d.d2h(d.clone(shuffle(d.rows)[:budget], order=True).rows[0]) 
                                     for _ in range(repeats)], txt=f"rand,{budget}")] 
+        
+      
       #-----------------------------------
       print(f"\n#report{len(all)}");eg0(all)
 
   def test():
     d = DATA(csv(the.file),order=False)
-    print(d.tree())
+    print(d.SNEAK())
 #----------------------------------------------------------------------------------------
 if __name__ == "__main__":
   the.cli() 
