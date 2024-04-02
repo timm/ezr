@@ -1,0 +1,29 @@
+body.article  {
+ padding-left: 10px;
+  padding-right:10px;
+}
+
+
+pre   {
+	padding: 5px;
+	xborder-left: 1px dotted black;
+	background-image: linear-gradient(to right, #EEE, white);
+	margin-left: 10px;
+	padding: 5px;
+}
+
+b.conum { /* Callout number class */
+  background-color: black; /* Black background color */
+  color: white;
+  paddiing:3px;
+  font-weight: xbold; /* Optional: makes the number bold */
+}
+
+
+@import "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+@ximport "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700";
+@ximport "https://cdn.jsdelivr.net/gh/asciidoctor/asciidoctor@2.0/data/stylesheets/asciidoctor-default.css";
+
+
+
+

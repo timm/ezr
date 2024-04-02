@@ -1,43 +1,42 @@
-# ezr.py : tiny ai teaching lab. sequential model optimization (using not-so-naive bayes)
-# (c)2024, Tim Menzies, BSD2 license. Share and enjoy.
-import random,math,ast,sys,re
+import traceback,random,math,ast, sys,re
 from fileinput import FileInput as file_or_stdin
+help="""
+ezr.py : tiny ai teaching lab. sequential model optimization (using not-so-naive bayes)
+(c)2024, Tim Menzies, BSD2 license. Share and enjoy."
 
-config = dict(  beam = .75,
-                commence=4,
-                Cease=20,
-                enough=0.5,
-                file="../data/auto93.csv",
-                k=1,
-                m=2,
-                seed=1234567891,
-                todo="the")
+OPTIONS:
+  --beam      -b  how much to keep                  = .7
+  --commence  -c  initial number of evaluations     = 4
+  --Cease     -C  total number of evaluations       = 20
+  --enough    -e  use is N**enough                  =.5
+  --file      -f  csv file with row1 column names   =  "../data/auto93.csv"
+  --help      -h  show help text                    = False
+  --main      -m  start up action                   = the
+  --k         -k  Bayes low attribute count kludge  = 1
+  --m         -m  Bayes low class frequency kludge  = 2
+  --seed      -s  random number seed                = 1234567891
+"""
 #----------------------------------------------------------------------------------------
-class OBJ:
-  def __init__(i,**d): i.__dict__.update(d)
-  def __repr__(i): return i.__class__.__name__+'{'+show(i.__dict__)+'}'
-
-the  = OBJ(**config)
-big  = 1E30
-tiny = 1/big
-isa  = isinstance
-r    = random.random
+big     = 1E30
+tiny    = 1/big
+r       = random.random
+isa     = isinstance
 
 def adds(x,lst=None): [x.add(y) for y in lst or []]; return x
+
+# tag::cli[]  
+def coerce(s):
+  try: return ast.literal_eval(s) # <1>
+  except Exception:  return s
 
 def cli(d):
   for k,v in d.items():
     for c,arg in enumerate(sys.argv):
-      after = "" if c >= len(sys.argv) - 1 else sys.argv[c+1]
       if arg in ["-"+k[0], "--"+k]:
         v = str(v)
-        v = "False" if v==True else ("True" if v==False else after)
+        v = "False" if v=="True" else ("True" if v=="False" else sys.argv[c+1])
         d[k] = coerce(v)
-  return d
-
-def coerce(s):
-  try: return ast.literal_eval(s)
-  except Exception: return s
+# end::cli[]
 
 def csv(file=None):
   with file_or_stdin(file) as src:
@@ -46,11 +45,18 @@ def csv(file=None):
       if line: yield [coerce(s.strip()) for s in line.split(",")]
 
 def show(x,n=2):
-  if isa(x,(int,float)) : return x if int(x)==x else round(x,n)
-  if isa(x,(list,tuple)): return [show(y,n) for y in x][:10]
-  if isa(x,dict): 
-    return ' '.join(f":{k} {show(v,n)}" for k,v in x.items() if k[0]!="_")
+  if   isa(x,(int,float)) : x= x if int(x)==x else round(x,n)
+  elif isa(x,(list,tuple)): x= [show(y,n) for y in x][:10]
+  elif isa(x,dict)        : x= ', '.join(f"{k}={show(v,n)}" for k,v in x.items() if k[0]!="_")
   return x
+
+class OBJ:
+  def __init__(i,**d) : i.__dict__.update(d)
+  def __repr__(i)     : return i.__class__.__name__+'{'+show(i.__dict__)+'}'
+  def cliUpdate(i)    : cli(i.__dict__)
+
+options = {m[1]:coerce(m[2]) for m in re.finditer("--(\S+)[^=]*=\s*(\S+)",help)}
+the     = OBJ(**options)
 #----------------------------------------------------------------------------------------
 class COL(OBJ):
   def __init__(i,at=0,txt=" "):
@@ -82,8 +88,8 @@ class NUM(COL):
   def like(i,n,*_):
     v     = i.div()**2 + tiny
     nom   = math.e**(-1*(n - i.mid())**2/(2*v)) + tiny
-    denom = (2*math.pi*v)**.5  
-    return min(1, nom/(denom + tiny))   
+    denom = (2*math.pi*v)**.5 
+    return min(1, nom/(denom + tiny))  
 #----------------------------------------------------------------------------------------
 class COLS(OBJ):
   def __init__(i,names):
@@ -96,7 +102,7 @@ class COLS(OBJ):
         (i.y if z in "!+-" else i.x).append(col)
         if z == "!": i.klass= col
 
-  def add(i,lst): 
+  def add(i,lst):
     [col.add(lst[col.at]) for col in i.all if lst[col.at] != "?"]; return lst
 
 class DATA(OBJ):
@@ -111,7 +117,7 @@ class DATA(OBJ):
       i.rows += [i.cols.add(lst)]
     else: i.cols = COLS(lst)
 
-  def clone(i,lst=None,ordered=False): 
+  def clone(i,lst=None,ordered=False):
     tmp = adds(DATA([i.cols.names]), lst)
     if ordered: tmp.ordered()
     return tmp
@@ -122,7 +128,7 @@ class DATA(OBJ):
       d += abs(col.norm(row[col.at]) - col.heaven)**2
       n += 1
     return (d/n)**.5
-  
+ 
   def loglike(i, lst, nall, nh, m,k):
     prior = (len(i.rows) + k) / (nall + k*nh)
     likes = [c.like(lst[c.at],m,prior) for c in i.cols.x if lst[c.at] != "?"]
@@ -131,26 +137,25 @@ class DATA(OBJ):
   def ordered(i): i.rows.sort(key=i.d2h); return i.rows
 
   def smo(i, score=lambda B,R: B - R ):
-    def like(row,data): 
+    def like(row,data):
       return data.loglike(row,len(data.rows),2,the.m,the.m)
-    def acquire(best, rest, rows): 
+    def acquire(best, rest, rows):
       chop=int(len(rows) * the.beam)
       return sorted(rows, key=lambda r: -score(like(r,best),like(r,rest)))[:chop]
     #---------------------
     random.shuffle(i.rows)
     done, todo = i.rows[:the.commence], i.rows[the.commence:]
     data1 = i.clone(done, ordered=True)  
-    evals = 0
     for _ in range(the.Cease - the.commence):
       n = int(len(done)**the.enough + .5)
-      top,*todo = acquire(i.clone(data1.rows[:n]),  
+      top,*todo = acquire(i.clone(data1.rows[:n]), 
                           i.clone(data1.rows[n:]),
-                          todo) 
+                          todo)
       done.append(top)
-      evals += 1
       data1 = i.clone(done, ordered=True)
+
       if len(todo) < 3: break
-    return data1.rows[0],evals
+    return data1.rows[0],len(data1.rows)
 
 class NB(OBJ):
   def __init__(i): i.correct,i.nall,i.datas = 0,0,{}
@@ -163,28 +168,39 @@ class NB(OBJ):
     i.nall += 1
     if i.nall > 10:
       guess = max((i.loglike(data,lst),klass1) for klass1,data in i.datas.items())
-      i.correct += klass == guess[1] 
+      i.correct += klass == guess[1]
     if klass not in i.datas: i.datas[klass] =  data.clone()
     i.datas[klass].add(lst)
 
   def report(i): return OBJ(accuracy = i.correct / i.nall)
 #----------------------------------------------------------------------------------------
-class eg:
-  def unknown(): print(f"W> unknown action [{the.todo}].")
-  
+class main:
+  def _all():
+    sys.exit(sum(main._one(s)==False for s in sorted(dir(main)) if s[0] != "_"))
+
+  def _one(s):
+    the.__dict__.update(**options)
+    random.seed(the.seed)
+    try: return getattr(main, s, main._unknown)()
+    except Exception:
+      print(f"===> FAIL {s}")
+      return False
+
+  def _unknown(): print(f"W> unknown action [{the.main}].")
+
   def the():  print(the)
 
   def sym():
     s = adds(SYM(),"aaaabbc")
-    assert round(s.div(),2) == 1.38 and s.mid() == "a" 
+    assert 1.38==round(s.div(),2) and s.mid() == "a" ,"sym"
 
   def one():
     w = OBJ(n=0)
     def inc(_,r): w.n += len(r)
-    d = DATA(csv("../data/auto93.csv"), inc) 
+    d = DATA(csv("../data/auto93.csv"), inc)
     assert w.n == 3184
 
-  def clone(): 
+  def clone():
     d = DATA(csv(the.file))
     c =d.clone()
     print(d.cols.all[1])
@@ -196,24 +212,31 @@ class eg:
       if j%50==0: print(j,row)
 
   def nb():
+    if the.file != "../data/soybean.csv":
+      val= input(f"Expected soybean, got {the.file}. Type 'y' to continue. ")
+      if val !="y": return
     out=[]
-    for k in [1,2,3]:
-      for m in [1,2,3]: 
+    for k in [0,1,2,3]:
+      for m in [0.001,1,2,3]:
         the.k, the.m = k,m
         nb = NB()
-        DATA(csv("../data/soybean.csv"), nb.run)
+        DATA(csv(the.file), nb.run)
         out += [OBJ(acc = nb.report().accuracy, k=k, m=m)]
     [print(show(x,3)) for x in sorted(out,key=lambda z: z.acc)]
 
   def smo():
     d=DATA(csv(the.file),ordered=True)
-    b4   = d.rows[len(d.rows)//2]
-    for _ in range(30):
+    best = d.d2h(d.rows[0])
+    mid  = d.d2h(d.rows[len(d.rows)//2])
+    out  = []
+    for _ in range(20):
       sys.stderr.write('.');  sys.stderr.flush()
       after,evals= d.smo()
-      print("\n",show(dict(mid= d.d2h(b4),smo= d.d2h(after), evals=evals)),end="")
+      out += [OBJ(mid= mid, best=best, smo= d.d2h(after), evals=evals)]
+    print("")
+    [print(show(x)) for x in  sorted(out,key=lambda z:z.smo)]
 #----------------------------------------------------------------------------------------
 if __name__=="__main__":
-  the = OBJ(**cli(config))
-  random.seed(the.seed)
-  getattr(eg, the.todo, eg.unknown)()
+  the.cliUpdate()
+  if the.help:  sys.exit(print(help))  #<1>
+  main._one(the.main)
