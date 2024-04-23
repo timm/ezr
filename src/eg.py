@@ -188,8 +188,8 @@ class Eg:
         if budget <= 80:
            say(f"#b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
                                      for _   in range(repeats)],txt=f"b,{budget}")]
-           say(f"#2b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: 2*B-R))
-                                     for _   in range(repeats)],txt=f"2b,{budget}")]
+          #  say(f"#2b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: 2*B-R))
+          #                            for _   in range(repeats)],txt=f"2b,{budget}")]
            say(f"#bonr{budget}"); all +=  [SAMPLE([d.d2h(d.smo(score=lambda B,R: abs(e**B+e**R)/abs(e**B-e**R + tiny)))
                                      for _   in range(repeats)],txt=f"bonr,{budget}")]
         

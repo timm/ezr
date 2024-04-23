@@ -18,7 +18,7 @@ OPTIONS:
      -d --discretizationRange    number of bins when discretizing numerical data for SNEAK = 8
      -e --effectSize  non-parametric small delta = 0.2385
      -E --Experiments number of Bootstraps       = 256
-     -f --file        csv data file name         = '../data/pom.csv'  
+     -f --file        csv data file name         = '../data/healthCommits12mths0011.csv'  
      -F --Far         far search outlier control = .95 
      -h --help        print help                 = false
      -H --Half        #items for far search      = 256
@@ -499,16 +499,10 @@ class DATA(struct):
     for i, name in enumerate(evNames):
       a = left[i]
       b = right[i]
-      # multi = 1 if name[-1] == "+" else -1
-      # s1 -= math.e**(multi * (a-b)/n)
-      # s2 -= math.e**(multi * (b-a)/n)
-      heaven = 1 if name[-1] == "+" else 0
-      s1 += abs(heaven - a)
-      s2 += abs(heaven - b)
-    s1 = (s1**2 / n)**.5
-    s2 = (s2**2 / n)**.5
-    return s1 < s2 
-    # return s1 / n < s2 / n
+      multi = 1 if name[-1] == "+" else -1
+      s1 -= math.e**(multi * (a-b)/n)
+      s2 -= math.e**(multi * (b-a)/n)
+    return s1 / n < s2 / n
   
   def prune(self, node, root):
     pruned = node.all
@@ -562,15 +556,10 @@ class Item(struct):
     for i, name in enumerate(evNames):
       a = left[i]
       b = right[i]
-      # multi = 1 if name[-1] == "+" else -1
-      # s1 -= math.e**(multi * (a-b)/n)
-      # s2 -= math.e**(multi * (b-a)/n)
-      heaven = 1 if name[-1] == "+" else 0
-      s1 += abs(heaven - a)
-      s2 += abs(heaven - b)
-    s1 = (s1**2 / n)**.5
-    s2 = (s2**2 / n)**.5
-    return s1 < s2 
+      multi = 1 if name[-1] == "+" else -1
+      s1 -= math.e**(multi * (a-b)/n)
+      s2 -= math.e**(multi * (b-a)/n)
+    return s1 / n < s2 / n
   
   def __lt__(self, other):
     return self.better(other)
