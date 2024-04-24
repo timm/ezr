@@ -194,6 +194,29 @@ class Eg:
                                     for _ in range(repeats)], txt=f"rand,{budget}")] 
       #-----------------------------------
       print(f"\n#report{len(all)}");eg0(all)
+
+  def smoz():  
+      repeats=the.Repeats
+      e=math.exp(1)
+      def say(*l): print(*l,end=" ",flush=True);
+      r=lambda a: ', '.join([str(x) for x in rnds(a,2)])
+      d=DATA(csv(the.file),order=False)  
+      d2hs = NUM([d.d2h(row) for row in d.clone(d.rows,True).rows])
+      now = datetime.now().strftime("%B/%m/%Y %H:%M:%S")
+      print(f"date : {now},")
+      print(f"file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},")
+      print(f"rows : {len(d.rows)},")
+      print(f"cols : {len(d.names)},")
+      print(f"best : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}")
+      heavens = [d.d2h(row) for row in d.rows]
+      heavens = sorted(heavens)[:int(len(heavens)*.95)]
+      say("#base");all= [SAMPLE(heavens, txt=f"base,{len(d.rows)}")] 
+      for budget in sorted(set([25])): 
+        if budget > len(d.rows): continue
+        the.Budget = budget -  the.budget0 
+        say(f"#b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
+                                     for _   in range(repeats)],txt=f"b,{budget}")]
+      print(f"\n#report{len(all)}");eg0(all)
      
 #----------------------------------------------------------------------------------------
 if __name__ == "__main__":
