@@ -174,7 +174,7 @@ class Eg:
           rows1, _,evals1,__ = d.branch(d.rows,50) 
           _, __, evals2,last = d.branch(rows1,4)
           lst +=  [d.d2h(last)]
-        all += [SAMPLE(lst, txt=f"2rrp,{evals1+evals2}")]
+        all += [SAMPLE(lst, txt=f"2rrp,{evals1+evals2+3}")]
       
       say(f"#2rrp"); _double(all)
       say(f"#rrp"); _single(all)

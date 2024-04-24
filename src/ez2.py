@@ -2,7 +2,19 @@
 """
 ez2.py: active learning, models the best/rest seen so far in a Bayes classifier
 (c) 2024 Tim Menzies <timm@ieee.org>
+
+Misc options:
+  -s --seed  random number seed = 1234567891
+  -f --file  data file          = 
+
+NB options:
+  -m --m asdas   = 1
+
+SMO options:
+  -b --budget0 asdas 2
+  -B --Budget1 asas  23
 """
+
 from __future__ import annotations   # <1> ## types  
 from typing import Any,Iterable,Callable
 import re,ast,sys, json,math,random
@@ -11,6 +23,7 @@ from fileinput import FileInput as file_or_stdin
 ## ----------------------------------------------------------------------------------------
 # # System Inits
 options = dict(k=1, m=2, bins=10, file="../data/auto93.csv", seed=1234567891) 
+
 
 big = 1E32
 tiny = 1/big
@@ -212,6 +225,7 @@ class DATA(OBJ):
   # ### Creation  
   def clone(i,lst:Iterable[Row]=[],ordered=False) -> DATA:  
     return DATA([i.cols.names]+lst)
+
   def order(i) -> Rows:
     i.rows = sorted(i.rows, key=i.d2h, reverse=False)
     return i.rows
