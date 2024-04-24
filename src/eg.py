@@ -196,27 +196,43 @@ class Eg:
       print(f"\n#report{len(all)}");eg0(all)
 
   def smoz():  
-      repeats=the.Repeats
-      e=math.exp(1)
-      def say(*l): print(*l,end=" ",flush=True);
-      r=lambda a: ', '.join([str(x) for x in rnds(a,2)])
-      d=DATA(csv(the.file),order=False)  
-      d2hs = NUM([d.d2h(row) for row in d.clone(d.rows,True).rows])
-      now = datetime.now().strftime("%B/%m/%Y %H:%M:%S")
-      print(f"date : {now},")
-      print(f"file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},")
-      print(f"rows : {len(d.rows)},")
-      print(f"cols : {len(d.names)},")
-      print(f"best : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}")
-      heavens = [d.d2h(row) for row in d.rows]
-      heavens = sorted(heavens)[:int(len(heavens)*.95)]
-      say("#base");all= [SAMPLE(heavens, txt=f"base,{len(d.rows)}")] 
-      for budget in sorted(set([25])): 
-        if budget > len(d.rows): continue
-        the.Budget = budget -  the.budget0 
-        say(f"#b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
-                                     for _   in range(repeats)],txt=f"b,{budget}")]
-      print(f"\n#report{len(all)}");eg0(all)
+      def lt(sd): return lambda b4,now: (b4-now)/(0.35*sd)
+      def gt(sd): return lambda b4,now: (now-b4)/(0.35*sd)
+      d=DATA(csv(the.file),order=False)
+      deltas = [lt(col.sd) if col.heaven==0 else gt(col.sd) for col in d.ys.values()]
+      b4= [col.mu for col in d.ys.values()]
+
+      now=[NUM() for _ in d.ys]
+      the.Budget=25
+      for _ in 1,20:
+        got=d.smo(score=lambda B,R: B-R)
+        [num.add(got[at]) for num,(at,col) in zip(now,d.ys.items())]
+      print("b4", b4)
+      print("now",[num.mu for num in now])
+      print("sd",[num.sd for num in now])
+      print("d",[num.sd*0.35 for num in now])
+      print([f(b4,now.mu) for f,b4,now in zip(deltas,b4,now)])
+#      repeats=the.Repeats
+#      e=math.exp(1)
+#      def say(*l): print(*l,end=" ",flush=True);
+#      r=lambda a: ', '.join([str(x) for x in rnds(a,2)])
+#      d=DATA(csv(the.file),order=False)  
+#      d2hs = NUM([d.d2h(row) for row in d.clone(d.rows,True).rows])
+#      now = datetime.now().strftime("%B/%m/%Y %H:%M:%S")
+#      print(f"date : {now},")
+#      print(f"file : {the.file},\nrepeats  : {repeats},\nseed : {the.seed},")
+#      print(f"rows : {len(d.rows)},")
+#      print(f"cols : {len(d.names)},")
+#      print(f"best : {rnds(d2hs.lo)},\ntiny : {rnds(d2hs.sd*.35)}")
+#      heavens = [d.d2h(row) for row in d.rows]
+#      heavens = sorted(heavens)[:int(len(heavens)*.95)]
+#      say("#base");all= [SAMPLE(heavens, txt=f"base,{len(d.rows)}")] 
+#      for budget in sorted(set([25])): 
+#        if budget > len(d.rows): continue
+#        the.Budget = budget -  the.budget0 
+#        say(f"#b{budget}"); all += [SAMPLE([d.d2h(d.smo(score=lambda B,R: B-R))
+#                                     for _   in range(repeats)],txt=f"b,{budget}")]
+#      print(f"\n#report{len(all)}");eg0(all)
      
 #----------------------------------------------------------------------------------------
 if __name__ == "__main__":
