@@ -20,73 +20,71 @@ from typing import Any,Iterable,Callable
 import re,ast,sys, json,math,random
 from collections import Counter
 from fileinput import FileInput as file_or_stdin 
-## ----------------------------------------------------------------------------------------
-# # System Inits
+# ----------------------------------------------------------------------------------------
+# # Inits
+
+# Some globals
 options = dict(k=1, m=2, bins=10, file="../data/auto93.csv", seed=1234567891) 
-
-
 big = 1E32
 tiny = 1/big
 
-# ## Special type annotations
+# Special type annotations
 class Row    : has:list[Any]
 class Rows   : has:list[Row]
 class Klasses: has:dict[str, Rows]
 
+# Simple base object: defines simple initialization and pretty print. 
 class OBJ:
-  """## Obj
-  Base class, defines simple initialization and pretty print.  
-  """ 
   def __init__(i,**d)    : i.__dict__.update(d)
   def __repr__(i) -> str : return i.__class__.__name__+show(i.__dict__)
-#----------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 # # Classes 
+
+   
+# **BINS** Stores in `ys` the klass symbols see between `lo` and `hi`.
+#  
+# [1] `BIN.score()` reports how often we see `goals` symbols more than  other symbols.     
+# [2] `merge()` combines two BINs, if they are too small or they have similar distributions.    
+# [3] `selects()` returns true when a BIN matches a row.       
+#   
+# To  build decision trees,  split Rows on the best scoring bin, then recurse on each half.
 class BIN(OBJ):
-  """## BIN   
-  Stores in `ys` the klass symbols see between `lo` and `hi`.
-  
-  - `BIN.score()` reports how often we see `goals` symbols more than  other symbols.
-  - `merge()` combines two BINs, if they are too small or they have similar distributions;
-  - `selects()` returns true when a BIN matches a row.   
-  To  build decision trees,  split Rows on the best scoring bin, then recurse on each half.
-  """
   id=0
-  @staticmethod
-  def score(d:dict, BEST:int, REST:int, goal="+", how=lambda B,R: B - R) -> float:
-    b,r = 0,0
-    for k,n in d.items():
-      if k==goal: b += n
-      else      : r += n
-    b,r = b/(BEST+tiny), r/(REST+tiny)
-    return how(b,r) 
-  
   def __init__(i, at:int, txt:str, lo:float, hi:float=None, ys:Counter=None):  
     i.at,i.txt,i.lo,i.hi,i.ys = at,txt, lo,hi or lo,ys or Counter()  
-    i.id = BIN.id = BIN.id + 1
-
+    i.id = id = id + 1
+  
   def add(i, x:float, y:Any):
     i.lo = min(x, i.lo)
     i.hi = max(x, i.hi)
     i.ys[y] += 1
-
-  # ### Combine bins  
-  def merge(i, j:BIN, minSize:float) -> BIN: # or None if nothing merged
+      
+  def merge(i, j:BIN, minSize:float) -> BIN: # or None if nothing merged -----------------[2]
     if i.at == j.at:
       k     = BIN(i.at, i.txt, min(i.lo,j.lo), hi=max(i.hi,j.hi), ys=i.ys+j.ys)
       ei,ni = entropy(i.ys)
       ej,nj = entropy(j.ys)
       ek,nk = entropy(k.ys)
       if ni < minSize or nj < minSize: return k # merge bins that are too small
+      if ek <= (ni*ei + nj*ej)/nk    : return k # merge bins if cobo not as complex
       if ek <= (ni*ei + nj*ej)/nk    : return k # merge bins if combo not as complex
-  
-  # ### Find relevant rules 
+     
   def selectss(i, klasses: Klasses) -> dict: 
     return {k:len([row for row in rows if i.selects(row)]) 
             for k,rows in klasses.items()}
-   
-  def selects(i, row: Row) -> bool: 
+     
+  def selects(i, row: Row) -> bool:  #----------------------------------------------------[3]
     x = row[i.at]
     return  x=="?" or i.lo == x == i.hi or i.lo <= x < i.hi
+      
+  @staticmethod
+  def score(d:dict, BEST:int, REST:int, goal="+", how=lambda B,R: B - R) -> float: #------[1]
+    b,r = 0,0
+    for k,n in d.items():
+      if k==goal: b += n
+      else      : r += n
+    b,r = b/(BEST+tiny), r/(REST+tiny)
+    return how(b,r) 
 #----------------------------------------------------------------------------------------
 class COL(OBJ):
   """## COL  
