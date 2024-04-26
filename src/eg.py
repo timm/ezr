@@ -182,7 +182,7 @@ class Eg:
       say(f"#rrp"); _single(all)
 
 
-      for budget in sorted(set([6,12,25,50,100,200,400,800])): 
+      for budget in sorted(set([10,20,30,40,50,60,70,80])): 
         if budget > len(d.rows): continue
         the.Budget = budget -  the.budget0 
         if budget <= 80:
