@@ -16,9 +16,9 @@ OPTIONS:
     -B --Budget1 max evals  = 23
 """
 from __future__ import annotations   # <1> ## types  
-from typing import Any,Iterable,Callable
-import re,ast,sys, json,math,random
 from collections import Counter
+import re,ast,sys, json,math,random
+from typing import Any,Iterable,Callable
 from fileinput import FileInput as file_or_stdin 
 # ----------------------------------------------------------------------------------------
 # ## Inits
@@ -33,21 +33,24 @@ def settings(s:str) -> OBJ:
 # Special type annotations
 class Row    : has:list[Any]
 class Rows   : has:list[Row]
-class Classes: has:dict[str, Rows]
+class Classes: has:dict[str, Rows] # a dictionary, one key for each class 
 
 # Simple base object: defines simple initialization and pretty print. 
+
 class OBJ:
   def __init__(i,**d)    : i.__dict__.update(d)
   def __repr__(i) -> str : return i.__class__.__name__+show(i.__dict__)
 # ----------------------------------------------------------------------------------------
-# ## Classes 
+# ## Classes
+
 # **BINS** Stores in `ys` the klass symbols see between `lo` and `hi`.
 #  
-# [1] `BIN.score()` reports how often we see `goals` symbols more than  other symbols.     
-# [2] `merge()` combines two BINs, if they are too small or they have similar distributions.    
-# [3] `selects()` returns true when a BIN matches a row.       
+# [1] `merge()` combines two BINs, if they are too small or they have similar distributions.   
+# [2] `selects()` returns true when a BIN matches a row.       
+# [3] `BIN.score()` reports how often we see `goals` symbols more than  other symbols.    
 #   
 # To  build decision trees,  split Rows on the best scoring bin, then recurse on each half.
+
 class BIN(OBJ):
   id=0
   def __init__(i, at:int, txt:str, lo:float, hi:float=None, ys:Counter=None):  
@@ -59,38 +62,37 @@ class BIN(OBJ):
     i.hi = max(x, i.hi)
     i.ys[y] += 1
       
-  def merge(i, j:BIN, minSize:float) -> BIN: # or None if nothing merged -----------------[2]
+  def merge(i, j:BIN, small:float) -> BIN: # or None if nothing merged ------------[1]
     if i.at == j.at:
       k     = BIN(i.at, i.txt, min(i.lo,j.lo), hi=max(i.hi,j.hi), ys=i.ys+j.ys)
       ei,ni = entropy(i.ys)
       ej,nj = entropy(j.ys)
       ek,nk = entropy(k.ys)
-      if ni < minSize or nj < minSize: return k # merge bins that are too small
-      if ek <= (ni*ei + nj*ej)/nk    : return k # merge bins if combo is simpler
+      if ni <  minSize or nj < small : return k # merge if bins too small 
+      if ek <= (ni*ei + nj*ej)/nk    : return k # merge if combo is simpler
      
   def selectss(i, classes: Classes) -> dict: 
     return {k:len([row for row in rows if i.selects(row)]) 
             for k,rows in classes.items()}
      
-  def selects(i, row: Row) -> bool:  #----------------------------------------------------[3]
+  def selects(i, row: Row) -> bool:  #-----------------------------------------------[2]
     x = row[i.at]
     return  x=="?" or i.lo == x == i.hi or i.lo <= x < i.hi
       
   @staticmethod
-  def score(d:dict, BEST:int, REST:int, goal="+", how=lambda B,R: B - R) -> float: #------[1]
+  def score(d:dict, BEST:int, REST:int, goal="+", how=lambda B,R: B - R) -> float: #-[3]
     b,r = 0,0
     for k,n in d.items():
       if k==goal: b += n
       else      : r += n
     b,r = b/(BEST+tiny), r/(REST+tiny)
     return how(b,r) 
-#----------------------------------------------------------------------------------------
+
+# **COL** is an abstract class above NUM and SYM.    
+#     
+#  - `bins()` reports how col values are spread over a list of BINs.
+
 class COL(OBJ):
-  """## COL  
-  Abstract class above NUM and SYM.  
-  
-  - `bins()` reports how col values are spread over a list of BINs.
-  """
   def __init__(i, at:int=0, txt:str=" "): i.n,i.at,i.txt = 0,at,txt
 
   def bins(i, classes: Classes, small=None) -> list[BIN]:
@@ -102,46 +104,43 @@ class COL(OBJ):
     [send2bin(row[i.at],y) for y,lst in classes.items() for row in lst if row[i.at]!="?"] 
     return i._bins(sorted(out.values(), key=lambda z:z.lo), 
                    small = small or (sum(len(lst) for lst in classes.values())/the.bins))
-#----------------------------------------------------------------------------------------
+
+# **SYM** 
+# summarizes a stream of numbers.
+# 
+# - the `div()`ersity of a SYM summary is the `entropy`;
+# - the `mid()`dle of a SYM summary is the mode value;
+# - `like()` returns the likelihood of a value belongs in a SYM distribution;
+# - `bin()` and `_bin()` are used for generating BINs (for SYMs there is not much to do with BINs) 
+
 class SYM(COL):
-  """## SYM 
-  Summarizes a stream of numbers.
-  
-  - the `div()`ersity of a SYM summary is the `entropy`;
-  - the `mid()`dle of a SYM summary is the mode value;
-  - `like()` returns the likelihood of a value belongs in a SYM distribution;
-  - `bin()` and `_bin()` are used for generating BINs (for SYMs there is not much to do with BINs) 
-  """
   def __init__(i,**kw): super().__init__(**kw); i.has = {}
   def add(i, x:Any):
     if x != "?":
       i.n += 1
       i.has[x] = i.has.get(x,0) + 1
  
-  # Discretization  
   def _bins(i,bins:list[BIN],**_) -> list[BIN] : return bins
   def bin(i,x:Any) -> Any  : return x
 
-  # ### Stats  
   def div(i)  -> float : return entropy(i.has)
   def mid(i)  -> Any   : return max(i.has, key=i.has.get)
   
-  # ### Bayes  
   def like(i, x:Any, m:int, prior:float) -> float : 
     return (i.has.get(x, 0) + m*prior) / (i.n + m)
-#----------------------------------------------------------------------------------------
+
+# **NUM**
+# summarizes a stream of numbers.
+#
+# - the `div()`ersity of a NUM summary is the standard deviation;
+# - the `mid()`dle of a NUM summary is the mean value;
+# - `like()` returns the likelihood of a value belongs in a NUM distribution;
+# - `bin(n)`  places `n` in  one equal width bin (spread from `lo` to `hi`)
+#   `_bin(bins)` tries to merge numeric bins
+# - `d2h(n)`  reports how far n` is from `heaven` (which is 0 when minimizing, 1 otherwise
+# - `norm(n)` maps `n` into 0..1 (min..max)
+
 class NUM(COL):
-  """## NUM
-  Summarizes a stream of numbers.
-  
-  - the `div()`ersity of a NUM summary is the standard deviation;
-  - the `mid()`dle of a NUM summary is the mean value;
-  - `like()` returns the likelihood of a value belongs in a NUM distribution;
-  - `bin(n)`  places `n` in  one equal width bin (spread from `lo` to `hi`)
-    `_bin(bins)` tries to merge numeric bins
-  - `d2h(n)`  reports how far n` is from `heaven` (which is 0 when minimizing, 1 otherwise
-  - `norm(n)` maps `n` into 0..1 (min..max)
-  """
   def __init__(i,**kw): 
     super().__init__(**kw)
     i.mu,i.m2,i.lo,i.hi = 0,0,big, -big
@@ -156,7 +155,6 @@ class NUM(COL):
       i.lo  = min(x, i.lo)
       i.hi  = max(x, i.hi)
 
-  #= ### Discretization 
   def bin(i, x:float) -> int: return min(the.bins - 1, int(the.bins * i.norm(x)))
 
   def _bins(i, bins: list[BIN], small=2) -> list[BIN]: 
@@ -166,27 +164,24 @@ class NUM(COL):
     for j in range(1,len(bins)): bins[j].lo = bins[j-1].hi
     return bins
   
-  # ### Distance  
   def d2h(i, x:float) -> float: return abs(i.norm(x) - i.heaven)
   def norm(i,x:float) -> float: return x=="?" and x or (x - i.lo) / (i.hi - i.lo + tiny)   
 
-  # ### Stats  
   def div(i) -> float : return  0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
   def mid(i) -> float : return i.mu
   
-  # ### Bayes 
   def like(i, x:float, *_) -> float:
     v     = i.div()**2 + tiny
     nom   = math.e**(-1*(x - i.mu)**2/(2*v)) + tiny
     denom = (2*math.pi*v)**.5
     return min(1, nom/(denom + tiny))
-#----------------------------------------------------------------------------------------
+
+# **COLS** is a 
+# factory for building  and storing COLs from column names. All columns are in `all`. 
+# References to the independent and dependent variables are in `x` and `y` (respectively).
+# If there is a klass, that is  referenced in `klass`. And all the names are stored in `names`.
+
 class COLS(OBJ): 
-  """## COLS
-  Factory for building  and storing COLs from column names. All columns are in `all`. 
-  References to the independent and dependent variables are in `x` and `y` (respectively).
-  If there is a klass, that is  referenced in `klass`. And all the names are stored in `names`.
-  """
   def __init__(i, names: list[str]): 
     i.x,i.y,i.all,i.names,i.klass = [],[],[],names,None
     for at,txt in enumerate(names):
@@ -200,13 +195,13 @@ class COLS(OBJ):
   def add(i,row: Row) -> Row:
     [col.add(row[col.at]) for col in i.all if row[col.at] != "?"]
     return row
-#----------------------------------------------------------------------------------------
+
+# **DATA**
+# stores `rows`, summarized into `cols`. Optionally, `rows` can be sorted by distance to
+# heaven (`d2h()`).  A `clone()` is a new `DATA` of the same structure. Can compute
+# `loglike()`lihood of  a `Row` belonging to this `DATA`.
+
 class DATA(OBJ):
-  """## DATA
-  Stores `rows`, summarized into `cols`. Optionally, `rows` can be sorted by distance to
-  heaven (`d2h()`).  A `clone()` is a new `DATA` of the same structure. Can compute
-  `loglike()`lihood of  a `Row` belonging to this `DATA`.
-  """
   def __init__(i,src=Iterable[Row],order=False,fun=None):
     i.rows, i.cols = [],None
     [i.add(lst,fun) for lst in src]
@@ -219,7 +214,6 @@ class DATA(OBJ):
     else: 
       i.cols = COLS(row)
 
-  # ### Creation  
   def clone(i,lst:Iterable[Row]=[],ordered=False) -> DATA:  
     return DATA([i.cols.names]+lst)
 
@@ -227,19 +221,16 @@ class DATA(OBJ):
     i.rows = sorted(i.rows, key=i.d2h, reverse=False)
     return i.rows
   
-  # ### Distance  
   def d2h(i, row:Row) -> float:
     d = sum(col.d2h( row[col.at] )**2 for col in i.cols.y)
     return (d/len(i.cols.y))**.5
 
-  # ### Bayes  
   def loglike(i, row:Row, nall:int, nh:int, m:int, k:int) -> float:
     prior = (len(i.rows) + k) / (nall + k*nh)
     likes = [c.like(row[c.at],m,prior) for c in i.cols.x if row[c.at] != "?"]
     return sum(math.log(x) for x in likes + [prior] if x>0)
-#---------------------------------------------------------------------------------------- 
-# ### Tree
-  
+
+# **Tree**  
 class TREE(OBJ):
   def __init__(self,data:DATA, klasses, BEST:int, REST:int, 
               best:str, rest:str, stop=2, how=None):
@@ -254,7 +245,6 @@ class TREE(OBJ):
   def leaf(self,klasses):    return dict(leaf=True, has=self.lst2len(klasses))
 
   def step(self,klasses,lvl=0,above=1E30):
-    #print('|.. '*lvl)
     best0 = klasses[self.best]
     rest0 = klasses[self.rest]
     here = len(best0)  
@@ -275,12 +265,11 @@ class TREE(OBJ):
     for d1 in [d.yes,d.no]:
       for node1 in i.node(d1): yield node1
 
-#----------------------------------------------------------------------------------------
+# ## NB 
+# Visitor object carried along by a DATA. Internally maintains its own `DATA` for rows 
+# from different class.
+
 class NB(OBJ):
-  """## NB 
-  Visitor object carried along by a DATA. Internally maintains its own `DATA` for rows 
-  from different class.
-  """
   def __init__(i): i.nall=0; i.datas:Klasses = {}
 
   def loglike(i, data:DATA, row:Row):
@@ -293,6 +282,7 @@ class NB(OBJ):
     i.datas[klass].add(row)
 #----------------------------------------------------------------------------------------
 # ## Misc functions
+
 def first(lst): return lst[0]
 
 # ### Data mining tricks 
@@ -336,10 +326,11 @@ def prints(matrix: list[list],sep=' | '):
   fmt  = sep.join('{{:>{}}}'.format(x) for x in lens)
   [print(fmt.format(*row)) for row in s] 
 #----------------------------------------------------------------------------------------
+# `./trees.py _all` : run all functions , return to operating system the count of failures.   
+# `MAIN._one()` : reset all options to defaults, then run one start-up action.
+
 class MAIN:
-  """`./trees.py _all` : run all functions , return to operating system the count of failures.   
-  `MAIN._one()` : reset all options to defaults, then run one start-up action.
-  """
+  
   def _all(): 
     sys.exit(sum(MAIN._one(s) == False for s in sorted(dir(MAIN)) if s[0] != "_"))
 
@@ -391,5 +382,6 @@ class MAIN:
     print(json.dumps(tree, indent=2))
 
 # --------------------------------------------
-if __name__=="__main__" and len(sys.argv) > 1: 
-  MAIN._one(sys.argv[1]) 
+# Start-up
+
+if __name__=="__main__" and len(sys.argv) > 1: MAIN._one(sys.argv[1]) 
