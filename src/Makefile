@@ -50,6 +50,8 @@ one:
 ../%.html : %.adoc
 	asciidoctor  -o $@ $^
 
+../docs/%.html : %.py
+	pycco -d ../docs $^
 
 ../docs/%.pdf : %.md
 	echo "# $^ ==> $@"

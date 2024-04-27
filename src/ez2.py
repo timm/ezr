@@ -1,46 +1,46 @@
 #!/usr/bin/env python3 -B
 """
-ez2.py: active learning, models the best/rest seen so far in a Bayes classifier
-(c) 2024 Tim Menzies <timm@ieee.org>
+ez2.py: active learning, find best/rest seen so far in a Bayes classifier   
+(c) 2024 Tim Menzies <timm@ieee.org>, BSD-2 license   
 
-Misc options:
-  -s --seed  random number seed = 1234567891
-  -f --file  data file          = 
-
-NB options:
-  -m --m asdas   = 1
-
-SMO options:
-  -b --budget0 asdas 2
-  -B --Budget1 asas  23
+OPTIONS:  
+  -s --seed  random number seed = 1234567891    
+  -f --file  data file          = ../data/auto93.csv    
+    
+  NB options:    
+    -m --m low frequency kludge = 1    
+    -k --k low frequency kludge = 2   
+    
+  SMO options:    
+    -b --budget0 init evals = 2   
+    -B --Budget1 max evals  = 23
 """
-
 from __future__ import annotations   # <1> ## types  
 from typing import Any,Iterable,Callable
 import re,ast,sys, json,math,random
 from collections import Counter
 from fileinput import FileInput as file_or_stdin 
 # ----------------------------------------------------------------------------------------
-# # Inits
+# ## Inits
 
 # Some globals
-options = dict(k=1, m=2, bins=10, file="../data/auto93.csv", seed=1234567891) 
 big = 1E32
 tiny = 1/big
+
+def settings(s:str) -> OBJ:
+  return OBJ(**{m[1] : coerce(m[2]) for m in re.finditer(r"--(\w+)[^=]*=\s*(\S+)", s)})
 
 # Special type annotations
 class Row    : has:list[Any]
 class Rows   : has:list[Row]
-class Klasses: has:dict[str, Rows]
+class Classes: has:dict[str, Rows]
 
 # Simple base object: defines simple initialization and pretty print. 
 class OBJ:
   def __init__(i,**d)    : i.__dict__.update(d)
   def __repr__(i) -> str : return i.__class__.__name__+show(i.__dict__)
 # ----------------------------------------------------------------------------------------
-# # Classes 
-
-   
+# ## Classes 
 # **BINS** Stores in `ys` the klass symbols see between `lo` and `hi`.
 #  
 # [1] `BIN.score()` reports how often we see `goals` symbols more than  other symbols.     
@@ -66,12 +66,11 @@ class BIN(OBJ):
       ej,nj = entropy(j.ys)
       ek,nk = entropy(k.ys)
       if ni < minSize or nj < minSize: return k # merge bins that are too small
-      if ek <= (ni*ei + nj*ej)/nk    : return k # merge bins if cobo not as complex
-      if ek <= (ni*ei + nj*ej)/nk    : return k # merge bins if combo not as complex
+      if ek <= (ni*ei + nj*ej)/nk    : return k # merge bins if combo is simpler
      
-  def selectss(i, klasses: Klasses) -> dict: 
+  def selectss(i, classes: Classes) -> dict: 
     return {k:len([row for row in rows if i.selects(row)]) 
-            for k,rows in klasses.items()}
+            for k,rows in classes.items()}
      
   def selects(i, row: Row) -> bool:  #----------------------------------------------------[3]
     x = row[i.at]
@@ -94,15 +93,15 @@ class COL(OBJ):
   """
   def __init__(i, at:int=0, txt:str=" "): i.n,i.at,i.txt = 0,at,txt
 
-  def bins(i, klasses: Klasses, minSize=None) -> list[BIN]:
+  def bins(i, classes: Classes, small=None) -> list[BIN]:
     def send2bin(x,y): 
       k = i.bin(x)
       if k not in out: out[k] = BIN(i.at,i.txt,x)
       out[k].add(x,y)
     out = {}
-    [send2bin(row[i.at],y) for y,lst in klasses.items() for row in lst if row[i.at]!="?"] 
+    [send2bin(row[i.at],y) for y,lst in classes.items() for row in lst if row[i.at]!="?"] 
     return i._bins(sorted(out.values(), key=lambda z:z.lo), 
-                   minSize = minSize or (sum(len(lst) for lst in klasses.values())/the.bins))
+                   small = small or (sum(len(lst) for lst in classes.values())/the.bins))
 #----------------------------------------------------------------------------------------
 class SYM(COL):
   """## SYM 
@@ -119,7 +118,7 @@ class SYM(COL):
       i.n += 1
       i.has[x] = i.has.get(x,0) + 1
  
-  # ### Discretization  
+  # Discretization  
   def _bins(i,bins:list[BIN],**_) -> list[BIN] : return bins
   def bin(i,x:Any) -> Any  : return x
 
@@ -160,8 +159,8 @@ class NUM(COL):
   #= ### Discretization 
   def bin(i, x:float) -> int: return min(the.bins - 1, int(the.bins * i.norm(x)))
 
-  def _bins(i, bins: list[BIN], minSize=2) -> list[BIN]: 
-    bins = merges(bins,merge=lambda x,y:x.merge(y,minSize))
+  def _bins(i, bins: list[BIN], small=2) -> list[BIN]: 
+    bins = merges(bins,merge=lambda x,y:x.merge(y,small))
     bins[0].lo  = -big
     bins[-1].hi =  big
     for j in range(1,len(bins)): bins[j].lo = bins[j-1].hi
