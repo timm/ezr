@@ -18,7 +18,7 @@ OPTIONS:
      -d --discretizationRange    number of bins when discretizing numerical data for SNEAK = 8
      -e --effectSize  non-parametric small delta = 0.2385
      -E --Experiments number of Bootstraps       = 256
-     -f --file        csv data file name         = '../data/weather.csv'  
+     -f --file        csv data file name         = '../data/SS-J.csv'  
      -F --Far         far search outlier control = .95 
      -h --help        print help                 = false
      -H --Half        #items for far search      = 256
@@ -288,6 +288,7 @@ class DATA(struct):
     lefts = []
     right = None
     rights = []
+    random.seed()
     rand = random.choice(items)
     max_r = -float('inf')
     min_r = float('inf')
