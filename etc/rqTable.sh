@@ -1,4 +1,4 @@
-D="/Users/timm/gits/andre/ez/out/SNEAKB"
+D="../out/SNEAKB"
 for f in $D/*.out
 do  
   echo ""
