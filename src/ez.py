@@ -17,8 +17,10 @@ OPTIONS:
   -k --k low frequency kludge    = 2   
     
   SMO options:    
-  -b --budget0 init evals        = 2   
-  -B --Budget1 max evals         = 23 """
+  -n --budget0 init evals        = 4   
+  -N --Budget  max evals         = 16 
+  -b --best    ratio of top      = .5
+  -T --Top     keep top todos    = .8 """
 
 from __future__ import annotations   # <1> ## types  
 from collections import Counter
@@ -134,8 +136,8 @@ class SYM(COL):
   def div(i)  -> float : return entropy(i.has)
   def mid(i)  -> Any   : return max(i.has, key=i.has.get)
   
-  def like(i, x:Any, m:int, prior:float) -> float : 
-    return (i.has.get(x, 0) + m*prior) / (i.n + m)
+  def like(i, x:Any, prior:float) -> float : 
+    return (i.has.get(x, 0) + the.m*prior) / (i.n + the.m)
 
 # MARK: NUM
 # summarizes a stream of numbers.
@@ -178,7 +180,7 @@ class NUM(COL):
   def div(i) -> float : return  0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
   def mid(i) -> float : return i.mu
   
-  def like(i, x:float, *_) -> float:
+  def like(i, x:float, _) -> float:
     v     = i.div()**2 + tiny
     nom   = math.e**(-1*(x - i.mu)**2/(2*v)) + tiny
     denom = (2*math.pi*v)**.5
@@ -222,7 +224,7 @@ class DATA(OBJ):
     else: 
       i.cols = COLS(row)
 
-  def clone(i,lst:Iterable[Row]=[],ordered=False) -> DATA:  
+  def clone(i,lst:Iterable[Row]=[],order=False) -> DATA:  
     return DATA([i.cols.names]+lst)
 
   def order(i) -> Rows:
@@ -233,10 +235,31 @@ class DATA(OBJ):
     d = sum(col.d2h( row[col.at] )**2 for col in i.cols.y)
     return (d/len(i.cols.y))**.5
 
-  def loglike(i, row:Row, nall:int, nh:int, m:int, k:int) -> float:
-    prior = (len(i.rows) + k) / (nall + k*nh)
-    likes = [c.like(row[c.at],m,prior) for c in i.cols.x if row[c.at] != "?"]
+  def loglike(i, row:Row, nall:int, nh:int) -> float:
+    prior = (len(i.rows) + the.k) / (nall + the.k*nh)
+    likes = [c.like(row[c.at],prior) for c in i.cols.x if row[c.at] != "?"]
     return sum(math.log(x) for x in likes + [prior] if x>0)
+
+# MARK: smo 
+def smo(data0:DATA, score=lambda B,R: B-R) -> Row:
+  def like(row,data): 
+    return data.loglike(row,len(data.rows),2)
+  def acquire(best, rest, rows):
+    chop=int(len(rows) * the.Top)
+    return sorted(rows, key=lambda r: -score(like(r,best),like(r,rest)))[:chop]
+  #-----------
+  random.shuffle(data0.rows)
+  done, todo = data0.rows[:the.budget0], data0.rows[the.budget0:]
+  data1 = data0.clone(done, order=True) 
+  for i in range(the.Budget):
+    if len(todo) < 3: break
+    n = int(len(done)**the.best + .5) 
+    top,*todo = acquire(data0.clone(data1.rows[:n]),
+                        data0.clone(data1.rows[n:]),
+                        todo)
+    done.append(top)
+    data1 = data0.clone(done, order=True)
+  return data1.rows[0]
 
 # MARK: TREE
 class TREE(OBJ):
@@ -268,10 +291,10 @@ class TREE(OBJ):
     return dict(leaf=False, at=bin.at, txt=bin.txt,
                 lo=bin.lo, hi=bin.hi, yes=self.step(yes,lvl+1,here),no=self.step(no,lvl+1,here)) 
   
-  def node(i,d):
+  def node(self,d):
     yield d
     for d1 in [d.yes,d.no]:
-      for node1 in i.node(d1): yield node1
+      for node1 in self.node(d1): yield node1
 
 # MARK: NB 
 # Visitor object carried along by a DATA. Internally maintains its own `DATA` for rows 
@@ -404,6 +427,11 @@ class MAIN:
     tree = TREE(d,dict(best=best,rest=rest), n,n,"best","rest").root
     print(json.dumps(tree, indent=2))
 
+  def smo():
+    d = DATA(csv(the.file),order=True)
+    print(show(sorted([d.d2h(row) for n,row in enumerate(d.rows) if n%20==0])))
+    print(show(sorted([d.d2h(smo(d)) for _ in range(20)])))
+                                     
 # --------------------------------------------
 # MARK: Start-up
 the = OBJ(**settings(__doc__))
