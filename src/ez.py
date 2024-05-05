@@ -1,336 +1,412 @@
-# vim : set et ts=2 sw=2 :
+#!/usr/bin/env python3 -B
+# MARK: help
 """
-ez: ai can be easy, let me show you how   
-(c) 2023, Tim Menzies, <timm@ieee.org>, BSD-2  
-  
-USAGE:    
-1. download ez.py, etc.py, eg.py    
-2. python3 eg.py [OPTIONS]   
-  
+ez.py: active learning, find best/rest seen so far in a Bayes classifier   
+(c) 2024 Tim Menzies <timm@ieee.org>, BSD-2 license   
+
 OPTIONS:  
-
-     -a --adequate    good if over adequate*best = .1
-     -A --ample       only want this many rules  = 20
-     -b --budget0     initial evals              = 4  
-     -B --Budget      subsequent evals           = 5   
-     -c --cohen       small effect size          = .35  
-     -C --confidence  statistical confidence     = .05
-     -e --effectSize  non-parametric small delta = 0.2385
-     -E --Experiments number of Bootstraps       = 256
-     -f --file        csv data file name         = '../data/auto93.csv'  
-     -F --Far         far search outlier control = .95 
-     -h --help        print help                 = false
-     -H --Half        #items for far search      = 256
-     -k --k           rare class  kludge         = 1  
-     -m --m           rare attribute  kludge     = 2  
-     -M --Min         min size is N**Min         = .5
-     -p --p           distance coefficient       = 2
-     -r --ranges      max number of bins         = 16
-     -R --Repeats     max number of bins         = 20
-     -s --seed        random number seed         = 31210 
-     -S --score       support exponent for range = 2  
-     -t --todo        start up action            = 'help'   
-     -T --Top         best section               = .5 
-     -u --upper       in SMO, keep upper ratio   = .8  
-"""
-
-import re,sys,math,random
-from collections import Counter
-from stats import sk
-from etc import o,isa,struct,merges
-import etc
-
-the = etc.THE(__doc__)
-tiny= sys.float_info.min 
-
-#          _   _   |   _ 
-#         (_  (_)  |  _>                       
-
-def isGoal(s):   return s[-1] in "+-!"
-def isHeaven(s): return 0 if s[-1] == "-" else 1
-def isNum(s):    return s[0].isupper() 
-
-class SYM(Counter):
-  "Adds `add` to Counter"
-  def add(self,x,n=1): self[x] += n
-
-  def entropy(self): 
-    n = sum(self.values()) 
-    return -sum(v/n*math.log(v/n,2) for _,v in self.items() if v>0)
-  
-  def __add__(i,j):
-    k=SYM()
-    [k.add(x,n) for old in [i,j] for x,n in old.items()]
-    return k
-  
-class NUM(struct):
-  def __init__(self,lst=[],txt=" "):
-   self.n, self.mu, self.m2, self.sd, self.txt = 0,0,0,0,txt 
-   self.lo, self.hi = sys.maxsize, -sys.maxsize
-   self.heaven = isHeaven(txt)
-   [self.add(x) for x in lst]
-
-  def add(self,x):
-    self.lo = min(x,self.lo)
-    self.hi = max(x,self.hi)
-    self.n += 1
-    delta = x - self.mu
-    self.mu += delta / self.n
-    self.m2 += delta * (x -  self.mu)
-    self.sd = 0 if self.n < 2 else (self.m2 / (self.n - 1))**.5
-
-  def norm(self,x):
-    return x=="?" and x or (x - self.lo) / (self.hi - self.lo + tiny)
- 
-#         ._   _          _ 
-#         |   (_)  \/\/  _> 
-
-class DATA(struct):
-  def __init__(self, lsts=[], order=False):
-    self.names,*rows = list(lsts) 
-    self.rows = []
-    self.cols = [(NUM(txt=s) if isNum(s) else SYM()) for s in self.names] 
-    self.ys   = {n:c for n,(s,c) in enumerate(zip(self.names,self.cols)) if isGoal(s)}
-    self.xs   = {n:c for n,(s,c) in enumerate(zip(self.names,self.cols)) 
-                 if not isGoal(s) and s[-1] != "X"}
-    [self.add(row) for row in rows] 
-    if order: self.ordered()
-
-  def ordered(self):
-    self.rows = sorted(self.rows, key = self.d2h)
-
-  def add(self,row): 
-    self.rows += [row] 
-    [col.add(x) for x,col in zip(row,self.cols) if x != "?"]
-
-  def clone(self, rows=[], order=False):
-    return DATA([self.names] + rows, order=order)
-
-  def d2h(self,lst):
-    nom = sum(abs(col.heaven - col.norm(lst[n]))**2 for n,col in self.ys.items())
-    return (nom / len(self.ys))**.5
-
-  def mid(self): 
-    return [max(col,key=col.get) if isa(col,SYM) else col.mu for col in self.cols]
-
-  def div(self):
-    return [col.entropy() if isa(col,SYM) else col.sd for col in self.cols]
-  
-#                                  _     
-#          _  |   _.   _   _  o  _|_     
-#         (_  |  (_|  _>  _>  |   |   \/ 
-#                                     /  
-
-  def loglike(self,row,nall,nh,m=1,k=2):
-    def num(col,x):
-      v     = col.sd**2 + tiny
-      nom   = math.e**(-1*(x - col.mu)**2/(2*v)) + tiny
-      denom = (2*math.pi*v)**.5
-      return min(1, nom/(denom + tiny))
-    def sym(col,x):
-      return (col.get(x, 0) + m*prior) / (len(self.rows) + m)
-    #------------------------------------------
-    prior = (len(self.rows) + k) / (nall + k*nh)
-    out   = math.log(prior)
-    for c,x in etc.slots(row):
-      if x != "?" and c not in self.ys:
-        col  = self.cols[c]
-        out += math.log((sym if isa(col,SYM) else num)(col, x))
-    return out
-            
-#          _   ._   _|_  o  ._ _   o  _    _   /| 
-#         (_)  |_)   |_  |  | | |  |  /_  (/_   | 
-#              |                                  
-
-  def smo(self, score=lambda B,R: 2*B-R, fun=None):
-    def like(row,data):
-      return data.loglike(row,len(data.rows),2,the.m,the.m)
-    def acquire(best, rest, rows):
-      chop=int(len(rows) * the.upper)
-      return sorted(rows, key=lambda r: -score(like(r,best),like(r,rest)))[:chop]
-    #-----------
-    random.shuffle(self.rows)
-    done, todo = self.rows[:the.budget0], self.rows[the.budget0:]
-    data1 = self.clone(done, order=True)
-    for i in range(the.Budget):
-      if len(todo) < 3: break
-      n = int(len(done)**the.Top + .5)
-      top,*todo = acquire(self.clone(data1.rows[:n]),
-                          self.clone(data1.rows[n:]),
-                          todo)
-      done.append(top)
-      data1 = self.clone(done, order=True)
-    return data1.rows[0]
-                                     
-#          _  |        _  _|_   _   ._ 
-#         (_  |  |_|  _>   |_  (/_  |  
-                                      
-  def dist(self,row1,row2):
-    def sym(_,x,y): 
-      return 1 if x=="?" and y=="?" else (0 if x==y else 1)     
-    def num(col,x,y):
-      if x=="?" and y=="?" : return 1 
-      x, y = col.norm(x), col.norm(y) 
-      if x=="?" : x= 1 if y<.5 else 0
-      if y=="?" : y= 1 if x<.5 else 0 
-      return abs(x-y)  
-    #-----------------
-    d, n, p = 0, 0, the.p
-    for c,col in  enumerate(self.cols):
-      if c not in self.ys:
-        n   = n + 1
-        inc = (sym if isa(col,SYM) else num)(col, row1[c],row2[c])
-        d   = d + inc**p 
-    return (d/n)**(1/p) 
-
-  def near(self, row1, rows=None):
-    return sorted(rows or self.rows, key=lambda row2: self.dist(row1,row2))
-
-  def far(self, rows, sortp=False, before=None):
-    n     = int(len(rows) * the.Far)
-    left  = before or self.near(random.choice(rows),rows)[n]
-    right = self.near(left,rows)[n]
-    if sortp and self.d2h(right) < self.d2h(left): left,right = right,left
-    return left, right 
+  -s --seed  random number seed  = 1234567891    
+  -g --go    start up action     = help
+  -f --file  data file           = ../data/auto93.csv    
     
-  def half(self, rows, sortp=False, before=None):
-    def dist(r1,r2): return self.dist(r1, r2)
-    def proj(row)  : return (dist(row,left)**2 + C**2 - dist(row,right)**2)/(2*C)
-    left,right = self.far(random.choices(rows, k=min(the.Half, len(rows))),
-                          sortp=sortp, before=before)
-    lefts,rights,C = [],[], dist(left,right)
-    for n,row in enumerate(sorted(rows, key=proj)):  
-      (lefts if n < len(rows)/2 else rights).append(row)
-    return lefts, rights, left
+  Discretization
+  -B --Bins   max number of bins = 16
 
-#                                              _  
-#          _   ._   _|_  o  ._ _   o  _    _    ) 
-#         (_)  |_)   |_  |  | | |  |  /_  (/_  /_ 
-#              |                                  
+  NB options:    
+  -m --m low frequency kludge    = 1    
+  -k --k low frequency kludge    = 2   
+    
+  SMO options:    
+  -b --budget0 init evals        = 2   
+  -B --Budget1 max evals         = 23 """
 
-  def branch(self, rows=None, stop=None, rest=None, evals=1, before=None):
-    rows = rows or self.rows
-    stop = stop or 2*len(rows)**the.Min
-    rest = rest or []
-    if len(rows) > stop:
-      lefts,rights,left  = self.half(rows, True, before)
-      return self.branch(lefts, stop, rest+rights, evals+1, left)
-    else:
-      return rows,rest,evals,before
-                                               
-#          _|  o   _   _  ._   _   _|_  o  _    _  
-#         (_|  |  _>  (_  |   (/_   |_  |  /_  (/_                                                
-# 
-# class RANGE(struct):
-#   def __init__(self,txt="",at=0,lo=None,hi=None,ys=None):
-#     self.txt, self.at = txt,at
-#     self.lo = lo
-#     self.hi = hi or lo
-#     self.ys = ys  
-#     self.scored = 0
-# 
-#   def add(self,x,y): 
-#     self.lo  = min(self.lo, x) 
-#     self.hi  = max(self.hi, x)
-#     self.ys.add(y)
-# 
-#   def merge(i,j,small):
-#     k = i + j 
-#     ni,nj = sum(i.ys.values()), sum(j.ys.values())
-#     if ni <= small: return k
-#     if nj <= small: return k
-#     if k.ys.entropy() <= (ni*i.ys.entropy() + nj*j.ys.entropy())/(ni+nj): return k
-# 
-#   def __add__(i,j):
-#     return RANGE(txt=i.txt, at=i.at, lo=i.lo, hi=j.hi, ys=i.ys + j.ys)
+from __future__ import annotations   # <1> ## types  
+from collections import Counter
+import re,ast,sys,copy,json,math,random
+from typing import Any,Iterable,Callable
+from fileinput import FileInput as file_or_stdin 
+# ----------------------------------------------------------------------------------------
+# MARK: inits
+
+# Some globals
+big = 1E32
+tiny = 1/big
+
+# Special type annotations
+class Row    : has:list[Any]
+class Rows   : has:list[Row]
+class Classes: has:dict[str, Rows] # a dictionary, one key for each class 
+
+# Simple base object: defines simple initialization and pretty print. 
+
+class OBJ:
+  def __init__(i,**d)    : i.__dict__.update(d)
+  def __repr__(i) -> str : return i.__class__.__name__+show(i.__dict__)
+
+def settings(s:str) -> dict:
+  return {m[1] : coerce(m[2]) for m in re.finditer(r"--(\w+)[^=]*=\s*(\S+)", s)}
+
+# ----------------------------------------------------------------------------------------
+# ## Classes
+
+# **BINS** Stores in `ys` the klass symbols see between `lo` and `hi`.
+#  
+# [1] `merge()` combines two BINs, if they are too small or they have similar distributions.   
+# [2] `selects()` returns true when a BIN matches a row.       
+# [3] `BIN.score()` reports how often we see `goals` symbols more than  other symbols.    
 #   
-#   def __repr__(self): 
-#     lo,hi,s = self.lo, self.hi,self.txt
-#     if lo == -sys.maxsize: return f"{s} <  {hi}" 
-#     if hi ==  sys.maxsize: return f"{s} >= {lo}" 
-#     if lo ==  hi         : return f"{s} == {lo}" 
-#     return f"{lo} <= {s} < {hi}" 
-# 
-# def discretize(c,txt,col,rowss):
-#   def bin(col,x): 
-#     if isa(col,SYM): return x
-#     tmp = (col.hi - col.lo)/(the.ranges - 1)
-#     out = col.hi==col.lo and 0 or int(.5 + (x-col.lo)/tmp)  
-#     return out
-#   #--------------------------
-#   def fill(bins):
-#     if bins==[]: return bins
-#     for i in range(1,len(bins)): bins[i].lo = bins[i-1].hi  
-#     bins[0].lo  = -sys.maxsize
-#     bins[-1].hi =  sys.maxsize
-#     return bins  
-#   #------------
-#   bins, n = {}, 0
-#   for y,rows in rowss.items(): 
-#     for row in rows:
-#       x = row[c]
-#       if x != "?": 
-#         n += 1
-#         b = bin(col,x) 
-#         bins[b] = bins[b] if b in bins else RANGE(txt=txt, at=c,lo=x, hi=x, ys=SYM()) 
-#         bins[b].add(x, y) 
-#   bins = sorted(bins.values(), key=lambda bin:bin.lo)  
-#   return bins if isa(col,SYM) else fill(merges(bins, lambda a,b: a.merge(b, n/the.ranges)))
-#                                       
-# #          _       ._   |   _.  o  ._  
-# #         (/_  ><  |_)  |  (_|  |  | | 
-# #                  |                   
-# 
-# class RULE(struct):
-#   def __init__(self,ranges):
-#     self.parts, self.scored = {},0
-#     for range in ranges:
-#       self.parts[range.txt] = self.parts.get(range.txt,[])
-#       self.parts[range.txt] += [range]
-# 
-#   def _or(self,ranges,row):
-#     x =  row[ranges[0].at]
-#     if x== "?": return True
-#     for range in ranges:
-#       return range.lo==range.hi==x or range.lo <= x < range.hi 
-#   
-#   def _and(self,row):
-#     for ranges in self.parts.values():
-#       if not self._or(ranges,row): return False
-#     return True
-#   
-#   def selects(self,rows):
-#     return [row for row in rows if self._and(row)]
-#   
-#   def selectss(self,rowss): 
-#     return [row for _,rows in rowss.items() for row in self.selects(rows)]
-#   
-#   def __repr__(self):
-#     def merge(a,b):
-#       if a.txt == b.txt and a.hi ==b.lo: return a + b
-#     return ' and '.join(' or '.join(merges(sorted(ors,key=lambda r:r.lo),merge))
-#                         for ors in self.parts.values())
-#   
-#   class RULES(struct):
-#     def score(range,goal,LIKE,HATE):
-#       like,hate=0,0
-#       for klass,n in range.ys.items():
-#         if klass==goal: like += n
-#         else:           hate += n
-#       like,hate = like/(LIKE + tiny), hate/(HATE + tiny) 
-#       range.scored = 0 if hate>like else  like ** the.Score / (like + hate)
-# 
-#     def __init__(self,ranges,goal,rowss,scoring):
-#       def count(what=None):
-#         return sum(len(rows) for klass,rows in rowss.items() if klass==what)
-#       fun= return lambda lst: scoring(lst,self.goal,like,hate)
-#       like, hate = count(goal), count()
-#       [fun(range,self.goal, like, hate) for range in ranges]
-#       self.ordered = self.top(self.test(self.top(ranges)))
+# To  build decision trees,  split Rows on the best scoring bin, then recurse on each half.
+
+# MARK: BIN
+class BIN(OBJ):
+  id=0
+  def __init__(i, at:int, txt:str, lo:float, hi:float=None, ys:Counter=None):  
+    i.at,i.txt,i.lo,i.hi,i.ys = at,txt, lo,hi or lo,ys or Counter()  
+    i.id = BIN.id = BIN.id + 1
+  
+  def add(i, x:float, y:Any):
+    i.lo = min(x, i.lo)
+    i.hi = max(x, i.hi)
+    i.ys[y] += 1
+      
+  def merge(i, j:BIN, small:float) -> BIN: # or None if nothing merged ------------[1]
+    if i.at == j.at:
+      k     = BIN(i.at, i.txt, min(i.lo,j.lo), hi=max(i.hi,j.hi), ys=i.ys+j.ys)
+      ei,ni = entropy(i.ys)
+      ej,nj = entropy(j.ys)
+      ek,nk = entropy(k.ys)
+      if ni <  small or nj < small : return k # merge if bins too small 
+      if ek <= (ni*ei + nj*ej)/nk    : return k # merge if combo is simpler
+     
+  def selectss(i, classes: Classes) -> dict: 
+    return {k:len([row for row in rows if i.selects(row)]) 
+            for k,rows in classes.items()}
+     
+  def selects(i, row: Row) -> bool:  #-----------------------------------------------[2]
+    x = row[i.at]
+    return  x=="?" or i.lo == x == i.hi or i.lo <= x < i.hi
+      
+  @staticmethod
+  def score(d:dict, BEST:int, REST:int, goal="+", how=lambda B,R: B - R) -> float: #-[3]
+    b,r = 0,0
+    for k,n in d.items():
+      if k==goal: b += n
+      else      : r += n
+    b,r = b/(BEST+tiny), r/(REST+tiny)
+    return how(b,r) 
+
+# MARK:  COL
+# is an abstract class above NUM and SYM.    
 #     
-#     def test(self,ranges):
-#       RULE(subset) for subset in powerset(ranges) if len(subset) > 0 
+#  - `bins()` reports how col values are spread over a list of BINs.
+
+class COL(OBJ):
+  def __init__(i, at:int=0, txt:str=" "): i.n,i.at,i.txt = 0,at,txt
+
+  def bins(i, classes: Classes, small=None) -> list[BIN]:
+    def send2bin(x,y): 
+      k = i.bin(x)
+      if k not in out: out[k] = BIN(i.at,i.txt,x)
+      out[k].add(x,y)
+    out = {}
+    [send2bin(row[i.at],y) for y,lst in classes.items() for row in lst if row[i.at]!="?"] 
+    return i.binsComplete(sorted(out.values(), key=lambda z:z.lo), 
+                           small = small or (sum(len(lst) for lst in classes.values())/the.Bins))
+
+# MARK: SYM 
+# summarizes a stream of numbers.
 # 
-#     def top(self,lst):
-#       tmp = sorted(lst,key=lambda z:z.scored)
-#       return [x for x in tmp if x.scored > tmp[0].scored * the.adequate][the.ample]
+# - the `div()`ersity of a SYM summary is the `entropy`;
+# - the `mid()`dle of a SYM summary is the mode value;
+# - `like()` returns the likelihood of a value belongs in a SYM distribution;
+# - `bin()` and `binsComplete()` are used for generating BINs (for SYMs there is not much to do with BINs) 
+
+class SYM(COL):
+  def __init__(i,**kw): super().__init__(**kw); i.has = {}
+  def add(i, x:Any):
+    if x != "?":
+      i.n += 1
+      i.has[x] = i.has.get(x,0) + 1
+ 
+  def bin(i,x:Any) -> Any  : return x
+  def binsComplete(i,bins:list[BIN],**_) -> list[BIN] : return bins
+
+  def div(i)  -> float : return entropy(i.has)
+  def mid(i)  -> Any   : return max(i.has, key=i.has.get)
+  
+  def like(i, x:Any, m:int, prior:float) -> float : 
+    return (i.has.get(x, 0) + m*prior) / (i.n + m)
+
+# MARK: NUM
+# summarizes a stream of numbers.
+#
+# - the `div()`ersity of a NUM summary is the standard deviation;
+# - the `mid()`dle of a NUM summary is the mean value;
+# - `like()` returns the likelihood of a value belongs in a NUM distribution;
+# - `bin(n)`  places `n` in  one equal width bin (spread from `lo` to `hi`)
+#   `_bin(bins)` tries to merge numeric bins
+# - `d2h(n)`  reports how far n` is from `heaven` (which is 0 when minimizing, 1 otherwise
+# - `norm(n)` maps `n` into 0..1 (min..max)
+
+class NUM(COL):
+  def __init__(i,**kw): 
+    super().__init__(**kw)
+    i.mu,i.m2,i.lo,i.hi = 0,0,big, -big
+    i.heaven = 0 if i.txt[-1]=="-" else 1
+
+  def add(i, x:Any): #= sd
+    if x != "?":
+      i.n += 1
+      d = x - i.mu
+      i.mu += d/i.n
+      i.m2 += d * (x -  i.mu)
+      i.lo  = min(x, i.lo)
+      i.hi  = max(x, i.hi)
+
+  def bin(i, x:float) -> int: return min(the.Bins - 1, int(the.Bins * i.norm(x)))
+
+  def binsComplete(i, bins: list[BIN], small=2) -> list[BIN]: 
+    bins = merges(bins,merge=lambda x,y:x.merge(y,small))
+    bins[0].lo  = -big
+    bins[-1].hi =  big
+    for j in range(1,len(bins)): bins[j].lo = bins[j-1].hi
+    return bins
+  
+  def d2h(i, x:float) -> float: return abs(i.norm(x) - i.heaven)
+  def norm(i,x:float) -> float: return x=="?" and x or (x - i.lo) / (i.hi - i.lo + tiny)   
+
+  def div(i) -> float : return  0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
+  def mid(i) -> float : return i.mu
+  
+  def like(i, x:float, *_) -> float:
+    v     = i.div()**2 + tiny
+    nom   = math.e**(-1*(x - i.mu)**2/(2*v)) + tiny
+    denom = (2*math.pi*v)**.5
+    return min(1, nom/(denom + tiny))
+
+# MARK: COLS
+# is a factory for building  and storing COLs from column names. All columns are in `all`. 
+# References to the independent and dependent variables are in `x` and `y` (respectively).
+# If there is a klass, that is  referenced in `klass`. And all the names are stored in `names`.
+
+class COLS(OBJ): 
+  def __init__(i, names: list[str]): 
+    i.x, i.y, i.all, i.names, i.klass = [], [], [], names, None
+    for at,txt in enumerate(names):
+      a,z = txt[0], txt[-1]
+      col = (NUM if a.isupper() else SYM)(at=at,txt=txt)
+      i.all.append(col)
+      if z != "X":
+        (i.y if z in "!+-" else i.x).append(col)
+        if z == "!": i.klass= col
+
+  def add(i,row: Row) -> Row:
+    [col.add(row[col.at]) for col in i.all if row[col.at] != "?"]
+    return row
+
+# MARK: DATA
+# stores `rows`, summarized into `cols`. Optionally, `rows` can be sorted by distance to
+# heaven (`d2h()`).  A `clone()` is a new `DATA` of the same structure. Can compute
+# `loglike()`lihood of  a `Row` belonging to this `DATA`.
+
+class DATA(OBJ):
+  def __init__(i,src=Iterable[Row],order=False,fun=None):
+    i.rows, i.cols = [],None
+    [i.add(lst,fun) for lst in src]
+    if order: i.order()
+
+  def add(i, row:Row, fun:Callable=None):
+    if i.cols: 
+      if fun: fun(i,row)
+      i.rows += [i.cols.add(row)]
+    else: 
+      i.cols = COLS(row)
+
+  def clone(i,lst:Iterable[Row]=[],ordered=False) -> DATA:  
+    return DATA([i.cols.names]+lst)
+
+  def order(i) -> Rows:
+    i.rows = sorted(i.rows, key=i.d2h, reverse=False)
+    return i.rows
+  
+  def d2h(i, row:Row) -> float:
+    d = sum(col.d2h( row[col.at] )**2 for col in i.cols.y)
+    return (d/len(i.cols.y))**.5
+
+  def loglike(i, row:Row, nall:int, nh:int, m:int, k:int) -> float:
+    prior = (len(i.rows) + k) / (nall + k*nh)
+    likes = [c.like(row[c.at],m,prior) for c in i.cols.x if row[c.at] != "?"]
+    return sum(math.log(x) for x in likes + [prior] if x>0)
+
+# MARK: TREE
+class TREE(OBJ):
+  def __init__(self,data:DATA, klasses, BEST:int, REST:int, 
+              best:str, rest:str, stop=2, how=None):
+    self.best, self.rest, self.stop = best,rest,stop
+    self.divs  = [bin for col in data.cols.x for bin in col.bins(klasses)] 
+    self.score = lambda x: -BIN.score(self.lst2len(x),BEST,REST,
+                                      goal=best,how=lambda B,R: B - R)
+    self.root  = self.step(klasses)
+    
+  def lst2len(self,klasses): return {k:len(rows) for k,rows in klasses.items()} 
+
+  def leaf(self,klasses):    return dict(leaf=True, has=self.lst2len(klasses))
+
+  def step(self,klasses,lvl=0,above=1E30):
+    best0 = klasses[self.best]
+    rest0 = klasses[self.rest]
+    here = len(best0)  
+    if here <= self.stop or here==above: return self.leaf(klasses)
+    yes,no,most = None,None,-1
+    for bin in self.divs:
+      yes0 = dict(best=[], rest=[]) 
+      no0  = dict(best=[], rest=[]) 
+      for row in best0: (yes0["best"] if bin.selects(row) else no0["best"]).append(row)
+      for row in rest0: (yes0["rest"] if bin.selects(row) else no0["rest"]).append(row)
+      tmp = self.score(yes0)
+      if tmp > most: yes,no,most = yes0,no0,tmp
+    return dict(leaf=False, at=bin.at, txt=bin.txt,
+                lo=bin.lo, hi=bin.hi, yes=self.step(yes,lvl+1,here),no=self.step(no,lvl+1,here)) 
+  
+  def node(i,d):
+    yield d
+    for d1 in [d.yes,d.no]:
+      for node1 in i.node(d1): yield node1
+
+# MARK: NB 
+# Visitor object carried along by a DATA. Internally maintains its own `DATA` for rows 
+# from different class.
+
+class NB(OBJ):
+  def __init__(i): i.nall=0; i.datas:Classes = {}
+
+  def loglike(i, data:DATA, row:Row):
+    return data.loglike(row, i.nall, len(i.datas), the.m, the.k)
+
+  def run(i, data:DATA, row:Row):
+    klass = row[data.cols.klass.at]
+    i.nall += 1
+    if klass not in i.datas: i.datas[klass] =  data.clone()
+    i.datas[klass].add(row)
+#----------------------------------------------------------------------------------------
+# MARK: misc functions
+
+def first(lst): return lst[0]
+
+# ### Data mining tricks 
+def entropy(d: dict) -> float:
+  N = sum(n for n in d.values()if n>0)
+  return -sum(n/N*math.log(n/N,2) for n in d.values() if n>0), N
+
+def merges(b4: list[BIN], merge:Callable) -> list[BIN]: 
+  j, now  = 0, [] 
+  while j <  len(b4):
+    a = b4[j] 
+    if j <  len(b4) - 1: 
+      if tmp := merge(a, b4[j+1]):  a, j = tmp, j+1  
+    now += [a]
+    j += 1
+  return b4 if len(now) == len(b4) else merges(now, merge) 
+
+# ### Strings to things  
+def coerce(s:str) -> Any:
+  try: return ast.literal_eval(s) # <1>
+  except Exception:  return s
+
+def csv(file=None) -> Iterable[Row]:
+  with file_or_stdin(file) as src:
+    for line in src:
+      line = re.sub(r'([\n\t\r"\’ ]|#.*)', '', line)
+      if line: yield [coerce(s.strip()) for s in line.split(",")]
+
+def cli(d:dict) -> None: 
+  for k,v in d.items(): 
+    v = str(v)
+    for c,arg in enumerate(sys.argv):
+      after = "" if c >= len(sys.argv) - 1 else sys.argv[c+1]
+      if arg in ["-"+k[0], "--"+k]: 
+        v = "false" if v=="true" else ("true" if v=="false" else after)
+        d[k] = coerce(v)
+  if d.get("help", False): sys.text( print(__doc__) )
+
+# ### Printing  
+def show(x:Any, n=3) -> Any:
+  if   isinstance(x,(int,float)) : x= x if int(x)==x else round(x,n)
+  elif isinstance(x,(list,tuple)): x= [show(y,n) for y in x][:10]
+  elif isinstance(x,dict): 
+        x= "{"+', '.join(f":{k} {show(v,n)}" for k,v in sorted(x.items()) if k[0]!="_")+"}"
+  return x
+
+def prints(matrix: list[list],sep=' | ') -> None:
+  s    = [[str(e) for e in row] for row in matrix]
+  lens = [max(map(len, col)) for col in zip(*s)]
+  fmt  = sep.join('{{:>{}}}'.format(x) for x in lens)
+  [print(fmt.format(*row)) for row in s] 
+#----------------------------------------------------------------------------------------
+# MARK: main 
+# `./trees.py _all` : run all functions , return to operating system the count of failures.   
+# `MAIN._one()` : reset all options to defaults, then run one start-up action.
+
+class MAIN:
+  def one(s:str) -> any:
+    global the
+    cache = copy.deepcopy(the)
+    random.seed(the.seed) 
+    out = getattr(MAIN, s, lambda :print(f"E> '{s}' unknown."))() 
+    the = cache
+    return out
+
+  def all() -> None: 
+    sys.exit(sum(MAIN.one(s) == False for s in sorted(dir(MAIN)) 
+                 if s[0] != "_" and s not in ["all", "one"]))
+
+  def help(): print(__doc__)
+  
+  def opt(): print(the)
+
+  def header():
+    top=["Clndrs","Volume","HpX","Model","origin","Lbs-","Acc+","Mpg+"]
+    d=DATA([top])
+    [print(col) for col in d.cols.all]
+
+  def data(): 
+   d=DATA(csv(the.file))
+   print(d.cols.x[1])
+
+  def rows():
+    d=DATA(csv(the.file))
+    print(sorted(show(d.loglike(r,len(d.rows),1, the.m, the.k)) for r in d.rows)[::50])
+
+  def bore():
+    d=DATA(csv(the.file),order=True); print("")
+    prints([d.cols.names] + [r for r in d.rows[::50]])
+
+  def bore2():
+    d    = DATA(csv(the.file),order=True)
+    n    = int(len(d.rows)**.5)
+    best = d.rows[:n] 
+    rest = d.rows[-n:] 
+    bins = [(BIN.score(bin.ys, n,n, goal="best"),bin)
+            for col in d.cols.x for bin in col.bins(dict(best=best,rest=rest))]
+    now=None
+    for n, bin in bins:
+      if now != bin.at: print("")
+      now = bin.at
+      print(show(n), bin, sep="\t")
+    print("\nall bins, in order:\n")
+    [print(show(n), bin, sep="\t") for n, bin in sorted(bins, key=first)]
+
+  def tree():
+    d    = DATA(csv(the.file),order=True)
+    n    = int(len(d.rows)**.5)
+    best = d.rows[:n] 
+    rest = d.rows[-n:] 
+    tree = TREE(d,dict(best=best,rest=rest), n,n,"best","rest").root
+    print(json.dumps(tree, indent=2))
+
+# --------------------------------------------
+# MARK: Start-up
+the = OBJ(**settings(__doc__))
+if __name__=="__main__": 
+  cli(the.__dict__)
+  MAIN.one(the.go) 

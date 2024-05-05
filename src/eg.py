@@ -2,9 +2,9 @@
 import sys
 from datetime import datetime
 from etc  import *
-from ez import *
+from ez1 import *
 from stats import eg0,SAMPLE
-import ez
+import ez1
 
 class Eg: 
   def all():
@@ -14,7 +14,7 @@ class Eg:
   def nothing(): pass
 
   def help(): 
-    print(ez.__doc__);  
+    print(ez1.__doc__);  
 
   def nums(): 
     print(NUM([x**.5 for x in range(100)]))
