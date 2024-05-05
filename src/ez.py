@@ -12,13 +12,13 @@ OPTIONS:
   Discretization
   -B --Bins   max number of bins = 16
 
-  NB options:    
-  -m --m low frequency kludge    = 1    
-  -k --k low frequency kludge    = 2   
+  NB options:     
+  -k --k low frequency kludge    = 1 
+  -m --m low frequency kludge    = 2   
     
   SMO options:    
   -n --budget0 init evals        = 4   
-  -N --Budget  max evals         = 16 
+  -N --Budget  max evals         = 12 
   -b --best    ratio of top      = .5
   -T --Top     keep top todos    = .8 """
 
@@ -212,8 +212,8 @@ class COLS(OBJ):
 # `loglike()`lihood of  a `Row` belonging to this `DATA`.
 
 class DATA(OBJ):
-  def __init__(i,src=Iterable[Row],order=False,fun=None):
-    i.rows, i.cols = [],None
+  def __init__(i, src=Iterable[Row], order=False, fun=None):
+    i.rows, i.cols = [], None
     [i.add(lst,fun) for lst in src]
     if order: i.order()
 
@@ -240,12 +240,14 @@ class DATA(OBJ):
     likes = [c.like(row[c.at],prior) for c in i.cols.x if row[c.at] != "?"]
     return sum(math.log(x) for x in likes + [prior] if x>0)
 
+def o(x): print(x); return x
+
 # MARK: smo 
 def smo(data0:DATA, score=lambda B,R: B-R) -> Row:
   def like(row,data): 
     return data.loglike(row,len(data.rows),2)
   def acquire(best, rest, rows):
-    chop=int(len(rows) * the.Top)
+    chop = int(len(rows) * the.Top) 
     return sorted(rows, key=lambda r: -score(like(r,best),like(r,rest)))[:chop]
   #-----------
   random.shuffle(data0.rows)
@@ -291,26 +293,32 @@ class TREE(OBJ):
     return dict(leaf=False, at=bin.at, txt=bin.txt,
                 lo=bin.lo, hi=bin.hi, yes=self.step(yes,lvl+1,here),no=self.step(no,lvl+1,here)) 
   
-  def node(self,d):
+  def node(i,d):
     yield d
     for d1 in [d.yes,d.no]:
-      for node1 in self.node(d1): yield node1
+      for node1 in i.node(d1): yield node1
 
 # MARK: NB 
 # Visitor object carried along by a DATA. Internally maintains its own `DATA` for rows 
 # from different class.
 
 class NB(OBJ):
-  def __init__(i): i.nall=0; i.datas:Classes = {}
+  def __init__(i): i.nall=0; i.datas:Classes = {}; i.acc=0
 
-  def loglike(i, data:DATA, row:Row):
-    return data.loglike(row, i.nall, len(i.datas), the.m, the.k)
+  def classify(i,data,row):
+    return max(i.datas, 
+               key=lambda k: i.datas[k].loglike(row, i.nall, len(i.datas)))
 
   def run(i, data:DATA, row:Row):
-    klass = row[data.cols.klass.at]
+    want = row[data.cols.klass.at]
     i.nall += 1
-    if klass not in i.datas: i.datas[klass] =  data.clone()
-    i.datas[klass].add(row)
+    if i.nall>10:
+      got  = i.classify(data,row)  
+      i.acc += (want==got)
+    
+    if want not in i.datas: i.datas[want] =  data.clone()
+    i.datas[want].add(row)
+  
 #----------------------------------------------------------------------------------------
 # MARK: misc functions
 
@@ -399,6 +407,14 @@ class MAIN:
   def rows():
     d=DATA(csv(the.file))
     print(sorted(show(d.loglike(r,len(d.rows),1, the.m, the.k)) for r in d.rows)[::50])
+
+  def nbayes():
+    the.file="../data/soybean.csv"
+    the.m,the.k=1,1
+    nb = NB()
+    d=DATA(csv(the.file),order=False,
+           fun=nb.run)
+    print(nb.acc/len(d.rows))
 
   def bore():
     d=DATA(csv(the.file),order=True); print("")
