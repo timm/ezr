@@ -252,6 +252,8 @@ def smo(data0:DATA, score=lambda B,R: B-R) -> Row:
   #-----------
   random.shuffle(data0.rows)
   done, todo = data0.rows[:the.budget0], data0.rows[the.budget0:]
+  print(done[:2])
+  print(todo[:2])
   data1 = data0.clone(done, order=True) 
   for i in range(the.Budget):
     if len(todo) < 3: break
@@ -315,7 +317,6 @@ class NB(OBJ):
     if i.nall>10:
       got  = i.classify(data,row)  
       i.acc += (want==got)
-    
     if want not in i.datas: i.datas[want] =  data.clone()
     i.datas[want].add(row)
   
@@ -405,16 +406,18 @@ class MAIN:
    print(d.cols.x[1])
 
   def rows():
-    d=DATA(csv(the.file))
-    print(sorted(show(d.loglike(r,len(d.rows),1, the.m, the.k)) for r in d.rows)[::50])
+    d1=DATA(csv(the.file))
+    d2=d1.clone(d1.rows, order=True)
+    for d in [d1,d2]:
+       print(sorted(show(d.loglike(r,len(d.rows),1)) for r in d.rows)[::50])
 
   def nbayes():
     the.file="../data/soybean.csv"
-    the.m,the.k=1,1
+    the.m,the.k = 1,0
     nb = NB()
     d=DATA(csv(the.file),order=False,
            fun=nb.run)
-    print(nb.acc/len(d.rows))
+    print(show(nb.acc/len(d.rows)))
 
   def bore():
     d=DATA(csv(the.file),order=True); print("")
@@ -444,9 +447,15 @@ class MAIN:
     print(json.dumps(tree, indent=2))
 
   def smo():
+    smo( DATA(csv(the.file),order=True) )
+  
+  def smo20():
     d = DATA(csv(the.file),order=True)
-    print(show(sorted([d.d2h(row) for n,row in enumerate(d.rows) if n%20==0])))
-    print(show(sorted([d.d2h(smo(d)) for _ in range(20)])))
+    asIs, toBe = NUM(), NUM()
+    [asIs.add(d.d2h(row))    for row in d.rows]
+    [toBe.add(d.d2h(smo(d))) for _   in range(20)]
+    print(show(dict(mu= dict(asIs=asIs.mid(), toBe= toBe.mid()),
+                    sd= dict(asIs=asIs.div(), toBe= toBe.div()))))
                                      
 # --------------------------------------------
 # MARK: Start-up
