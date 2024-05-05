@@ -49,7 +49,8 @@ def settings(s:str) -> dict:
 # ----------------------------------------------------------------------------------------
 # ## Classes
 
-# **BINS** Stores in `ys` the klass symbols see between `lo` and `hi`.
+# MARK: BIN
+#  Stores in `ys` the klass symbols see between `lo` and `hi`.
 #  
 # [1] `merge()` combines two BINs, if they are too small or they have similar distributions.   
 # [2] `selects()` returns true when a BIN matches a row.       
@@ -57,7 +58,6 @@ def settings(s:str) -> dict:
 #   
 # To  build decision trees,  split Rows on the best scoring bin, then recurse on each half.
 
-# MARK: BIN
 class BIN(OBJ):
   id=0
   def __init__(i, at:int, txt:str, lo:float, hi:float=None, ys:Counter=None):  
