@@ -5,22 +5,25 @@ ez.py: active learning, find best/rest seen so far in a Bayes classifier
 (c) 2024 Tim Menzies <timm@ieee.org>, BSD-2 license   
 
 OPTIONS:  
-  -s --seed  random number seed  = 1234567891    
-  -g --go    start up action     = help
-  -f --file  data file           = ../data/auto93.csv    
+  -s --seed     random number seed    = 1234567891    
+  -g --go       start up action       = help
+  -f --file     data file             = ../data/auto93.csv    
     
-  Discretization
-  -B --Bins   max number of bins = 16
+  Discretize:
+  -B --Bins     max number of bins    = 16
 
-  NB options:     
-  -k --k low frequency kludge    = 1 
-  -m --m low frequency kludge    = 2   
+  Classify:     
+  -k --k        low frequency kludge  = 1 
+  -m --m        low frequency kludge  = 2   
     
-  SMO options:    
-  -n --budget0 init evals        = 4   
-  -N --Budget  max evals         = 12 
-  -b --best    ratio of top      = .5
-  -T --Top     keep top todos    = .8 """
+  Optimize:    
+  -n --budget0  init evals            = 4   
+  -N --Budget   max evals             = 16 
+  -b --best     ratio of top          = .5
+  -T --Top      keep top todos        = .8 
+  
+  Explain: 
+  -l --leaf     leaf size             = 2 """
 
 from __future__ import annotations   # <1> ## types  
 from collections import Counter
@@ -44,6 +47,10 @@ class Classes: has:dict[str, Rows] # a dictionary, one key for each class
 class OBJ:
   def __init__(i,**d)    : i.__dict__.update(d)
   def __repr__(i) -> str : return i.__class__.__name__+show(i.__dict__)
+  def tree(i):
+    yield i 
+    for x in [i.__dict__.get("yes",[]), i.__dict__.get("no",[])]:
+      for y in x.node(): yield y
 
 def settings(s:str) -> dict:
   return {m[1] : coerce(m[2]) for m in re.finditer(r"--(\w+)[^=]*=\s*(\S+)", s)}
@@ -80,23 +87,19 @@ class BIN(OBJ):
       if ni <  small or nj < small : return k # merge if bins too small 
       if ek <= (ni*ei + nj*ej)/nk    : return k # merge if combo is simpler
      
-  def selectss(i, classes: Classes) -> dict: 
-    return {k:len([row for row in rows if i.selects(row)]) 
-            for k,rows in classes.items()}
-     
   def selects(i, row: Row) -> bool:  #-----------------------------------------------[2]
     x = row[i.at]
     return  x=="?" or i.lo == x == i.hi or i.lo <= x < i.hi
-      
-  @staticmethod
-  def score(d:dict, BEST:int, REST:int, goal="+", how=lambda B,R: B - R) -> float: #-[3]
-    b,r = 0,0
-    for k,n in d.items():
-      if k==goal: b += n
-      else      : r += n
-    b,r = b/(BEST+tiny), r/(REST+tiny)
-    return how(b,r) 
-
+   
+  def selectsRejects(i, classes: Classes) -> dict: 
+    yes,no = {},{}
+    for klass,rows in classes.items():
+      for row in rows:
+        what = yes if i.selects(row) else no
+        if klass not in what: what[klass] = []
+        what.add(row)
+    return yes,no 
+  
 # MARK:  COL
 # is an abstract class above NUM and SYM.    
 #     
@@ -225,7 +228,7 @@ class DATA(OBJ):
       i.cols = COLS(row)
 
   def clone(i,lst:Iterable[Row]=[],order=False) -> DATA:  
-    return DATA([i.cols.names]+lst)
+    return DATA([i.cols.names]+lst,order=order)
 
   def order(i) -> Rows:
     i.rows = sorted(i.rows, key=i.d2h, reverse=False)
@@ -240,8 +243,6 @@ class DATA(OBJ):
     likes = [c.like(row[c.at],prior) for c in i.cols.x if row[c.at] != "?"]
     return sum(math.log(x) for x in likes + [prior] if x>0)
 
-def o(x): print(x); return x
-
 # MARK: smo 
 def smo(data0:DATA, score=lambda B,R: B-R) -> Row:
   def like(row,data): 
@@ -252,8 +253,6 @@ def smo(data0:DATA, score=lambda B,R: B-R) -> Row:
   #-----------
   random.shuffle(data0.rows)
   done, todo = data0.rows[:the.budget0], data0.rows[the.budget0:]
-  print(done[:2])
-  print(todo[:2])
   data1 = data0.clone(done, order=True) 
   for i in range(the.Budget):
     if len(todo) < 3: break
@@ -262,43 +261,34 @@ def smo(data0:DATA, score=lambda B,R: B-R) -> Row:
                         data0.clone(data1.rows[n:]),
                         todo)
     done.append(top)
-    data1 = data0.clone(done, order=True)
+    data1 = data0.clone(done, order=True) 
   return data1.rows[0]
 
 # MARK: TREE
-class TREE(OBJ):
-  def __init__(self,data:DATA, klasses, BEST:int, REST:int, 
-              best:str, rest:str, stop=2, how=None):
-    self.best, self.rest, self.stop = best,rest,stop
-    self.divs  = [bin for col in data.cols.x for bin in col.bins(klasses)] 
-    self.score = lambda x: -BIN.score(self.lst2len(x),BEST,REST,
-                                      goal=best,how=lambda B,R: B - R)
-    self.root  = self.step(klasses)
-    
-  def lst2len(self,klasses): return {k:len(rows) for k,rows in klasses.items()} 
-
-  def leaf(self,klasses):    return dict(leaf=True, has=self.lst2len(klasses))
-
-  def step(self,klasses,lvl=0,above=1E30):
-    best0 = klasses[self.best]
-    rest0 = klasses[self.rest]
-    here = len(best0)  
-    if here <= self.stop or here==above: return self.leaf(klasses)
-    yes,no,most = None,None,-1
-    for bin in self.divs:
-      yes0 = dict(best=[], rest=[]) 
-      no0  = dict(best=[], rest=[]) 
-      for row in best0: (yes0["best"] if bin.selects(row) else no0["best"]).append(row)
-      for row in rest0: (yes0["rest"] if bin.selects(row) else no0["rest"]).append(row)
-      tmp = self.score(yes0)
-      if tmp > most: yes,no,most = yes0,no0,tmp
-    return dict(leaf=False, at=bin.at, txt=bin.txt,
-                lo=bin.lo, hi=bin.hi, yes=self.step(yes,lvl+1,here),no=self.step(no,lvl+1,here)) 
-  
-  def node(i,d):
-    yield d
-    for d1 in [d.yes,d.no]:
-      for node1 in i.node(d1): yield node1
+def tree(data:DATA, classes:Classes, best:str, rest:str, score:Callable=lambda B,R: B-R):
+  BEST = len(classes[best])
+  REST = len(classes[rest])
+  BINS = [bin for col in data.cols.x for bin in col.bins(classes)]
+  def grow(classes, lvl, above):
+    def order(bin):
+      b,r = 0,0
+      for k,rows in classes.items():
+        for row in rows: 
+          if bin.selects(row): 
+            if k==best: b += 1
+            else      : r += 1
+      return score( b/(BEST+tiny), r/(REST+tiny) )
+    # --------------------------------------------
+    nBest = len(classes[best]) 
+    if nBest <= the.leaf or nBest==above: 
+      return OBJ(isLeaf=True, yes=classes, lvl=lvl)
+    bin = max(BINS, key=order)
+    yes,no = bin.selectsRejects(classes)
+    return OBJ(isLeaf=False, lvl=lvl, at=bin.at, txt=bin.txt, lo=bin.lo, hi=bin.hi, 
+               yes = grow(yes, lvl+1, nBest), #-- what size
+               no  = grow(no,  lvl+1, nBest))
+  # -----------------------------------------------------
+  return grow(classes, 0, len(classes[best]))
 
 # MARK: NB 
 # Visitor object carried along by a DATA. Internally maintains its own `DATA` for rows 
@@ -446,15 +436,30 @@ class MAIN:
     tree = TREE(d,dict(best=best,rest=rest), n,n,"best","rest").root
     print(json.dumps(tree, indent=2))
 
+  def guess(): 
+    budget = 20 
+    d = DATA(csv(the.file),order=True)
+    asIs, toBe = NUM(), NUM()
+    [asIs.add(d.d2h(row)) for row in d.rows]
+    for _ in range(20):
+      tmp = [random.choice(d.rows) for _   in range(budget)]
+      toBe.add( d.d2h( sorted(tmp, key=lambda r: d.d2h(r))[0]))
+    print(show(dict(budget= budget,
+                    mu= dict( asIs=asIs.mid(), guess= toBe.mid()),
+                    sd= dict(asIs=asIs.div(), guess= toBe.div())))) 
+     
   def smo():
-    smo( DATA(csv(the.file),order=True) )
+    d = DATA(csv(the.file))
+    print(d.d2h( smo( d )))
   
   def smo20():
+    budget = 20 
     d = DATA(csv(the.file),order=True)
     asIs, toBe = NUM(), NUM()
     [asIs.add(d.d2h(row))    for row in d.rows]
-    [toBe.add(d.d2h(smo(d))) for _   in range(20)]
-    print(show(dict(mu= dict(asIs=asIs.mid(), toBe= toBe.mid()),
+    [toBe.add(d.d2h(smo(d))) for _   in range(budget)]
+    print(show(dict(budget=budget,
+                    mu= dict(asIs=asIs.mid(), toBe= toBe.mid()),
                     sd= dict(asIs=asIs.div(), toBe= toBe.div()))))
                                      
 # --------------------------------------------
