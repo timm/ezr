@@ -47,10 +47,6 @@ class Classes: has:dict[str, Rows] # a dictionary, one key for each class
 class OBJ:
   def __init__(i,**d)    : i.__dict__.update(d)
   def __repr__(i) -> str : return i.__class__.__name__+show(i.__dict__)
-  def tree(i):
-    yield i 
-    for x in [i.__dict__.get("yes",[]), i.__dict__.get("no",[])]:
-      for y in x.node(): yield y
 
 def settings(s:str) -> dict:
   return {m[1] : coerce(m[2]) for m in re.finditer(r"--(\w+)[^=]*=\s*(\S+)", s)}
@@ -265,30 +261,37 @@ def smo(data0:DATA, score=lambda B,R: B-R) -> Row:
   return data1.rows[0]
 
 # MARK: TREE
-def tree(data:DATA, classes:Classes, best:str, rest:str, score:Callable=lambda B,R: B-R):
-  BEST = len(classes[best])
-  REST = len(classes[rest])
-  BINS = [bin for col in data.cols.x for bin in col.bins(classes)]
-  def grow(classes, lvl, above):
-    def order(bin):
-      b,r = 0,0
-      for k,rows in classes.items():
-        for row in rows: 
-          if bin.selects(row): 
-            if k==best: b += 1
-            else      : r += 1
-      return score( b/(BEST+tiny), r/(REST+tiny) )
-    # --------------------------------------------
-    nBest = len(classes[best]) 
-    if nBest <= the.leaf or nBest==above: 
-      return OBJ(isLeaf=True, yes=classes, lvl=lvl)
-    bin = max(BINS, key=order)
-    yes,no = bin.selectsRejects(classes)
-    return OBJ(isLeaf=False, lvl=lvl, at=bin.at, txt=bin.txt, lo=bin.lo, hi=bin.hi, 
-               yes = grow(yes, lvl+1, nBest), #-- what size
-               no  = grow(no,  lvl+1, nBest))
-  # -----------------------------------------------------
-  return grow(classes, 0, len(classes[best]))
+class NODE(OBJ): 
+  def nodes(i):
+    yield i 
+    for x in [i.__dict__.get("yes",[]), i.__dict__.get("no",[])]:
+      for y in x.nodes(): yield y
+
+class TREE(OBJ):
+  def __init__(i, data:DATA, classes:Classes, best:str, rest:str, score:Callable=lambda B,R: B-R): 
+    i.bins = [bin for col in data.cols.x for bin in col.bins(classes)]
+    i.best, i.score, i.bests, i.rests =  best, score, len(classes[best]), len(classes[rest])
+    i.root = i.grow(classes, 0 ,len(classes[best]))
+
+  def grow(i, classes:Classes, lvl:int, above:int) -> OBJ:
+    myBest = len(classes[i.best]) 
+    if myBest <= the.leaf or myBest == above: 
+      return NODE(isLeaf=True, yes=classes, lvl=lvl)
+    else:
+      bin = max(i.bins, key = lambda bin: i.sorter(bin,classes)) 
+      yes,no = bin.selectsRejects(classes)
+      return NODE(isLeaf=False, lvl=lvl, at=bin.at, txt=bin.txt, lo=bin.lo, hi=bin.hi, 
+                  yes = i.grow(yes, lvl+1, myBest), 
+                  no  = i.grow(no,  lvl+1, myBest))
+
+  def sorter(i, bin:BIN, classes:Classes) -> float:
+    b,r = 0,0 # counts of best,rest
+    for k,rows in classes.items():
+      for row in rows: 
+        if bin.selects(row): 
+          if k==i.best: b += 1
+          else        : r += 1
+    return i.score( b/(i.bests+tiny), r/(i.rests+tiny) )
 
 # MARK: NB 
 # Visitor object carried along by a DATA. Internally maintains its own `DATA` for rows 
