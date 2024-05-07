@@ -260,14 +260,14 @@ def smo(data0:DATA, score=lambda B,R: B-R) -> Row:
     data1 = data0.clone(done, order=True) 
   return data1.rows[0]
 
-# MARK: TREE
+# MARK: CONTRAST
 class NODE(OBJ): 
   def nodes(i):
     yield i 
     for x in [i.__dict__.get("yes",[]), i.__dict__.get("no",[])]:
       for y in x.nodes(): yield y
 
-class TREE(OBJ):
+class CONTRAST(OBJ):
   def __init__(i, data:DATA, classes:Classes, best:str, rest:str, score:Callable=lambda B,R: B-R): 
     i.bins = [bin for col in data.cols.x for bin in col.bins(classes)]
     i.best, i.score, i.bests, i.rests =  best, score, len(classes[best]), len(classes[rest])
@@ -352,7 +352,7 @@ def cli(d:dict) -> None:
       if arg in ["-"+k[0], "--"+k]: 
         v = "false" if v=="true" else ("true" if v=="false" else after)
         d[k] = coerce(v)
-  if d.get("help", False): sys.text( print(__doc__) )
+  if d.get("help", False): sys.text( MAIN.help() )
 
 # ### Printing  
 def show(x:Any, n=3) -> Any:
@@ -367,6 +367,7 @@ def prints(matrix: list[list],sep=' | ') -> None:
   lens = [max(map(len, col)) for col in zip(*s)]
   fmt  = sep.join('{{:>{}}}'.format(x) for x in lens)
   [print(fmt.format(*row)) for row in s] 
+
 #----------------------------------------------------------------------------------------
 # MARK: main 
 # `./trees.py _all` : run all functions , return to operating system the count of failures.   
@@ -385,7 +386,9 @@ class MAIN:
     sys.exit(sum(MAIN.one(s) == False for s in sorted(dir(MAIN)) 
                  if s[0] != "_" and s not in ["all", "one"]))
 
-  def help(): print(__doc__)
+  def help(): print(re.sub(r"(\n[\s]+-\S)",r"\033[91m\1\033[00m",
+                    re.sub(r"( --[\S]+)",  r"\033[93m\1\033[00m",
+                    __doc__)))
   
   def opt(): print(the)
 
@@ -436,7 +439,7 @@ class MAIN:
     n    = int(len(d.rows)**.5)
     best = d.rows[:n] 
     rest = d.rows[-n:] 
-    tree = TREE(d,dict(best=best,rest=rest), n,n,"best","rest").root
+    tree = CONTRAST(d,dict(best=best,rest=rest), n,n,"best","rest").root
     print(json.dumps(tree, indent=2))
 
   def guess(): 
