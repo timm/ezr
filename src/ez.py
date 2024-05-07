@@ -63,6 +63,7 @@ def settings(s:str) -> dict:
 #   
 # To  build decision trees,  split Rows on the best scoring bin, then recurse on each half.
 
+#ZZZ add in __repr__
 class BIN(OBJ):
   id=0
   def __init__(i, at:int, txt:str, lo:float, hi:float=None, ys:Counter=None):  
@@ -368,6 +369,9 @@ def prints(matrix: list[list],sep=' | ') -> None:
   fmt  = sep.join('{{:>{}}}'.format(x) for x in lens)
   [print(fmt.format(*row)) for row in s] 
 
+def asRed(pat,s)   : return re.sub(pat, r"\033[91m\1\033[00m",s)
+def asYellow(pat,s): return re.sub(pat, r"\033[93m\1\033[00m",s)
+
 #----------------------------------------------------------------------------------------
 # MARK: main 
 # `./trees.py _all` : run all functions , return to operating system the count of failures.   
@@ -386,9 +390,8 @@ class MAIN:
     sys.exit(sum(MAIN.one(s) == False for s in sorted(dir(MAIN)) 
                  if s[0] != "_" and s not in ["all", "one"]))
 
-  def help(): print(re.sub(r"(\n[\s]+-\S)",r"\033[91m\1\033[00m",
-                    re.sub(r"( --[\S]+)",  r"\033[93m\1\033[00m",
-                    __doc__)))
+  def help(): 
+    print(asRed(r"(\n[\s]+-\S)", asYellow(r"( --[\S]+)", __doc__)))
   
   def opt(): print(the)
 
@@ -421,18 +424,11 @@ class MAIN:
 
   def bore2():
     d    = DATA(csv(the.file),order=True)
-    n    = int(len(d.rows)**.5)
-    best = d.rows[:n] 
-    rest = d.rows[-n:] 
-    bins = [(BIN.score(bin.ys, n,n, goal="best"),bin)
-            for col in d.cols.x for bin in col.bins(dict(best=best,rest=rest))]
-    now=None
-    for n, bin in bins:
-      if now != bin.at: print("")
-      now = bin.at
-      print(show(n), bin, sep="\t")
-    print("\nall bins, in order:\n")
-    [print(show(n), bin, sep="\t") for n, bin in sorted(bins, key=first)]
+    n    = int(len(d.rows)**.5) 
+    for col in d.cols.x:
+      print("")
+      for bin in col.bins(dict(best=d.rows[:n] ,rest=d.rows[-n:])):
+        print(bin, sep="\t") 
 
   def tree():
     d    = DATA(csv(the.file),order=True)
