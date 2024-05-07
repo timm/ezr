@@ -74,6 +74,13 @@ class BIN(OBJ):
     i.lo = min(x, i.lo)
     i.hi = max(x, i.hi)
     i.ys[y] += 1
+
+  def __repr__(i):
+    txt,hi,lo = i.txt, i.hi, i.lo
+    if lo==hi:   return f"{txt}={hi}"
+    if lo==-big: return f"{txt} < {hi}"
+    if hi==big:  return f"{txt} >= {lo}"
+    return f"{lo} <= {txt} < {hi}"
       
   def merge(i, j:BIN, small:float) -> BIN: # or None if nothing merged ------------[1]
     if i.at == j.at:
@@ -88,13 +95,12 @@ class BIN(OBJ):
     x = row[i.at]
     return  x=="?" or i.lo == x == i.hi or i.lo <= x < i.hi
    
-  def selectsRejects(i, classes: Classes) -> dict: 
-    yes,no = {},{}
-    for klass,rows in classes.items():
-      for row in rows:
-        what = yes if i.selects(row) else no
-        if klass not in what: what[klass] = []
-        what.add(row)
+  def selectsRejects(i, classes: Classes) -> tuple[Classes,Classes]:
+
+    yes = {k:[] for k in classes}
+    no  = {k:[] for k in classes}
+    for k,rows in classes.items():
+      [(yes if i.selects(row) else no)[k].append(row) for row in rows]  
     return yes,no 
   
 # MARK:  COL
@@ -165,7 +171,8 @@ class NUM(COL):
       i.lo  = min(x, i.lo)
       i.hi  = max(x, i.hi)
 
-  def bin(i, x:float) -> int: return min(the.Bins - 1, int(the.Bins * i.norm(x)))
+  def bin(i, x:float) -> int: 
+    return min(the.Bins - 1, int(the.Bins * i.norm(x)))
 
   def binsComplete(i, bins: list[BIN], small=2) -> list[BIN]: 
     bins = merges(bins,merge=lambda x,y:x.merge(y,small))
@@ -262,28 +269,36 @@ def smo(data0:DATA, score=lambda B,R: B-R) -> Row:
   return data1.rows[0]
 
 # MARK: CONTRAST
-class NODE(OBJ): 
-  def nodes(i):
-    yield i 
-    for x in [i.__dict__.get("yes",[]), i.__dict__.get("no",[])]:
-      for y in x.nodes(): yield y
+class CONTRAST(OBJ): 
+  def show(i):
+    for lvl,node in i.nodes():
+      print("|.. " * lvl,   
+            counts(node.yes) if node.isLeaf else node.bin )
+  def nodes(i,lvl=0):
+    yield lvl,i 
+    if not i.isLeaf:
+      for x in [i.yes,i.no]: 
+        for lvl1,y in x.nodes(lvl+1): yield lvl1,y
 
-class CONTRAST(OBJ):
-  def __init__(i, data:DATA, classes:Classes, best:str, rest:str, score:Callable=lambda B,R: B-R): 
+class CONTRASTS(OBJ):
+  def __init__(i, data:DATA, classes:Classes, 
+               best:str="best", rest:str="rest", score=lambda B,R: B-R): 
     i.bins = [bin for col in data.cols.x for bin in col.bins(classes)]
     i.best, i.score, i.bests, i.rests =  best, score, len(classes[best]), len(classes[rest])
-    i.root = i.grow(classes, 0 ,len(classes[best]))
+    print(counts(classes))
+    i.root = i.grow(classes, 0 ,1E30)
 
   def grow(i, classes:Classes, lvl:int, above:int) -> OBJ:
     myBest = len(classes[i.best]) 
     if myBest <= the.leaf or myBest == above: 
-      return NODE(isLeaf=True, yes=classes, lvl=lvl)
+      return CONTRAST(isLeaf=True, yes=classes, no={}, lvl=lvl)
     else:
       bin = max(i.bins, key = lambda bin: i.sorter(bin,classes)) 
       yes,no = bin.selectsRejects(classes)
-      return NODE(isLeaf=False, lvl=lvl, at=bin.at, txt=bin.txt, lo=bin.lo, hi=bin.hi, 
-                  yes = i.grow(yes, lvl+1, myBest), 
-                  no  = i.grow(no,  lvl+1, myBest))
+      print(counts(yes), counts(no))
+      return CONTRAST(isLeaf=False, lvl=lvl, bin=bin, 
+                      yes = i.grow(yes, lvl+1, myBest), 
+                      no  = i.grow(no,  lvl+1, myBest))
 
   def sorter(i, bin:BIN, classes:Classes) -> float:
     b,r = 0,0 # counts of best,rest
@@ -317,6 +332,8 @@ class NB(OBJ):
 #----------------------------------------------------------------------------------------
 # MARK: misc functions
 
+def  shuffle(l): random.shuffle(l); return l
+def counts(d):  return {k:len(v) for k,v in d.items()}
 def first(lst): return lst[0]
 
 # ### Data mining tricks 
@@ -430,13 +447,15 @@ class MAIN:
       for bin in col.bins(dict(best=d.rows[:n] ,rest=d.rows[-n:])):
         print(bin, sep="\t") 
 
-  def tree():
+  def contrasts():
     d    = DATA(csv(the.file),order=True)
     n    = int(len(d.rows)**.5)
     best = d.rows[:n] 
-    rest = d.rows[-n:] 
-    tree = CONTRAST(d,dict(best=best,rest=rest), n,n,"best","rest").root
-    print(json.dumps(tree, indent=2))
+    rest = shuffle(d.rows[n:])[-n:]
+
+    tree = CONTRASTS(d,dict(best=best,rest=rest)).root
+    tree.show()
+    #print(json.dumps(tree, indent=2))
 
   def guess(): 
     budget = 20 
