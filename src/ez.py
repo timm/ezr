@@ -89,7 +89,7 @@ class BIN(OBJ):
       ej,nj = entropy(j.ys)
       ek,nk = entropy(k.ys)
       if ni <  small or nj < small : return k # merge if bins too small 
-      if ek <= (ni*ei + nj*ej)/nk    : return k # merge if combo is simpler
+      if ek <= (ni*ei + nj*ej)/nk:  return k # merge if parts are more complex
      
   def selects(i, row: Row) -> bool:  #-----------------------------------------------[2]
     x = row[i.at]
@@ -169,7 +169,7 @@ class NUM(COL):
       i.mu += d/i.n
       i.m2 += d * (x -  i.mu)
       i.lo  = min(x, i.lo)
-      i.hi  = max(x, i.hi)
+      i.hi  = max(x, i.hi) 
 
   def bin(i, x:float) -> int: 
     return min(the.Bins - 1, int(the.Bins * i.norm(x)))
@@ -249,11 +249,13 @@ class DATA(OBJ):
 
 # MARK: smo 
 def smo(data0:DATA, score=lambda B,R: B-R) -> Row:
-  def like(row,data): 
-    return data.loglike(row,len(data.rows),2)
+  def like(row,data,nall): 
+    return data.loglike(row,nall,2)
   def acquire(best, rest, rows):
+    nall = len(best.rows) + len(rest.rows)
+    rows.sort(key=lambda r: -score(like(r,best,nall),like(r,rest,nall)))
     chop = int(len(rows) * the.Top) 
-    return sorted(rows, key=lambda r: -score(like(r,best),like(r,rest)))[:chop]
+    return rows[:chop]
   #-----------
   random.shuffle(data0.rows)
   done, todo = data0.rows[:the.budget0], data0.rows[the.budget0:]
@@ -346,7 +348,8 @@ def merges(b4: list[BIN], merge:Callable) -> list[BIN]:
   while j <  len(b4):
     a = b4[j] 
     if j <  len(b4) - 1: 
-      if tmp := merge(a, b4[j+1]):  a, j = tmp, j+1  
+      if tmp := merge(a, b4[j+1]):  
+        a, j = tmp, j+1  
     now += [a]
     j += 1
   return b4 if len(now) == len(b4) else merges(now, merge) 
@@ -474,12 +477,17 @@ class MAIN:
     print(d.d2h( smo( d )))
   
   def smo20():
-    budget = 20 
+    import cProfile
+    repeats = 50 
     d = DATA(csv(the.file),order=True)
     asIs, toBe = NUM(), NUM()
     [asIs.add(d.d2h(row))    for row in d.rows]
-    [toBe.add(d.d2h(smo(d))) for _   in range(budget)]
-    print(show(dict(budget=budget,
+    pr = cProfile.Profile()
+    pr.enable()
+    [toBe.add(d.d2h(smo(d))) for _   in range(repeats)]
+    pr.disable()
+    pr.print_stats(sort='time') 
+    print(show(dict(repeats=repeats,
                     mu= dict(asIs=asIs.mid(), toBe= toBe.mid()),
                     sd= dict(asIs=asIs.div(), toBe= toBe.div()))))
                                      
