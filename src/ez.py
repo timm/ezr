@@ -76,11 +76,10 @@ class BIN(OBJ):
     i.ys[y] += 1
 
   def __repr__(i):
-    txt,hi,lo = i.txt, i.hi, i.lo
-    if lo==hi:   return f"{txt}={hi}"
-    if lo==-big: return f"{txt} < {hi}"
-    if hi==big:  return f"{txt} >= {lo}"
-    return f"{lo} <= {txt} < {hi}"
+    if i.lo == i.hi: return f"{i.txt}={i.hi}"
+    if i.lo == -big: return f"{i.txt} < {i.hi}"
+    if i.hi == big:  return f"{i.txt} >= {i.lo}"
+    return f"{i.lo} <= {i.txt} < {i.hi}"
       
   def merge(i, j:BIN, small:float) -> BIN: # or None if nothing merged ------------[1]
     if i.at == j.at:
@@ -96,7 +95,6 @@ class BIN(OBJ):
     return  x=="?" or i.lo == x == i.hi or i.lo <= x < i.hi
    
   def selectsRejects(i, classes: Classes) -> tuple[Classes,Classes]:
-
     yes = {k:[] for k in classes}
     no  = {k:[] for k in classes}
     for k,rows in classes.items():
@@ -119,7 +117,7 @@ class COL(OBJ):
     out = {}
     [send2bin(row[i.at],y) for y,lst in classes.items() for row in lst if row[i.at]!="?"] 
     return i.binsComplete(sorted(out.values(), key=lambda z:z.lo), 
-                           small = small or (sum(len(lst) for lst in classes.values())/the.Bins))
+                   small = small or (sum(len(lst) for lst in classes.values())/the.Bins))
 
 # MARK: SYM 
 # summarizes a stream of numbers.
@@ -334,7 +332,7 @@ class NB(OBJ):
 #----------------------------------------------------------------------------------------
 # MARK: misc functions
 
-def  shuffle(l): random.shuffle(l); return l
+def shuffle(lst): random.shuffle(lst); return lst
 def counts(d):  return {k:len(v) for k,v in d.items()}
 def first(lst): return lst[0]
 
@@ -346,11 +344,13 @@ def entropy(d: dict) -> float:
 def merges(b4: list[BIN], merge:Callable) -> list[BIN]: 
   j, now  = 0, [] 
   while j <  len(b4):
-    a = b4[j] 
+    x = b4[j] 
     if j <  len(b4) - 1: 
-      if tmp := merge(a, b4[j+1]):  
-        a, j = tmp, j+1  
-    now += [a]
+      y = b4[j+1]
+      if xy := merge(x, y):
+        x = xy  
+        j = j+1  # if i can merge, jump over the merged item
+    now += [x]
     j += 1
   return b4 if len(now) == len(b4) else merges(now, merge) 
 
@@ -478,16 +478,16 @@ class MAIN:
   
   def smo20():
     import cProfile
-    repeats = 50 
+    agains = 20 
     d = DATA(csv(the.file),order=True)
     asIs, toBe = NUM(), NUM()
     [asIs.add(d.d2h(row))    for row in d.rows]
     pr = cProfile.Profile()
     pr.enable()
-    [toBe.add(d.d2h(smo(d))) for _   in range(repeats)]
+    [toBe.add(d.d2h(smo(d))) for _   in range(agains)]
     pr.disable()
     pr.print_stats(sort='time') 
-    print(show(dict(repeats=repeats,
+    print(show(dict(agains=agains,
                     mu= dict(asIs=asIs.mid(), toBe= toBe.mid()),
                     sd= dict(asIs=asIs.div(), toBe= toBe.div()))))
                                      
