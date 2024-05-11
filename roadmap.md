@@ -65,7 +65,7 @@ hundreds of research papers and millions of dollars in research
 funding) I say:
 
 - When building models, there are incremental methods that can find
-those models after very few samples.
+models after very few samples.
 - This is because the main message of most models is contained in
 just a few variables [:keys].
 
@@ -145,6 +145,8 @@ miles per hour.  Those rows are then divided into a _smallN_ best rows
 - _smallN_ is our shorthand for   $\sqrt{N}$.
 - We have another term,  _tinyN_, which  denotes a dozen  ($N=12$) examples.  
 
+###  Problems with Labelling
+
 This rows of this table have all the $X$ and $Y$ values  for each
 row. _Labeling_ is the processing of reading a row's $X$ value,
 then working out the $Y$ value.  Labeling  can be very slow and/or expensive and/or error
@@ -161,7 +163,7 @@ the $X$ values.  For example:
 looking at all the places where you might go fishing.
 But working out where the fish are biting today might mean waiting
 for hours in each spot.
-- When buying a car, you can glance around a car yar to  
+- When buying a car, you can glance around a car yard to
 quickly count the car color, car manufacturers  and model, number of
 doors, number of seats, road clearance and many other independent
 $X$ values.  But if you want to know which can corner the best,
@@ -229,7 +231,43 @@ usually, each new example is assessed by a human. The goal of such
 learning is avoid wearing out the humans by asking them too many
 questions.
 
+### Labelling, and Beyond
 
+Now the fun begins. Because two things are true. Firstly, all the above is very
+easy to code (no kidding-- it takes around a hundred lines of Python to code the above).
+Secondly, once that is coded we have all the parts to explore a very large
+number of other tasks. 
+
+> [!NOTE]
+> Useful information that users should know, even when skimming content.
+
+> [!TIP]
+> Helpful advice for doing things better or more easily.
+
+> [!IMPORTANT]
+> Key information users need to know to achieve their goal.
+
+> [!WARNING]
+> Urgent info that needs immediate user attention to avoid problems.
+
+> [!CAUTION]
+> Advises about risks or negative outcomes of certain actions.
+
+<details>
+
+<summary>Tips for collapsed sections</summary>
+
+### You can add a header
+
+You can add text within a collapsed section. 
+
+You can add an image or a code block, too.
+
+```ruby
+   puts "Hello World"
+```
+
+</details>
 
 A really good way to explore a large number of examples.
 
