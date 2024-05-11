@@ -1,4 +1,4 @@
-<img align=right width=400 src="data/jewel.png">
+<img align=right width=400 src="/docs/jewel.png">
 
 # Easier Analytics
 
