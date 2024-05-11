@@ -177,11 +177,13 @@ What can be much harder is getting a  contracting company
 to tell you their secrets about  who actually worked for how long on
 different parts of that product.
 
-The good news here is that $Y$ values are connected to the $X$ values.
+The good news here is that $Y=F(X)$; i.e. the
+$Y$ values are connected to the $X$ values.
 This means that by
 looking at a lot of $X$ values (which is cheap), we can guess the $Y$
 values without actually labeling them all. 
-There are many other ways to do this:
+There are many other ways to do this-- see the review
+in [^cotrain]. Methods  that can work with very few labels are:
 
 [^spectral]: Nair, V., Menzies, T., Siegmund, N. et al. Faster
 discovery of faster system configurations with spectral learning.
@@ -194,14 +196,27 @@ Avoiding Malicious Explanations With STEALTH." IEEE Software 40.3
 - In _label propergation_, we cluster the data into small groups (say, of size smallN or tinyN),
   label one row from each group,
   then share than label around that cluster  [^spectral] [^stealth]. 
-- In _co-training_, we build new labels from regions of most certainty. Here, two or more learners
-iterate and re-train on each
-other’s most confident predictions.
+- In _recursive projections_, we recursively bi-cluster the data. At each step
+  in the recursion, we label two distant examples then prune away half the data
+  associated wthe worst label.  
+  If each step reuses one label from the parent, then recursive projections
+  can find  good
+  parts of the data using $1+\log_2{N}$ labels [^sway].
 - in _sequential model optimization_, we use what we have learned so far to guide
-  what to label next. This means (a) dividing  a few labelled examples into (say)
-  smallN `best` and `rest`; (b) building a classifier that can report the likelihood $b,r$ of
-  that an unlabelled example belongs to     `best` or `rest`; (c) sorting the unlabelled data
-  by (say) $b/r$; (d) labeling the top item in that sort; (e) then looping back to (a).
+  what to label next. This means:
+  -  dividing  a few labelled examples into (say)
+  smallN `best` and `rest`; 
+  - building a classifier that can report the likelihood $b,r$ of
+  that an unlabelled example belongs to     `best` or `rest`; 
+  - sorting the unlabelled data
+  by (say) $b/r$; 
+  - labeling the top item in that sort and adding that to the labelled examples; 
+  - and repeat.
+
+[^sway]: J. Chen, V. Nair, R. Krishna and T. Menzies, "“Sampling”
+as a Baseline Optimizer for Search-Based Software Engineering," in
+IEEE Transactions on Software Engineering, vol. 45, no. 6, pp.
+597-614, 1 June 201 https://arxiv.org/pdf/1608.07617
 
 [^cotrain]: Majumder, Suvodeep, Joymallya Chakraborty, and Tim
 Menzies. "When less is more: on the value of “co-training” for
