@@ -1,26 +1,37 @@
-<img align=right width=400 src="/docs/jewel.png">
-
 # Easier Analytics
+
+<img alt="jewel" align=right width=400 src="/docs/jewel.png">
+
+by the EZ gang<br>
+yourNameHere<br>
+and Tim Menzies
 
 ## Summary
 
-We are concerend with simplifying the process of analytics, which involves extracting high-quality insights from large quantities of data. We advocate for more efficient and accessible analytical methods that require fewer data samples and less complexity. This allows for easier verification and understanding of results. We  highlights the benefits of using incremental methods in building models that can provide valuable insights with minimal data. 
+We are concerned with simplifying the process of analytics, which involves extracting high-quality insights from large quantities of data. We advocate for more efficient and accessible analytical methods that require fewer data samples and less complexity. This allows for easier verification and understanding of results. We  highlights the benefits of using incremental methods in building models that can provide valuable insights with minimal data.
 
 We  also critique the prevailing preference for complex solutions in the industry, suggesting that simplicity could offer more practical and appreciable benefits but is often overlooked due to commercial interests. The call is for a shift towards simplicity in analytics, making it faster, smarter, and more flexible, to better serve practical needs and enhance comprehensibility.
 
 ## Introduction
 
-Suppose we want to use data to make policies-- about what to do, what to avoid, what to do better, etc etc. How to do that? 
+Suppose we want to use data to make policies-- about what to do, what to avoid, what to do better, etc etc. How to do that?
 
-This process is called _analytics_, i.e. the reduction of large amounts of low-quality data into tiny high-quality statements. Think of it as "finding the diamonds in the dust".  According to Tom Zimmermann (from Microsoft Research), there
+This process is called _analytics_, i.e. the reduction of large amounts of low-quality data into tiny high-quality statements. Think of it as "finding the diamonds in the dust".  
+
+Many people have been doing data-driven analytics for decades.  So it seems the right time  to ask how can we make  analytics  simpler, smarter, faster, more flexible and more understandable?
+
+For example,  according to Tom Zimmermann (from Microsoft Research), there
 are many things we want to do with analytics:
 
-<img src="docs/buse.png" width=600 align=center>
+<img alt="[tasks]" src="docs/buse.png" width=750 align=center>
 
-Many people have been doing data-driven analytics for decades.  So it seems the right time  to ask how can we make  analytics  simpler, smarter, faster, more flexible and more understandable?  
+Note all the different algorithms in all the boxes.  Before I new better, I used to study
+those algorithms as separate  things. Now I see them as very similar things,
+all of which call the same  shared   underling structure (so once we code one of them, we can quickly code up the rest)
 
-For example,  before I knew better, I'd explore 100,000s of possibilities to find
-patterns in the data. But these days, I can do the same analysis with 30 samples, or less [^smo1].  This means if someone wants to check my conclusions, they only need to review a few dozen samples. Such a review was impossible using prior methods
+For another example,
+ before I knew better, I'd explore 100,000s of possibilities to find
+patterns in the data. But these days, I can do the same analysis with 30 samples, or less [^smo1]. This means if someone wants to check my conclusions, they only need to review a few dozen samples. Such a review was impossible using prior methods
 since the reasoning was so complicated.
 
 [^smo1]: Using sequential model optimization (see later in this document).
@@ -42,20 +53,72 @@ By making things harder than they need to be, companies can motivate the sale  o
 
 [^semi]: From Wikipedia: The manifold hypothesis posits that many high-dimensional data sets that occur in the real world actually lie along low-dimensional latent manifolds inside that high-dimensional space. As a consequence of the manifold hypothesis, many data sets that appear to initially require many variables to describe, can actually be described by a comparatively small number of variables, likened to the local coordinate system of the underlying manifold.
 
-
-
 ##  In the beginning ...
 
 ### ... There was data
 
+This code reads comma-seperated-files whose first line described each column.
+
+Clndrs|Volume|Model|origin|Lbs-|Acc+|Mpg+
+------|-----|------|------|-----|---|----
+4|97|82|2|2130|24.6|40
+4|96|72|2|2189|18|30
+4|140|74|1|2542|17|30
+------|-----|------|------|-----|---|----
+4|119|78|3|2300|14.7|30
+8|260|79|1|3420|22.2|20
+4|134|78|3|2515|14.8|20
+6|231|78|1|3380|15.8|20
+8|302|77|1|4295|14.9|20
+8|351|71|1|4154|13.5|10
+
+Just to explain the column names:
+
+- Names starting with `Uppercase` are numeric and the other columns are
+symbolic.
+- Names ending with "-","+" or "!" are the _goals_ which must  be minimized,
+maximized or predicted. The other columns are observables or controllables
+used to reach the goals.
+
+The rows are all examples of some function $Y=F(X)$ where:
+
+- $Y$ are the goals (also called the dependents)
+- $X$ are the observables or controllables (also called the independents)
+
+For example,  the above table is about motor cars:
+
+- Lighter cars cost less to build since they use less metal. Hence `Lbs-` (minimize weight).
+- Faster, fuel effecient cars  are easier to sell. Hence `Acc+` (maximize acceleration) and `Mpg+` (maximize miles per gallon).
+
+This rows of this table have all the $X$ and $Y$ values  for each row. In practice, it is often much easier/cheaper/faster to collect the $X$ values:
+
+- For example, a fisherman glancing up the river at all the fishing spots can see many observables like where is the current, how high is the tide, and what is color of the water;
+  - But if their goal is catching fish, they'll have to spend hours at each spot to work out where the fish are. 
+- For another example, at a glance over a caryard with 1000 cars, a car buyer can quickly count the car color, car manufactors and model, number of doors, number of seats, road clearance and many other independent $X$ values.
+ - But if they want to know which can corner the best, or their acceleration on
+    that hill outside their house, or their miles per gallon on their route to work, they will have to take the time to go drive the cars, one at a time.
+- For a final example, when testing software, you can quickly generate millions  of test inputs.
+  - But it could take a lifetime to look at each one to work out what should be the expected output.
+
+]^active1:] Active learning is an incremental learning tactic where, usually, each new example is assessed by a human. The goal of such learning is avoid wearing
+out the humans by asking them too many questions.  
+
+The rows of this table are sorted by the distance of each row to some mythical
+best car with least weight, most acceleration and miles per hour. 
+Those rows are then divided into a root(N) best (first three rows) and rest
+(the other rows).  
+
+- Root(N), or $\sqrt{N}$, is a heuristic for separating a small best set
+  from everything else.
+
+A really good way to explore a large number of examples.
 
 
+-  we want to 
+minimize (), maximize and maximize
+The above rows are sorted by _distance to heaven_
+which we can see or change in order tor eac
 
-This is also known as the _manifold assumption_ in semi-supervised learning
-
- I suggest here a refactoring old analytics into something new.
-
-  we seek succinct descriptions that just include that (very short) main message
 
 [^pigs]: Menzies, Tim, John Black, Joel Fleming, and Murray Dean. "An expert system for raising pigs." In The first Conference on Practical Applications of Prolog’.  1992. http://aturing.umcs.maine.edu/~meadow/courses/cos301/raising-pigs.pdf
 
