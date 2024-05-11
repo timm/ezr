@@ -4,15 +4,20 @@
 
 ## Summary
 
-We are concerend with simplifying the process of analytics, which involves extracting high-quality insights from large quantities of data. We advocate for more efficient and accessible analytical methods that require fewer data samples and less complexity. This allows for easier verification and understanding of results. We  highlights the benefits of using incremental methods in building models that can provide valuable insights with minimal data. We  also critiques the prevailing preference for complex solutions in the industry, suggesting that simplicity could offer more practical and appreciable benefits but is often overlooked due to commercial interests. The call is for a shift towards simplicity in analytics, making it faster, smarter, and more flexible, to better serve practical needs and enhance comprehensibility.
+We are concerend with simplifying the process of analytics, which involves extracting high-quality insights from large quantities of data. We advocate for more efficient and accessible analytical methods that require fewer data samples and less complexity. This allows for easier verification and understanding of results. We  highlights the benefits of using incremental methods in building models that can provide valuable insights with minimal data. 
+
+We  also critique the prevailing preference for complex solutions in the industry, suggesting that simplicity could offer more practical and appreciable benefits but is often overlooked due to commercial interests. The call is for a shift towards simplicity in analytics, making it faster, smarter, and more flexible, to better serve practical needs and enhance comprehensibility.
 
 ## Introduction
 
-Suppose we want to use data to make policies-- about what to do, what to avoid, what to do better, etc etc. How? 
+Suppose we want to use data to make policies-- about what to do, what to avoid, what to do better, etc etc. How to do that? 
 
-This process is called analytics, i.e. the reduction of large amounts of low-quality data into tiny high-quality statements. Think of it as "finding the diamonds in the dust". 
+This process is called _analytics_, i.e. the reduction of large amounts of low-quality data into tiny high-quality statements. Think of it as "finding the diamonds in the dust".  According to Tom Zimmermann (from Microsoft Research), there
+are many things we want to do with analytics:
 
-Many people have been doing data-driven analytics for decades.  So it seems the right time  to ask another question. How can we make  analytics  simpler, smarter, faster, more flexible and more understandable?
+<img src="docs/buse.png" width=600 align=center>
+
+Many people have been doing data-driven analytics for decades.  So it seems the right time  to ask how can we make  analytics  simpler, smarter, faster, more flexible and more understandable?  
 
 For example,  before I knew better, I'd explore 100,000s of possibilities to find
 patterns in the data. But these days, I can do the same analysis with 30 samples, or less [^smo1].  This means if someone wants to check my conclusions, they only need to review a few dozen samples. Such a review was impossible using prior methods
@@ -36,6 +41,13 @@ our culture prefers complex solutions:
 By making things harder than they need to be, companies can motivate the sale  of intricate tools to clients who wished there was a simpler way. Well, maybe there is.
 
 [^semi]: From Wikipedia: The manifold hypothesis posits that many high-dimensional data sets that occur in the real world actually lie along low-dimensional latent manifolds inside that high-dimensional space. As a consequence of the manifold hypothesis, many data sets that appear to initially require many variables to describe, can actually be described by a comparatively small number of variables, likened to the local coordinate system of the underlying manifold.
+
+
+
+##  In the beginning ...
+
+### ... There was data
+
 
 
 
