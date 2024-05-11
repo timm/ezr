@@ -41,33 +41,33 @@ there are many things we want to do with analytics:
 
 <img alt="[tasks]" src="docs/buse.png" width=750 align=center>
 
-Note all the different algorithms in all the boxes.  Before I new
+Note all the different algorithms in all the boxes.  Before I knew
 better:
 
-- I used to study those algorithms as separate  things. Now
-I see them as very similar things, all of which call the same  shared
-underling structure (so once we code one of them, we can quickly
-code up the rest)
-- I'd explore 100,000s of
-possibilities to find patterns in the data (e.g. during a "what-if" query). 
-But these days, I can
+- I used to study those algorithms as separate  things. Now I see
+them as very similar things, all of which call the same underling
+structure. This means that  once we code one of them, we can quickly 
+code up the rest. 
+- I'd explore 100,000s of possibilities to find patterns in
+the data (e.g. during a "what-if" query).  But these days, I can
 do the same analysis with 30 samples, or less [^smo1]. This means
 if someone wants to check my conclusions, they only need to review
 a few dozen samples.  Such a review was impossible using prior
 methods since the reasoning was so complicated.
 
-[^smo1]: Using semi-supervised multi-objective optimization via sequential model
-    optimization (which is all described, later in this document).
+[^smo1]: Using semi-supervised multi-objective optimization via
+sequential model optimization (which is all described, later in
+this document).
 
 Why can I do things so easily? Well,  based on three decades of work
 on analytics [^pigs] (which includes the work of 20 Ph.D. students,
 hundreds of research papers and millions of dollars in research
 funding) I say:
 
-- When building models, there are incremental methods that can find those models
-  after very few samples.
-- This is because the main message of most models is contained in just a few  
-  variables [:keys].
+- When building models, there are incremental methods that can find
+those models after very few samples.
+- This is because the main message of most models is contained in
+just a few variables [:keys].
 
 [^keys]: Menzies, Tim, David Owen, and Julian Richardson. "The
 strangest thing about software." Computer 40.1 (2007): 54-60
@@ -93,11 +93,15 @@ that appear to initially require many variables to describe, can
 actually be described by a comparatively small number of variables,
 likened to the local coordinate system of the underlying manifold.
 
+<img src="docs/gray.png" height=100 width=1000>
+
 ## In the beginning ...
+
 
 ### ... There was data
 
-This code reads comma-separated-files whose first line described each column.
+This code reads comma-separated-files whose first line described
+each column.
 
 Clndrs|Volume|Model|origin|Lbs-|Acc+|Mpg+
 ------|-----|------|------|-----|---|----
@@ -139,20 +143,19 @@ miles per hour.  Those rows are then divided into a _smallN_ best rows
 (the first three rows) and rest (the other rows).
 
 - _smallN_ is our shorthand for   $\sqrt{N}$.
-- We have another shorthand;  _tinyN_  denotes a dozen  ($N=12$) examples.  
+- We have another term,  _tinyN_, which  denotes a dozen  ($N=12$) examples.  
 
 This rows of this table have all the $X$ and $Y$ values  for each
 row. _Labeling_ is the processing of reading a row's $X$ value,
-then working out the $Y$ value. 
-Labeling  can be very
-slow/expensive/error prone. For example, if your labelling needs a human subject matter
-expert, then those are very busy people who are need to be somewhere else,
-applying their expertise. And even SMEs make mistakes (particularly if you them
-too many things, too quickly).
+then working out the $Y$ value.  Labeling  can be very slow and/or expensive and/or error
+prone. For example, if your labelling needs a human subject matter
+expert, then those are very busy people who are need to be somewhere
+else, applying their expertise. And even SMEs make mistakes
+(particularly if you them too many things, too quickly).
 
+To say that another way, we need to do analytics without much labelling.
 In practice, it is often much easier/cheaper/faster to collect
-the $X$ values.
-For example:
+the $X$ values.  For example:
 
 - When you go fishing, you can glance up and down the river
 looking at all the places where you might go fishing.
@@ -174,14 +177,39 @@ What can be much harder is getting a  contracting company
 to tell you their secrets about  who actually worked for how long on
 different parts of that product.
 
-The good news here is that $Y$ values are connected to the $X$ values-- so that
-by
+The good news here is that $Y$ values are connected to the $X$ values.
+This means that by
 looking at a lot of $X$ values (which is cheap), we can guess the $Y$
-values without actually labeling them all. One trick for that labelling
-is to cluster the data into small groups (say, of size smallN or tinyN),  label
-one row from each group, then share than label around that cluster. 
+values without actually labeling them all. 
+There are many other ways to do this:
 
-[^active1:] Active learning is an incremental learning tactic where,
+[^spectral]: Nair, V., Menzies, T., Siegmund, N. et al. Faster
+discovery of faster system configurations with spectral learning.
+Autom Softw Eng 25, 247–277 (2018).  https://arxiv.org/abs/1701.08106
+
+[^stealth]: Alvarez, Lauren, and Tim Menzies. "Don’t Lie to Me:
+Avoiding Malicious Explanations With STEALTH." IEEE Software 40.3
+(2023): 43-53.  https://arxiv.org/pdf/2301.10407
+
+- In _label propergation_, we cluster the data into small groups (say, of size smallN or tinyN),
+  label one row from each group,
+  then share than label around that cluster  [^spectral] [^stealth]. 
+- In _co-training_, we build new labels from regions of most certainty. Here, two or more learners
+iterate and re-train on each
+other’s most confident predictions.
+- in _sequential model optimization_, we use what we have learned so far to guide
+  what to label next. This means (a) dividing  a few labelled examples into (say)
+  smallN `best` and `rest`; (b) building a classifier that can report the likelihood $b,r$ of
+  that an unlabelled example belongs to     `best` or `rest`; (c) sorting the unlabelled data
+  by (say) $b/r$; (d) labeling the top item in that sort; (e) then looping back to (a).
+
+[^cotrain]: Majumder, Suvodeep, Joymallya Chakraborty, and Tim
+Menzies. "When less is more: on the value of “co-training” for
+semi-supervised software defect predictors." Empirical Software
+Engineering 29.2 (2024): 1-33.  https://arxiv.org/pdf/2211.05920
+
+
+[^active1]: Active learning is an incremental learning tactic where,
 usually, each new example is assessed by a human. The goal of such
 learning is avoid wearing out the humans by asking them too many
 questions.
