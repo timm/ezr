@@ -1,3 +1,36 @@
+# Easier Analytics
+
+Suppose we want to use data to make policies-- about what to do, what to avoid, what to do better, etc etc. How? 
+
+This process is called analytics, i.e. the reduction of large amounts of low-quality data into tiny high-quality statements. Think of it as "finding the diamonds in the dust". 
+
+Many people have been doing data-driven analytics for decades.  So it seems the right time  to ask another question. How can we make  analytics  simpler, smarter, faster, more flexible and more understandable?
+
+Based on three decades of work on analytics [^pigs] (which includes the work of 20 Ph.D. students, hundreds of research papers and millions of dollars in research funding) I say:
+
+- When building models, there are incremental methods that can find the models
+  after very few samples.
+- This is because the main message of most models is contained in just a few  
+  variables.
+
+I'm not the first to say these things [^semi]. So it is a little strange that someone else has not offer something like this simpler synthesis. But maybe
+our culture prefers complex solutions:
+
+> Simplicity is a great virtue but it requires hard work to achieve it and education to appreciate it. And to make matters worse: complexity sells better: Edsger W. Dijkstra 
+
+By making things harder than they need to be, companies can motivate the sale  of intricate tools to clients who wished there was a simpler way. Well, maybe there is.
+
+[^semi]: From Wikipedia: The manifold hypothesis posits that many high-dimensional data sets that occur in the real world actually lie along low-dimensional latent manifolds inside that high-dimensional space. As a consequence of the manifold hypothesis, many data sets that appear to initially require many variables to describe, can actually be described by a comparatively small number of variables, likened to the local coordinate system of the underlying manifold.
+
+This is also known as the manifold assumption in semi-supervised learning
+
+ I suggest here a refactoring old analytics into something new.
+
+  we seek succinct descriptions that just include that (very short) main message
+
+[^pigs]: Menzies, Tim, John Black, Joel Fleming, and Murray Dean. "An expert system for raising pigs." In The first Conference on Practical Applications of Prolog’.  1992. http://aturing.umcs.maine.edu/~meadow/courses/cos301/raising-pigs.pdf
+
+what to add to what we currently do,  policy from data. 
 # inference
 every section needs definiton, tutorial , applciation (references), something about state of the art
 
