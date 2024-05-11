@@ -8,56 +8,96 @@ and Tim Menzies
 
 ## Summary
 
-We are concerned with simplifying the process of analytics, which involves extracting high-quality insights from large quantities of data. We advocate for more efficient and accessible analytical methods that require fewer data samples and less complexity. This allows for easier verification and understanding of results. We  highlights the benefits of using incremental methods in building models that can provide valuable insights with minimal data.
+This book show ways to simplify the process of analytics, which
+involves extracting high-quality  insights from large quantities
+of data. We advocate for more efficient and  accessible analytical
+methods that require fewer data samples and less  complexity. This
+allows for easier verification and understanding of results. We
+highlights the benefits of using incremental methods  in building
+models that can provide valuable insights with minimal data.
 
-We  also critique the prevailing preference for complex solutions in the industry, suggesting that simplicity could offer more practical and appreciable benefits but is often overlooked due to commercial interests. The call is for a shift towards simplicity in analytics, making it faster, smarter, and more flexible, to better serve practical needs and enhance comprehensibility.
+This  book is also a critique the prevailing preference for complex solutions
+in the industry,  suggesting that simplicity could offer more
+practical and appreciable benefits but is often overlooked due to
+commercial interests. The call is for a shift towards simplicity
+in analytics, making it faster, smarter, and more flexible, to
+better serve practical needs and enhance comprehensibility.
 
 ## Introduction
 
-Suppose we want to use data to make policies-- about what to do, what to avoid, what to do better, etc etc. How to do that?
+Suppose we want to use data to make policies-- about what to do,
+what to avoid, what to do better, etc etc. How to do that?
 
-This process is called _analytics_, i.e. the reduction of large amounts of low-quality data into tiny high-quality statements. Think of it as "finding the diamonds in the dust".  
+This process is called _analytics_, i.e. the reduction of large
+amounts of low-quality data into tiny high-quality statements. Think
+of it as "finding the diamonds in the dust".
 
-Many people have been doing data-driven analytics for decades.  So it seems the right time  to ask how can we make  analytics  simpler, smarter, faster, more flexible and more understandable?
+Many people have been doing data-driven analytics for decades.  So
+it seems the right time  to ask how can we make  analytics  simpler,
+smarter, faster, more flexible and more understandable?
 
-For example,  according to Tom Zimmermann (from Microsoft Research), there
-are many things we want to do with analytics:
+For example,  according to Tom Zimmermann (from Microsoft Research),
+there are many things we want to do with analytics:
 
 <img alt="[tasks]" src="docs/buse.png" width=750 align=center>
 
-Note all the different algorithms in all the boxes.  Before I new better, I used to study
-those algorithms as separate  things. Now I see them as very similar things,
-all of which call the same  shared   underling structure (so once we code one of them, we can quickly code up the rest)
+Note all the different algorithms in all the boxes.  Before I new
+better:
 
-For another example,
- before I knew better, I'd explore 100,000s of possibilities to find
-patterns in the data. But these days, I can do the same analysis with 30 samples, or less [^smo1]. This means if someone wants to check my conclusions, they only need to review a few dozen samples. Such a review was impossible using prior methods
-since the reasoning was so complicated.
+- I used to study those algorithms as separate  things. Now
+I see them as very similar things, all of which call the same  shared
+underling structure (so once we code one of them, we can quickly
+code up the rest)
+- I'd explore 100,000s of
+possibilities to find patterns in the data (e.g. during a "what-if" query). 
+But these days, I can
+do the same analysis with 30 samples, or less [^smo1]. This means
+if someone wants to check my conclusions, they only need to review
+a few dozen samples.  Such a review was impossible using prior
+methods since the reasoning was so complicated.
 
-[^smo1]: Using sequential model optimization (see later in this document).
+[^smo1]: Using semi-supervised multi-objective optimization via sequential model
+    optimization (which is all described, later in this document).
 
-Why can I do things so easily? Well,
-based on three decades of work on analytics [^pigs] (which includes the work of 20 Ph.D. students, hundreds of research papers and millions of dollars in research funding) I say:
+Why can I do things so easily? Well,  based on three decades of work
+on analytics [^pigs] (which includes the work of 20 Ph.D. students,
+hundreds of research papers and millions of dollars in research
+funding) I say:
 
 - When building models, there are incremental methods that can find those models
   after very few samples.
 - This is because the main message of most models is contained in just a few  
-  variables.
+  variables [:keys].
 
-I'm not the first to say these things [^semi]. So it is a little strange that someone else has not offer something like this simpler synthesis. But maybe
-our culture prefers complex solutions:
+[^keys]: Menzies, Tim, David Owen, and Julian Richardson. "The
+strangest thing about software." Computer 40.1 (2007): 54-60
+https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=4069195
 
-> Simplicity is a great virtue but it requires hard work to achieve it and education to appreciate it. And to make matters worse: complexity sells better: Edsger W. Dijkstra 
+I'm not the first to say these things [^semi]. So it is a little
+strange that someone else has not offer something like this simpler
+synthesis. But maybe our culture prefers complex solutions:
 
-By making things harder than they need to be, companies can motivate the sale  of intricate tools to clients who wished there was a simpler way. Well, maybe there is.
+> Simplicity is a great virtue but it requires hard work to achieve
+it and education to appreciate it. And to make matters worse:
+complexity sells better: Edsger W. Dijkstra
 
-[^semi]: From Wikipedia: The manifold hypothesis posits that many high-dimensional data sets that occur in the real world actually lie along low-dimensional latent manifolds inside that high-dimensional space. As a consequence of the manifold hypothesis, many data sets that appear to initially require many variables to describe, can actually be described by a comparatively small number of variables, likened to the local coordinate system of the underlying manifold.
+By making things harder than they need to be, companies can motivate
+the sale  of intricate tools to clients who wished there was a
+simpler way. Well, maybe there is.
 
-##  In the beginning ...
+[^semi]: From Wikipedia: The manifold hypothesis posits that many
+high-dimensional data sets that occur in the real world actually
+lie along low-dimensional latent manifolds inside that high-dimensional
+space. As a consequence of the manifold hypothesis, many data sets
+that appear to initially require many variables to describe, can
+actually be described by a comparatively small number of variables,
+likened to the local coordinate system of the underlying manifold.
+
+## In the beginning ...
 
 ### ... There was data
 
-This code reads comma-seperated-files whose first line described each column.
+This code reads comma-separated-files whose first line described each column.
 
 Clndrs|Volume|Model|origin|Lbs-|Acc+|Mpg+
 ------|-----|------|------|-----|---|----
@@ -74,45 +114,81 @@ Clndrs|Volume|Model|origin|Lbs-|Acc+|Mpg+
 
 Just to explain the column names:
 
-- Names starting with `Uppercase` are numeric and the other columns are
-symbolic.
-- Names ending with "-","+" or "!" are the _goals_ which must  be minimized,
-maximized or predicted. The other columns are observables or controllables
-used to reach the goals.
+- Names starting with `Uppercase` are numeric and the other columns
+are symbolic.  
+- Names ending with "-","+" or "!" are the _goals_
+which must  be minimized, maximized or predicted. The other columns
+are observables or controllables used to reach the goals.
 
 The rows are all examples of some function $Y=F(X)$ where:
 
 - $Y$ are the goals (also called the dependents)
 - $X$ are the observables or controllables (also called the independents)
+- $F$ is the model we want to generate.
 
 For example,  the above table is about motor cars:
 
-- Lighter cars cost less to build since they use less metal. Hence `Lbs-` (minimize weight).
-- Faster, fuel effecient cars  are easier to sell. Hence `Acc+` (maximize acceleration) and `Mpg+` (maximize miles per gallon).
+- Lighter cars cost less to build since they use less metal.
+  Hence `Lbs-` (minimize weight).
+- Faster, fuel effecient cars  are easier to sell. Hence `Acc+` (maximize
+   acceleration) and `Mpg+` (maximize miles per gallon).
 
-This rows of this table have all the $X$ and $Y$ values  for each row. In practice, it is often much easier/cheaper/faster to collect the $X$ values:
+The rows of this table are sorted by the distance of each row to
+some mythical best car with least weight, most acceleration and
+miles per hour.  Those rows are then divided into a _smallN_ best rows
+(the first three rows) and rest (the other rows).
 
-- For example, a fisherman glancing up the river at all the fishing spots can see many observables like where is the current, how high is the tide, and what is color of the water;
-  - But if their goal is catching fish, they'll have to spend hours at each spot to work out where the fish are. 
-- For another example, at a glance over a caryard with 1000 cars, a car buyer can quickly count the car color, car manufactors and model, number of doors, number of seats, road clearance and many other independent $X$ values.
- - But if they want to know which can corner the best, or their acceleration on
-    that hill outside their house, or their miles per gallon on their route to work, they will have to take the time to go drive the cars, one at a time.
-- For a final example, when testing software, you can quickly generate millions  of test inputs.
-  - But it could take a lifetime to look at each one to work out what should be the expected output.
+- _smallN_ is our shorthand for   $\sqrt{N}$.
+- We have another shorthand;  _tinyN_  denotes a dozen  ($N=12$) examples.  
 
-]^active1:] Active learning is an incremental learning tactic where, usually, each new example is assessed by a human. The goal of such learning is avoid wearing
-out the humans by asking them too many questions.  
+This rows of this table have all the $X$ and $Y$ values  for each
+row. _Labeling_ is the processing of reading a row's $X$ value,
+then working out the $Y$ value. 
+Labeling  can be very
+slow/expensive/error prone. For example, if your labelling needs a human subject matter
+expert, then those are very busy people who are need to be somewhere else,
+applying their expertise. And even SMEs make mistakes (particularly if you them
+too many things, too quickly).
 
-The rows of this table are sorted by the distance of each row to some mythical
-best car with least weight, most acceleration and miles per hour. 
-Those rows are then divided into a root(N) best (first three rows) and rest
-(the other rows).  
+In practice, it is often much easier/cheaper/faster to collect
+the $X$ values.
+For example:
 
-- Root(N), or $\sqrt{N}$, is a heuristic for separating a small best set
-  from everything else.
+- When you go fishing, you can glance up and down the river
+looking at all the places where you might go fishing.
+But working out where the fish are biting today might mean waiting
+for hours in each spot.
+- When buying a car, you can glance around a car yar to  
+quickly count the car color, car manufacturers  and model, number of
+doors, number of seats, road clearance and many other independent
+$X$ values.  But if you want to know which can corner the best,
+or their acceleration on that hill outside your house, or their
+miles per gallon on your route to work, you will have to take the
+time to go drive the cars, one at a time.
+- When testing software, you can quickly
+generate millions  of test inputs.  But it could take a lifetime
+to look at each one to work out what should be the expected output.
+- When exploring  cost
+estimation, it is relatively easy to count the size of some product.
+What can be much harder is getting a  contracting company
+to tell you their secrets about  who actually worked for how long on
+different parts of that product.
+
+The good news here is that $Y$ values are connected to the $X$ values-- so that
+by
+looking at a lot of $X$ values (which is cheap), we can guess the $Y$
+values without actually labeling them all. One trick for that labelling
+is to cluster the data into small groups (say, of size smallN or tinyN),  label
+one row from each group, then share than label around that cluster. 
+
+[^active1:] Active learning is an incremental learning tactic where,
+usually, each new example is assessed by a human. The goal of such
+learning is avoid wearing out the humans by asking them too many
+questions.
+
+
 
 A really good way to explore a large number of examples.
-
 
 -  we want to 
 minimize (), maximize and maximize
