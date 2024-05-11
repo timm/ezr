@@ -93,7 +93,7 @@ that appear to initially require many variables to describe, can
 actually be described by a comparatively small number of variables,
 likened to the local coordinate system of the underlying manifold.
 
-<img src="docs/gray.png" height=100 width=1000>
+<img src="docs/blue.png" height=100 width=1000>
 
 ## In the beginning ...
 
