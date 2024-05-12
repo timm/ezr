@@ -309,7 +309,7 @@ class COLS(OBJ):
 
 ### Reading rows into DATA.
 
-<detail closed>
+<details closed>
 
 <summary>The DATA class</summary>
 
