@@ -93,12 +93,9 @@ that appear to initially require many variables to describe, can
 actually be described by a comparatively small number of variables,
 likened to the local coordinate system of the underlying manifold.
 
-<img src="docs/blue.png" height=100 width=1000>
+<img src="docs/data.png"  width=900>
 
-## In the beginning ...
-
-
-### ... There was data
+## It Starts with Data 
 
 This code reads comma-separated-files whose first line described
 each column.
@@ -137,7 +134,8 @@ For example,  the above table is about motor cars:
 - Faster, fuel effecient cars  are easier to sell. Hence `Acc+` (maximize
    acceleration) and `Mpg+` (maximize miles per gallon).
 
-The rows of this table are sorted by the distance of each row to
+The rows of this table are sorted by  _distance to heaven_; i.e the
+distance of each row to
 some mythical best car with least weight, most acceleration and
 miles per hour.  Those rows are then divided into a _smallN_ best rows
 (the first three rows) and rest (the other rows).
@@ -231,43 +229,71 @@ usually, each new example is assessed by a human. The goal of such
 learning is avoid wearing out the humans by asking them too many
 questions.
 
-### Labelling, and Beyond
+## Labelling, and Beyond
 
-Now the fun begins. Because two things are true. Firstly, all the above is very
-easy to code (no kidding-- it takes around a hundred lines of Python to code the above).
-Secondly, once that is coded we have all the parts to explore a very large
-number of other tasks. 
+Now the fun begins. Because three things are true:
 
-> [!NOTE]
-> Useful information that users should know, even when skimming content.
+1. All the above is very easy to code (no kidding- it takes around a hundred lines 
+   of Python to code the above.
+2. Once that is coded, then:
+   - We have most of the parts needed explore a very large number of other tasks.
+   - And we can complete  those tasks using very few labels.
 
-> [!TIP]
-> Helpful advice for doing things better or more easily.
+To see this, lets list what we get from the above:
 
-> [!IMPORTANT]
-> Key information users need to know to achieve their goal.
+(Aside:  in the following, 
+the words NUM, SYM, DATA, COLS, BIN refers to the five classes used in this system.)
 
-> [!WARNING]
-> Urgent info that needs immediate user attention to avoid problems.
+- We have to load data from a csv file and read the row1  names.
+- We have to parse those names to generate NUMeric or SYMbolic columns.
+- We have to read the other rows and add their information into the NUMeric or
+  SYMbolic columns.
+- We need a sort the rows into (say) root(N) `best` and `rest` using that distance to heaven calculation.
+  - This in turn means we need a `dist()`ance function
+- Our classifier  needs to know the `like()`lihood of a row belonging to `best` or `rest`.  
 
-> [!CAUTION]
-> Advises about risks or negative outcomes of certain actions.
+Note that `dist()` and `like()` will be defined recursively.  That is to say, if want to
+reason about distance and likelihood of a row, we will recurse to call `dist()` and `like()` methods
+inside NUM or SYM.
+
 
 <details>
 
-<summary>Tips for collapsed sections</summary>
+<summary>Reading a csv, use names on row1 to make NUMs and SYMs</summary>
 
-### You can add a header
+```python
+import re,ast
+from typing import Any,Iterable,Callable
+from fileinput import FileInput as file_or_stdin 
 
-You can add text within a collapsed section. 
+def coerce(s:str) -> Any: # s is a int,float,bool, or a string
+  try: return ast.literal_eval(s) # 
+  except Exception:  return s
 
-You can add an image or a code block, too.
+def csv(file=None) -> Iterable[Row]: 
+  with file_or_stdin(file) as src: # read from file or standard input
+    for line in src:
+      line = re.sub(r'([\n\t\r"\’ ]|#.*)', '', line) # kill comments,  white space
+      if line: yield [coerce(s.strip()) for s in line.split(",")]
 
-```ruby
-   puts "Hello World"
+class COLS(OBJ): # turns a list of names into NUMs and SYMs.
+  def __init__(i, names: list[str]): 
+    i.x, i.y, i.all, i.names, i.klass = [], [], [], names, None
+    for at,txt in enumerate(names):
+      a,z = txt[0], txt[-1]
+      col = (NUM if a.isupper() else SYM)(at=at,txt=txt)
+      i.all.append(col)
+      if z != "X": # for cols we are not ignoring, maybe make then klass,x, or y
+        (i.y if z in "!+-" else i.x).append(col)
+        if z == "!": i.klass= col
+
+  def add(i,row: Row) -> Row: # summarize a row into the NUMs and SYms
+    [col.add(row[col.at]) for col in i.all if row[col.at] != "?"]
+    return row
 ```
-
 </details>
+
+
 
 A really good way to explore a large number of examples.
 
