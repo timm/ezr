@@ -239,23 +239,33 @@ Now the fun begins. Because three things are true:
    - We have most of the parts needed explore a very large number of other tasks.
    - And we can complete  those tasks using very few labels.
 
-To see this, lets list what we get from the above:
+To see this, lets list what we get from the above. All that functionality will be divided into just a few classes: 
 
-(Aside:  in the following, 
-the words NUM, SYM, DATA, COLS, BIN refers to the five classes used in this system.)
+- NUM, SYM :  summarize numeric or symbolic columns
+- DATA:  stores rows, and their summaries.
+- COLS: is a helper class that reads row one of our csv files, and
+  generates the right NUMs and SYMs.
+- others : to be discussed later
 
+What do these classes do? Well:
 - We have to load data from a csv file and read the row1  names.
-- We have to parse those names to generate NUMeric or SYMbolic columns.
+- We have to parse those names to generate NUMeric or SYMbolic columns
+  (using COLS)
 - We have to read the other rows and add their information into the NUMeric or
-  SYMbolic columns.
+  SYMbolic columns (using   the `add()` method).
 - We need a sort the rows into (say) root(N) `best` and `rest` using that distance to heaven calculation.
   - This in turn means we need a `dist()`ance function
 - Our classifier  needs to know the `like()`lihood of a row belonging to `best` or `rest`.  
 
-Note that `dist()` and `like()` will be defined recursively.  That is to say, if want to
-reason about distance and likelihood of a row, we will recurse to call `dist()` and `like()` methods
-inside NUM or SYM.
+Note that `add()`, `dist()` and `like()` will be defined recursively:
 
+- If want to
+reason about distance and likelihood of a row, we will recurse to call `dist()` and `like()` methods
+inside NUM or SYM. 
+- If we `add()` a row to a DATA, then that
+addition will call `NUM.add()` and `SYM.add()`, recursively.
+
+### Reading CSV files into rows
 
 <details closed>
 
@@ -297,6 +307,27 @@ class COLS(OBJ):
 ```
 </details>
 
+### Reading rows into DATA.
+
+<detail closed>
+
+<summary>The DATA class</summary>
+
+```python
+Class DATA(OBJ):
+  def __init__(i, src=Iterable[Row], order=False, fun=None):
+    i.rows, i.cols = [], None
+    [i.add(lst,fun) for lst in src]
+    if order: i.order()
+
+  def add(i, row:Row, fun:Callable=None):
+    if i.cols: 
+      if fun: fun(i,row)
+      i.rows += [i.cols.add(row)]
+    else: 
+      i.cols = COLS(row)
+```
+</summary>
 
 
 A really good way to explore a large number of examples.
