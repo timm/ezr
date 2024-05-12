@@ -266,17 +266,20 @@ import re,ast
 from typing import Any,Iterable,Callable
 from fileinput import FileInput as file_or_stdin 
 
-def coerce(s:str) -> Any: # s is a int,float,bool, or a string
+def coerce(s:str) -> Any:
+  "s is a int,float,bool, or a string"
   try: return ast.literal_eval(s) # 
   except Exception:  return s
 
 def csv(file=None) -> Iterable[Row]: 
-  with file_or_stdin(file) as src: # read from file or standard input
+  "read from file or standard input"
+  with file_or_stdin(file) as src: 
     for line in src:
       line = re.sub(r'([\n\t\r"\’ ]|#.*)', '', line) # kill comments,  white space
       if line: yield [coerce(s.strip()) for s in line.split(",")]
 
-class COLS(OBJ): # turns a list of names into NUMs and SYMs.
+class COLS(OBJ): 
+  "turns a list of names into NUMs and SYMs"
   def __init__(i, names: list[str]): 
     i.x, i.y, i.all, i.names, i.klass = [], [], [], names, None
     for at,txt in enumerate(names):
@@ -287,7 +290,8 @@ class COLS(OBJ): # turns a list of names into NUMs and SYMs.
         (i.y if z in "!+-" else i.x).append(col)
         if z == "!": i.klass= col
 
-  def add(i,row: Row) -> Row: # summarize a row into the NUMs and SYms
+  def add(i,row: Row) -> Row: 
+    "summarize a row into the NUMs and SYMs"
     [col.add(row[col.at]) for col in i.all if row[col.at] != "?"]
     return row
 ```
