@@ -307,6 +307,27 @@ class COLS(OBJ):
 ```
 </details>
 
+<details closed>
+
+<summary>Example: names to columns</summary>
+
+```python
+top=["Clndrs","Volume","HpX","Model","origin","Lbs-","Acc+","Mpg+"]
+[print(col) for col in COLS(top).all]
+
+#==>
+
+NUM{:at 0, :heaven 1, :hi -1e+32, :lo 1e+32, :m2 0, :mu 0, :n 0, :txt Clndrs}
+NUM{:at 1, :heaven 1, :hi -1e+32, :lo 1e+32, :m2 0, :mu 0, :n 0, :txt Volume}
+NUM{:at 2, :heaven 1, :hi -1e+32, :lo 1e+32, :m2 0, :mu 0, :n 0, :txt HpX}
+NUM{:at 3, :heaven 1, :hi -1e+32, :lo 1e+32, :m2 0, :mu 0, :n 0, :txt Model}
+SYM{:at 4, :has {}, :n 0, :txt origin}
+NUM{:at 5, :heaven 0, :hi -1e+32, :lo 1e+32, :m2 0, :mu 0, :n 0, :txt Lbs-}
+NUM{:at 6, :heaven 1, :hi -1e+32, :lo 1e+32, :m2 0, :mu 0, :n 0, :txt Acc+}
+NUM{:at 7, :heaven 1, :hi -1e+32, :lo 1e+32, :m2 0, :mu 0, :n 0, :txt Mpg+}
+```
+</details>
+
 ### Reading rows into DATA.
 
 <details closed>

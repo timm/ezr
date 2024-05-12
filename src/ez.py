@@ -232,6 +232,10 @@ class DATA(OBJ):
   def clone(i,lst:Iterable[Row]=[],order=False) -> DATA:  
     return DATA([i.cols.names]+lst,order=order)
 
+  def stats(i, cols=None, what:str=None):
+    return {col.txt:show(getattr(col,what or "mid")()) 
+            for col in cols or i.cols.y}  
+  
   def order(i) -> Rows:
     i.rows = sorted(i.rows, key=i.d2h, reverse=False)
     return i.rows
@@ -417,12 +421,12 @@ class MAIN:
 
   def header():
     top=["Clndrs","Volume","HpX","Model","origin","Lbs-","Acc+","Mpg+"]
-    d=DATA([top])
-    [print(col) for col in d.cols.all]
+    [print(col) for col in COLS(top).all]
 
   def data(): 
    d=DATA(csv(the.file))
-   print(d.cols.x[1])
+   print("mid", d.stats()) 
+   print("div", d.stats(cols=d.cols.all,what="div")) 
 
   def rows():
     d1=DATA(csv(the.file))
