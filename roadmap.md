@@ -257,7 +257,7 @@ reason about distance and likelihood of a row, we will recurse to call `dist()` 
 inside NUM or SYM.
 
 
-<details>
+<details closed>
 
 <summary>Reading a csv, use names on row1 to make NUMs and SYMs</summary>
 
