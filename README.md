@@ -19,4 +19,5 @@ Find some csv data where the first row names the columns
 - Names ending in "+" or "-" are goals to be minimized.
 - Names ending in "!" show the klass column (there can only be one).
 
-For examples, see the [/data](http://data) directory.
+For examples, see this [data](https://github.com/timm/ezr/tree/main/data) 
+directory.

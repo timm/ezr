@@ -37,7 +37,11 @@ name:
 	read -p "word> " w; figlet -f mini -W $$w  | gawk '$$0 {print "#        "$$0}' |pbcopy
 
 install:
-	pip install -e .
+	pip install -e . --break-system-packages
+
+publish: install
+	python3 setup.py sdist
+	twine upload dist/*
 
 R=20
 
