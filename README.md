@@ -1,3 +1,5 @@
+<a href="https://doi.org/10.5281/zenodo.11183059"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.11183059.svg" alt="DOI"></a>
+
 # ezr.py
 
 Explanation system for semi=supervised multi-objective optimization. 
@@ -5,9 +7,11 @@ Explanation system for semi=supervised multi-objective optimization.
 
 ## Install
 
-Download ez.py.
+From pip: `pip install ezr`
 
-Test:
+From Gitug: download ez.py.
+
+Test installation:
 
     ./ez.py -h
 

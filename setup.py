@@ -1,14 +1,21 @@
 from setuptools import setup,find_packages
 
+try:
+    import pypandoc
+    long_description = pypandoc.convert_file('README.md', 'rst')
+except(IOError, ImportError):
+    long_description = open('README.md').read()
+
 setup(
     name='ezr',
+    description='Semi-supervised explanations for incremental multi-objective optimization',
+    long_description=long_description,
     version='0.1.0',
     license="BSD2",
     py_modules=['ezr'],
     url='https://github.com/timm/ezr',
     author='Tim Menzies',
     author_email='timm@ieee.org',
-    description='Semi-supervised explanations for incremental multi-objective optimization',
     install_requires=[],
     packages=find_packages(),
     classifiers=[

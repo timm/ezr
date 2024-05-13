@@ -24,7 +24,7 @@ name:
 	read -p "word> " w; figlet -f mini -W $$w  | gawk '$$0 {print "#        "$$0}' |pbcopy
 
 install   : ## install as  a local python package
-	pip install -e . --break-system-packages
+	pip install -e  . --break-system-packages 
 
 publish   : install     ## publish at https://pypi.org (needs credientials)
 	python3 setup.py sdist
