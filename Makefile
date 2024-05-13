@@ -3,48 +3,35 @@ MAKEFLAGS += --warn-undefined-variables
 .SILENT: 
 Root=$(shell git rev-parse --show-toplevel)
 
-
-help          :  ## show help
+help      :  ## show help
 	awk 'BEGIN {FS = ":.*?## "; print "\nmake [WHAT]" } \
 			/^[^[:space:]].*##/ {printf "   \033[36m%-10s\033[0m : %s\n", $$1, $$2} \
 			' $(MAKEFILE_LIST)
+	tput setaf 6
+	echo ''
+	echo '         O  o'
+	echo '    _\_   o'
+	echo ' \\/  o\ .'
+	echo ' //\___='
+	echo "    ''"
+	tput sgr0 
 
-saved         : ## save and push to main branch 
+saved     : ## save and push to main branch 
 	read -p "commit msg> " x; y=$${x:-saved}; git commit -am "$$y}"; git push;  git status; echo "$$y, saved!"
  
-
-FILES=$(wildcard *.py)
-docs: 
-	echo "docs..."
-	$(MAKE) -B $(addprefix ~/tmp/, $(FILES:.py=.pdf))  $(addprefix ../docs/, $(FILES:.py=.html))
- 
-~/tmp/%.pdf   : %.py  ## py ==> pdf
-	mkdir -p ~/tmp
-	echo "$@" 
-	a2ps                           \
-		-qBr                         \
-		--chars-per-line 100           \
-		--file-align=fill               \
-		--line-numbers=1                 \
-		--borders=no                      \
-		--pro=color                        \
-		--columns  3                        \
-		-M letter                            \
-		-o ~/tmp/$^.ps $^ ;                   \
-	ps2pdf ~/tmp/$^.ps $@ ;  rm ~/tmp/$^.ps; \
 
 name:
 	read -p "word> " w; figlet -f mini -W $$w  | gawk '$$0 {print "#        "$$0}' |pbcopy
 
-install:
+install   : ## install as  a local python package
 	pip install -e . --break-system-packages
 
-publish: install
+publish   : install     ## publish at https://pypi.org (needs credientials)
 	python3 setup.py sdist
 	twine upload dist/*
 
+# =============================
 R=20
-
 
 bores=~/gits/txt/aa24/data/Process/small
 
