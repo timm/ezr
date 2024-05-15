@@ -8,6 +8,8 @@ OPTIONS:
   -s --seed     random number seed    = 1234567891    
   -g --go       start up action       = help
   -f --file     data file             = ../data/auto93.csv    
+  -n --ntiny    a small number        = 12   
+  -N --Nsmall   a larger number       = .5
     
   Discretize:
   -C --Cuts     max number divisions of numerics = 16
@@ -17,8 +19,6 @@ OPTIONS:
   -m --m        low frequency kludge  = 2   
     
   Optimize:    
-  -n --ntiny    a small number        = 12   
-  -N --Nsmall   a larger number       = .5
   -i --init     initial eval budget   = 4
   -B --Budget   max eval budget       = 20
   -T --Top      keep top todos        = .8 
