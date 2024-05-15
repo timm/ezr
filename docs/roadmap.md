@@ -8,15 +8,15 @@ and Tim Menzies
 
 ## Summary
 
-This book show ways to simplify the process of analytics, which
-involves extracting high-quality  insights from large quantities
-of data. We advocate for more efficient and  accessible analytical
-methods that require fewer data samples and less  complexity. This
-allows for easier verification and understanding of results. We
-highlights the benefits of using incremental methods  in building
+This book show ways to simplify the process of coding up an AI.
+ We advocate for more efficient, simpler, and  accessible 
+methods that require fewer data samples. This
+allows for faster development, 
+easier verification and understanding of results. We
+highlight the benefits of using incremental methods  in building
 models that can provide valuable insights with minimal data.
 
-This  book is also a critique the prevailing preference for complex solutions
+This  book is a critique of the prevailing preference for complex solutions
 in the industry,  suggesting that simplicity could offer more
 practical and appreciable benefits but is often overlooked due to
 commercial interests. The call is for a shift towards simplicity
