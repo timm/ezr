@@ -64,3 +64,6 @@ $(Root)/out/%.out : $(bores)/%.csv
 
 $(Root)/out/%.out : $(flashes)/%.csv
 	echo "-- $@"; python3 eg.py -R $R -f $^ -t smoy | tee $@
+
+clean:
+	rm -rf __pycache__ ezr.egg-info
