@@ -10,16 +10,17 @@ OPTIONS:
   -f --file     data file             = ../data/auto93.csv    
     
   Discretize:
-  -B --Bins     max number of bins    = 16
+  -C --Cuts     max number divisions of numerics = 16
 
   Classify:     
   -k --k        low frequency kludge  = 1 
   -m --m        low frequency kludge  = 2   
     
   Optimize:    
-  -n --budget0  init evals            = 4   
-  -N --Budget   max evals             = 16 
-  -b --best     ratio of top          = .5
+  -n --ntiny    a small number        = 12   
+  -N --Nsmall   a larger number       = .5
+  -i --init     initial eval budget   = 4
+  -B --Budget   max eval budget       = 20
   -T --Top      keep top todos        = .8 
   
   Explain: 
@@ -120,7 +121,7 @@ class COL(OBJ):
     out = {}
     [send2bin(row[i.at],y) for y,lst in classes.items() for row in lst if row[i.at]!="?"] 
     return i.binsComplete(sorted(out.values(), key=lambda z:z.lo), 
-                   small = small or (sum(len(lst) for lst in classes.values())/the.Bins))
+                   small = small or (sum(len(lst) for lst in classes.values())/the.Cuts))
 
 # MARK: SYM 
 # summarizes a stream of numbers.
@@ -173,7 +174,7 @@ class NUM(COL):
       i.hi  = max(x, i.hi) 
 
   def bin(i, x:float) -> int: 
-    return min(the.Bins - 1, int(the.Bins * i.norm(x)))
+    return min(the.Cuts - 1, int(the.Cuts * i.norm(x)))
 
   def binsComplete(i, bins: list[BIN], small=2) -> list[BIN]: 
     bins = merges(bins,merge=lambda x,y:x.merge(y,small))
@@ -263,11 +264,11 @@ def smo(data0:DATA, score=lambda B,R: B-R) -> Row:
     return rows[:chop]
   #-----------
   random.shuffle(data0.rows)
-  done, todo = data0.rows[:the.budget0], data0.rows[the.budget0:]
+  done, todo = data0.rows[:the.init], data0.rows[the.init:]
   data1 = data0.clone(done, order=True) 
-  for i in range(the.Budget):
+  for i in range(the.Budget - the.init):
     if len(todo) < 3: break
-    n = int(len(done)**the.best + .5) 
+    n = int(len(done)**the.Nsmall + .5) 
     top,*todo = acquire(data0.clone(data1.rows[:n]),
                         data0.clone(data1.rows[n:]),
                         todo)
@@ -456,7 +457,7 @@ class MAIN:
 
   def bore2():
     d    = DATA(csv(the.file),order=True)
-    n    = int(len(d.rows)**.5) 
+    n    = int(len(d.rows)**the.Nsmall) 
     for col in d.cols.x:
       print("")
       for bin in col.bins(dict(best=d.rows[:n] ,rest=d.rows[-n:])):
@@ -464,7 +465,7 @@ class MAIN:
 
   def contrasts():
     d    = DATA(csv(the.file),order=True)
-    n    = int(len(d.rows)**.5)
+    n    = int(len(d.rows)**the.Nsmall)
     best = d.rows[:n] 
     rest = shuffle(d.rows[n:])[-n:]
 
