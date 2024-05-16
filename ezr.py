@@ -8,8 +8,8 @@ OPTIONS:
   -s --seed     random number seed    = 1234567891    
   -g --go       start up action       = help
   -f --file     data file             = ../data/auto93.csv    
-  -n --ntiny    a small number        = 12   
-  -N --Nsmall   a larger number       = .5
+  -n --ntiny    a tiny number         = 12   
+  -N --Nsmall   a small number        = .5
     
   Discretize:
   -C --Cuts     max number divisions of numerics = 16
@@ -24,7 +24,7 @@ OPTIONS:
   -T --Top      keep top todos        = .8 
   
   Explain: 
-  -l --leaf     leaf size             = 2 """
+  -l --leaf     min leaf size         = 2 """
 
 from __future__ import annotations   # <1> ## types  
 import sys
@@ -370,7 +370,7 @@ def coerce(s:str) -> Any:
 def csv(file=None) -> Iterable[Row]:
   with file_or_stdin(file) as src:
     for line in src:
-      line = re.sub(r'([\n\t\r"\’ ]|#.*)', '', line)
+      line = re.sub(r'([\n\t\r ]|#.*)', '', line)
       if line: yield [coerce(s.strip()) for s in line.split(",")]
 
 def cli(d:dict) -> None: 
