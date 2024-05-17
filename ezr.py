@@ -30,7 +30,6 @@ import sys
 sys.dont_write_bytecode = True
 from collections import Counter
 import re,ast,copy,json,math,random
-from typing import Any,Iterable,Callable
 from fileinput import FileInput as file_or_stdin 
 
 # ----------------------------------------------------------------------------------------
@@ -41,6 +40,9 @@ big = 1E32
 tiny = 1/big
 
 # Special type annotations
+from typing import Any,Iterable,Callable
+DontKnow = "?"
+
 class Row    : has:list[Any]
 class Rows   : has:list[Row]
 class Classes: has:dict[str, Rows] # a dictionary, one key for each class 
@@ -95,7 +97,7 @@ class BIN(OBJ):
      
   def selects(i, row: Row) -> bool:  #-----------------------------------------------[2]
     x = row[i.at]
-    return  x=="?" or i.lo == x == i.hi or i.lo <= x < i.hi
+    return  x==DontKnow or i.lo == x == i.hi or i.lo <= x < i.hi
    
   def selectsRejects(i, classes: Classes) -> tuple[Classes,Classes]:
     yes = {k:[] for k in classes}
@@ -118,8 +120,9 @@ class COL(OBJ):
       if k not in out: out[k] = BIN(i.at,i.txt,x)
       out[k].add(x,y)
     out = {}
-    [send2bin(row[i.at],y) for y,lst in classes.items() for row in lst if row[i.at]!="?"] 
-    return i.binsComplete(sorted(out.values(), key=lambda z:z.lo), 
+    [send2bin(row[i.at],y) for y,lst in classes.items() for row in lst
+                                                         if row[i.at]!=DontKnow]
+    return i.binsComplete(sorted(out.values(), key=lambda z:z.lo),
                    small = small or (sum(len(lst) for lst in classes.values())/the.Cuts))
 
 # MARK: SYM 
@@ -133,7 +136,7 @@ class COL(OBJ):
 class SYM(COL):
   def __init__(i,**kw): super().__init__(**kw); i.has = {}
   def add(i, x:Any):
-    if x != "?":
+    if x != DontKnow:
       i.n += 1
       i.has[x] = i.has.get(x,0) + 1
  
@@ -164,7 +167,7 @@ class NUM(COL):
     i.heaven = 0 if i.txt[-1]=="-" else 1
 
   def add(i, x:Any): #= sd
-    if x != "?":
+    if x != DontKnow:
       i.n += 1
       d = x - i.mu
       i.mu += d/i.n
@@ -183,7 +186,7 @@ class NUM(COL):
     return bins
   
   def d2h(i, x:float) -> float: return abs(i.norm(x) - i.heaven)
-  def norm(i,x:float) -> float: return x=="?" and x or (x - i.lo) / (i.hi - i.lo + tiny)   
+  def norm(i,x:float) -> float: return x==DontKnow and x or (x - i.lo) / (i.hi-i.lo+tiny)
 
   def div(i) -> float : return  0 if i.n < 2 else (i.m2 / (i.n - 1))**.5
   def mid(i) -> float : return i.mu
@@ -211,7 +214,7 @@ class COLS(OBJ):
         if z == "!": i.klass= col
 
   def add(i,row: Row) -> Row:
-    [col.add(row[col.at]) for col in i.all if row[col.at] != "?"]
+    [col.add(row[col.at]) for col in i.all if row[col.at] != DontKnow]
     return row
 
 # MARK: DATA
@@ -249,7 +252,7 @@ class DATA(OBJ):
 
   def loglike(i, row:Row, nall:int, nh:int) -> float:
     prior = (len(i.rows) + the.k) / (nall + the.k*nh)
-    likes = [c.like(row[c.at],prior) for c in i.cols.x if row[c.at] != "?"]
+    likes = [c.like(row[c.at],prior) for c in i.cols.x if row[c.at] != DontKnow]
     return sum(math.log(x) for x in likes + [prior] if x>0)
 
 # MARK: smo 
@@ -384,10 +387,13 @@ def cli(d:dict) -> None:
 
 # ### Printing  
 def show(x:Any, n=3) -> Any:
-  if   isinstance(x,(int,float)) : x= x if int(x)==x else round(x,n)
+  """Truncate long lists, round floats, recurs into dictionary values,
+  do print 'secret' slots (those starting with '_')."""
+   if   isinstance(x,(int,float)) : x= x if int(x)==x else round(x,n)
   elif isinstance(x,(list,tuple)): x= [show(y,n) for y in x][:10]
   elif isinstance(x,dict): 
-        x= "{"+', '.join(f":{k} {show(v,n)}" for k,v in sorted(x.items()) if k[0]!="_")+"}"
+    x= "{"+', '.join(f":{k} {show(v,n)}" for k,v in sorted(x.items()) 
+                                        if k[0]!="_")+"}"
   return x
 
 def prints(matrix: list[list],sep=' | ') -> None:
