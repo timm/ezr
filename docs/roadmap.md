@@ -17,8 +17,8 @@ highlight the benefits of using incremental methods  in building
 models that can provide valuable insights with minimal data.
 
 This  book is a critique of the prevailing preference for complex solutions
-in the industry,  suggesting that simplicity could offer more
-practical and appreciable benefits but is often overlooked due to
+in the industry. We   suggest  that simplicity can offer more
+practical and appreciable benefits-- but is often overlooked due to
 commercial interests. The call is for a shift towards simplicity
 in analytics, making it faster, smarter, and more flexible, to
 better serve practical needs and enhance comprehensibility.
@@ -63,15 +63,11 @@ Why can I do things so easily? Well,  based on three decades of work
 on analytics [^pigs] (which includes the work of 20 Ph.D. students,
 hundreds of research papers and millions of dollars in research
 funding) I say:
-
-- When building models, there are incremental methods that can find
+\begin{itemize}
+\item When building models, there are incremental methods that can find
 models after very few samples.
-- This is because the main message of most models is contained in
-just a few variables [:keys].
-
-[^keys]: Menzies, Tim, David Owen, and Julian Richardson. "The
-strangest thing about software." Computer 40.1 (2007): 54-60
-https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=4069195
+\item This is because the main message of most models is contained in
+just a few variables~\cite{MenziesOR07}.
 
 I'm not the first to say these things [^semi]. So it is a little
 strange that someone else has not offer something like this simpler
