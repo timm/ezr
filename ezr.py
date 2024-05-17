@@ -1,7 +1,6 @@
 #!/usr/bin/env python3 
 # MARK: help
-"""
-ez.py: Active learning, find best/rest seen so far in a Bayes classifier   
+"""ez.py: Active learning, find best/rest seen so far in a Bayes classifier   
 (c) 2024 Tim Menzies <timm@ieee.org>, BSD-2 license   
 
 OPTIONS:  
