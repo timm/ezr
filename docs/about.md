@@ -17,8 +17,8 @@ And there was light. Our programmer
 
 And in that workflow there was tabular data whose first row defined
 column types. And upper case words were numeric and the others were
-symbols. And some of the words were goals were marked with "!+-"
-denoting things we wanted to predict of  minimize of maximize.  Like
+symbols. And some of the words were goals have special marks
+denoting things we wanted to predict ("!") or  minimize ("-") or maximize ("+").  Like
 so:
 
     Clndrs,Volume,HpX,Model,origin,Lbs-,Acc+,Mpg+
