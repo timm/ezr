@@ -51,7 +51,8 @@ def DATA(): return o(rows=[], cols=[])
 def COLS(lst): return o(x=[], y=[], all=[], klass=None, names=lst)
 
 # SYMs summarize a stream of symbols.
-def SYM(txt=" ",at=0): return o(isNum=False, txt=txt, at=at, n=0, has={})
+def SYM(txt=" ",at=0): 
+  return o(isNum=False, txt=txt, at=at, n=0, has={})
 
 # NUMs summarize a stream of numbers.
 # A trailing "-" or "+" denotes a numeric goal we need to minimize or maximize to 0 or 1.
@@ -64,7 +65,7 @@ def NUM(txt=" ",at=0,has=None):
 # ## Constructors
 
 # Create columns (one for each string in `names`).
-def cols(names):
+def cols(names): 
   cols1 = COLS(names)
   cols1.all = [_cols(cols1,n,s) for n,s in enumerate(names)]
   return cols1
