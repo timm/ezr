@@ -1,6 +1,6 @@
 .
 
-# Easier AI
+# Easier XAI
 
 by Tim Menzies and the EZRites  
 (c) 2024, CC-SA 4.0  
@@ -10,7 +10,7 @@ http://github.com/timm/ezr
 kilowatt-hours per 100 miles (kWh/100m);
 
 >[!NOTE]
-> <b> We present an experiment in coding as much AI in the fewest
+> <b> We present a successful  experiment in coding XAI (explainable AI) in the fewest
 lines of code. The code is written in functional stle (so no classes and lots
 of list comprehensions).
 The work is guided by the [5-lines-per-function](https://coderanch.com/t/733272/engineering/Lines-Code-lines)
