@@ -106,12 +106,35 @@ and `d2h` is the distance from some goals to that  heaven.
 	def norm(num,x): return x if x=="?" else (x-num.lo)/(num.hi - num.lo - 1E-30)
 
 The general Minkowski distance  says that the distance between things
-comes from the distance between their parts raised to some power $p$
-(and boring old Euclidean distance uses $p=2$).
+comes from the distance between their independent `x` columns,  raised to some power $p$.
+Boring old Euclidean distance uses $p=2$, but our programmer knew that
+this is a parameter that can be tuned. She stored all such tuneables
+in a `the` variable. So our Minkowski distance function is:
 
 $$d(x,y)=\left(\sum^n_i (x_i - y_i)^p \)^{1/p}\right)/\left(n^{1/p}\right)$$
 
-We divide by $n^{1/p}$ so all our distances fall between zero and one. 
+Or, in Python:
+	
+	# Distance between two rows
+	def dists(data,row1,row2):
+	  n = sum(dist(col, row1[col.at], row2[col.at])**the.p for col in data.cols.x)
+	  return (n / len(data.cols.x))**(1/the.p)
+	
+	# Distance between two values (called by dists).
+	def dist(col,x,y):
+	  if  x==y=="?": return 1
+	  if not col.isNum: return x != y
+	  x, y = norm(col,x), norm(col,y)
+	  x = x if x !="?" else (1 if y<0.5 else 0)
+	  y = y if y !="?" else (1 if x<0.5 else 0)
+	  return abs(x-y)
+	
+We divide by $n^{1/p}$ so all our distances fall between zero and one.
+
+doty. fing deta between best and rest.
+
+
+The programmer did pause and lok at all
 
 [^rowRoder:] There are many ways to rank examples with multiple objectives. 
 _Binary domination_ says...
