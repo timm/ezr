@@ -162,6 +162,8 @@ normalized to the range 0..1 for min..max, then "heaven" is 0 (if minimizing)
 and 1 (if maximizing). Given N goals there there is a list of heaven points
 and `d2h` is the distance from some goals to that  heaven.
 
+[^rowOrder]: domiantion, etc
+
 ```python
 def d2h(data,row):
   n = sum(abs(norm(num,row[num.at]) - num.maximize)**the.p for num in data.cols.y)

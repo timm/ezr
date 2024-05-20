@@ -6,6 +6,7 @@ ezr.py : an experiment in easier AI. Less is more.
 
 OPTIONS:
   -a --any     #todo's to explore             = 100
+  -b --bins    max #bins in discretization    = 16
   -d --decs    #decimals for showing floats   = 3
   -f --file    csv file for data              = ../data/misc/auto93.csv
   -F --Far     how far to seek faraway        = 0.8
@@ -135,7 +136,7 @@ def mids(data, cols=None):
 
 # Diversity of a column.
 def div(col):
-  return  (0 if col.n <2 else (col.m2/(col.n-1))**.5) if col.isNum else ent(col.has)
+  return  (0 if col.n <2 else (col.m2/(col.n-1))**.5) if col.isNum else ent(col.has)[0]
 
 # Diverstiy of some columns (defaults to `data.cols.x`).
 def divs(data, cols=None): return {col.txt:div(col) for col in cols or data.cols.x}
@@ -146,6 +147,29 @@ def norm(num,x): return x if x=="?" else (x-num.lo)/(num.hi - num.lo - 1E-30)
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # Discretization
+
+def BIN(at,txt,lo,hi,ys=None):
+  return o(at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
+
+def binsDivide(col, classes, small=None):
+  d = {}
+  [_send2bin(col,row[col.at],y,d) for y,rows in classes.items() for row in rows]
+  return sorted(d.values,key=lambda z:z.lo)
+
+def _send2bin(col,x,y,d):
+  if x != "?":
+     k = _bin(col,x)
+     if k not in d: d[k] = BIN(col.at,col.txt,x)
+     d[k].lo = min(d[k].lo, x)
+     d[k].hi = max(d[k].hi, x)
+     d[k].ys = d[k].ys.get(y,0) + 1
+
+def _bin(col,x):
+  return min(the.bins - 1, int(the.bins * norm(col,x)) if col.isNum else x
+
+
+
+    # --  small = small or (sum(len(lst) for lst in classes.values())/the.bins))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Distances
@@ -253,15 +277,38 @@ def smo(data, score=lambda B,R: B-R):
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 def ent(d):
   N = sum(v for v in d.values() if v > 0)
-  return -sum(v/N*math.log(v/N,2) for v in d.values() if v > 0)
+  return -sum(v/N*math.log(v/N,2) for v in d.values() if v > 0),N
 
-def value(d,goal=True,B=1,R=1):
+def bore(d,goal=True,B=1,R=1):
   best,rest = 1E-30,1E-30
   for k,v in d.items():
     if k==goal: best += v
     else: rest += v
   best,rest = best/B, rest/R
   return best**2/(best+rest)
+
+def merged(d1,d2,small=1):
+   d3={}
+   for either in [d1,d2]:
+     for k,v in either.items(): d3[k] = d3.get(k,0) + v
+   e1,n1 = ent(d1)
+   e2,n2 = ent(d2)
+   e3,n3 = ent(d3)
+   if n1 <  small or n2 < small : return d3 # merge if bins too small
+   if e3 <= (n1*e1 + n2*e2)/n3  : return d3 # merge if parts are more complex
+
+def merges(b4, mergeFun):
+  j, now  = 0, []
+  while j <  len(b4):
+    x = b4[j]
+    if j <  len(b4) - 1:
+      y = b4[j+1]
+      if xy := mergeFun(x, y):
+        x = xy
+        j = j+1  # if i can merge, jump over the merged item
+    now += [x]
+    j += 1
+  return b4 if len(now) == len(b4) else merges(now, mergeFun)
 
 def show(x):
   it = type(x)
