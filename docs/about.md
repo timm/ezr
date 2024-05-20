@@ -6,7 +6,7 @@ by Tim Menzies and the EZRites
 (c) 2024, CC-SA 4.0  
 http://github.com/timm/ezr
 
->[!IMPORTANT]
+>[!NOTE]
 > <b> We present an experiment in coding as much AI in the fewest
 lines of code. The code is written LISP-style (lots of functions, not classes),
 guided by Richard Martin's 5-lines-per-function rule (which, sometimes, we break)
