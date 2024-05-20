@@ -9,8 +9,9 @@ http://github.com/timm/ezr
 >[!NOTE]
 > <b> We present an experiment in coding as much AI in the fewest
 lines of code. The code is written LISP-style (lots of functions, not classes),
-guided by Richard Martin's 5-lines-per-function rule (which, sometimes, we break)
-and makes extensive use of sets aod comprehension. Instead of coding standard
+guided by the [5-lines-per-function](https://coderanch.com/t/733272/engineering/Lines-Code-lines)
+rule (which, sometimes, we break).
+It  makes extensive use of sets aod comprehension. Instead of coding standard
 AI algorithms, we look under-the-hood to refactor and combine shared structures.
 Further, we assume that "less is more", both in our coding style and
 in our data processing (so the first we do with any data, is throw
