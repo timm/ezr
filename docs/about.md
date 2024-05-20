@@ -10,7 +10,7 @@ In the beginning there was the data and the data was without form,
 and void; and confusion was upon the face of the humans.  And the
 programmer  said, let there be workflows that can contrast and
  explain the difference between good and bad data [^whycon] [^conplan]
-And there was light. Our programmer 
+And there was light.
 
 [^whycon]: difference between things can be shorter than the things
 [^conplan]: apply the contrast. does it change anything? ktest. lime,
@@ -24,14 +24,14 @@ so:
     Clndrs,Volume,HpX,Model,origin,Lbs-,Acc+,Mpg+
 
 This describes cars. We've decided to ignore horsepower (so it ends
-with and `X`). ALso, we want light cars (since they are cheaper to
+with and `X`). Also, we want light cars (since they are cheaper to
 build and buy), fast acceleration, and good miles per gallon. So
 these get marked with `Lhs-,Acc+,Mpg+`
 
 And the programmer wrote code to turn these names into NUMeric and
 SYMbolic columns, then to store all of them in `all` and (for
-convenience) also in `x` (the independent variables) and `y` (for
-the dependent goals that we want to predict of minimize or maximize).
+convenience) also maybe in `x` (for the independent variables) and maybe in `y` (for
+the dependent goals that we want to predict or  minimize or maximize).
 
 	# define a COLS struct
 	def COL(names): return o(x=[], y=[], all=[], klass=None, names=names)
@@ -65,7 +65,7 @@ in `-` is a numeric goal to be `maximzed`.
 	           mu=0, m2=0, maximize = txt[-1] != "-")
 
 To distinguish NUMs from SYMs, the programmer added a `isNum` flag (which
-as false for SYMs.
+as false for SYMs).
 
 Internally, NUM and SYM are both `o`bjects where `o` is a handy dandy
 struct that knows how to pretty-print itself.
@@ -84,8 +84,8 @@ struct that knows how to pretty-print itself.
 	  if callable(x):  return x.__name__
 	  return x
 
-The programmer did place the rows in a DATA object that held the rows, and their
-summary in a COLS object.
+The programmer did place the rows in a DATA object that held the `rows`. Also,
+a summary of those rows is maintained in `cols` (which is a COLS object).
 
     # define a DATA struct
     def DATA(): return o(rows=[], cols=[])
@@ -112,7 +112,7 @@ and `d2h` is the distance from some goals to that  heaven.
 > [!NOTE]
 > This distance function is a little unusual in that it reports
 distances between the dependent `y` goal values. Usually distance is defined as the
-distance between the independent `x` values-- see `dists` (below).
+distance between the independent `x` values-- see `dists()` (below).
 
 doty. fing deta between best and rest.
 
@@ -129,7 +129,7 @@ Boring old Euclidean distance uses $p=2$, but our programmer knew that
 this is a parameter that can be tuned. She stored all such tuneables
 in a `the` variable. So our Minkowski distance function is:
 
-$$d(x,y)=\left(\sum^n_i (x_i - y_i)^p \)^{1/p}\right)/\left(n^{1/p}\right)$$
+$$d(x,y)=\left(\sum^n_i (x_i - y_i)^p \)}\right)/n\right)^{1/p}$$
 
 This disance is defined bif nuermisa dn is XXX
 Which, in Pythons is:
