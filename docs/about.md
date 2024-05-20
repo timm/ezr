@@ -9,11 +9,11 @@ http://github.com/timm/ezr
 In the beginning there was the data and the data was without form,
 and void; and confusion was upon the face of the humans.  And the
 programmer  said, let there be workflows that can contrast and
- explain the difference between good and bad data [^whycontrast] [^constrast2planning]
+ explain the difference between good and bad data [^whycon] [^conplan]
 And there was light. Our programmer 
 
-[^whycontrast]: difference between things can be shorter than the things
-[^contrast2planning]: apply the contrast. does it change anything? ktest. lime,
+[^whycon]: difference between things can be shorter than the things
+[^conplan]: apply the contrast. does it change anything? ktest. lime,
 
 And in that workflow there was tabular data whose first row defined
 column types. And upper case words were numeric and the others were
