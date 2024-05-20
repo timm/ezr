@@ -119,7 +119,7 @@ def _add2num(num,x,n):
   num.lo = min(x, num.lo)
   num.hi = max(x, num.hi)
   for _ in range(n):
-    if num.has: num.has += [x]
+    if num.has != None: num.has += [x]
     d       = x - num.mu
     num.mu += d / num.n
     num.m2 += d * (x -  num.mu)

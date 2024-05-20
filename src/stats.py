@@ -98,8 +98,8 @@ def sk(nums):
 class eg:
   def aa(): print(adds(NUM(),range(100)))
 
-def egSlurp():
-  print(file2nums("../data/stats.txt"))
+  def file2nums():
+    [print(x) for x in file2nums("../data/stats.txt")]
 
 def eg0(nums):
   all = SAMPLE([x for num in nums for x in num.has])
