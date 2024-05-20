@@ -109,7 +109,7 @@ and `d2h` is the distance from some goals to that  heaven.
 	
 	def norm(num,x): return x if x=="?" else (x-num.lo)/(num.hi - num.lo - 1E-30)
 
-> [:NOTE!] This distance function is a little unusual in that it reports
+> [:NOTE] This distance function is a little unusual in that it reports
 distances between the dependent `y` goal values. Usually distance is defined as the
 distance between the independent `x` values-- see `dists` (below).
 
