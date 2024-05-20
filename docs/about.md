@@ -141,8 +141,8 @@ def adds(col,lst): [add(col,x) for x in lst]; return col
 def add(col,x,n=1):
   if x!="?":
     col.n += n
-    if col.isNum: col.has.get(x,0) + n
-    else _add2num(col,x,n)
+    if col.isNum: _add2num(col,x,n)
+    else: col.has[x] = col.has.get(x,0) + n
   return x
 
 def _add2num(num,x,n):

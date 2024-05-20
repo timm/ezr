@@ -109,13 +109,10 @@ def adds(col,lst): [add(col,x) for x in lst]; return col
 def add(col,x,n=1):
   if x!="?":
     col.n += n
-    (_add2num if col.isNum else _add2sym)(col,x,n)
+    if col.isNum: _add2num(col,x,n)
+    else: col.has[x] = col.has.get(x,0) + n
   return x
 
-def _add2sym(sym,x,n): sym.has[x] = sym.has.get(x,0) + n
-
-# Update NUMs using Welford's on-line 
-# [algorithm](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance).
 def _add2num(num,x,n):
   num.lo = min(x, num.lo)
   num.hi = max(x, num.hi)
