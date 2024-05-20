@@ -108,7 +108,7 @@ and `d2h` is the distance from some goals to that  heaven.
 The general Minkowski distance  says that the distance between things
 comes from the distance between their parts raised to some power $p$, like so: 
 
-$$d(x,y)=(\sum^n_i (x_i - y_i)^p \)^{1/p}/\left(n^{1/p}\right)$$
+$$d(x,y)=\left(\sum^n_i (x_i - y_i)^p \)^{1/p}\right)/\left(n^{1/p}\right)$$
 
 
 
