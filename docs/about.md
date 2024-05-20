@@ -33,12 +33,12 @@ And then there was light.
 And in that workflow there was tabular data whose first row defined
 column types. And upper case words were numeric and the others were
 symbols. And some of the words were goals have special marks
-denoting things we wanted to predict ("!") or  minimize ("-") or maximize ("+").  Like
-so:
+denoting things we wanted to predict ("!") or  minimize ("-") or maximize ("+").  So
+if our data was about cars,  we might say in row one:
 
     Clndrs,Volume,HpX,Model,origin,Lbs-,Acc+,Mpg+
 
-This describes cars. We've decided to ignore horsepower (so it ends
+Here,  we have decided to ignore horsepower (so it ends
 with and `X`). Also, we want light cars (since they are cheaper to
 build and buy), fast acceleration, and good miles per gallon. So
 these get marked with `Lhs-,Acc+,Mpg+`
