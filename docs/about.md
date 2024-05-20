@@ -11,13 +11,14 @@ kilowatt-hours per 100 miles (kWh/100m);
 
 >[!NOTE]
 > <b> We present an experiment in coding as much AI in the fewest
-lines of code. The code is written LISP-style (lots of functions, not classes),
-guided by the [5-lines-per-function](https://coderanch.com/t/733272/engineering/Lines-Code-lines)
+lines of code. The code is written in functional stle (so no classes and lots
+of list comprehensions).
+The work is guided by the [5-lines-per-function](https://coderanch.com/t/733272/engineering/Lines-Code-lines)
 rule (which, sometimes, we break).
-It  makes extensive use of sets aod comprehension. Instead of coding standard
+Instead of coding standard
 AI algorithms, we look under-the-hood to refactor and combine shared structures.
 Further, we assume that "less is more", both in our coding style and
-in our data processing (so the first we do with any data, is throw
+in our data processing (so the first we do with  data, is throw
 most of it away).</b>
 
 In the beginning there was the data and the data was without form,
