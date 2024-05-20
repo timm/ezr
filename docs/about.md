@@ -8,8 +8,12 @@ http://github.com/timm/ezr
 
 In the beginning there was the data and the data was without form,
 and void; and confusion was upon the face of the humans.  And the
-programmer  said, let there be workflows that find signals within
-that noise;   and there was light.
+programmer  said, let there be workflows that can contrast and
+ explain the difference between good and bad data [^whycontrast] [^constrast2planning]
+And there was light. Our programmer 
+
+[^whycontrast]: difference between things can be shorter than the things
+[^contrast2planning]: apply the contrast. does it change anything? ktest. lime,
 
 And in that workflow there was tabular data whose first row defined
 column types. And upper case words were numeric and the others were
@@ -105,6 +109,10 @@ and `d2h` is the distance from some goals to that  heaven.
 	
 	def norm(num,x): return x if x=="?" else (x-num.lo)/(num.hi - num.lo - 1E-30)
 
+> [:NOTE!] This distance function is a little unusual in that it reports
+distances between the dependent `y` goal values. Usually distance is defined as the
+distance between the independent `x` values-- see `dists` (below).
+
 doty. fing deta between best and rest.
 
 
@@ -143,7 +151,10 @@ We divide by $n^{1/p}$ so all our distances fall between zero and one.
 
 ### Olace to store the config
 
-XXXX 
+## Difference to Other Approaches
+
+`Y=f(x)`. the rave from IEEE  trans
+
 [^rowRoder:] There are many ways to rank examples with multiple objectives. 
 _Binary domination_ says...
 The _Zitler says__
