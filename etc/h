@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-# vim : set syntax=sh :
-H=`git rev-parse --show-toplevel`
-H="$H" bash  --init-file $H/etc/dotbashrc -i
