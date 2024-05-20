@@ -25,7 +25,7 @@ In the beginning there was the data and the data was without form,
 and void; and confusion was upon the face of the humans.  And the
 programmer  said, let there be workflows that 
 succinctly  explain the contrast between good and bad things [^whycon] [^conplan]
-And there was light.
+And then there was light.
 
 [^whycon]: difference between things can be shorter than the things
 [^conplan]: apply the contrast. does it change anything? ktest. lime,
