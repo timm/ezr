@@ -11,7 +11,7 @@ kilowatt-hours per 100 miles (kWh/100m);
 
 >[!NOTE]
 > <b> We present a successful  experiment in coding XAI (explainable AI) in the fewest
-lines of code. The code is written in functional stle (so no classes and lots
+lines of code. The code is written in functional style (so no classes and lots
 of list comprehensions).
 The work is guided by the [5-lines-per-function](https://coderanch.com/t/733272/engineering/Lines-Code-lines)
 rule (which, sometimes, we break).
@@ -23,8 +23,8 @@ most of it away).</b>
 
 In the beginning there was the data and the data was without form,
 and void; and confusion was upon the face of the humans.  And the
-programmer  said, let there be workflows that can contrast and
- explain the difference between good and bad data [^whycon] [^conplan]
+programmer  said, let there be workflows that 
+succinctly  explain the contrast between good and bad things [^whycon] [^conplan]
 And there was light.
 
 [^whycon]: difference between things can be shorter than the things
