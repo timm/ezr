@@ -110,7 +110,8 @@ comes from the distance between their parts raised to some power $p$, like so:
 
 $$d(x,y)=\left(\sum^n_i (x_i - y_i)^p \)^{1/p}\right)/\left(n^{1/p}\right)$$
 
-
+We divide by $n^{1/p}$ so all our distances fall between zero and one. Boring
+old Euclidean distance uses $p=2$.
 
 [^rowRoder:] There are many ways to rank examples with multiple objectives. 
 _Binary domination_ says...
