@@ -105,6 +105,15 @@ and `d2h` is the distance from some goals to that  heaven.
 	
 	def norm(num,x): return x if x=="?" else (x-num.lo)/(num.hi - num.lo - 1E-30)
 
+doty. fing deta between best and rest.
+
+
+
+## Some Details
+
+### Other Distance Functions
+
+XXX otehr kinds of d
 The general Minkowski distance  says that the distance between things
 comes from the distance between their independent `x` columns,  raised to some power $p$.
 Boring old Euclidean distance uses $p=2$, but our programmer knew that
@@ -132,11 +141,9 @@ Which, in Pythons is:
 	
 We divide by $n^{1/p}$ so all our distances fall between zero and one.
 
-doty. fing deta between best and rest.
+### Olace to store the config
 
-
-The programmer did pause and lok at all
-
+XXXX 
 [^rowRoder:] There are many ways to rank examples with multiple objectives. 
 _Binary domination_ says...
 The _Zitler says__
