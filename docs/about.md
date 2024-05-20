@@ -34,9 +34,13 @@ And in that workflow there was tabular data whose first row defined
 column types. And upper case words were numeric and the others were
 symbols. And some of the words were goals have special marks
 denoting things we wanted to predict ("!") or  minimize ("-") or maximize ("+").  So
-if our data was about cars,  we might say in row one:
+If our data was about cars then it might look like this:
 
-    Clndrs,Volume,HpX,Model,origin,Lbs-,Acc+,Mpg+
+	Clndrs  Volume  HpX  Model  origin  Lbs-  Acc+  Mpg+
+	8       304     193  70     1       4732  18.5  10
+	8       360     215  70     1       4615  14    10
+	8       307     200  70     1       4376  15    10
+	...
 
 Here,  we have decided to ignore horsepower (so it ends
 with and `X`). Also, we want light cars (since they are cheaper to
@@ -82,8 +86,8 @@ in `-` is a numeric goal to be `maximzed`.
 To distinguish NUMs from SYMs, the programmer added a `isNum` flag (which
 as false for SYMs).
 
-Internally, NUM and SYM are both `o`bjects where `o` is a handy dandy
-struct that knows how to pretty-print itself.
+Internally, NUM and SYM are both `o`bjects where `o` is something
+that knows how to pretty-print itself.
 
 	class o:
 	  def __init__(i,**d): i.__dict__.update(d)
