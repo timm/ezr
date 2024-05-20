@@ -6,6 +6,16 @@ by Tim Menzies and the EZRites
 (c) 2024, CC-SA 4.0  
 http://github.com/timm/ezr
 
+>[!IMPORTANT]
+> <b> We present an experiment in coding as much AI in the fewest
+lines of code. The code is written LISP-style (lots of functions, not classes),
+guided by Richard Martin's 5-lines-per-function rule (which, sometimes, we break)
+and makes extensive use of sets aod comprehension. Instead of coding standard
+AI algorithms, we look under-the-hood to refactor and combine shared structures.
+Further, we assume that "less is more", both in our coding style and
+in our data processing (so the first we do with any data, is throw
+most of it away).</b>
+
 In the beginning there was the data and the data was without form,
 and void; and confusion was upon the face of the humans.  And the
 programmer  said, let there be workflows that can contrast and
@@ -131,6 +141,8 @@ in a `the` variable. So our Minkowski distance function is:
 
 $$d(x,y)=\left(\sum^n_i (x_i - y_i)^p /n\right)^{1/p}$$
 
+We divide by $n$ so all our distances fall between zero and one.
+
 This disance is defined bif nuermisa dn is XXX
 Which, in Pythons is:
 	
@@ -148,7 +160,6 @@ Which, in Pythons is:
 	  y = y if y !="?" else (1 if x<0.5 else 0)
 	  return abs(x-y)
 	
-We divide by $n^{1/p}$ so all our distances fall between zero and one.
 
 ### Olace to store the config
 
