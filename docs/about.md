@@ -6,6 +6,9 @@ by Tim Menzies and the EZRites
 (c) 2024, CC-SA 4.0  
 http://github.com/timm/ezr
 
+
+kilowatt-hours per 100 miles (kWh/100m);
+
 >[!NOTE]
 > <b> We present an experiment in coding as much AI in the fewest
 lines of code. The code is written LISP-style (lots of functions, not classes),
