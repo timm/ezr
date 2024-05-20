@@ -1,72 +1,50 @@
 import sys, random
+import ezr
+from ezr import adds,NUM,coerce,mid,div
 
-def of(s):
-    try: return float(s)
-    except ValueError: return s
-
-def slurp(file):
+def file2nums(file):
   nums,lst,last= [],[],None
   with open(file) as fp: 
-    for word in [of(x) for s in fp.readlines() for x in s.split()]:
-      if isinstance(word,float):
+    for word in [coerce(x) for s in fp.readlines() for x in s.split()]:
+      if isinstance(word,(int,float)):
         lst += [word]
       else:
-        if len(lst)>0: nums += [SAMPLE(lst,last)]
+        if len(lst)>0: nums += [adds(NUM(txt=last,has=[]),lst)]
         lst,last =[],word
-  if len(lst)>0: nums += [SAMPLE(lst,last)]
+  if len(lst)>0: nums += [adds(NUM(txt=last,has=[]),lst)]
   return nums
 
-class SAMPLE:
-  "stores mean, standard deviation, low, high, of a list of numbers"
-  def __init__(self,lst=[],txt="",rank=0):
-    self.has, self.ready = [],False
-    self.txt, self.rank = txt,0
-    self.n, self.sd, self.m2,self.mu, self.lo, self.hi = 0,0,0,0,sys.maxsize, -sys.maxsize
-    [self.add(x) for x in lst]
+def bars(nums, width=40):
+  all = adds(NUM(), [x for num in nums for x in num.has])
+  last = None
+  for num in sk(nums):
+    if num.rank != last: print("#")
+    last=num.rank
+    print(bar(all, num.has, width=width, word="%20s", fmt="%5.2f"))
 
-  def add(self,x):
-    self.has += [x]; self.ready=False;
-    self.lo = min(x,self.lo)
-    self.hi = max(x,self.hi)
-    self.n += 1
-    delta = x - self.mu
-    self.mu += delta / self.n
-    self.m2 += delta * (x -  self.mu)
-    self.sd = 0 if self.n < 2 else (self.m2 / (self.n - 1))**.5   
-  
-  def ok(self):
-    if not self.ready: 
-      self.has = sorted(self.has)
-    self.ready=True
-    return self
-  
-  def mid(self): 
-    has=self.ok().has
-    return has[len(has)//2]
-
-  def bar(self, num, fmt="%8.3f", word="%10s", width=50):
-    out  = [' '] * width
-    cap = lambda x: 1 if x > 1 else (0 if x<0 else x)
-    pos = lambda x: int(width * cap((x - self.lo) / (self.hi - self.lo + 1E-30)))
-    has = num.ok().has
-    [a, b, c, d, e]  = [has[int(len(has)*x)] for x in [0.05,0.25,0.5,0.75,0.95]]
-    [na,nb,nc,nd,ne] = [pos(x) for x in [a,b,c,d,e]]
-    for i in range(nb,nd): out[i] = "-"
-    #for i in range(nd,ne): out[i] = "-"
-    out[width//2] = "|"
-    out[nc] = "*"
-    return ', '.join(["%2d" % num.rank, word % num.txt, fmt%c, fmt%(d-b),  
-                      ''.join(out), fmt%self.lo,      fmt%self.hi ]) #, ', '.join([(fmt % x) for x in [a,b,c,d,e]])])
+def bar(num, has, fmt="%8.3f", word="%10s", width=50):
+  has = sorted(has)
+  out  = [' '] * width
+  cap = lambda x: 1 if x > 1 else (0 if x<0 else x)
+  pos = lambda x: int(width * cap(norm(num,x)))
+  [a, b, c, d, e]  = [has[int(len(has)*x)] for x in [0.05,0.25,0.5,0.75,0.95]]
+  [na,nb,nc,nd,ne] = [pos(x) for x in [a,b,c,d,e]]
+  for i in range(nb,nd): out[i] = "-"
+  out[width//2] = "|"
+  out[nc] = "*"
+  return ', '.join(["%2d" % num.rank, word % num.txt, fmt%c, fmt%(d-b),
+                    ''.join(out),fmt%num.lo,fmt%num.hi])
 
 def different(x,y):
   "non-parametric effect size and significance test"
   return cliffsDelta(x,y) and bootstrap(x,y) and cohens(x,y)
 
 def cohens(x, y, small=.35):
+  "parametric effect size. threshold is border between small=.2 and medium=.5"
   x,y,z = adds(NUM(),x), adds(NUM(),y), adds(NUM(), x+y)
   return abs(x.mu - y.mu) > small * div(z)
 
-def cliffsDelta(x, y, effectSize=0.35):
+def cliffsDelta(x, y, effectSize=0.2):
   """non-parametric effect size. threshold is border between small=.11 and medium=.28 
      from Table1 of  https://doi.org/10.3102/10769986025002101"""
   n,lt,gt = 0,0,0
@@ -80,11 +58,11 @@ def cliffsDelta(x, y, effectSize=0.35):
 def bootstrap(y0,z0,confidence=.05,samples=512,):
   """non-parametric significance test From Introduction to Bootstrap, 
      Efron and Tibshirani, 1993, chapter 20. https://doi.org/10.1201/9780429246593"""
-  obs   = lambda x,y: abs(x.mu-y.mu) / ((div(x)**2/x.n + div(y)**2/y.n)**.5 + 1E-30)
+  obs   = lambda x,y: abs(mid(x) - mid(y)) / ((div(x)**2/x.n + div(y)**2/y.n)**.5 + 1E-30)
   x,y,z = adds(NUM(), y0+z0), adds(NUM(), y0), adds(NUM(),z0)
   d     = obs(y,z)
-  yhat  = [y1 - y.mu + x.mu for y1 in y0]
-  zhat  = [z1 - z.mu + x.mu for z1 in z0]
+  yhat  = [y1 - mid(y) + mid(x) for y1 in y0]
+  zhat  = [z1 - mid(z) + mid(x)  for z1 in z0]
   n     = 0
   for _ in range(samples):
     ynum = adds(NUM(), random.choices(yhat,k=len(yhat)))
@@ -94,18 +72,18 @@ def bootstrap(y0,z0,confidence=.05,samples=512,):
   return n / samples < confidence # true if different
 
 def sk(nums):
-  "sort nums on median. give adjacent nums the same rank if they are statistically the same"
+  "sort nums on mid. give adjacent nums the same rank if they are statistically the same"
   def sk1(nums, rank,lvl=1):
     all = lambda lst:  [x for num in lst for x in num.has]
     b4, cut = adds(NUM(), all(nums)), None
     most =  -1
-    for i in range(1,len(nums)):  
+    for i in range(1,len(nums)):
       lhs = adds(NUM(), all(nums[:i]))
-      rhs = adds(NUM(), all(nums[i:])) 
-      tmp = (lhs.n*abs(mid(lhs) - mid(b4)) + rhs.n*abs(mid(rhs) - mid(b4))) / b4.n 
+      rhs = adds(NUM(), all(nums[i:]))
+      tmp = (lhs.n*abs(mid(lhs) - mid(b4)) + rhs.n*abs(mid(rhs) - mid(b4))) / b4.n
       if tmp > most:
-         most,cut = tmp,i 
-    if cut and different( all(nums[:cut]), all(nums[cut:])): 
+         most,cut = tmp,i
+    if cut and different( all(nums[:cut]), all(nums[cut:])):
       rank = sk1(nums[:cut], rank, lvl+1) + 1
       rank = sk1(nums[cut:], rank, lvl+1)
     else:
@@ -116,9 +94,12 @@ def sk(nums):
   sk1(nums,0)
   return nums
 
-3--------------------------------------------
+#--------------------------------------------
+class eg:
+  def aa(): print(adds(NUM(),range(100)))
+
 def egSlurp():
-  eg0(slurp("stats.txt"))
+  bars(slurp("../data/stats.txt"))
 
 def eg0(nums):
   all = SAMPLE([x for num in nums for x in num.has])
@@ -160,9 +141,8 @@ def eg4(n=5):
         SAMPLE([0.35, 0.52 ,0.63, 0.8]*n,   "x2"),
         SAMPLE([0.13 ,0.23, 0.38 , 0.38]*n, "x4"),
         ])
- 
+
 
 if __name__ == "__main__":
-  random.seed(1)
-  eg1()
-  #[print("\n",f()) for f in [eg1,eg2,eg3,eg4]]
+  import sys
+  getattr(eg,sys.argv[1])()
