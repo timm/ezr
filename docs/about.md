@@ -106,12 +106,12 @@ and `d2h` is the distance from some goals to that  heaven.
 	def norm(num,x): return x if x=="?" else (x-num.lo)/(num.hi - num.lo - 1E-30)
 
 The general Minkowski distance  says that the distance between things
-comes from the distance between their parts raised to some power $p$, like so: 
+comes from the distance between their parts raised to some power $p$
+(and boring old Euclidean distance uses $p=2$).
 
 $$d(x,y)=\left(\sum^n_i (x_i - y_i)^p \)^{1/p}\right)/\left(n^{1/p}\right)$$
 
-We divide by $n^{1/p}$ so all our distances fall between zero and one. Boring
-old Euclidean distance uses $p=2$.
+We divide by $n^{1/p}$ so all our distances fall between zero and one. 
 
 [^rowRoder:] There are many ways to rank examples with multiple objectives. 
 _Binary domination_ says...
