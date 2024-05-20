@@ -52,11 +52,10 @@ SYMbolic columns, then to store all of them in `all` and (for
 convenience) also maybe in `x` (for the independent variables) and maybe in `y` (for
 the dependent goals that we want to predict or  minimize or maximize).
 
-	# define a COLS struct
-	def COL(names): return o(x=[], y=[], all=[], klass=None, names=names)
+	def COL(names):    # define a COLS struct
+      return o(x=[], y=[], all=[], klass=None, names=names)
 	
-	# COLS constructor
-	def cols(names):
+    def cols(names):   # COLS constructor
 	  cols1 = COLS(names)
 	  cols1.all = [_cols(cols1,n,s) for n,s in enumerate(names)]
 	  return cols1
@@ -104,17 +103,44 @@ that knows how to pretty-print itself.
 	  return x
 
 The programmer did place the rows in a DATA object that held the `rows`. Also,
-a summary of those rows is maintained in `cols` (which is a COLS object).
+a summary of those rows is maintained in `cols` (which is a COLS object). 
 
-    # define a DATA struct
-    def DATA(): return o(rows=[], cols=[])
+    def DATA():                       # define a DATA struct
+      return o(rows=[], cols=[])
 
-    # DATA constructor
-	def data(src=None, rank=False):
+	def data(src=None, rank=False):   # DATA constructor
 	  data1=DATA()
 	  [append(data1,lst) for  lst in src or []]
 	  if rank: data1.rows.sort(key = lambda lst:d2h(data1,lst))
 	  return data1
+
+When a `row` is added to a DATA, we walk though `data.cols.all`
+columns, updating each.  When  a new `row1` is `appended()` to NUMs,
+we [update the
+counters](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance)
+needed to incrementally compute mean and standard deviation. ALso, if `num.has`
+exists, we keep hold of the actual numeric values.
+
+	def append(data,row1):           
+	  if    data.cols: data.rows.append([add(col,x) for col,x in zip(data.cols.all,row1)])
+	  else: data.cols= cols(row1)
+	
+	def add(col,x,n=1):
+	  if x!="?":
+	    col.n += n
+	    (_add2num if col.isNum else _add2sym)(col,x,n)
+	  return x
+	
+	def _add2sym(sym,x,n): sym.has[x] = sym.has.get(x,0) + n
+	
+	def _add2num(num,x,n):
+	  num.lo = min(x, num.lo)
+	  num.hi = max(x, num.hi)
+	  for _ in range(n):
+	    if num.has != None: num.has += [x]
+	    d       = x - num.mu
+	    num.mu += d / num.n
+	    num.m2 += d * (x -  num.mu)
 
 In her wisdom, the programmer added a sort function that could order the rows
 best to worse using `d2h`, or distance to heaven [^rowOrder]. Given a goal
