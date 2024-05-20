@@ -129,7 +129,7 @@ Boring old Euclidean distance uses $p=2$, but our programmer knew that
 this is a parameter that can be tuned. She stored all such tuneables
 in a `the` variable. So our Minkowski distance function is:
 
-$$d(x,y)=\left(\left(\sum^n_i (x_i - y_i)^p \)}\right)/n\right)^{1/p}$$
+$$d(x,y)=\left(\left( \sum^n_i (x_i - y_i)^p \right)/n\right)^{1/p}$$
 
 This disance is defined bif nuermisa dn is XXX
 Which, in Pythons is:
