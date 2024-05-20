@@ -126,10 +126,11 @@ def data(src=None, rank=False):   # DATA constructor
 
 When a `row` is added to a DATA, we walk though `data.cols.all`
 columns, updating each.  When  a new `row1` is `appended()` to NUMs,
-we [update the
-counters](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance)
-needed to incrementally compute mean and standard deviation. AlSo, if `num.has`
-exists, we keep hold of the actual numeric values.
+we update the counters needed to incrementally compute mean and
+standard deviation [^welford]. Also, if `num.has` exists, we use
+it to cache the observed numeric values.
+
+[^welford]: https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
 
 ```python
 def append(data,row1):
@@ -149,7 +150,7 @@ def _add2num(num,x,n):
   num.lo = min(x, num.lo)
   num.hi = max(x, num.hi)
   for _ in range(n):
-    if num.has != None: num.has += [x]
+    if num.has != None: num.has += [x] # used later, when we do statistics
     d       = x - num.mu
     num.mu += d / num.n
     num.m2 += d * (x -  num.mu)
