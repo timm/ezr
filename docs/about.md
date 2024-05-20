@@ -36,11 +36,13 @@ symbols. And some of the words were goals have special marks
 denoting things we wanted to predict ("!") or  minimize ("-") or maximize ("+").  So
 If our data was about cars then it might look like this:
 
-	Clndrs  Volume  HpX  Model  origin  Lbs-  Acc+  Mpg+
-	8       304     193  70     1       4732  18.5  10
-	8       360     215  70     1       4615  14    10
-	8       307     200  70     1       4376  15    10
+```
+Clndrs  Volume  HpX  Model  origin  Lbs-  Acc+  Mpg+
+8       304     193  70     1       4732  18.5  10
+8       360     215  70     1       4615  14    10
+8       307     200  70     1       4376  15    10
 	...
+```
 
 Here,  we have decided to ignore horsepower (so it ends
 with and `X`). Also, we want light cars (since they are cheaper to
@@ -52,19 +54,21 @@ SYMbolic columns, then to store all of them in `all` and (for
 convenience) also maybe in `x` (for the independent variables) and maybe in `y` (for
 the dependent goals that we want to predict or  minimize or maximize).
 
-	def COL(names):    # define a COLS struct
+```python
+def COL(names):    # define a COLS struct
       return o(x=[], y=[], all=[], klass=None, names=names)
-	
-    def cols(names):   # COLS constructor
-	  cols1 = COLS(names)
-	  cols1.all = [_cols(cols1,n,s) for n,s in enumerate(names)]
-	  return cols1
-	
-	def _cols(cols1, n, s):
-	  col = (NUM if s[0].isupper() else SYM)(txt=s, at=n)
-	  if s[-1] == "!": cols1.klass = col
-	  if s[-1] != "X": (cols1.y if s[-1] in "!+-" else cols1.x).append(col)
-	  return col
+
+def cols(names):   # COLS constructor
+  cols1 = COLS(names)
+  cols1.all = [_cols(cols1,n,s) for n,s in enumerate(names)]
+  return cols1
+
+def _cols(cols1, n, s):
+  col = (NUM if s[0].isupper() else SYM)(txt=s, at=n)
+  if s[-1] == "!": cols1.klass = col
+  if s[-1] != "X": (cols1.y if s[-1] in "!+-" else cols1.x).append(col)
+  return col
+```
 
 And the code needed some help. NUM and SYM summarize streams of number
 and symbols. Both these know the `txt` of their column name; what
@@ -74,13 +78,15 @@ keeping the numbers in `has` is optional.  NUMs also track the `lo`est and
 `hi`est values seen so far as well as their mean `mu`. And anything not ending
 in `-` is a numeric goal to be `maximzed`.
 
-	def SYM(txt=" ", at=0): 
+```python
+def SYM(txt=" ", at=0): 
       return o(isNum=False, txt=txt, at=at, n=0, has={})
-	
-	def NUM(txt=" ", at=0, has=None):
-	  return o(isNum=True,  txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
-	           has=has, rank=0, # if has non-nil, used by the stats package
-	           mu=0, m2=0, maximize = txt[-1] != "-")
+
+def NUM(txt=" ", at=0, has=None):
+  return o(isNum=True,  txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
+           has=has, rank=0, # if has non-nil, used by the stats package
+           mu=0, m2=0, maximize = txt[-1] != "-")
+```
 
 To distinguish NUMs from SYMs, the programmer added a `isNum` flag (which
 as false for SYMs).
@@ -88,59 +94,66 @@ as false for SYMs).
 Internally, NUM and SYM are both `o`bjects where `o` is something
 that knows how to pretty-print itself.
 
-	class o:
-	  def __init__(i,**d): i.__dict__.update(d)
-	  def __repr__(i): return i.__class__.__name__+str(show(i.__dict__))
-	
-	def show(x):
-	  it = type(x)
-	  if it == float:  return round(x,the.decs)
-	  if it == list:   return [show(v) for v in x]
-	  if it == dict:   return "("+' '.join([f":{k} {show(v)}" for k,v in x.items()])+")"
-	  if it == o:      return show(x.__dict__)
-	  if it == str:    return '"'+str(x)+'"'
-	  if callable(x):  return x.__name__
-	  return x
+```python
+class o:
+  def __init__(i,**d): i.__dict__.update(d)
+  def __repr__(i): return i.__class__.__name__+str(show(i.__dict__))
+
+def show(x):
+  it = type(x)
+  if it == float:  return round(x,the.decs)
+  if it == list:   return [show(v) for v in x]
+  if it == dict:   return "("+' '.join([f":{k} {show(v)}" for k,v in x.items()])+")"
+  if it == o:      return show(x.__dict__)
+  if it == str:    return '"'+str(x)+'"'
+  if callable(x):  return x.__name__
+  return x
+```
 
 The programmer did place the rows in a DATA object that held the `rows`. Also,
 a summary of those rows is maintained in `cols` (which is a COLS object). 
 
-    def DATA():                       # define a DATA struct
-      return o(rows=[], cols=[])
+```python
+def DATA():                       # define a DATA struct
+  return o(rows=[], cols=[])
 
-	def data(src=None, rank=False):   # DATA constructor
-	  data1=DATA()
-	  [append(data1,lst) for  lst in src or []]
-	  if rank: data1.rows.sort(key = lambda lst:d2h(data1,lst))
-	  return data1
+def data(src=None, rank=False):   # DATA constructor
+  data1=DATA()
+  [append(data1,lst) for  lst in src or []]
+  if rank: data1.rows.sort(key = lambda lst:d2h(data1,lst))
+  return data1
+```
 
 When a `row` is added to a DATA, we walk though `data.cols.all`
 columns, updating each.  When  a new `row1` is `appended()` to NUMs,
 we [update the
 counters](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance)
-needed to incrementally compute mean and standard deviation. ALso, if `num.has`
+needed to incrementally compute mean and standard deviation. AlSo, if `num.has`
 exists, we keep hold of the actual numeric values.
 
-	def append(data,row1):           
-	  if    data.cols: data.rows.append([add(col,x) for col,x in zip(data.cols.all,row1)])
-	  else: data.cols= cols(row1)
-	
-	def add(col,x,n=1):
-	  if x!="?":
-	    col.n += n
-	    (_add2num if col.isNum else _add2sym)(col,x,n)
-	  return x
-	
-	def _add2sym(sym,x,n): sym.has[x] = sym.has.get(x,0) + n
-	
-	def _add2num(num,x,n):
-	  num.lo = min(x, num.lo)
-	  num.hi = max(x, num.hi)
-	  for _ in range(n):
-	    if num.has != None: num.has += [x]
-	    d       = x - num.mu
-	    num.mu += d / num.n
-	    num.m2 += d * (x -  num.mu)
+```python
+def append(data,row1):
+  if    data.cols: data.rows.append([add(col,x) for col,x in zip(data.cols.all,row1)])
+  else: data.cols= cols(row1)
+
+def adds(col,lst): [add(col,x) for x in lst]; return col
+
+def add(col,x,n=1):
+  if x!="?":
+    col.n += n
+    if col.isNum: col.has.get(x,0) + n
+    else _add2num(col,x,n)
+  return x
+
+def _add2num(num,x,n):
+  num.lo = min(x, num.lo)
+  num.hi = max(x, num.hi)
+  for _ in range(n):
+    if num.has != None: num.has += [x]
+    d       = x - num.mu
+    num.mu += d / num.n
+    num.m2 += d * (x -  num.mu)
+```
 
 In her wisdom, the programmer added a sort function that could order the rows
 best to worse using `d2h`, or distance to heaven [^rowOrder]. Given a goal
@@ -148,11 +161,13 @@ normalized to the range 0..1 for min..max, then "heaven" is 0 (if minimizing)
 and 1 (if maximizing). Given N goals there there is a list of heaven points
 and `d2h` is the distance from some goals to that  heaven.
 
-	def d2h(data,row):
-	  n = sum(abs(norm(num,row[num.at]) - num.maximize)**the.p for num in data.cols.y)
-	  return (n / len(data.cols.y))**(1/the.p)
-	
-	def norm(num,x): return x if x=="?" else (x-num.lo)/(num.hi - num.lo - 1E-30)
+```python
+def d2h(data,row):
+  n = sum(abs(norm(num,row[num.at]) - num.maximize)**the.p for num in data.cols.y)
+  return (n / len(data.cols.y))**(1/the.p)
+
+def norm(num,x): return x if x=="?" else (x-num.lo)/(num.hi - num.lo - 1E-30)
+```
 
 > [!NOTE]
 > This distance function is a little unusual in that it reports
@@ -180,21 +195,22 @@ We divide by $n$ so all our distances fall between zero and one.
 
 This disance is defined bif nuermisa dn is XXX
 Which, in Pythons is:
-	
-	# Distance between two rows
-	def dists(data,row1,row2):
-	  n = sum(dist(col, row1[col.at], row2[col.at])**the.p for col in data.cols.x)
-	  return (n / len(data.cols.x))**(1/the.p)
-	
-	# Distance between two values (called by dists).
-	def dist(col,x,y):
-	  if  x==y=="?": return 1
-	  if not col.isNum: return x != y
-	  x, y = norm(col,x), norm(col,y)
-	  x = x if x !="?" else (1 if y<0.5 else 0)
-	  y = y if y !="?" else (1 if x<0.5 else 0)
-	  return abs(x-y)
-	
+
+```python
+# Distance between two rows
+def dists(data,row1,row2):
+  n = sum(dist(col, row1[col.at], row2[col.at])**the.p for col in data.cols.x)
+  return (n / len(data.cols.x))**(1/the.p)
+
+# Distance between two values (called by dists).
+def dist(col,x,y):
+  if  x==y=="?": return 1
+  if not col.isNum: return x != y
+  x, y = norm(col,x), norm(col,y)
+  x = x if x !="?" else (1 if y<0.5 else 0)
+  y = y if y !="?" else (1 if x<0.5 else 0)
+  return abs(x-y)
+```	
 
 ### Olace to store the config
 

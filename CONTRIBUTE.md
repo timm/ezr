@@ -20,4 +20,4 @@ This is the core file of the system. In that file:
 - Functions ideally 5 lines or less. For anything 6 or above, try to pull out   two or more functions.
 
 
-
+subfunctions only called by a parent start with "_"
