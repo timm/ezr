@@ -113,7 +113,8 @@ in a `the` variable. So our Minkowski distance function is:
 
 $$d(x,y)=\left(\sum^n_i (x_i - y_i)^p \)^{1/p}\right)/\left(n^{1/p}\right)$$
 
-Or, in Python:
+This disance is defined bif nuermisa dn is XXX
+Which, in Pythons is:
 	
 	# Distance between two rows
 	def dists(data,row1,row2):
