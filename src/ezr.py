@@ -159,10 +159,10 @@ def binsDivide(col, classes, small=None):
 def _send2bin(col,x,y,d):
   if x != "?":
      k = _bin(col,x)
-     if k not in d: d[k] = BIN(col.at,col.txt,x)
-     d[k].lo = min(d[k].lo, x)
-     d[k].hi = max(d[k].hi, x)
-     d[k].ys = d[k].ys.get(y,0) + 1
+     it = d[k] = d[k] if k in d else BIN(col.at,col.txt,x)
+     it.lo = min(it.lo, x)
+     it.hi = max(it.hi, x)
+     it.ys[y] = it.ys.get(y,0) + 1
 
 def _bin(col,x):
   return min(the.bins - 1, int(the.bins * norm(col,x)) if col.isNum else x
