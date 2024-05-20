@@ -145,6 +145,9 @@ def norm(num,x): return x if x=="?" else (x-num.lo)/(num.hi - num.lo - 1E-30)
 
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
+# Discretization
+
+#--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Distances
 
 # Distance to `heaven` (which is the distance of the `y` vals to the best values).
@@ -252,14 +255,13 @@ def ent(d):
   N = sum(v for v in d.values() if v > 0)
   return -sum(v/N*math.log(v/N,2) for v in d.values() if v > 0)
 
-def value(d,goal=True):
-  b,r,n = 1E-30,1E-30,1E-30
+def value(d,goal=True,B=1,R=1):
+  best,rest = 1E-30,1E-30
   for k,v in d.items():
-    n += v
-    if k==goal: b += v
-    else: r += v
-  b,r = b/n, r/n
-  return b**2/(b+r)
+    if k==goal: best += v
+    else: rest += v
+  best,rest = best/B, rest/R
+  return best**2/(best+rest)
 
 def show(x):
   it = type(x)
