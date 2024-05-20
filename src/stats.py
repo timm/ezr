@@ -99,7 +99,7 @@ class eg:
   def aa(): print(adds(NUM(),range(100)))
 
 def egSlurp():
-  bars(slurp("../data/stats.txt"))
+  print(file2nums("../data/stats.txt"))
 
 def eg0(nums):
   all = SAMPLE([x for num in nums for x in num.has])
