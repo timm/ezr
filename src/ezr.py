@@ -1,7 +1,9 @@
 #!/usr/bin/env python3 -B
 # <!-- vim: set ts=2 sw=2 sts=2 et: -->
+# Settings can be updated via command line.   
+# e.g. `./ezr.py -s $RANDOM` sets `the.seed` to a random value set by operating system.
 """
-ezr.py : an experiment in easier AI. Less is more.
+ezr.py :  experiment in easier explainable AI. Less is more.
 (C) 2024 Tim Menzies, timm@ieee.org, BSD-2.
 
 OPTIONS:
@@ -13,207 +15,240 @@ OPTIONS:
   -k --k       bayes low frequency hack #1    = 1
   -H --Half    #rows for searching for poles  = 128
   -l --label   initial number of labelings    = 4
-  -L --Last    max allow labellings           = 30
+  -L --Last    max allow labelings            = 30
   -m --m       bayes low frequency hack #2    = 2
-  -n  --n      tinyN                          = 12
+  -n --n       tinyN                          = 12
   -N --N       smallN                         = 0.5
   -p --p       distance function coefficient  = 2
   -R --Run     start up action method         = help
   -s --seed    random number seed             = 1234567891
 """
 # (FYI our seed is odious, pernicious, apocalyptic, deficient, and prime.)      
-# The above settings. Can be updated via command line.   
-# e.g. `./ezr.py -s $RANDOM` sets `the.seed` to a random value set by operating system.
-
-#<br clear=left><hr>  
-# ## Setting up
 import re,ast,sys,math,random,copy,traceback
 from fileinput import FileInput as file_or_stdin
+from typing import Any,NewType 
+from typing_extensions import Literal
 
-# Class for quick inits of named structs, and pretty prints.
+#--------- --------- --------- --------- --------- --------- --------- --------- --------
+# ## Types
+atom    = NewType('atom',    float|int|bool|str) 
+row     = NewType('row',     list[atom])
+rows    = NewType('rows',    list[row])
+classes = NewType('classes', dict[str, # `str` is the class name
+                                  rows])
+
 class o:
+  "Class for quick inits of structs, and pretty prints."
   def __init__(i,**d): i.__dict__.update(d)
   def __repr__(i): return i.__class__.__name__+str(show(i.__dict__))
 
-def coerce(s):
-  try: return ast.literal_eval(s) # <1>
+bin,cols,data = NewType('bin',o),NewType('cols',o),NewType('data',o)
+num,sym       = NewType('num',o),NewType('sym',o)
+col           = NewType('col', num|sym)
+
+def coerce(s:str) -> atom:
+  "coerces strings to atoms"
+  try: return ast.literal_eval(s)
   except Exception:  return s
 
+# Build the globals by parsing the `__doc__` string.
 the=o(**{m[1]:coerce(m[2]) for m in re.finditer(r"--(\w+)[^=]*=\s*(\S+)",__doc__)})
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Structs
+def _DATA() -> data:
+  "primitive constructor: stores `rows` (whose columns  are summarized in `cols`)."
+  return o(rows=[], cols=[])
 
-# DATA stores rows, which are summarized in column headers.
-def DATA(): return o(rows=[], cols=[])
+def _COLS(names: list[str]) -> cols:
+  """primitive constructor: a factory that makes, and stores, `all` the columns.
+  (and the  independent and dependent cols are also held in `x` and ``y`"""
+  return o(x=[], y=[], all=[], klass=None, names=names)
 
-# COLS is a factory that makes, and stores, the columns (`x,y` are the indepednet and depednet
-# columns, `all` stores everything, `klass` is the class column).
-def COLS(lst): return o(x=[], y=[], all=[], klass=None, names=lst)
-
-# SYMs summarize a stream of symbols.
-def SYM(txt=" ",at=0): 
+def _SYM(txt=" ",at=0) -> sym:
+  "primitive constructor: incrementally summarizes a stream of symbols."
   return o(isNum=False, txt=txt, at=at, n=0, has={})
 
-# NUMs summarize a stream of numbers.
-# A trailing "-" or "+" denotes a numeric goal we need to minimize or maximize to 0 or 1.
-def NUM(txt=" ",at=0,has=None):
+def _NUM(txt=" ",at=0,has=None) -> num:
+  "primitive constructor: incremental summarizes a stream of numbers."
   return o(isNum=True,  txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
            has=has, rank=0, # if has non-nil, used by the stats package
            mu=0, m2=0, maximize = txt[-1] != "-")
 
+def _BIN(at,txt,lo,hi=None,ys=None) -> bin:
+  """primitive constructor: `ys` holds a count of the symbols seen in one column
+  between the `lo` and `hi` of another column."""
+  return o(n=0,at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
+
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Constructors
+# Here are the constructors that just call the primitive constructors.
+NUM, SYM, BIN = _NUM, _SYM, _BIN
 
-# Create columns (one for each string in `names`).
-def cols(names): 
-  cols1 = COLS(names)
-  cols1.all = [_cols(cols1,n,s) for n,s in enumerate(names)]
-  return cols1
+# Herea re the other constructors.
+def COLS(names: list[str]) -> cols:
+  "Constructor. Create columns (one for each string in `names`)."
+  i = _COLS(names)
+  i.all = [add2cols(i,n,s) for n,s in enumerate(names)]
+  return i
 
-# Upper case names are NUM.  
-# The `klass` name ends in "!".   
-# A trailing "X" denotes "ignore".  
-# If not ignoring, then the column is 
-# either a dependent goals (held in `cols.y`) or a independent variable (held in `cols.x`).
-def _cols(cols1, n, s):
-  col = (NUM if s[0].isupper() else SYM)(txt=s, at=n)
-  if s[-1] == "!": cols1.klass = col
-  if s[-1] != "X": (cols1.y if s[-1] in "!+-" else cols1.x).append(col)
-  return col
+def add2cols(i:cols, n:int, s:str) -> None:
+  """Upper case names are NUM.  The `klass` name ends in '!'.  A trailing
+  'X' denotes 'ignore'.  If not ignoring, then the column is either
+  a dependent goals (held in `cols.y`) or a independent variable (held
+  in `cols.x`)."""
+  new = (NUM if s[0].isupper() else SYM)(txt=s, at=n)
+  if s[-1] == "!": i.klass = new
+  if s[-1] != "X": (i.y if s[-1] in "!+-" else i.x).append(new)
+  return new
 
-# Create data. `src` can be any iterator that returns a list of values 
-# (e.g. some list, or the `csv` iterator, shown below, that reads rows from a csv file).
-def data(src=None, rank=False):
-  data1=DATA()
-  [append(data1,lst) for  lst in src or []]
-  if rank: data1.rows.sort(key = lambda lst:d2h(data1,lst))
-  return data1
+def DATA(src=None, rank=False) -> data:
+  """ Constructor. `src` can be any iterator that returns a list of values (e.g. some 
+  list, or the `csv` iterator, shown below, that reads rows from a csv file)."""
+  i = _DATA()
+  [add2data(i,lst) for  lst in src or []]
+  if rank: i.rows.sort(key = lambda lst:d2h(i,lst))
+  return i
 
-# Copy a structure (same column structure, but with different rows).
-# Optionally, the rows in the new structure can be sorted.
-def clone(data1, inits=[], rank=False):
-  return data([data1.cols.names] + inits, rank=rank )
+def clone(i:data, inits=[], rank=False) -> data:
+  """Copy a structure (same column structure, but with different rows).
+  Optionally, the rows in the new structure can be sorted."""
+  return DATA([i.cols.names] + inits, rank=rank )
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Update
+def add2data(i:data,row1:row) -> None:
+  "update contents of a DATA"
+  if    i.cols: i.rows.append([add2col(col,x) for col,x in zip(i.cols.all,row1)])
+  else: i.cols= cols(row1)
 
-# Update DATA.
-def append(data,row1):
-  if    data.cols: data.rows.append([add(col,x) for col,x in zip(data.cols.all,row1)])
-  else: data.cols= cols(row1)
+def adds(i:col, lst:list) -> col:
+   "Update a NUM or SYM with many items."
+   [add2col(i,x) for x in lst]
+   return i
 
-# Update NUMs and SYMs with many items.
-def adds(col,lst): [add(col,x) for x in lst]; return col
-
-# Update NUMs and SYMs with one item.
-def add(col,x,n=1):
-  if x!="?":
-    col.n += n
-    if col.isNum: _add2num(col,x,n)
-    else: col.has[x] = col.has.get(x,0) + n
+def add2col(i:col, x:Any, n=1) -> Any:
+  "`n` times, update NUM or SYM with one item."
+  if x != "?":
+    i.n += n
+    if i.isNum: add2num(i,x,n)
+    else: i.has[x] = i.has.get(x,0) + n
   return x
 
-def _add2num(num,x,n):
-  num.lo = min(x, num.lo)
-  num.hi = max(x, num.hi)
+def add2num(i:num, x:Any, n:int) -> None:
+  "`n` times, update a NUM with one item."
+  i.lo = min(x, i.lo)
+  i.hi = max(x, i.hi)
   for _ in range(n):
-    if num.has != None: num.has += [x]
-    d       = x - num.mu
-    num.mu += d / num.n
-    num.m2 += d * (x -  num.mu)
+    if i.has != None: i.has += [x]
+    d       = x - i.mu
+    i.mu += d / i.n
+    i.m2 += d * (x -  i.mu)
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Queries
+def mid(i:col) -> atom:
+  "middle of a column"
+  return i.mu if i.isNum else max(i.has, key=i.has.get)
 
-# Middle of a column.
-def mid(col):
-  return col.mu if col.isNum else max(col.has, key=col.has.get)
+def mids(i:data, cols=None) -> dict[str,atom]:
+  "middle of some columns (defaults to `data.cols.x`)"
+  return {i.txt:mid(col) for col in cols or i.cols.x}
 
-# Middle of some columns (defaults to `data.cols.x`).
-def mids(data, cols=None):
-  return {col.txt:mid(col) for col in cols or data.cols.x}
+def div(i:col) -> float:
+  "diversity of a column"
+  return  (0 if i.n <2 else (i.m2/(i.n-1))**.5) if i.isNum else ent(i.has)[0]
 
-# Diversity of a column.
-def div(col):
-  return  (0 if col.n <2 else (col.m2/(col.n-1))**.5) if col.isNum else ent(col.has)[0]
+def divs(i:data, cols=None) -> dict[str,float]:
+  "diversity of some columns (defaults to `data.cols.x`)"
+  return {col.txt:div(col) for col in cols or i.cols.x}
 
-# Diverstiy of some columns (defaults to `data.cols.x`).
-def divs(data, cols=None): return {col.txt:div(col) for col in cols or data.cols.x}
-
-# Normalize `x` to 0..1
-def norm(num,x): return x if x=="?" else (x-num.lo)/(num.hi - num.lo - 1E-30)
-
+def norm(i:num,x) -> float:
+  "normalize `x` to 0..1"
+  return x if x=="?" else (x-i.lo)/(i.hi - i.lo - 1E-30)
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # Discretization
-
-def BIN(at,txt,lo,hi=None,ys=None):
-  return o(at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
-
-def bins(col, classes, small=None)
-  out = binsDivide(ccol,classes)
-  if not col.isNum: return out
-  small= small or (sum(len(row) for rows in classes.values)) / the.bins
-  aut = merges(out, merge=lambda x,y:merge(x,y,small)
-  
-def binsDivide(col, classes):
-  d = {}
-  [_send2bin(col,row[col.at],y,d) for y,rows in classes.items() for row in rows]
-  return sorted(d.values, key=lambda z:z.lo)
-
-def _send2bin(col,x,y,d):
-  if x != "?":
-     k = _bin(col,x)
-     it = d[k] = d[k] if k in d else BIN(col.at,col.txt,x)
-     it.lo = min(it.lo, x)
-     it.hi = max(it.hi, x)
-     it.ys[y] = it.ys.get(y,0) + 1
-
-def _bin(col,x):
-  return min(the.bins - 1, int(the.bins * norm(col,x)) if col.isNum else x
-
-def _merges(b4, mergeFun):
-  j, now  = 0, []
-  while j <  len(b4):
-    x = b4[j]
-    if j <  len(b4) - 1:
-      y = b4[j+1]
-      if xy := mergeFun(x, y):
-        x = xy
-        j = j+1  # if i can merge, jump over the merged item
-    now += [x]
-    j += 1
-  return b4 if len(now) == len(b4) else _merges(now, mergeFun)
-
-
-
+#
+# def bins2bin(bins):
+#   out    = BIN(bins[0].at, bins[0].txt, bins[0].lo)
+#   for bin in bins:
+#     out.lo =  min(out.lo, bin.lo)
+#     out.hi =  max(out.hi, bin.hi)
+#     for y,n in bin.ys.items: bin.ys[y] = bin.ys[y].get(y,0) + n
+#   return out
+#
+# def merge(bin1,bin2):
+#   bin3 = bins2bin([bin1,bin2])
+#   e1,n1 = ent(bin1.ys)
+#   e2,n2 = ent(bin2.ys)
+#   e3,n3 = ent(bins3.ys)
+#   if n1 <  small or n2 < small : return bin3 # merge if bins too small
+#   if e3 <= (n1*e1 + n2*e2)/n3  : return bin3 # merge if parts are more complex
+#
+# def bins(col, classes, small=None)
+#   out = binsDivide(ccol,classes)
+#   if not col.isNum: return out
+#   small= small or (sum(len(row) for rows in classes.values)) / the.bins
+#   rewrunaut = merges(out, merge=lambda x,y:merge(x,y,small)
+#   
+# def binsDivide(col, classes):
+#   d = {}
+#   [_send2bin(col,row[col.at],y,d) for y,rows in classes.items() for row in rows]
+#   return sorted(d.values, key=lambda z:z.lo)
+#
+# def _send2bin(col,x,y,d):
+#   if x != "?":
+#      k = _bin(col,x)
+#      it = d[k] = d[k] if k in d else BIN(col.at,col.txt,x)
+#      it.lo = min(it.lo, x)
+#      it.hi = max(it.hi, x)
+#      it.ys[y] = it.ys.get(y,0) + 1
+#
+# def _bin(col,x):
+#   return min(the.bins - 1, int(the.bins * norm(col,x)) if col.isNum else x
+#
+# def _merges(b4, mergeFun):
+#   j, now  = 0, []
+#   while j <  len(b4):
+#     x = b4[j]
+#     if j <  len(b4) - 1:
+#       y = b4[j+1]
+#       if xy := mergeFun(x, y):
+#         x = xy
+#         j = j+1  # if i can merge, jump over the merged item
+#     now += [x]
+#     j += 1
+#   return b4 if len(now) == len(b4) else _merges(now, mergeFun)
+#
+#
+#
     # --  small = small or (sum(len(lst) for lst in classes.values())/the.bins))
-
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Distances
 
-# Distance to `heaven` (which is the distance of the `y` vals to the best values).
-def d2h(data,row):
-  n = sum(abs(norm(num,row[num.at]) - num.maximize)**the.p for num in data.cols.y)
-  return (n / len(data.cols.y))**(1/the.p)
+def d2h(i:data, row1:row) -> float:
+  "distance to `heaven` (which is the distance of the `y` vals to the best values)"
+  n = sum(abs(norm(num,row1[num.at]) - num.maximize)**the.p for num in i.cols.y)
+  return (n / len(i.cols.y))**(1/the.p)
 
-# Distances between two rows
-def dists(data,row1,row2):
-  n = sum(dist(col, row1[col.at], row2[col.at])**the.p for col in data.cols.x)
+def dists(i:data, row1:row, row2:row) -> float:
+  "distances between two rows"
+  n = sum(dist(col, row1[col.at], row2[col.at])**the.p for col in i.cols.x)
   return (n / len(data.cols.x))**(1/the.p)
 
-# Distance between two values
-def dist(col,x,y):
+def dist(i:col, x:any, y:amy) -> float:
+  "distance between two values"
   if  x==y=="?": return 1
-  if not col.isNum: return x != y
-  x, y = norm(col,x), norm(col,y)
+  if not i.isNum: return x != y
+  x, y = norm(i,x), norm(i,y)
   x = x if x !="?" else (1 if y<0.5 else 0)
   y = y if y !="?" else (1 if x<0.5 else 0)
   return abs(x-y)
 
-def neighbors(data,row1, rows=None):
-  return sorted(rows or data.rows, key=lambda row2: dists(data,row1,row2))
+def neighbors(i:data,row1:row, rows=None) : list[row]:
+  "return `rows`, sorted ascending by distance to `row1"
+  return sorted(rows or data.rows, key=lambda row2: dists(i,row1,row2))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Clusters
@@ -298,6 +333,12 @@ def ent(d):
   N = sum(v for v in d.values() if v > 0)
   return -sum(v/N*math.log(v/N,2) for v in d.values() if v > 0),N
 
+def sumDicts(dicts):
+  out={}
+  for one in dicts:
+    for k,v in one.items(): out[k] = out.get(k,0) + v
+  return out
+
 def bore(d,goal=True,B=1,R=1):
   best,rest = 1E-30,1E-30
   for k,v in d.items():
@@ -305,16 +346,6 @@ def bore(d,goal=True,B=1,R=1):
     else: rest += v
   best,rest = best/B, rest/R
   return best**2/(best+rest)
-
-def merged(d1,d2,small=1):
-   d3={}
-   for either in [d1,d2]:
-     for k,v in either.items(): d3[k] = d3.get(k,0) + v
-   e1,n1 = ent(d1)
-   e2,n2 = ent(d2)
-   e3,n3 = ent(d3)
-   if n1 <  small or n2 < small : return d3 # merge if bins too small
-   if e3 <= (n1*e1 + n2*e2)/n3  : return d3 # merge if parts are more complex
 
 def show(x):
   it = type(x)
@@ -336,7 +367,7 @@ def cli(d):
   for k,v in d.items():
     v = str(v)
     for c,arg in enumerate(sys.argv):
-      if arg == "-"+k[0]:
+      if arg in ["-"+k[0], "--"+k]:
         d[k] = coerce("false" if v=="true" else ("true" if v=="false" else sys.argv[c+1]))
 
 def btw(*args, **kwargs):

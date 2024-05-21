@@ -18,6 +18,7 @@ understandable analytics.
 
 &copy; 2024 by Tim Menzies and the EZR, BSD2 license.
 
+## About
 **Analytics** is how we extract high-quality insights from low
 quality data. Here, we  use a "less is more" approach to create a
 simple, fast toolkit that can tackle complex problems with just a
@@ -38,10 +39,6 @@ of code.
 
 In our own work, this material is used to teach a one semester
 graduate class in SE for AI.
-
-### Get the code
-Our code is written in Python 3.13. 
-XXX
 
 ### About the Authors
 This work was written by the EZR mob (students from North Carolina
@@ -68,6 +65,8 @@ All profits from this work will be donated to the
 to improve the health and lives of people affected by poverty or
 emergency situations by mobilizing and providing essential medical
 resources needed for their care.
+
+## Quick Start
 
 ## Contents
 - [Introduction (all you need is less)](/docs/less.md)
