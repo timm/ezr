@@ -4,8 +4,9 @@ saved:
 	git commit -am saved; git push; git status
 
 ~/tmp/%.html : %.py
-	@echo "$< ==> $@"
-	@$(PDOC)  --logo 'https://raw.githubusercontent.com/timm/ezr/main/docs/img/less.png' -o ~/tmp $<
+	pycco -d ~/tmp $<
+	# @echo "$< ==> $@"
+	# @$(PDOC)  --logo 'https://raw.githubusercontent.com/timm/ezr/main/docs/img/less.png' -o ~/tmp $<
 	@open $@
 
 ~/tmp/%.pdf:  %.py

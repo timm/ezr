@@ -1,7 +1,5 @@
 #!/usr/bin/env python3 -B
 # <!-- vim: set ts=2 sw=2 sts=2 et: -->
-# Settings can be updated via command line.   
-# e.g. `./ezr.py -s $RANDOM` sets `the.seed` to a random value set by operating system.
 """
 ezr.py :  experiment in easier explainable AI. Less is more.    
 (C) 2024 Tim Menzies, timm@ieee.org, BSD-2.    
@@ -23,6 +21,8 @@ OPTIONS:
   -s --seed          random number seed             = 1234567891    
   -x --xys           max #bins in discretization    = 16    
 """
+# Settings can be updated via command line.   
+# e.g. `./ezr.py -s $RANDOM` sets `the.seed` to a random value set by operating system.
 # (FYI our seed is odious, apocalyptic, deficient, pernicious, polite, prime number)      
 import re,ast,sys,math,random,copy,traceback
 from fileinput import FileInput as file_or_stdin
@@ -30,6 +30,7 @@ from typing import Any,NewType
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Types
+
 class o:
   "Class for quick inits of structs, and pretty prints."
   def __init__(i,**d): i.__dict__.update(d)
@@ -44,7 +45,7 @@ rows         = list[row]
 classes      = dict[str,rows] # `str` is the class name
 
 def coerce(s:str) -> atom:
-  "coerces strings to atoms"
+  "Coerces strings to atoms."
   try: return ast.literal_eval(s)
   except Exception:  return s
 
@@ -53,32 +54,32 @@ the=o(**{m[1]:coerce(m[2]) for m in re.finditer(r"--(\w+)[^=]*=\s*(\S+)",__doc__
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Structs
+
 def _DATA() -> data:
-  "primitive constructor: stores `rows` (whose columns  are summarized in `cols`)."
+  "DATA stores `rows` (whose columns  are summarized in `cols`)."
   return o(rows=[], cols=None) # cols=None means 'have not read row1 yet'
 
 def _COLS(names: list[str]) -> cols:
-  """primitive constructor: a factory that makes, and stores, `all` the columns.
-  (and the  independent and dependent cols are also held in `x` and ``y`"""
+  "Factory. Makes cols. Stores independent/dependent cols `x`/`y` and `all`."
   return o(x=[], y=[], all=[], klass=None, names=names)
 
 def _SYM(txt=" ",at=0) -> sym:
-  "primitive constructor: incrementally summarizes a stream of symbols."
+  "SYMs incrementally summarizes a stream of symbols."
   return o(isNum=False, txt=txt, at=at, n=0, has={})
 
 def _NUM(txt=" ",at=0,has=None) -> num:
-  "primitive constructor: incremental summarizes a stream of numbers."
+  "NUMs incrementally summarizes a stream of numbers."
   return o(isNum=True,  txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
            has=has, rank=0, # if has non-nil, used by the stats package
            mu=0, m2=0, maximize = txt[-1] != "-")
 
 def _XY(at,txt,lo,hi=None,ys=None) -> xy:
-  """primitive constructor: `ys` holds a count of the symbols seen in one column
-  between the `lo` and `hi` of another column."""
+  "`ys` counts symbols of one column seen between `lo`.. `hi` of another column."
   return o(n=0,at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Constructors
+
 # Here are the constructors that just call the primitive constructors.
 NUM, SYM, XY = _NUM, _SYM, _XY
 
@@ -115,6 +116,7 @@ def clone(i:data, inits=[], rank=False) -> data:
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Update
+
 def add2data(i:data,row1:row) -> None:
   "update contents of a DATA"
   if    i.cols: i.rows.append([add2col(col,x) for col,x in zip(i.cols.all,row1)])
