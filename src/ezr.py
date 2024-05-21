@@ -26,16 +26,14 @@ OPTIONS:
 # (FYI our seed is odious, pernicious, apocalyptic, deficient, and prime.)      
 import re,ast,sys,math,random,copy,traceback
 from fileinput import FileInput as file_or_stdin
-from typing import Any,NewType 
-from typing_extensions import Literal
+from typing import Any,NewType
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Types
-atom    = NewType('atom',    float|int|bool|str) 
-row     = NewType('row',     list[atom])
-rows    = NewType('rows',    list[row])
-classes = NewType('classes', dict[str, # `str` is the class name
-                                  rows])
+atom    = float|int|bool|str # and sometimes r"?"
+row     = list[atom]
+rows    = list[row]
+classes = dict[str,rows] # `str` is the class name
 
 class o:
   "Class for quick inits of structs, and pretty prints."
@@ -44,7 +42,7 @@ class o:
 
 bin,cols,data = NewType('bin',o),NewType('cols',o),NewType('data',o)
 num,sym       = NewType('num',o),NewType('sym',o)
-col           = NewType('col', num|sym)
+col           = num|sym
 
 def coerce(s:str) -> atom:
   "coerces strings to atoms"
@@ -237,7 +235,7 @@ def dists(i:data, row1:row, row2:row) -> float:
   n = sum(dist(col, row1[col.at], row2[col.at])**the.p for col in i.cols.x)
   return (n / len(data.cols.x))**(1/the.p)
 
-def dist(i:col, x:any, y:amy) -> float:
+def dist(i:col, x:any, y:Any) -> float:
   "distance between two values"
   if  x==y=="?": return 1
   if not i.isNum: return x != y
@@ -246,15 +244,15 @@ def dist(i:col, x:any, y:amy) -> float:
   y = y if y !="?" else (1 if x<0.5 else 0)
   return abs(x-y)
 
-def neighbors(i:data,row1:row, rows=None) : list[row]:
+def neighbors(i:data, row1:row, rows1=None) -> list[row]:
   "return `rows`, sorted ascending by distance to `row1"
-  return sorted(rows or data.rows, key=lambda row2: dists(i,row1,row2))
+  return sorted(rows1 or i.rows, key=lambda row2: dists(i,row1,row2))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Clusters
-def faraway(data,row,rows):
-  far = int( len(rows) * the.Far)
-  return neighbors(data,row,rows)[far]
+def faraway(i:data, row1:row, rows1:rows) -> row:
+  far = int( len(rows1) * the.Far)
+  return neighbors(i,row1,rows1)[far]
 
 def twoFaraway(data,rows=None,before=None, sortp=False):
   rows = rows or data.rows
@@ -413,24 +411,24 @@ class eg:
     print(dict(div=div(s), mid=mid(s)))
 
   def clone():
-    data1= data(csv(the.file), rank=True)
+    data1= DATA(csv(the.file), rank=True)
     print(show(mids(data1)))
     print(show(mids(clone(data1, data1.rows))))
 
   def datas():
-    data1= data(csv(the.file), rank=True)
+    data1= DATA(csv(the.file), rank=True)
     print(show(mids(data1, cols=data1.cols.y)))
     print(data1.cols.names)
     for i,row in enumerate(data1.rows):
       if i % 40 == 0: print(i,"\t",row)
 
   def loglike():
-    data1= data(csv(the.file))
+    data1= DATA(csv(the.file))
     print(show(sorted(loglikes(data1,row,1000,2)
                       for i,row in enumerate(data1.rows) if i%10==0)))
 
   def dists():
-    data1= data(csv(the.file))
+    data1= DATA(csv(the.file))
     print(show(sorted(dists(data1, data1.rows[0], row)
                       for i,row in enumerate(data1.rows) if i%10==0)))
     for _ in range(10):
@@ -439,14 +437,14 @@ class eg:
       print(x,C);print(y)
 
   def halves():
-    data1= data(csv(the.file))
+    data1= DATA(csv(the.file))
     a,b,_ = half(data1,data1.rows)
     print(len(a), len(b))
     best,rest,n = halves(data1,stop=4)
     print(n,d2h(data1,best[0]))
 
   def smo():
-    d= data(csv(the.file))
+    d= DATA(csv(the.file))
     print(">",len(d.rows))
     best = smo(d)
     print(len(best),d2h(d, best[0]))
@@ -460,7 +458,7 @@ class eg:
 
   def smo20():
     "modify to show # evals"
-    d= data(src=csv(the.file))
+    d= DATA(src=csv(the.file))
     b4=adds(NUM(), [d2h(d,row) for row in d.rows])
     now=adds(NUM(), [d2h(d, smo(d)[0]) for _ in range(20)])
     sep=",\t"

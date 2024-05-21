@@ -8,6 +8,13 @@ README.md into package
 
 ## Example classes
 
+## Makefiles
+
+- long command down to one
+- self documenting amke files
+- data flow rogramming
+- -j
+
 
 
 

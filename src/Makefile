@@ -4,7 +4,7 @@ saved:
 ~/tmp/%.pdf:  %.py
 	@echo "pdf-ing $@ ... "
 	@a2ps                 \
-		-Br                 \
+		-Br                  \
 		--chars-per-line 100  \
 		--file-align=fill      \
 		--line-numbers=1        \
