@@ -8,7 +8,6 @@ ezr.py :  experiment in easier explainable AI. Less is more.
 
 OPTIONS:
   -a --any     #todo's to explore             = 100
-  -b --bins    max #bins in discretization    = 16
   -d --decs    #decimals for showing floats   = 3
   -f --file    csv file for data              = ../data/misc/auto93.csv
   -F --Far     how far to seek faraway        = 0.8
@@ -22,27 +21,27 @@ OPTIONS:
   -p --p       distance function coefficient  = 2
   -R --Run     start up action method         = help
   -s --seed    random number seed             = 1234567891
+  -x --xys     max #bins in discretization    = 16
 """
-# (FYI our seed is odious, pernicious, apocalyptic, deficient, and prime.)      
+# (FYI our seed is odious, apocalyptic, deficient, pernicious, polite, prime number)      
 import re,ast,sys,math,random,copy,traceback
 from fileinput import FileInput as file_or_stdin
 from typing import Any,NewType
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Types
-atom    = float|int|bool|str # and sometimes r"?"
-row     = list[atom]
-rows    = list[row]
-classes = dict[str,rows] # `str` is the class name
-
 class o:
   "Class for quick inits of structs, and pretty prints."
   def __init__(i,**d): i.__dict__.update(d)
   def __repr__(i): return i.__class__.__name__+str(show(i.__dict__))
 
-bin,cols,data = NewType('bin',o),NewType('cols',o),NewType('data',o)
-num,sym       = NewType('num',o),NewType('sym',o)
-col           = num|sym
+atom    = float|int|bool|str # and sometimes r"?"
+row     = list[atom]
+rows    = list[row]
+classes = dict[str,rows] # `str` is the class name
+xy,cols,data = o,o,o,o,o
+num,sym = o,o,o,o,o
+col = num|sym
 
 def coerce(s:str) -> atom:
   "coerces strings to atoms"
@@ -56,7 +55,7 @@ the=o(**{m[1]:coerce(m[2]) for m in re.finditer(r"--(\w+)[^=]*=\s*(\S+)",__doc__
 # ## Structs
 def _DATA() -> data:
   "primitive constructor: stores `rows` (whose columns  are summarized in `cols`)."
-  return o(rows=[], cols=[])
+  return o(rows=[], cols=None) # cols=None means 'have not read row1 yet'
 
 def _COLS(names: list[str]) -> cols:
   """primitive constructor: a factory that makes, and stores, `all` the columns.
@@ -73,7 +72,7 @@ def _NUM(txt=" ",at=0,has=None) -> num:
            has=has, rank=0, # if has non-nil, used by the stats package
            mu=0, m2=0, maximize = txt[-1] != "-")
 
-def _BIN(at,txt,lo,hi=None,ys=None) -> bin:
+def _XY(at,txt,lo,hi=None,ys=None) -> xy:
   """primitive constructor: `ys` holds a count of the symbols seen in one column
   between the `lo` and `hi` of another column."""
   return o(n=0,at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
@@ -81,7 +80,7 @@ def _BIN(at,txt,lo,hi=None,ys=None) -> bin:
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Constructors
 # Here are the constructors that just call the primitive constructors.
-NUM, SYM, BIN = _NUM, _SYM, _BIN
+NUM, SYM, XY = _NUM, _SYM, _XY
 
 # Herea re the other constructors.
 def COLS(names: list[str]) -> cols:
@@ -104,6 +103,7 @@ def DATA(src=None, rank=False) -> data:
   """ Constructor. `src` can be any iterator that returns a list of values (e.g. some 
   list, or the `csv` iterator, shown below, that reads rows from a csv file)."""
   i = _DATA()
+  print(i)
   [add2data(i,lst) for  lst in src or []]
   if rank: i.rows.sort(key = lambda lst:d2h(i,lst))
   return i
@@ -224,15 +224,14 @@ def norm(i:num,x) -> float:
     # --  small = small or (sum(len(lst) for lst in classes.values())/the.bins))
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Distances
-
-def d2h(i:data, row1:row) -> float:
+def d2h(i:data, r:row) -> float:
   "distance to `heaven` (which is the distance of the `y` vals to the best values)"
-  n = sum(abs(norm(num,row1[num.at]) - num.maximize)**the.p for num in i.cols.y)
+  n = sum(abs(norm(num,r[num.at]) - num.maximize)**the.p for num in i.cols.y)
   return (n / len(i.cols.y))**(1/the.p)
 
-def dists(i:data, row1:row, row2:row) -> float:
+def dists(i:data, r1:row, r2:row) -> float:
   "distances between two rows"
-  n = sum(dist(col, row1[col.at], row2[col.at])**the.p for col in i.cols.x)
+  n = sum(dist(col, r[c.at], r2[c.at])**the.p for c in i.cols.x)
   return (n / len(data.cols.x))**(1/the.p)
 
 def dist(i:col, x:any, y:Any) -> float:
@@ -244,92 +243,102 @@ def dist(i:col, x:any, y:Any) -> float:
   y = y if y !="?" else (1 if x<0.5 else 0)
   return abs(x-y)
 
-def neighbors(i:data, row1:row, rows1=None) -> list[row]:
-  "return `rows`, sorted ascending by distance to `row1"
-  return sorted(rows1 or i.rows, key=lambda row2: dists(i,row1,row2))
+def neighbors(i:data, r1:row, region:rows=None) -> list[row]:
+  "return the `region` (default=`i.rows`), sorted ascending by distance to `r1`"
+  return sorted(region or i.rows, key=lambda r2: dists(i,r1,r2))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Clusters
-def faraway(i:data, row1:row, rows1:rows) -> row:
-  far = int( len(rows1) * the.Far)
-  return neighbors(i,row1,rows1)[far]
+def faraway(i:data, r1:row, region:rows) -> row:
+  "find something far away from `row1` with the `region`"
+  far = int( len(around) * the.Far)
+  return neighbors(i,row1, rows1)[far]
 
-def twoFaraway(data,rows=None,before=None, sortp=False):
-  rows = rows or data.rows
-  x = before or faraway(data, random.choice(rows), rows)
-  y = faraway(data, x, rows)
-  if sortp and d2h(data,y) < d2h(data,x): x,y = y,x
-  return x, y,  dists(data,x,y)
+def twoFaraway(i:data,region:rows=None,before=None, sortp=False) -> tuple[row,row,float]:
+  "find two distant points within the `region` (defaults to `i.rows`)"
+  region = region or i.rows
+  x = before or faraway(i, random.choice(region), region)
+  y = faraway(i, x, region)
+  if sortp and d2h(i,y) < d2h(i,x): x,y = y,x
+  return x, y,  dists(i,x,y)
 
-def half(data,rows,sortp=False,before=None):
-  def D(r1,r2): return dists(data,r1, r2)
-  mid = int(len(rows) // 2)
-  left,right,C = twoFaraway(data, random.choices(rows, k=min(the.Half, len(rows))),
+def half(i:data, region:rows, sortp=False, before=None) -> tuple[rows,rows,row]:
+  "split the `region` in two according to distance to two distant points"
+  def D(r1,r2): return dists(i,r1, r2)
+  mid = int(len(region) // 2)
+  left,right,C = twoFaraway(i, random.choices(region, k=min(the.Half, len(region))),
                             sortp=sortp, before=before)
-  tmp = sorted(rows, key=lambda row: (D(row,left)**2 + C**2 - D(row,right)**2)/(2*C))
-  return tmp[:mid], tmp[mid:], left
+  a = sorted(region, key=lambda r: (D(r,left)**2 + C**2 - D(r,right)**2)/(2*C))
+  return a[:mid], a[mid:], left
 
-def halves(data, rows=None, stop=None, rest=None, evals=1, before=None):
-  rows = rows or data.rows
-  stop = stop or 2*len(rows)**the.N
+def halves(i:data, region=None, stop=None, rest=None, evals=1, before=None):
+  """recursively bi-cluster the `region`, running down the best half. When `half` 
+  needs two points to split the `region`, reuse one from the parent cluster."""
+  region = region or i.rows
+  stop = stop or 2*len(region)**the.N
   rest = rest or []
-  if len(rows) > stop:
-    lefts,rights,left  = half(data,rows, True, before)
-    return halves(data,lefts, stop, rest+rights, evals+1, left)
+  if len(region) > stop:
+    lefts,rights,left  = half(i,region, True, before)
+    return halves(i,lefts, stop, rest+rights, evals+1, left)
   else:
-    return rows,rest,evals
+    return region,rest,evals
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Likelihoods
 
-# Likelihood of a `row` belonging to a `data`.
-def loglikes(data, row, nall, nh):
-  prior = (len(data.rows) + the.k) / (nall + the.k*nh)
-  likes = [like(col,row[col.at],prior) for col in data.cols.x if row[col.at] != "?"]
+def loglikes(i:data, r:row, nall:int, nh:int) -> float:
+  "likelihood of a `row` belonging to a DATA"
+  prior = (len(i.rows) + the.k) / (nall + the.k*nh)
+  likes = [like(c, r[c.at], prior) for c in i.cols.x if r[c.at] != "?"]
   return sum(math.log(x) for x in likes + [prior] if x>0)
 
-# Likelihood of `x` belonging to a `col`.
-def like(col, x, prior):
-  return like4num(col,x) if col.isNum else like4sym(col,x,prior)
+def like(i:col, x:any, prior:float) -> float:
+  "likelihood of `x` belonging to a col"
+  return like4num(i,x) if i.isNum else like4sym(i,x,prior)
 
-def like4sym(sym,x,prior): return (sym.has.get(x, 0) + the.m*prior) / (sym.n + the.m)
+def like4sym(i:sym, x:any, prior:float) -> float:
+  "likelihood of `x` belonging to a SYM"
+  return (i.has.get(x, 0) + the.m*prior) / (i.n + the.m)
 
-def like4num(num,x):
-  v     = div(num)**2 + 1E-30
-  nom   = math.e**(-1*(x - mid(num))**2/(2*v)) + 1E-30
+def like4num(i:num,x):
+  "likelihood of `x` belonging to a NUM"
+  v     = div(i)**2 + 1E-30
+  nom   = math.e**(-1*(x - mid(i))**2/(2*v)) + 1E-30
   denom = (2*math.pi*v) **0.5
   return min(1, nom/(denom + 1E-30))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Sequential model optimization
-# Assumes we can access everyone's indepent variables much cheaper than the dependent
 # variables 
 
-def smo(data, score=lambda B,R: B-R):
-  def guess(todo, done):
+def smo(i:data, score=lambda B,R: B-R):
+  def ranked(lst:rows) -> rows:
+    return clone(i, lst, rank=True).rows
+
+  def guess(todo:rows, done:rows) -> rows:
     cut  = int(.5 + len(done) ** the.N)
-    best = clone(data, done[:cut])
-    rest = clone(data, done[cut:])
-    key  = lambda row: score(loglikes(best, row, len(done), 2),
-                             loglikes(rest, row, len(done), 2))
+    best = clone(i, done[:cut])
+    rest = clone(i, done[cut:])
+    key  = lambda r: score(loglikes(best, r, len(done), 2),
+                           loglikes(rest, r, len(done), 2))
     random.shuffle(todo)
     return sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
 
-  def smo1(todo, done):
-    for i in range(the.Last - the.label):
+  def smo1(todo:rows, done:rows) -> rows:
+    for _ in range(the.Last - the.label):
       if len(todo) < 3: break
       top,*todo = guess(todo, done)
       done += [top]
-      done = clone(data, done, rank=True).rows # done is now resorted
+      done = ranked(done)
     return done
 
-  random.shuffle(data.rows)
-  return smo1(data.rows[the.label:], clone(data, data.rows[:the.label], rank=True).rows)
+  random.shuffle(i.rows)
+  return smo1(i.rows[the.label:], ranked(i.rows[:the.label]))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
-def ent(d):
-  N = sum(v for v in d.values() if v > 0)
-  return -sum(v/N*math.log(v/N,2) for v in d.values() if v > 0),N
+def ent(d:dict) -> tuple[float,int]:
+  N = sum(v for v in d.values())
+  return -sum(v/N*math.log(v/N,2) for v in d.values()),N
 
 def sumDicts(dicts):
   out={}

@@ -21,7 +21,7 @@ This is the core file of the system. In that file:
 - Use few or no comments in function doc strings or comments. Comments should be above 
   each function, maybe with points like 
   e.g. `#[A]`  in the code. Why? Easier to port into a book. 
-- Functions ideally 5 lines or less. For anything 6 or above, try to pull out   two or more functions.
+- Functions are ideally 5 lines or less. For anything 6 or above, try to pull out   two or more functions.
 
 - use type hints. why? better doco.
 - use `i` to denote self. Why? cgood replace for self or this. never use `i` as a counter
