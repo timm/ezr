@@ -1,5 +1,12 @@
+PDOC=/Library/Frameworks/Python.framework/Versions/3.11/bin/pdoc
+
 saved:
 	git commit -am saved; git push; git status
+
+~/tmp/%.html : %.py
+	@echo "$< ==> $@"
+	@$(PDOC)  --logo 'https://raw.githubusercontent.com/timm/ezr/main/docs/img/less.png' -o ~/tmp $<
+	@open $@
 
 ~/tmp/%.pdf:  %.py
 	@echo "pdf-ing $@ ... "

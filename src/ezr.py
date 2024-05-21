@@ -3,25 +3,25 @@
 # Settings can be updated via command line.   
 # e.g. `./ezr.py -s $RANDOM` sets `the.seed` to a random value set by operating system.
 """
-ezr.py :  experiment in easier explainable AI. Less is more.
-(C) 2024 Tim Menzies, timm@ieee.org, BSD-2.
-
-OPTIONS:
-  -a --any     #todo's to explore             = 100
-  -d --decs    #decimals for showing floats   = 3
-  -f --file    csv file for data              = ../data/misc/auto93.csv
-  -F --Far     how far to seek faraway        = 0.8
-  -k --k       bayes low frequency hack #1    = 1
-  -H --Half    #rows for searching for poles  = 128
-  -l --label   initial number of labelings    = 4
-  -L --Last    max allow labelings            = 30
-  -m --m       bayes low frequency hack #2    = 2
-  -n --n       tinyN                          = 12
-  -N --N       smallN                         = 0.5
-  -p --p       distance function coefficient  = 2
-  -R --Run     start up action method         = help
-  -s --seed    random number seed             = 1234567891
-  -x --xys     max #bins in discretization    = 16
+ezr.py :  experiment in easier explainable AI. Less is more.    
+(C) 2024 Tim Menzies, timm@ieee.org, BSD-2.    
+    
+OPTIONS:    
+  -a --any           #todo's to explore             = 100    
+  -d --decs          #decimals for showing floats   = 3    
+  -f --file          csv file for data              = ../data/misc/auto93.csv    
+  -F --Far           how far to seek faraway        = 0.8    
+  -k --k             bayes low frequency hack #1    = 1    
+  -H --Half          #rows for searching for poles  = 128    
+  -l --label         initial number of labelings    = 4    
+  -L --Last          max allow labelings            = 30    
+  -m --m             bayes low frequency hack #2    = 2    
+  -n --n             tinyN                          = 12    
+  -N --N             smallN                         = 0.5    
+  -p --p             distance function coefficient  = 2    
+  -R --Run           start up action method         = help    
+  -s --seed          random number seed             = 1234567891    
+  -x --xys           max #bins in discretization    = 16    
 """
 # (FYI our seed is odious, apocalyptic, deficient, pernicious, polite, prime number)      
 import re,ast,sys,math,random,copy,traceback
@@ -35,20 +35,20 @@ class o:
   def __init__(i,**d): i.__dict__.update(d)
   def __repr__(i): return i.__class__.__name__+str(show(i.__dict__))
 
-atom    = float|int|bool|str # and sometimes r"?"
-row     = list[atom]
-rows    = list[row]
-classes = dict[str,rows] # `str` is the class name
-xy,cols,data = o,o,o,o,o
-num,sym = o,o,o,o,o
-col = num|sym
+xy,cols,data = o,o,o
+num,sym      = o,o
+col          = num|sym
+atom         = float|int|bool|str # and sometimes r"?"
+row          = list[atom]
+rows         = list[row]
+classes      = dict[str,rows] # `str` is the class name
 
 def coerce(s:str) -> atom:
   "coerces strings to atoms"
   try: return ast.literal_eval(s)
   except Exception:  return s
 
-# Build the globals by parsing the `__doc__` string.
+# Build the global settings variable by parsing the `__doc__` string.
 the=o(**{m[1]:coerce(m[2]) for m in re.finditer(r"--(\w+)[^=]*=\s*(\S+)",__doc__)})
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
@@ -82,7 +82,7 @@ def _XY(at,txt,lo,hi=None,ys=None) -> xy:
 # Here are the constructors that just call the primitive constructors.
 NUM, SYM, XY = _NUM, _SYM, _XY
 
-# Herea re the other constructors.
+# Here are the other constructors.
 def COLS(names: list[str]) -> cols:
   "Constructor. Create columns (one for each string in `names`)."
   i = _COLS(names)
@@ -149,17 +149,13 @@ def mid(i:col) -> atom:
   "middle of a column"
   return i.mu if i.isNum else max(i.has, key=i.has.get)
 
-def mids(i:data, cols=None) -> dict[str,atom]:
-  "middle of some columns (defaults to `data.cols.x`)"
-  return {i.txt:mid(col) for col in cols or i.cols.x}
-
 def div(i:col) -> float:
   "diversity of a column"
   return  (0 if i.n <2 else (i.m2/(i.n-1))**.5) if i.isNum else ent(i.has)[0]
 
-def divs(i:data, cols=None) -> dict[str,float]:
-  "diversity of some columns (defaults to `data.cols.x`)"
-  return {col.txt:div(col) for col in cols or i.cols.x}
+def stats(i:data, fun=mid, cols1:cols=None) -> dict[str,atom]:
+  "stats of some columns (defaults to `fun=mid` of `data.cols.x`)"
+  return {i.txt:fun(c) for c in cols1 or i.cols.x}
 
 def norm(i:num,x) -> float:
   "normalize `x` to 0..1"
@@ -244,34 +240,33 @@ def dist(i:col, x:any, y:Any) -> float:
   return abs(x-y)
 
 def neighbors(i:data, r1:row, region:rows=None) -> list[row]:
-  "return the `region` (default=`i.rows`), sorted ascending by distance to `r1`"
+  "sort the `region` (default=`i.rows`),ascending,  by distance to `r1`"
   return sorted(region or i.rows, key=lambda r2: dists(i,r1,r2))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Clusters
 def faraway(i:data, r1:row, region:rows) -> row:
-  "find something far away from `row1` with the `region`"
-  far = int( len(around) * the.Far)
-  return neighbors(i,row1, rows1)[far]
+  "find something far away from `r1` with the `region`"
+  farEnough = int( len(around) * the.Far) # to avoid outliers, don't go 100% far away
+  return neighbors(i,row1, rows1)[farEnough]
 
-def twoFaraway(i:data,region:rows=None,before=None, sortp=False) -> tuple[row,row,float]:
-  "find two distant points within the `region` (defaults to `i.rows`)"
-  region = region or i.rows
+def twoFaraway(i:data,region:rows,before=None, sortp=False) -> tuple[row,row,float]:
+  "find two distant points within the `region`"
+  region = random.choices(region, k=min(the.Half, len(region)))
   x = before or faraway(i, random.choice(region), region)
   y = faraway(i, x, region)
   if sortp and d2h(i,y) < d2h(i,x): x,y = y,x
   return x, y,  dists(i,x,y)
 
 def half(i:data, region:rows, sortp=False, before=None) -> tuple[rows,rows,row]:
-  "split the `region` in two according to distance to two distant points"
-  def D(r1,r2): return dists(i,r1, r2)
+  "split the `region` in half according to each row's distance to two distant points"
   mid = int(len(region) // 2)
-  left,right,C = twoFaraway(i, random.choices(region, k=min(the.Half, len(region))),
-                            sortp=sortp, before=before)
-  a = sorted(region, key=lambda r: (D(r,left)**2 + C**2 - D(r,right)**2)/(2*C))
-  return a[:mid], a[mid:], left
+  left,right,C = twoFaraway(i, region, sortp=sortp, before=before)
+  def cos(r:row): return (dists(i,r,left)**2 + C**2 - dists(i,r,right)**2)/(2*C)
+  tmp = sorted(region, key=cos)
+  return tmp[:mid], tmp[mid:], left
 
-def halves(i:data, region=None, stop=None, rest=None, evals=1, before=None):
+def halves(i:data, region:rows=None, stop=None, rest=None, evals=1, before=None):
   """recursively bi-cluster the `region`, running down the best half. When `half` 
   needs two points to split the `region`, reuse one from the parent cluster."""
   region = region or i.rows
@@ -313,18 +308,22 @@ def like4num(i:num,x):
 
 def smo(i:data, score=lambda B,R: B-R):
   def ranked(lst:rows) -> rows:
-    return clone(i, lst, rank=True).rows
+    "sort `lst` by distance to heaven"
+    return sorted(lst, key = lambda r:d2h(i,r))
 
   def guess(todo:rows, done:rows) -> rows:
+    """"divide `done` into `best`,`rest` (those above and below a cut point);
+    use those two regions to guess the sort order on the unlabelled `todo` rows"""
     cut  = int(.5 + len(done) ** the.N)
     best = clone(i, done[:cut])
     rest = clone(i, done[cut:])
     key  = lambda r: score(loglikes(best, r, len(done), 2),
                            loglikes(rest, r, len(done), 2))
-    random.shuffle(todo)
+    random.shuffle(todo) # optimization: only sort a random subset of todo 
     return sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
 
   def smo1(todo:rows, done:rows) -> rows:
+    "guess the `top`  unlabeled row, add that to `done`, resort `done`, and repeat"""
     for _ in range(the.Last - the.label):
       if len(todo) < 3: break
       top,*todo = guess(todo, done)
@@ -332,29 +331,26 @@ def smo(i:data, score=lambda B,R: B-R):
       done = ranked(done)
     return done
 
-  random.shuffle(i.rows)
+  random.shuffle(i.rows) # remove any  bias from older runs
   return smo1(i.rows[the.label:], ranked(i.rows[:the.label]))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 def ent(d:dict) -> tuple[float,int]:
+  "entropy of a distribution"
   N = sum(v for v in d.values())
   return -sum(v/N*math.log(v/N,2) for v in d.values()),N
 
-def sumDicts(dicts):
-  out={}
-  for one in dicts:
-    for k,v in one.items(): out[k] = out.get(k,0) + v
-  return out
-
-def bore(d,goal=True,B=1,R=1):
-  best,rest = 1E-30,1E-30
+def bore(d,best=True,BEST=1,REST=1):
+  "score a distribution by how often it selects for `best`"
+  b,r = 1E-30,1E-30
   for k,v in d.items():
-    if k==goal: best += v
-    else: rest += v
-  best,rest = best/B, rest/R
-  return best**2/(best+rest)
+    if k==best: b += v
+    else      : r += v
+  b,r = b/BEST, r/REST
+  return b**2/(b+r) # support * probability
 
-def show(x):
+def show(x:Any) -> Any:
+  "some pretty-print rules"
   it = type(x)
   if it == float:  return round(x,the.decs)
   if it == list:   return [show(v) for v in x]
@@ -364,13 +360,16 @@ def show(x):
   if callable(x):  return x.__name__
   return x
 
-def csv(file=None):
-  with file_or_stdin(file) as src:
+def csv(file="-") -> row:
+  "iteratively  return `row` from a file, or standard input"
+  with file_or_stdin(None if file=="-" else file) as src:
     for line in src:
       line = re.sub(r'([\n\t\r ]|#.*)', '', line)
       if line: yield [coerce(s.strip()) for s in line.split(",")]
 
-def cli(d):
+def cli(d:dict):
+  """For a dictionary key `k`, if command line has `-k X`, then `d[k]=coerce(X)`.
+  If k's old value is a boolean, `X` is not required and `-k` just flips the default."""
   for k,v in d.items():
     v = str(v)
     for c,arg in enumerate(sys.argv):
@@ -378,11 +377,16 @@ def cli(d):
         d[k] = coerce("false" if v=="true" else ("true" if v=="false" else sys.argv[c+1]))
 
 def btw(*args, **kwargs):
-    print(*args, file=sys.stderr, end="", flush=True, **kwargs)
+  "print to standard error, flush standard error, do not print newlines"
+  print(*args, file=sys.stderr, end="", flush=True, **kwargs)
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
-def main(): cli(the.__dict__); run(the.Run)
+def main() -> None: 
+  "update `the` from the command line; call the start-up command `the.Run`"
+  cli(the.__dict__); run(the.Run)
 
-def run(s):
+def run(s:str) -> int:
+  """before running `eg.s()`, reset the seed. Afterwards, restore old settings. 
+  Return '1' if `s` causes a crashes or it returns `False`"""
   def run1():
     try:
       return getattr(eg, s)()
@@ -396,47 +400,63 @@ def run(s):
   return out==False
 
 class eg:
-  def all(): sys.exit(sum(run(s) for s in dir(eg) if s[0] !="_" and s !=  "all"))
+  "Store all the start up actions"
+  def all():
+    "run all actions, returning to OS a count of how many of them failed"
+    sys.exit(sum(run(s) for s in dir(eg) if s[0] !="_" and s !=  "all"))
 
   def help():
+    "print help"
     print(__doc__)
     print("Start-up commands:")
-    [print(f"  -R {k} ") for k in sorted(dir(eg)) if k[0] !=  "_"]
+    [print(f"  -R {k:15} {getattr(eg,k).__doc__}")
+          for k in dir(eg) if k[0] !=  "_"]
 
-  def the(): print(the)
+  def the(): 
+    "show settings"
+    print(the)
 
-  def csv(): [print(x) for i,x in enumerate(csv(the.file)) if i%50==0]
+  def csv(): 
+    "print some of the csv rows"
+    [print(x) for i,x in enumerate(csv(the.file)) if i%50==0]
 
   def cols():
+    "demo of column generation"
     [print(col) for col in 
        cols(["Clndrs","Volume","HpX","Model","origin","Lbs-","Acc+","Mpg+"]).all]
 
   def num():
+    "show mid and div from NUMbers"
     n= adds(NUM(),range(100))
     print(dict(div=div(n), mid=mid(n)))
 
   def sym():
+    "show mid and div from SYMbols"
     s= adds(SYM(),"aaaabbc")
     print(dict(div=div(s), mid=mid(s)))
 
-  def clone():
-    data1= DATA(csv(the.file), rank=True)
-    print(show(mids(data1)))
-    print(show(mids(clone(data1, data1.rows))))
-
   def datas():
+    "show sorted rows from a DATA"
     data1= DATA(csv(the.file), rank=True)
-    print(show(mids(data1, cols=data1.cols.y)))
+    print(show(stats(data1, cols=data1.cols.y)))
     print(data1.cols.names)
     for i,row in enumerate(data1.rows):
       if i % 40 == 0: print(i,"\t",row)
 
+  def clone():
+    "check that clones have same structure as original"
+    data1= DATA(csv(the.file), rank=True)
+    print(show(stats(data1)))
+    print(show(stats(clone(data1, data1.rows))))
+
   def loglike():
+    "show some bayes calcs"
     data1= DATA(csv(the.file))
     print(show(sorted(loglikes(data1,row,1000,2)
                       for i,row in enumerate(data1.rows) if i%10==0)))
 
   def dists():
+    "show some distance calcs"
     data1= DATA(csv(the.file))
     print(show(sorted(dists(data1, data1.rows[0], row)
                       for i,row in enumerate(data1.rows) if i%10==0)))
@@ -446,6 +466,7 @@ class eg:
       print(x,C);print(y)
 
   def halves():
+    "halve the data"
     data1= DATA(csv(the.file))
     a,b,_ = half(data1,data1.rows)
     print(len(a), len(b))
@@ -453,12 +474,14 @@ class eg:
     print(n,d2h(data1,best[0]))
 
   def smo():
+    "optimize something"
     d= DATA(csv(the.file))
     print(">",len(d.rows))
     best = smo(d)
     print(len(best),d2h(d, best[0]))
 
   def profileSmo():
+    "example of profiling"
     import cProfile
     import pstats
     cProfile.run('smo(data(csv(the.file)))','/tmp/out1')
@@ -466,7 +489,7 @@ class eg:
     p.sort_stats('time').print_stats(20)
 
   def smo20():
-    "modify to show # evals"
+    "run smo 20 times"
     d= DATA(src=csv(the.file))
     b4=adds(NUM(), [d2h(d,row) for row in d.rows])
     now=adds(NUM(), [d2h(d, smo(d)[0]) for _ in range(20)])
