@@ -148,13 +148,19 @@ def norm(num,x): return x if x=="?" else (x-num.lo)/(num.hi - num.lo - 1E-30)
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # Discretization
 
-def BIN(at,txt,lo,hi,ys=None):
+def BIN(at,txt,lo,hi=None,ys=None):
   return o(at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
 
-def binsDivide(col, classes, small=None):
+def bins(col, classes, small=None)
+  out = binsDivide(ccol,classes)
+  if not col.isNum: return out
+  small= small or (sum(len(row) for rows in classes.values)) / the.bins
+  aut = merges(out, merge=lambda x,y:merge(x,y,small)
+  
+def binsDivide(col, classes):
   d = {}
   [_send2bin(col,row[col.at],y,d) for y,rows in classes.items() for row in rows]
-  return sorted(d.values,key=lambda z:z.lo)
+  return sorted(d.values, key=lambda z:z.lo)
 
 def _send2bin(col,x,y,d):
   if x != "?":
@@ -166,6 +172,19 @@ def _send2bin(col,x,y,d):
 
 def _bin(col,x):
   return min(the.bins - 1, int(the.bins * norm(col,x)) if col.isNum else x
+
+def _merges(b4, mergeFun):
+  j, now  = 0, []
+  while j <  len(b4):
+    x = b4[j]
+    if j <  len(b4) - 1:
+      y = b4[j+1]
+      if xy := mergeFun(x, y):
+        x = xy
+        j = j+1  # if i can merge, jump over the merged item
+    now += [x]
+    j += 1
+  return b4 if len(now) == len(b4) else _merges(now, mergeFun)
 
 
 
@@ -296,19 +315,6 @@ def merged(d1,d2,small=1):
    e3,n3 = ent(d3)
    if n1 <  small or n2 < small : return d3 # merge if bins too small
    if e3 <= (n1*e1 + n2*e2)/n3  : return d3 # merge if parts are more complex
-
-def merges(b4, mergeFun):
-  j, now  = 0, []
-  while j <  len(b4):
-    x = b4[j]
-    if j <  len(b4) - 1:
-      y = b4[j+1]
-      if xy := mergeFun(x, y):
-        x = xy
-        j = j+1  # if i can merge, jump over the merged item
-    now += [x]
-    j += 1
-  return b4 if len(now) == len(b4) else merges(now, mergeFun)
 
 def show(x):
   it = type(x)
