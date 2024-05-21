@@ -227,7 +227,7 @@ def d2h(i:data, r:row) -> float:
 
 def dists(i:data, r1:row, r2:row) -> float:
   "distances between two rows"
-  n = sum(dist(col, r[c.at], r2[c.at])**the.p for c in i.cols.x)
+  n = sum(dist(col, r1[c.at], r2[c.at])**the.p for c in i.cols.x)
   return (n / len(data.cols.x))**(1/the.p)
 
 def dist(i:col, x:any, y:Any) -> float:
@@ -247,8 +247,8 @@ def neighbors(i:data, r1:row, region:rows=None) -> list[row]:
 # ## Clusters
 def faraway(i:data, r1:row, region:rows) -> row:
   "find something far away from `r1` with the `region`"
-  farEnough = int( len(around) * the.Far) # to avoid outliers, don't go 100% far away
-  return neighbors(i,row1, rows1)[farEnough]
+  farEnough = int( len(region) * the.Far) # to avoid outliers, don't go 100% far away
+  return neighbors(i,r1, region)[farEnough]
 
 def twoFaraway(i:data,region:rows,before=None, sortp=False) -> tuple[row,row,float]:
   "find two distant points within the `region`"
