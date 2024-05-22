@@ -1,32 +1,32 @@
 #!/usr/bin/env python3 -B
 # <!-- vim: set ts=2 sw=2 sts=2 et: -->
 """
-ezr.py :  experiment in easier explainable AI. Less is more.    
-(C) 2024 Tim Menzies, timm@ieee.org, BSD-2.    
-    
-OPTIONS:    
-  -a --any           #todo's to explore             = 100    
-  -d --decs          #decimals for showing floats   = 3    
-  -f --file          csv file for data              = ../data/misc/auto93.csv    
-  -F --Far           how far to seek faraway        = 0.8    
-  -k --k             bayes low frequency hack #1    = 1    
-  -H --Half          #rows for searching for poles  = 128    
-  -l --label         initial number of labelings    = 4    
-  -L --Last          max allow labelings            = 30    
-  -m --m             bayes low frequency hack #2    = 2    
-  -n --n             tinyN                          = 12    
-  -N --N             smallN                         = 0.5    
-  -p --p             distance function coefficient  = 2    
-  -R --Run           start up action method         = help    
-  -s --seed          random number seed             = 1234567891    
-  -x --xys           max #bins in discretization    = 16    
+    ezr.py :  experiment in easier explainable AI. Less is more.    
+    (C) 2024 Tim Menzies, timm@ieee.org, BSD-2.    
+        
+    OPTIONS:    
+      -a --any    #todo's to explore             = 100    
+      -d --decs   #decimals for showing floats   = 3    
+      -f --file   csv file for data              = ../data/misc/auto93.csv    
+      -F --Far    how far to seek faraway        = 0.8    
+      -k --k      bayes low frequency hack #1    = 1    
+      -H --Half   #rows for searching for poles  = 128    
+      -l --label  initial number of labelings    = 4    
+      -L --Last   max allow labelings            = 30    
+      -m --m      bayes low frequency hack #2    = 2    
+      -n --n      tinyN                          = 12    
+      -N --N      smallN                         = 0.5    
+      -p --p      distance function coefficient  = 2    
+      -R --Run    start up action method         = help    
+      -s --seed   random number seed             = 1234567891    
+      -x --xys    max #bins in discretization    = 16    
 """
 # Settings can be updated via command line.   
 # e.g. `./ezr.py -s $RANDOM` sets `the.seed` to a random value set by operating system.
 # (FYI our seed is odious, apocalyptic, deficient, pernicious, polite, prime number)      
 import re,ast,sys,math,random,copy,traceback
 from fileinput import FileInput as file_or_stdin
-from typing import Any,NewType
+from typing import Any as any
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Types
@@ -43,6 +43,9 @@ atom         = float|int|bool|str # and sometimes r"?"
 row          = list[atom]
 rows         = list[row]
 classes      = dict[str,rows] # `str` is the class name
+
+#--------- --------- --------- --------- --------- --------- --------- --------- --------
+# ## Settings
 
 def coerce(s:str) -> atom:
   "Coerces strings to atoms."
@@ -127,7 +130,7 @@ def adds(i:col, lst:list) -> col:
   [add2col(i,x) for x in lst]
   return i
 
-def add2col(i:col, x:Any, n=1) -> Any:
+def add2col(i:col, x:any, n=1) -> any:
   "`n` times, update NUM or SYM with one item."
   if x != "?":
     i.n += n
@@ -135,7 +138,7 @@ def add2col(i:col, x:Any, n=1) -> Any:
     else: i.has[x] = i.has.get(x,0) + n
   return x
 
-def add2num(i:num, x:Any, n:int) -> None:
+def add2num(i:num, x:any, n:int) -> None:
   "`n` times, update a NUM with one item."
   i.lo = min(x, i.lo)
   i.hi = max(x, i.hi)
@@ -234,7 +237,7 @@ def dists(i:data, r1:row, r2:row) -> float:
   n = sum(dist(c, r1[c.at], r2[c.at])**the.p for c in i.cols.x)
   return (n / len(i.cols.x))**(1/the.p)
 
-def dist(i:col, x:any, y:Any) -> float:
+def dist(i:col, x:any, y:any) -> float:
   "Distance between two values."
   if  x==y=="?": return 1
   if not i.isNum: return x != y
@@ -248,14 +251,14 @@ def neighbors(i:data, r1:row, region:rows=None) -> list[row]:
   return sorted(region or i.rows, key=lambda r2: dists(i,r1,r2))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
-# ## Clusters
+# ## Clustering
 
 def faraway(i:data, r1:row, region:rows) -> row:
   "Find something far away from `r1` with the `region`."
   farEnough = int( len(region) * the.Far) # to avoid outliers, don't go 100% far away
   return neighbors(i,r1, region)[farEnough]
 
-def twoFaraway(i:data,region:rows,before=None, sortp=False) -> tuple[row,row,float]:
+def twoFaraway(i:data, region:rows,before=None, sortp=False) -> tuple[row,row,float]:
   "Find two distant points within the `region`."
   region = random.choices(region, k=min(the.Half, len(region)))
   x = before or faraway(i, random.choice(region), region)
@@ -316,8 +319,7 @@ def smo(i:data, score=lambda B,R: B-R):
     return sorted(lst, key = lambda r:d2h(i,r))
 
   def guess(todo:rows, done:rows) -> rows:
-    """"divide `done` into `best`,`rest` (those above and below a cut point);
-    use those two regions to guess the sort order on the unlabelled `todo` rows"""
+    "Divide `done` into `best`,`rest`. use those to guess the order of unlabelled rows."
     cut  = int(.5 + len(done) ** the.N)
     best = clone(i, done[:cut])
     rest = clone(i, done[cut:])
@@ -327,7 +329,7 @@ def smo(i:data, score=lambda B,R: B-R):
     return sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
 
   def smo1(todo:rows, done:rows) -> rows:
-    "guess the `top`  unlabeled row, add that to `done`, resort `done`, and repeat"""
+    "Guess the `top`  unlabeled row, add that to `done`, resort `done`, and repeat"
     for _ in range(the.Last - the.label):
       if len(todo) < 3: break
       top,*todo = guess(todo, done)
@@ -339,6 +341,7 @@ def smo(i:data, score=lambda B,R: B-R):
   return smo1(i.rows[the.label:], ranked(i.rows[:the.label]))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
+# ## Misc Functions
 def ent(d:dict) -> tuple[float,int]:
   "Entropy of a distribution."
   N = sum(v for v in d.values())
@@ -353,7 +356,7 @@ def bore(d,best=True,BEST=1,REST=1):
   b,r = b/BEST, r/REST
   return b**2/(b+r) # support * probability
 
-def show(x:Any) -> Any:
+def show(x:any) -> any:
   "Some pretty-print rules."
   it = type(x)
   if it == float:  return round(x,the.decs)
@@ -384,6 +387,7 @@ def btw(*args, **kwargs):
   print(*args, file=sys.stderr, end="", flush=True, **kwargs)
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
+# ## Main
 def main() -> None: 
   "Update `the` from the command line; call the start-up command `the.Run`."
   cli(the.__dict__); run(the.Run)
@@ -402,6 +406,9 @@ def run(s:str) -> int:
   for k,v in reset.items(): the.__dict__[k]=v
   return out==False
 
+#--------- --------- --------- --------- --------- --------- --------- --------- ---------
+# ## Start-up Actions
+
 class eg:
   "Store all the start up actions"
   def all():
@@ -410,7 +417,7 @@ class eg:
 
   def help():
     "print help"
-    print(__doc__)
+    print(re.sub(r"\n    ","\n",__doc__))
     print("Start-up commands:")
     [print(f"  -R {k:15} {getattr(eg,k).__doc__}") for k in dir(eg) if k[0] !=  "_"]
 
@@ -502,3 +509,6 @@ class eg:
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 if __name__ == "__main__": main()
+
+
+

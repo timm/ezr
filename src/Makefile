@@ -3,10 +3,10 @@ PDOC=/Library/Frameworks/Python.framework/Versions/3.11/bin/pdoc
 saved:
 	git commit -am saved; git push; git status
 
-~/tmp/%.html : %.py
-	pycco -d ~/tmp $<
-	# @echo "$< ==> $@"
-	# @$(PDOC)  --logo 'https://raw.githubusercontent.com/timm/ezr/main/docs/img/less.png' -o ~/tmp $<
+../docs/%.html : %.py
+	gawk -f ../etc/ab2ba.awk $< > ../docs/$<
+	cd ../docs; pycco -d . $<
+	echo "pre,code { font-size: x-small; }" >> ../docs/pycco.css
 	@open $@
 
 ~/tmp/%.pdf:  %.py
