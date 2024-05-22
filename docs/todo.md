@@ -14,7 +14,13 @@
 | apriori | | |
 | DATA synthesis  | |  |
 | Anomaly detection |synthesis | |
-| Fairness | | |
+| Fairness | synthesis  | |
+
+## Tools
+
+Text tool: tokeniztion, stemming, markov chains, tf\*idf
+
+Scikit tooL: translate data formats scikit and DATA
 
 ## Extend
 
