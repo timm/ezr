@@ -121,7 +121,7 @@ def clone(i:data, inits=[], rank=False) -> data:
 def add2data(i:data,row1:row) -> None:
   "Update contents of a DATA."
   if    i.cols: i.rows.append([add2col(col,x) for col,x in zip(i.cols.all,row1)])
-  else: i.cols= cols(row1)
+  else: i.cols= COLS(row1)
 
 def adds(i:col, lst:list) -> col:
   "Update a NUM or SYM with many items."
@@ -157,9 +157,9 @@ def div(i:col) -> float:
   "Diversity of a column."
   return  (0 if i.n <2 else (i.m2/(i.n-1))**.5) if i.isNum else ent(i.has)[0]
 
-def stats(i:data, fun=mid, cols1:cols=None) -> dict[str,atom]:
+def stats(i:data, fun=mid, what:cols=None) -> dict[str,atom]:
   "Stats of some columns (defaults to `fun=mid` of `data.cols.x`)"
-  return {i.txt:fun(c) for c in cols1 or i.cols.x}
+  return {i.txt:fun(c) for c in what or i.cols.x}
 
 def norm(i:num,x) -> float:
   "Normalize `x` to 0..1"
@@ -426,18 +426,18 @@ class eg:
 
   def cols():
     "demo of column generation"
-    [print(col) for col in 
-       cols(["Clndrs","Volume","HpX","Model","origin","Lbs-","Acc+","Mpg+"]).all]
+    [print(show(col)) for col in 
+       COLS(["Clndrs","Volume","HpX","Model","origin","Lbs-","Acc+","Mpg+"]).all]
 
   def num():
     "show mid and div from NUMbers"
     n= adds(NUM(),range(100))
-    print(dict(div=div(n), mid=mid(n)))
+    print(show(dict(div=div(n), mid=mid(n))))
 
   def sym():
     "show mid and div from SYMbols"
     s= adds(SYM(),"aaaabbc")
-    print(dict(div=div(s), mid=mid(s)))
+    print(show(dict(div=div(s), mid=mid(s))))
 
   def datas():
     "show sorted rows from a DATA"
