@@ -106,7 +106,6 @@ def add2cols(i:cols, n:int, s:str) -> col:
 def DATA(src=None, rank=False) -> data:
   "Adds rows from `src` to a DATA. Summarizes them in `cols`. Maybe sorts the rows."
   i = _DATA()
-  print(i)
   [add2data(i,lst) for  lst in src or []]
   if rank: i.rows.sort(key = lambda lst:d2h(i,lst))
   return i
@@ -159,7 +158,7 @@ def div(i:col) -> float:
 
 def stats(i:data, fun=mid, what:cols=None) -> dict[str,atom]:
   "Stats of some columns (defaults to `fun=mid` of `data.cols.x`)"
-  return {i.txt:fun(c) for c in what or i.cols.x}
+  return {c.txt:fun(c) for c in what or i.cols.x}
 
 def norm(i:num,x) -> float:
   "Normalize `x` to 0..1"
@@ -232,8 +231,8 @@ def d2h(i:data, r:row) -> float:
 
 def dists(i:data, r1:row, r2:row) -> float:
   "Distances between two rows."
-  n = sum(dist(col, r1[c.at], r2[c.at])**the.p for c in i.cols.x)
-  return (n / len(data.cols.x))**(1/the.p)
+  n = sum(dist(c, r1[c.at], r2[c.at])**the.p for c in i.cols.x)
+  return (n / len(i.cols.x))**(1/the.p)
 
 def dist(i:col, x:any, y:Any) -> float:
   "Distance between two values."
@@ -413,8 +412,7 @@ class eg:
     "print help"
     print(__doc__)
     print("Start-up commands:")
-    [print(f"  -R {k:15} {getattr(eg,k).__doc__}")
-          for k in dir(eg) if k[0] !=  "_"]
+    [print(f"  -R {k:15} {getattr(eg,k).__doc__}") for k in dir(eg) if k[0] !=  "_"]
 
   def the(): 
     "show settings"
@@ -442,7 +440,7 @@ class eg:
   def datas():
     "show sorted rows from a DATA"
     data1= DATA(csv(the.file), rank=True)
-    print(show(stats(data1, cols=data1.cols.y)))
+    print(show(stats(data1, what=data1.cols.y)))
     print(data1.cols.names)
     for i,row in enumerate(data1.rows):
       if i % 40 == 0: print(i,"\t",row)
@@ -464,9 +462,9 @@ class eg:
     data1= DATA(csv(the.file))
     print(show(sorted(dists(data1, data1.rows[0], row)
                       for i,row in enumerate(data1.rows) if i%10==0)))
-    for _ in range(10):
+    for _ in range(5):
       print("")
-      x,y,C,=twoFaraway(data1)
+      x,y,C,=twoFaraway(data1,data1.rows)
       print(x,C);print(y)
 
   def halves():
