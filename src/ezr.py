@@ -342,6 +342,7 @@ def smo(i:data, score=lambda B,R: B-R):
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Misc Functions
+
 def ent(d:dict) -> tuple[float,int]:
   "Entropy of a distribution."
   N = sum(v for v in d.values())
@@ -388,6 +389,7 @@ def btw(*args, **kwargs):
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Main
+
 def main() -> None: 
   "Update `the` from the command line; call the start-up command `the.Run`."
   cli(the.__dict__); run(the.Run)
