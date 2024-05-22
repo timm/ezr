@@ -73,27 +73,23 @@ def _COLS(names: list[str]) -> cols:
   "Factory. Makes cols. Stores independent/dependent cols `x`/`y` and `all`."
   return o(this=COLS, x=[], y=[], all=[], klass=None, names=names)
 
-def _SYM(txt=" ",at=0) -> sym:
+def SYM(txt=" ",at=0) -> sym:
   "SYMs incrementally summarizes a stream of symbols."
   return o(this=SYM, txt=txt, at=at, n=0, has={})
 
-def _NUM(txt=" ",at=0,has=None) -> num:
+def NUM(txt=" ",at=0,has=None) -> num:
   "NUMs incrementally summarizes a stream of numbers."
   return o(this=NUM, txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
            has=has, rank=0, # if has non-nil, used by the stats package
            mu=0, m2=0, maximize = txt[-1] != "-")
 
-def _XY(at,txt,lo,hi=None,ys=None) -> xy:
+def XY(at,txt,lo,hi=None,ys=None) -> xy:
   "`ys` counts symbols of one column seen between `lo`.. `hi` of another column."
   return o(this=XY,n=0,at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Constructors
 
-# Here are the constructors that just call the primitive constructors.
-def NUM(*l,**d): return _NUM(*l,**d)
-def SYM(*l,**d): return _SYM(*l,**d)
-def XY(*l,**d) : return _XY(*l,**d)
 
 # Here are the other constructors.
 def COLS(names: list[str]) -> cols:
