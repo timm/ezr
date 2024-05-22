@@ -62,37 +62,38 @@ def cli(d:dict):
       if arg in ["-"+k[0], "--"+k]:
         d[k] = coerce("false" if v=="true" else ("true" if v=="false" else sys.argv[c+1]))
 
-
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Structs
 
 def _DATA() -> data:
   "DATA stores `rows` (whose columns  are summarized in `cols`)."
-  return o(rows=[], cols=None) # cols=None means 'have not read row1 yet'
+  return o(this=DATA, rows=[], cols=None) # cols=None means 'have not read row1 yet'
 
 def _COLS(names: list[str]) -> cols:
   "Factory. Makes cols. Stores independent/dependent cols `x`/`y` and `all`."
-  return o(x=[], y=[], all=[], klass=None, names=names)
+  return o(this=COLS, x=[], y=[], all=[], klass=None, names=names)
 
 def _SYM(txt=" ",at=0) -> sym:
   "SYMs incrementally summarizes a stream of symbols."
-  return o(isNum=False, txt=txt, at=at, n=0, has={})
+  return o(this=SYM, txt=txt, at=at, n=0, has={})
 
 def _NUM(txt=" ",at=0,has=None) -> num:
   "NUMs incrementally summarizes a stream of numbers."
-  return o(isNum=True,  txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
+  return o(this=NUM, txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
            has=has, rank=0, # if has non-nil, used by the stats package
            mu=0, m2=0, maximize = txt[-1] != "-")
 
 def _XY(at,txt,lo,hi=None,ys=None) -> xy:
   "`ys` counts symbols of one column seen between `lo`.. `hi` of another column."
-  return o(n=0,at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
+  return o(this=XY,n=0,at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Constructors
 
 # Here are the constructors that just call the primitive constructors.
-NUM, SYM, XY = _NUM, _SYM, _XY
+def NUM(*l,**d): return _NUM(*l,**d)
+def SYM(*l,**d): return _SYM(*l,**d)
+def XY(*l,**d) : return _XY(*l,**d)
 
 # Here are the other constructors.
 def COLS(names: list[str]) -> cols:
@@ -143,7 +144,7 @@ def add2col(i:col, x:any, n=1) -> any:
   "`n` times, update NUM or SYM with one item."
   if x != "?":
     i.n += n
-    if i.isNum: add2num(i,x,n)
+    if i.this is NUM: add2num(i,x,n)
     else: i.has[x] = i.has.get(x,0) + n
   return x
 
@@ -162,11 +163,11 @@ def add2num(i:num, x:any, n:int) -> None:
 
 def mid(i:col) -> atom:
   "Middle of a column."
-  return i.mu if i.isNum else max(i.has, key=i.has.get)
+  return i.mu if i.this is NUM else max(i.has, key=i.has.get)
 
 def div(i:col) -> float:
   "Diversity of a column."
-  return  (0 if i.n <2 else (i.m2/(i.n-1))**.5) if i.isNum else ent(i.has)[0]
+  return  (0 if i.n <2 else (i.m2/(i.n-1))**.5) if i.this is NUM else ent(i.has)[0]
 
 def stats(i:data, fun=mid, what:cols=None) -> dict[str,atom]:
   "Stats of some columns (defaults to `fun=mid` of `data.cols.x`)"
@@ -197,7 +198,7 @@ def norm(i:num,x) -> float:
 #
 # def bins(col, classes, small=None)
 #   out = binsDivide(ccol,classes)
-#   if not col.isNum: return out
+#   if col.this is SYM: return out
 #   small= small or (sum(len(row) for rows in classes.values)) / the.bins
 #   rewrunaut = merges(out, merge=lambda x,y:merge(x,y,small)
 #   
@@ -215,7 +216,7 @@ def norm(i:num,x) -> float:
 #      it.ys[y] = it.ys.get(y,0) + 1
 #
 # def _bin(col,x):
-#   return min(the.bins - 1, int(the.bins * norm(col,x)) if col.isNum else x
+#   return min(the.bins - 1, int(the.bins * norm(col,x)) if col.this is NUM else x
 #
 # def _merges(b4, mergeFun):
 #   j, now  = 0, []
@@ -249,7 +250,7 @@ def dists(i:data, r1:row, r2:row) -> float:
 def dist(i:col, x:any, y:any) -> float:
   "Distance between two values."
   if  x==y=="?": return 1
-  if not i.isNum: return x != y
+  if i.this is SYM: return x != y
   x, y = norm(i,x), norm(i,y)
   x = x if x !="?" else (1 if y<0.5 else 0)
   y = y if y !="?" else (1 if x<0.5 else 0)
@@ -305,7 +306,7 @@ def loglikes(i:data, r:row, nall:int, nh:int) -> float:
 
 def like(i:col, x:any, prior:float) -> float:
   "Likelihood of `x` belonging to a col."
-  return like4num(i,x) if i.isNum else like4sym(i,x,prior)
+  return like4num(i,x) if i.this is NUM else like4sym(i,x,prior)
 
 def like4sym(i:sym, x:any, prior:float) -> float:
   "Likelihood of `x` belonging to a SYM."
@@ -488,6 +489,7 @@ class eg:
   def smo():
     "optimize something"
     d= DATA(csv(the.file))
+    print(show(d.cols.all[1]))
     print(">",len(d.rows))
     best = smo(d)
     print(len(best),d2h(d, best[0]))
