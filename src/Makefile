@@ -5,7 +5,8 @@ saved:
 
 ../docs/%.html : %.py
 	gawk -f ../etc/ab2ba.awk $< > ../docs/$<
-	cd ../docs; pycco -d . $<
+	cd ../docs; pycco -d . $<; mv $< ~/tmp/
+	echo "p  { text-align: right; }" >> ../docs/pycco.css
 	echo "pre,code { font-size: x-small; }" >> ../docs/pycco.css
 	@open $@
 

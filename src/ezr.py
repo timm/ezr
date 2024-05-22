@@ -72,7 +72,7 @@ def _DATA() -> data:
   return o(this=DATA, rows=[], cols=None) # cols=None means 'have not read row1 yet'
 
 def _COLS(names: list[str]) -> cols:
-  "Factory. Makes cols. Stores independent/dependent cols `x`/`y` and `all`."
+  "COLS are factories to make columns. Stores independent/dependent cols `x`/`y` and `all`."
   return o(this=COLS, x=[], y=[], all=[], klass=None, names=names)
 
 def SYM(txt=" ",at=0) -> sym:
@@ -404,7 +404,7 @@ def run(s:str) -> int:
   random.seed(the.seed)
   out = run1()
   for k,v in reset.items(): the.__dict__[k]=v
-  return out==False
+  return out
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Start-up Actions
@@ -412,40 +412,40 @@ def run(s:str) -> int:
 class eg:
   "Store all the start up actions"
   def all():
-    "run all actions, returning to OS a count of how many of them failed"
-    sys.exit(sum(run(s) for s in dir(eg) if s[0] !="_" and s !=  "all"))
+    "Run all actions. Return to OS a count of failing actions (those returning `False`.."
+    sys.exit(sum(run(s)==False for s in dir(eg) if s[0] !="_" and s !=  "all"))
 
   def help():
-    "print help"
+    "Print help."
     print(re.sub(r"\n    ","\n",__doc__))
     print("Start-up commands:")
     [print(f"  -R {k:15} {getattr(eg,k).__doc__}") for k in dir(eg) if k[0] !=  "_"]
 
   def the(): 
-    "show settings"
+    "Show settings."
     print(the)
 
   def csv(): 
-    "print some of the csv rows"
+    "Print some of the csv rows."
     [print(x) for i,x in enumerate(csv(the.file)) if i%50==0]
 
   def cols():
-    "demo of column generation"
+    "Demo of column generation."
     [print(show(col)) for col in 
        COLS(["Clndrs","Volume","HpX","Model","origin","Lbs-","Acc+","Mpg+"]).all]
 
   def num():
-    "show mid and div from NUMbers"
+    "Show mid and div from NUMbers."
     n= adds(NUM(),range(100))
     print(show(dict(div=div(n), mid=mid(n))))
 
   def sym():
-    "show mid and div from SYMbols"
+    "Show mid and div from SYMbols."
     s= adds(SYM(),"aaaabbc")
     print(show(dict(div=div(s), mid=mid(s))))
 
   def datas():
-    "show sorted rows from a DATA"
+    "Show sorted rows from a DATA."
     data1= DATA(csv(the.file), rank=True)
     print(show(stats(data1, what=data1.cols.y)))
     print(data1.cols.names)
@@ -453,19 +453,19 @@ class eg:
       if i % 40 == 0: print(i,"\t",row)
 
   def clone():
-    "check that clones have same structure as original"
+    "Check that clones have same structure as original."
     data1= DATA(csv(the.file), rank=True)
     print(show(stats(data1)))
     print(show(stats(clone(data1, data1.rows))))
 
   def loglike():
-    "show some bayes calcs"
+    "Show some bayes calcs."
     data1= DATA(csv(the.file))
     print(show(sorted(loglikes(data1,row,1000,2)
                       for i,row in enumerate(data1.rows) if i%10==0)))
 
   def dists():
-    "show some distance calcs"
+    "Show some distance calcs."
     data1= DATA(csv(the.file))
     print(show(sorted(dists(data1, data1.rows[0], row)
                       for i,row in enumerate(data1.rows) if i%10==0)))
@@ -475,7 +475,7 @@ class eg:
       print(x,C);print(y)
 
   def halves():
-    "halve the data"
+    "Halve the data."
     data1= DATA(csv(the.file))
     a,b,_ = half(data1,data1.rows)
     print(len(a), len(b))
@@ -483,7 +483,7 @@ class eg:
     print(n,d2h(data1,best[0]))
 
   def smo():
-    "optimize something"
+    "Optimize something."
     d= DATA(csv(the.file))
     print(show(d.cols.all[1]))
     print(">",len(d.rows))
@@ -491,7 +491,7 @@ class eg:
     print(len(best),d2h(d, best[0]))
 
   def profileSmo():
-    "example of profiling"
+    "Example of profiling."
     import cProfile
     import pstats
     cProfile.run('smo(data(csv(the.file)))','/tmp/out1')
@@ -499,7 +499,7 @@ class eg:
     p.sort_stats('time').print_stats(20)
 
   def smo20():
-    "run smo 20 times"
+    "Run smo 20 times."
     d= DATA(src=csv(the.file))
     b4=adds(NUM(), [d2h(d,row) for row in d.rows])
     now=adds(NUM(), [d2h(d, smo(d)[0]) for _ in range(20)])
