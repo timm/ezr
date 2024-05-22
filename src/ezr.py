@@ -85,24 +85,26 @@ NUM, SYM, XY = _NUM, _SYM, _XY
 
 # Here are the other constructors.
 def COLS(names: list[str]) -> cols:
-  "Constructor. Create columns (one for each string in `names`)."
+  "Create columns (one for each string in `names`)."
   i = _COLS(names)
   i.all = [add2cols(i,n,s) for n,s in enumerate(names)]
   return i
 
-def add2cols(i:cols, n:int, s:str) -> None:
-  """Upper case names are NUM.  The `klass` name ends in '!'.  A trailing
-  'X' denotes 'ignore'.  If not ignoring, then the column is either
-  a dependent goals (held in `cols.y`) or a independent variable (held
-  in `cols.x`)."""
+# Rules for column names:
+# - Upper case names are NUM.   
+# - `klass` names ends in '!'.    
+# - A trailing 'X' denotes 'ignore'.   
+# - If not ignoring, then the column is either a dependent goals (held in `cols.y`) or 
+#   a independent variable (held in `cols.x`.
+def add2cols(i:cols, n:int, s:str) -> col:
+  "Creates a NUM or SYM from `s`. Adds it to `x`, `y`, `all` (if appropriate)."
   new = (NUM if s[0].isupper() else SYM)(txt=s, at=n)
   if s[-1] == "!": i.klass = new
   if s[-1] != "X": (i.y if s[-1] in "!+-" else i.x).append(new)
   return new
 
 def DATA(src=None, rank=False) -> data:
-  """ Constructor. `src` can be any iterator that returns a list of values (e.g. some 
-  list, or the `csv` iterator, shown below, that reads rows from a csv file)."""
+  "Adds rows from `src` to a DATA. Summarizes them in `cols`. Maybe sorts the rows."
   i = _DATA()
   print(i)
   [add2data(i,lst) for  lst in src or []]
@@ -110,22 +112,21 @@ def DATA(src=None, rank=False) -> data:
   return i
 
 def clone(i:data, inits=[], rank=False) -> data:
-  """Copy a structure (same column structure, but with different rows).
-  Optionally, the rows in the new structure can be sorted."""
+  "Copy a DATA (same column structure, with different rows). Optionally, sort it."
   return DATA([i.cols.names] + inits, rank=rank )
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Update
 
 def add2data(i:data,row1:row) -> None:
-  "update contents of a DATA"
+  "Update contents of a DATA."
   if    i.cols: i.rows.append([add2col(col,x) for col,x in zip(i.cols.all,row1)])
   else: i.cols= cols(row1)
 
 def adds(i:col, lst:list) -> col:
-   "Update a NUM or SYM with many items."
-   [add2col(i,x) for x in lst]
-   return i
+  "Update a NUM or SYM with many items."
+  [add2col(i,x) for x in lst]
+  return i
 
 def add2col(i:col, x:Any, n=1) -> Any:
   "`n` times, update NUM or SYM with one item."
@@ -147,20 +148,21 @@ def add2num(i:num, x:Any, n:int) -> None:
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Queries
+
 def mid(i:col) -> atom:
-  "middle of a column"
+  "Middle of a column."
   return i.mu if i.isNum else max(i.has, key=i.has.get)
 
 def div(i:col) -> float:
-  "diversity of a column"
+  "Diversity of a column."
   return  (0 if i.n <2 else (i.m2/(i.n-1))**.5) if i.isNum else ent(i.has)[0]
 
 def stats(i:data, fun=mid, cols1:cols=None) -> dict[str,atom]:
-  "stats of some columns (defaults to `fun=mid` of `data.cols.x`)"
+  "Stats of some columns (defaults to `fun=mid` of `data.cols.x`)"
   return {i.txt:fun(c) for c in cols1 or i.cols.x}
 
 def norm(i:num,x) -> float:
-  "normalize `x` to 0..1"
+  "Normalize `x` to 0..1"
   return x if x=="?" else (x-i.lo)/(i.hi - i.lo - 1E-30)
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
@@ -222,18 +224,19 @@ def norm(i:num,x) -> float:
     # --  small = small or (sum(len(lst) for lst in classes.values())/the.bins))
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Distances
+
 def d2h(i:data, r:row) -> float:
-  "distance to `heaven` (which is the distance of the `y` vals to the best values)"
+  "distance to `heaven` (which is the distance of the `y` vals to the best values)."
   n = sum(abs(norm(num,r[num.at]) - num.maximize)**the.p for num in i.cols.y)
   return (n / len(i.cols.y))**(1/the.p)
 
 def dists(i:data, r1:row, r2:row) -> float:
-  "distances between two rows"
+  "Distances between two rows."
   n = sum(dist(col, r1[c.at], r2[c.at])**the.p for c in i.cols.x)
   return (n / len(data.cols.x))**(1/the.p)
 
 def dist(i:col, x:any, y:Any) -> float:
-  "distance between two values"
+  "Distance between two values."
   if  x==y=="?": return 1
   if not i.isNum: return x != y
   x, y = norm(i,x), norm(i,y)
@@ -242,18 +245,19 @@ def dist(i:col, x:any, y:Any) -> float:
   return abs(x-y)
 
 def neighbors(i:data, r1:row, region:rows=None) -> list[row]:
-  "sort the `region` (default=`i.rows`),ascending,  by distance to `r1`"
+  "Sort the `region` (default=`i.rows`),ascending,  by distance to `r1`."
   return sorted(region or i.rows, key=lambda r2: dists(i,r1,r2))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Clusters
+
 def faraway(i:data, r1:row, region:rows) -> row:
-  "find something far away from `r1` with the `region`"
+  "Find something far away from `r1` with the `region`."
   farEnough = int( len(region) * the.Far) # to avoid outliers, don't go 100% far away
   return neighbors(i,r1, region)[farEnough]
 
 def twoFaraway(i:data,region:rows,before=None, sortp=False) -> tuple[row,row,float]:
-  "find two distant points within the `region`"
+  "Find two distant points within the `region`."
   region = random.choices(region, k=min(the.Half, len(region)))
   x = before or faraway(i, random.choice(region), region)
   y = faraway(i, x, region)
@@ -261,7 +265,7 @@ def twoFaraway(i:data,region:rows,before=None, sortp=False) -> tuple[row,row,flo
   return x, y,  dists(i,x,y)
 
 def half(i:data, region:rows, sortp=False, before=None) -> tuple[rows,rows,row]:
-  "split the `region` in half according to each row's distance to two distant points"
+  "Split the `region` in half according to each row's distance to two distant points"
   mid = int(len(region) // 2)
   left,right,C = twoFaraway(i, region, sortp=sortp, before=before)
   def cos(r:row): return (dists(i,r,left)**2 + C**2 - dists(i,r,right)**2)/(2*C)
@@ -269,8 +273,7 @@ def half(i:data, region:rows, sortp=False, before=None) -> tuple[rows,rows,row]:
   return tmp[:mid], tmp[mid:], left
 
 def halves(i:data, region:rows=None, stop=None, rest=None, evals=1, before=None):
-  """recursively bi-cluster the `region`, running down the best half. When `half` 
-  needs two points to split the `region`, reuse one from the parent cluster."""
+  "Recursively bi-cluster `region`, reursing only down the best half."
   region = region or i.rows
   stop = stop or 2*len(region)**the.N
   rest = rest or []
@@ -284,21 +287,21 @@ def halves(i:data, region:rows=None, stop=None, rest=None, evals=1, before=None)
 # ## Likelihoods
 
 def loglikes(i:data, r:row, nall:int, nh:int) -> float:
-  "likelihood of a `row` belonging to a DATA"
+  "Likelihood of a `row` belonging to a DATA."
   prior = (len(i.rows) + the.k) / (nall + the.k*nh)
   likes = [like(c, r[c.at], prior) for c in i.cols.x if r[c.at] != "?"]
   return sum(math.log(x) for x in likes + [prior] if x>0)
 
 def like(i:col, x:any, prior:float) -> float:
-  "likelihood of `x` belonging to a col"
+  "Likelihood of `x` belonging to a col."
   return like4num(i,x) if i.isNum else like4sym(i,x,prior)
 
 def like4sym(i:sym, x:any, prior:float) -> float:
-  "likelihood of `x` belonging to a SYM"
+  "Likelihood of `x` belonging to a SYM."
   return (i.has.get(x, 0) + the.m*prior) / (i.n + the.m)
 
 def like4num(i:num,x):
-  "likelihood of `x` belonging to a NUM"
+  "Likelihood of `x` belonging to a NUM."
   v     = div(i)**2 + 1E-30
   nom   = math.e**(-1*(x - mid(i))**2/(2*v)) + 1E-30
   denom = (2*math.pi*v) **0.5
@@ -306,9 +309,9 @@ def like4num(i:num,x):
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Sequential model optimization
-# variables 
 
 def smo(i:data, score=lambda B,R: B-R):
+  "Sequential model optimization."
   def ranked(lst:rows) -> rows:
     "sort `lst` by distance to heaven"
     return sorted(lst, key = lambda r:d2h(i,r))
@@ -338,12 +341,12 @@ def smo(i:data, score=lambda B,R: B-R):
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 def ent(d:dict) -> tuple[float,int]:
-  "entropy of a distribution"
+  "Entropy of a distribution."
   N = sum(v for v in d.values())
   return -sum(v/N*math.log(v/N,2) for v in d.values()),N
 
 def bore(d,best=True,BEST=1,REST=1):
-  "score a distribution by how often it selects for `best`"
+  "Score a distribution by how often it selects for `best`."
   b,r = 1E-30,1E-30
   for k,v in d.items():
     if k==best: b += v
@@ -352,7 +355,7 @@ def bore(d,best=True,BEST=1,REST=1):
   return b**2/(b+r) # support * probability
 
 def show(x:Any) -> Any:
-  "some pretty-print rules"
+  "Some pretty-print rules."
   it = type(x)
   if it == float:  return round(x,the.decs)
   if it == list:   return [show(v) for v in x]
@@ -363,15 +366,14 @@ def show(x:Any) -> Any:
   return x
 
 def csv(file="-") -> row:
-  "iteratively  return `row` from a file, or standard input"
+  "Iteratively  return `row` from a file, or standard input."
   with file_or_stdin(None if file=="-" else file) as src:
     for line in src:
       line = re.sub(r'([\n\t\r ]|#.*)', '', line)
       if line: yield [coerce(s.strip()) for s in line.split(",")]
 
 def cli(d:dict):
-  """For a dictionary key `k`, if command line has `-k X`, then `d[k]=coerce(X)`.
-  If k's old value is a boolean, `X` is not required and `-k` just flips the default."""
+  "For dictionary key `k`, if command line has `-k X`, then `d[k]=coerce(X)`."
   for k,v in d.items():
     v = str(v)
     for c,arg in enumerate(sys.argv):
@@ -379,16 +381,16 @@ def cli(d:dict):
         d[k] = coerce("false" if v=="true" else ("true" if v=="false" else sys.argv[c+1]))
 
 def btw(*args, **kwargs):
-  "print to standard error, flush standard error, do not print newlines"
+  "Print to standard error, flush standard error, do not print newlines."
   print(*args, file=sys.stderr, end="", flush=True, **kwargs)
+
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 def main() -> None: 
-  "update `the` from the command line; call the start-up command `the.Run`"
+  "Update `the` from the command line; call the start-up command `the.Run`."
   cli(the.__dict__); run(the.Run)
 
 def run(s:str) -> int:
-  """before running `eg.s()`, reset the seed. Afterwards, restore old settings. 
-  Return '1' if `s` causes a crashes or it returns `False`"""
+  "Reset the seed. Run `eg[s]()`. Afterwards, restore old settings. Return '1' on failure."
   def run1():
     try:
       return getattr(eg, s)()
@@ -499,6 +501,6 @@ class eg:
     print("mid",show(mid(b4)), show(mid(now)),show(b4.lo),sep=sep,end=sep)
     print("div",show(div(b4)), show(div(now)),sep=sep,end=sep)
     print(the.file)
+
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 if __name__ == "__main__": main()
-
