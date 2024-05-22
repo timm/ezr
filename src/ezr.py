@@ -21,8 +21,6 @@
       -s --seed   random number seed             = 1234567891    
       -x --xys    max #bins in discretization    = 16    
 """
-# Settings can be updated via command line.   
-# e.g. `./ezr.py -s $RANDOM` sets `the.seed` to a random value set by operating system.
 # (FYI our seed is odious, apocalyptic, deficient, pernicious, polite, prime number)      
 import re,ast,sys,math,random,copy,traceback
 from fileinput import FileInput as file_or_stdin
@@ -32,14 +30,14 @@ from typing import Any as any
 # ## Types
 
 class o:
-  "Class for quick inits of structs, and pretty prints."
+  "`o` is a Class for quick inits of structs,  and for pretty prints."
   def __init__(i,**d): i.__dict__.update(d)
   def __repr__(i): return i.__class__.__name__+str(show(i.__dict__))
 
-xy,cols,data = o,o,o
-num,sym      = o,o
+# Other types used in this system.
+xy,cols,data,num,sym = o,o,o,o,o
 col          = num|sym
-atom         = float|int|bool|str # and sometimes r"?"
+atom         = float|int|bool|str # and sometimes "?"
 row          = list[atom]
 rows         = list[row]
 classes      = dict[str,rows] # `str` is the class name
@@ -54,6 +52,16 @@ def coerce(s:str) -> atom:
 
 # Build the global settings variable by parsing the `__doc__` string.
 the=o(**{m[1]:coerce(m[2]) for m in re.finditer(r"--(\w+)[^=]*=\s*(\S+)",__doc__)})
+
+# All the settings in our help string can be updated via command line.   
+def cli(d:dict):
+  "For dictionary key `k`, if command line has `-k X`, then `d[k]=coerce(X)`."
+  for k,v in d.items():
+    v = str(v)
+    for c,arg in enumerate(sys.argv):
+      if arg in ["-"+k[0], "--"+k]:
+        d[k] = coerce("false" if v=="true" else ("true" if v=="false" else sys.argv[c+1]))
+
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Structs
@@ -94,6 +102,7 @@ def COLS(names: list[str]) -> cols:
   return i
 
 # Rules for column names:
+#  
 # - Upper case names are NUM.   
 # - `klass` names ends in '!'.    
 # - A trailing 'X' denotes 'ignore'.   
@@ -374,14 +383,6 @@ def csv(file="-") -> row:
     for line in src:
       line = re.sub(r'([\n\t\r ]|#.*)', '', line)
       if line: yield [coerce(s.strip()) for s in line.split(",")]
-
-def cli(d:dict):
-  "For dictionary key `k`, if command line has `-k X`, then `d[k]=coerce(X)`."
-  for k,v in d.items():
-    v = str(v)
-    for c,arg in enumerate(sys.argv):
-      if arg in ["-"+k[0], "--"+k]:
-        d[k] = coerce("false" if v=="true" else ("true" if v=="false" else sys.argv[c+1]))
 
 def btw(*args, **kwargs):
   "Print to standard error, flush standard error, do not print newlines."
