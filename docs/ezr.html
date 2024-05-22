@@ -189,11 +189,10 @@ OPTIONS:
       <div class='octowrap'>
         <a class='octothorpe' href='#section-11'>#</a>
       </div>
-      <p>DATA stores <code>rows</code> (whose columns  are summarized in <code>cols</code>).</p>
+      <p>Anything named &ldquo;_X&rdquo; is a primitive constructor called by  another constuctor &ldquo;X&rdquo;.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_DATA</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">data</span><span class="p">:</span>
-  <span class="k">return</span> <span class="n">o</span><span class="p">(</span><span class="n">rows</span><span class="o">=</span><span class="p">[],</span> <span class="n">cols</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># cols=None means &#39;have not read row1 yet&#39;</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -202,11 +201,11 @@ OPTIONS:
       <div class='octowrap'>
         <a class='octothorpe' href='#section-12'>#</a>
       </div>
-      <p>Factory. Makes cols. Stores independent/dependent cols <code>x</code>/<code>y</code> and <code>all</code>.</p>
+      <p>DATA stores <code>rows</code> (whose columns  are summarized in <code>cols</code>).</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_COLS</span><span class="p">(</span><span class="n">names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">cols</span><span class="p">:</span>
-  <span class="k">return</span> <span class="n">o</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">[],</span> <span class="n">y</span><span class="o">=</span><span class="p">[],</span> <span class="nb">all</span><span class="o">=</span><span class="p">[],</span> <span class="n">klass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">names</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_DATA</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">data</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">o</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="n">DATA</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="p">[],</span> <span class="n">cols</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># cols=None means &#39;have not read row1 yet&#39;</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -215,11 +214,11 @@ OPTIONS:
       <div class='octowrap'>
         <a class='octothorpe' href='#section-13'>#</a>
       </div>
-      <p>SYMs incrementally summarizes a stream of symbols.</p>
+      <p>Factory. Makes cols. Stores independent/dependent cols <code>x</code>/<code>y</code> and <code>all</code>.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_SYM</span><span class="p">(</span><span class="n">txt</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="n">at</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sym</span><span class="p">:</span>
-  <span class="k">return</span> <span class="n">o</span><span class="p">(</span><span class="n">isNum</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">txt</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">at</span><span class="o">=</span><span class="n">at</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">has</span><span class="o">=</span><span class="p">{})</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_COLS</span><span class="p">(</span><span class="n">names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">cols</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">o</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="n">COLS</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="p">[],</span> <span class="n">y</span><span class="o">=</span><span class="p">[],</span> <span class="nb">all</span><span class="o">=</span><span class="p">[],</span> <span class="n">klass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">names</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -228,13 +227,11 @@ OPTIONS:
       <div class='octowrap'>
         <a class='octothorpe' href='#section-14'>#</a>
       </div>
-      <p>NUMs incrementally summarizes a stream of numbers.</p>
+      <p>SYMs incrementally summarizes a stream of symbols.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_NUM</span><span class="p">(</span><span class="n">txt</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="n">at</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">has</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">num</span><span class="p">:</span>
-  <span class="k">return</span> <span class="n">o</span><span class="p">(</span><span class="n">isNum</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="n">txt</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">at</span><span class="o">=</span><span class="n">at</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hi</span><span class="o">=-</span><span class="mf">1E30</span><span class="p">,</span> <span class="n">lo</span><span class="o">=</span><span class="mf">1E30</span><span class="p">,</span> 
-           <span class="n">has</span><span class="o">=</span><span class="n">has</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="c1"># if has non-nil, used by the stats package</span>
-           <span class="n">mu</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">m2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">maximize</span> <span class="o">=</span> <span class="n">txt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">SYM</span><span class="p">(</span><span class="n">txt</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="n">at</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sym</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">o</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="n">SYM</span><span class="p">,</span> <span class="n">txt</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">at</span><span class="o">=</span><span class="n">at</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">has</span><span class="o">=</span><span class="p">{})</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -243,11 +240,13 @@ OPTIONS:
       <div class='octowrap'>
         <a class='octothorpe' href='#section-15'>#</a>
       </div>
-      <p><code>ys</code> counts symbols of one column seen between <code>lo</code>.. <code>hi</code> of another column.</p>
+      <p>NUMs incrementally summarizes a stream of numbers.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_XY</span><span class="p">(</span><span class="n">at</span><span class="p">,</span><span class="n">txt</span><span class="p">,</span><span class="n">lo</span><span class="p">,</span><span class="n">hi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">ys</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xy</span><span class="p">:</span>
-  <span class="k">return</span> <span class="n">o</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">at</span><span class="o">=</span><span class="n">at</span><span class="p">,</span> <span class="n">txt</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">lo</span><span class="o">=</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="o">=</span><span class="n">hi</span> <span class="ow">or</span> <span class="n">lo</span><span class="p">,</span> <span class="n">ys</span><span class="o">=</span><span class="n">ys</span> <span class="ow">or</span> <span class="p">{})</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">NUM</span><span class="p">(</span><span class="n">txt</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="n">at</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">has</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">num</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">o</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="n">NUM</span><span class="p">,</span> <span class="n">txt</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">at</span><span class="o">=</span><span class="n">at</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hi</span><span class="o">=-</span><span class="mf">1E30</span><span class="p">,</span> <span class="n">lo</span><span class="o">=</span><span class="mf">1E30</span><span class="p">,</span> 
+           <span class="n">has</span><span class="o">=</span><span class="n">has</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="c1"># if has non-nil, used by the stats package</span>
+           <span class="n">mu</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">m2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">maximize</span> <span class="o">=</span> <span class="n">txt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -255,6 +254,19 @@ OPTIONS:
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      <p><code>ys</code> counts symbols of one column seen between <code>lo</code>.. <code>hi</code> of another column.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">XY</span><span class="p">(</span><span class="n">at</span><span class="p">,</span><span class="n">txt</span><span class="p">,</span><span class="n">lo</span><span class="p">,</span><span class="n">hi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">ys</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xy</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">o</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="n">XY</span><span class="p">,</span><span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">at</span><span class="o">=</span><span class="n">at</span><span class="p">,</span> <span class="n">txt</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">lo</span><span class="o">=</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="o">=</span><span class="n">hi</span> <span class="ow">or</span> <span class="n">lo</span><span class="p">,</span> <span class="n">ys</span><span class="o">=</span><span class="n">ys</span> <span class="ow">or</span> <span class="p">{})</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
       </div>
       <hr />
 <h2>Constructors</h2>
@@ -264,25 +276,12 @@ OPTIONS:
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-17'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-17'>#</a>
-      </div>
-      <p>Here are the constructors that just call the primitive constructors.</p>
-    </div>
-    <div class='code'>
-      <div class="highlight"><pre><span class="n">NUM</span><span class="p">,</span> <span class="n">SYM</span><span class="p">,</span> <span class="n">XY</span> <span class="o">=</span> <span class="n">_NUM</span><span class="p">,</span> <span class="n">_SYM</span><span class="p">,</span> <span class="n">_XY</span></pre></div>
-    </div>
-  </div>
-  <div class='clearall'></div>
   <div class='section' id='section-18'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-18'>#</a>
       </div>
-      <p>Here are the other constructors.
-  Create columns (one for each string in <code>names</code>).</p>
+      <p>Create columns (one for each string in <code>names</code>).</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">COLS</span><span class="p">(</span><span class="n">names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">cols</span><span class="p">:</span>
@@ -397,7 +396,7 @@ OPTIONS:
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">add2col</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span><span class="nb">any</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">any</span><span class="p">:</span>
   <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span><span class="p">:</span>
     <span class="n">i</span><span class="o">.</span><span class="n">n</span> <span class="o">+=</span> <span class="n">n</span>
-    <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">isNum</span><span class="p">:</span> <span class="n">add2num</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">n</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">this</span> <span class="ow">is</span> <span class="n">NUM</span><span class="p">:</span> <span class="n">add2num</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">n</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span> <span class="n">i</span><span class="o">.</span><span class="n">has</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">has</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">n</span>
   <span class="k">return</span> <span class="n">x</span></pre></div>
     </div>
@@ -444,7 +443,7 @@ OPTIONS:
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">mid</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">atom</span><span class="p">:</span>
-  <span class="k">return</span> <span class="n">i</span><span class="o">.</span><span class="n">mu</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">isNum</span> <span class="k">else</span> <span class="nb">max</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">has</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">i</span><span class="o">.</span><span class="n">has</span><span class="o">.</span><span class="n">get</span><span class="p">)</span></pre></div>
+  <span class="k">return</span> <span class="n">i</span><span class="o">.</span><span class="n">mu</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">this</span> <span class="ow">is</span> <span class="n">NUM</span> <span class="k">else</span> <span class="nb">max</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">has</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">i</span><span class="o">.</span><span class="n">has</span><span class="o">.</span><span class="n">get</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -457,7 +456,7 @@ OPTIONS:
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">div</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-  <span class="k">return</span>  <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span><span class="mi">2</span> <span class="k">else</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">m2</span><span class="o">/</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">.5</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">isNum</span> <span class="k">else</span> <span class="n">ent</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">has</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></pre></div>
+  <span class="k">return</span>  <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span><span class="mi">2</span> <span class="k">else</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">m2</span><span class="o">/</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">.5</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">this</span> <span class="ow">is</span> <span class="n">NUM</span> <span class="k">else</span> <span class="n">ent</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">has</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -510,7 +509,7 @@ OPTIONS:
   if e3 &lt;= (n1<em>e1 + n2</em>e2)/n3  : return bin3 # merge if parts are more complex</p>
 <p>def bins(col, classes, small=None)
   out = binsDivide(ccol,classes)
-  if not col.isNum: return out
+  if col.this is SYM: return out
   small= small or (sum(len(row) for rows in classes.values)) / the.bins
   rewrunaut = merges(out, merge=lambda x,y:merge(x,y,small)</p>
 <p>def binsDivide(col, classes):
@@ -525,7 +524,7 @@ OPTIONS:
      it.hi = max(it.hi, x)
      it.ys[y] = it.ys.get(y,0) + 1</p>
 <p>def _bin(col,x):
-  return min(the.bins - 1, int(the.bins * norm(col,x)) if col.isNum else x</p>
+  return min(the.bins - 1, int(the.bins * norm(col,x)) if col.this is NUM else x</p>
 <p>def _merges(b4, mergeFun):
   j, now  = 0, []
   while j &lt;  len(b4):
@@ -585,7 +584,7 @@ OPTIONS:
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">dist</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span><span class="nb">any</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span><span class="nb">any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
   <span class="k">if</span>  <span class="n">x</span><span class="o">==</span><span class="n">y</span><span class="o">==</span><span class="s2">&quot;?&quot;</span><span class="p">:</span> <span class="k">return</span> <span class="mi">1</span>
-  <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span><span class="o">.</span><span class="n">isNum</span><span class="p">:</span> <span class="k">return</span> <span class="n">x</span> <span class="o">!=</span> <span class="n">y</span>
+  <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">this</span> <span class="ow">is</span> <span class="n">SYM</span><span class="p">:</span> <span class="k">return</span> <span class="n">x</span> <span class="o">!=</span> <span class="n">y</span>
   <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">x</span><span class="p">),</span> <span class="n">norm</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
   <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span><span class="s2">&quot;?&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">y</span><span class="o">&lt;</span><span class="mf">0.5</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
   <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="k">if</span> <span class="n">y</span> <span class="o">!=</span><span class="s2">&quot;?&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="n">x</span><span class="o">&lt;</span><span class="mf">0.5</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
@@ -735,7 +734,7 @@ OPTIONS:
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">like</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span><span class="nb">any</span><span class="p">,</span> <span class="n">prior</span><span class="p">:</span><span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-  <span class="k">return</span> <span class="n">like4num</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">isNum</span> <span class="k">else</span> <span class="n">like4sym</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">prior</span><span class="p">)</span></pre></div>
+  <span class="k">return</span> <span class="n">like4num</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">this</span> <span class="ow">is</span> <span class="n">NUM</span> <span class="k">else</span> <span class="n">like4sym</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">prior</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1230,6 +1229,7 @@ OPTIONS:
       <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">smo</span><span class="p">():</span>
     <span class="s2">&quot;optimize something&quot;</span>
     <span class="n">d</span><span class="o">=</span> <span class="n">DATA</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">file</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">show</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">all</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">rows</span><span class="p">))</span>
     <span class="n">best</span> <span class="o">=</span> <span class="n">smo</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">best</span><span class="p">),</span><span class="n">d2h</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span></pre></div>

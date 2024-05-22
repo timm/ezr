@@ -65,6 +65,8 @@ def cli(d:dict):
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Structs
 
+# Anything named "_X" is a primitive constructor called by  another constuctor "X".
+
 def _DATA() -> data:
   "DATA stores `rows` (whose columns  are summarized in `cols`)."
   return o(this=DATA, rows=[], cols=None) # cols=None means 'have not read row1 yet'
@@ -90,8 +92,6 @@ def XY(at,txt,lo,hi=None,ys=None) -> xy:
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Constructors
 
-
-# Here are the other constructors.
 def COLS(names: list[str]) -> cols:
   "Create columns (one for each string in `names`)."
   i = _COLS(names)

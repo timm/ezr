@@ -62,39 +62,36 @@ def cli(d:dict):
       if arg in ["-"+k[0], "--"+k]:
         d[k] = coerce("false" if v=="true" else ("true" if v=="false" else sys.argv[c+1]))
 
-
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Structs
 
+# Anything named "_X" is a primitive constructor called by  another constuctor "X".
+
 #   DATA stores `rows` (whose columns  are summarized in `cols`).
 def _DATA() -> data:
-  return o(rows=[], cols=None) # cols=None means 'have not read row1 yet'
+  return o(this=DATA, rows=[], cols=None) # cols=None means 'have not read row1 yet'
 
 #   Factory. Makes cols. Stores independent/dependent cols `x`/`y` and `all`.
 def _COLS(names: list[str]) -> cols:
-  return o(x=[], y=[], all=[], klass=None, names=names)
+  return o(this=COLS, x=[], y=[], all=[], klass=None, names=names)
 
 #   SYMs incrementally summarizes a stream of symbols.
-def _SYM(txt=" ",at=0) -> sym:
-  return o(isNum=False, txt=txt, at=at, n=0, has={})
+def SYM(txt=" ",at=0) -> sym:
+  return o(this=SYM, txt=txt, at=at, n=0, has={})
 
 #   NUMs incrementally summarizes a stream of numbers.
-def _NUM(txt=" ",at=0,has=None) -> num:
-  return o(isNum=True,  txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
+def NUM(txt=" ",at=0,has=None) -> num:
+  return o(this=NUM, txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
            has=has, rank=0, # if has non-nil, used by the stats package
            mu=0, m2=0, maximize = txt[-1] != "-")
 
 #   `ys` counts symbols of one column seen between `lo`.. `hi` of another column.
-def _XY(at,txt,lo,hi=None,ys=None) -> xy:
-  return o(n=0,at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
+def XY(at,txt,lo,hi=None,ys=None) -> xy:
+  return o(this=XY,n=0,at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Constructors
 
-# Here are the constructors that just call the primitive constructors.
-NUM, SYM, XY = _NUM, _SYM, _XY
-
-# Here are the other constructors.
 #   Create columns (one for each string in `names`).
 def COLS(names: list[str]) -> cols:
   i = _COLS(names)
@@ -143,7 +140,7 @@ def adds(i:col, lst:list) -> col:
 def add2col(i:col, x:any, n=1) -> any:
   if x != "?":
     i.n += n
-    if i.isNum: add2num(i,x,n)
+    if i.this is NUM: add2num(i,x,n)
     else: i.has[x] = i.has.get(x,0) + n
   return x
 
@@ -162,11 +159,11 @@ def add2num(i:num, x:any, n:int) -> None:
 
 #   Middle of a column.
 def mid(i:col) -> atom:
-  return i.mu if i.isNum else max(i.has, key=i.has.get)
+  return i.mu if i.this is NUM else max(i.has, key=i.has.get)
 
 #   Diversity of a column.
 def div(i:col) -> float:
-  return  (0 if i.n <2 else (i.m2/(i.n-1))**.5) if i.isNum else ent(i.has)[0]
+  return  (0 if i.n <2 else (i.m2/(i.n-1))**.5) if i.this is NUM else ent(i.has)[0]
 
 #   Stats of some columns (defaults to `fun=mid` of `data.cols.x`)
 def stats(i:data, fun=mid, what:cols=None) -> dict[str,atom]:
@@ -197,7 +194,7 @@ def norm(i:num,x) -> float:
 #
 # def bins(col, classes, small=None)
 #   out = binsDivide(ccol,classes)
-#   if not col.isNum: return out
+#   if col.this is SYM: return out
 #   small= small or (sum(len(row) for rows in classes.values)) / the.bins
 #   rewrunaut = merges(out, merge=lambda x,y:merge(x,y,small)
 #   
@@ -215,7 +212,7 @@ def norm(i:num,x) -> float:
 #      it.ys[y] = it.ys.get(y,0) + 1
 #
 # def _bin(col,x):
-#   return min(the.bins - 1, int(the.bins * norm(col,x)) if col.isNum else x
+#   return min(the.bins - 1, int(the.bins * norm(col,x)) if col.this is NUM else x
 #
 # def _merges(b4, mergeFun):
 #   j, now  = 0, []
@@ -249,7 +246,7 @@ def dists(i:data, r1:row, r2:row) -> float:
 #   Distance between two values.
 def dist(i:col, x:any, y:any) -> float:
   if  x==y=="?": return 1
-  if not i.isNum: return x != y
+  if i.this is SYM: return x != y
   x, y = norm(i,x), norm(i,y)
   x = x if x !="?" else (1 if y<0.5 else 0)
   y = y if y !="?" else (1 if x<0.5 else 0)
@@ -305,7 +302,7 @@ def loglikes(i:data, r:row, nall:int, nh:int) -> float:
 
 #   Likelihood of `x` belonging to a col.
 def like(i:col, x:any, prior:float) -> float:
-  return like4num(i,x) if i.isNum else like4sym(i,x,prior)
+  return like4num(i,x) if i.this is NUM else like4sym(i,x,prior)
 
 #   Likelihood of `x` belonging to a SYM.
 def like4sym(i:sym, x:any, prior:float) -> float:
@@ -488,6 +485,7 @@ class eg:
   def smo():
     "optimize something"
     d= DATA(csv(the.file))
+    print(show(d.cols.all[1]))
     print(">",len(d.rows))
     best = smo(d)
     print(len(best),d2h(d, best[0]))
