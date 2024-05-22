@@ -12,6 +12,8 @@ help      :  ## show help
 			/^[^[:space:]].*##/ {printf "   \033[36m%-15s\033[0m : %s\n", $$1, $$2} \
 			' $(MAKEFILE_LIST)
 
+saved    : ## save
+	git commit -am saved; git push; git status
 name:
 	read -p "word> " w; figlet -f mini -W $$w  | gawk '$$0 {print "#        "$$0}' |pbcopy
 
