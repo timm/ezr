@@ -38,8 +38,8 @@ class o:
 
 # Other types used in this system.
 xy,cols,data,num,sym = o,o,o,o,o
-col     = num | sym
-number  = float | int
+col     = num    | sym
+number  = float  | int
 atom    = number | bool | str # and sometimes "?"
 row     = list[atom]
 rows    = list[row]
@@ -277,7 +277,7 @@ def dist(i:col, x:any, y:any) -> float:
   return abs(x-y)
 
 def neighbors(i:data, r1:row, region:rows=None) -> list[row]:
-  "Sort the `region` (default=`i.rows`),ascending,  by distance to `r1`."
+  "Sort the `region` (default=`i.rows`),ascending, by distance to `r1`."
   return sorted(region or i.rows, key=lambda r2: dists(i,r1,r2))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
@@ -325,7 +325,7 @@ def loglikes(i:data, r:row, nall:int, nh:int) -> float:
   return sum(math.log(x) for x in likes + [prior] if x>0)
 
 def like(i:col, x:any, prior:float) -> float:
-  "Likelihood of `x` belonging to a col. Used by `likes()`."  
+  "Likelihood of `x` belonging to a col. Used by `loglikes()`."  
   return like4num(i,x) if i.this is NUM else (i.has.get(x,0) + the.m*prior) / (i.n+the.m)
 
 def like4num(i:num,x):
@@ -407,14 +407,14 @@ def main() -> None:
   run(the.Run)
 
 def run(s:str) -> int:
-  "Reset the seed. Run `eg.s()`. Afterwards, restore old settings. Return '1' on failure. Called by `main()`."
+  "Reset the seed. Run `eg.s()`, then restore old settings. Return '1' on failure. Called by `main()`."
   reset = {k:v for k,v in the.__dict__.items()}
   random.seed(the.seed)
   out = run1(s)
   for k,v in reset.items(): the.__dict__[k]=v
   return out
 
-def run1(s:str) -> False | None:
+def run1(s:str) -> False:
   "Return either the result for running `eg.s()`, or `False` (if there was a crash). Called by `run()`."
   try:
     return getattr(eg, s)()
@@ -488,12 +488,12 @@ class eg:
                       for i,row in enumerate(data1.rows) if i%10==0)))
     for _ in range(5):
       print("")
-      x,y,C,=twoFaraway(data1,data1.rows)
+      x,y,C = twoFaraway(data1,data1.rows)
       print(x,C);print(y)
 
   def branch():
     "Halve the data."
-    data1= DATA(csv(the.file))
+    data1 = DATA(csv(the.file))
     a,b,_ = half(data1,data1.rows)
     print(len(a), len(b))
     best,rest,n = branch(data1,stop=4)
@@ -501,7 +501,7 @@ class eg:
 
   def smo():
     "Optimize something."
-    d= DATA(csv(the.file))
+    d = DATA(csv(the.file))
     print(show(d.cols.all[1]))
     print(">",len(d.rows))
     best = smo(d)
@@ -511,22 +511,30 @@ class eg:
     "Example of profiling."
     import cProfile
     import pstats
-    cProfile.run('smo(data(csv(the.file)))','/tmp/out1')
+    cProfile.run('smo(DATA(csv(the.file)))','/tmp/out1')
     p = pstats.Stats('/tmp/out1')
     p.sort_stats('time').print_stats(20)
 
   def smo20():
     "Run smo 20 times."
-    d= DATA(src=csv(the.file))
-    b4=adds(NUM(), [d2h(d,row) for row in d.rows])
-    now=adds(NUM(), [d2h(d, smo(d)[0]) for _ in range(20)])
+    d   = DATA(src=csv(the.file))
+    b4  = adds(NUM(), [d2h(d,row) for row in d.rows])
+    now = adds(NUM(), [d2h(d, smo(d)[0]) for _ in range(20)])
     sep=",\t"
     print("mid",show(mid(b4)), show(mid(now)),show(b4.lo),sep=sep,end=sep)
     print("div",show(div(b4)), show(div(now)),sep=sep,end=sep)
     print(the.file)
 
+  def discretize():
+    "Show some distance calcs."
+    n = 30
+    data1 = DATA(csv(the.file), rank=True)
+    datas = dict(best=data1.rows[:n], rest=random.choices(data1.rows[n:], k=4*n))
+    for xcol in data1.cols.x:
+      print("")
+      [print(xy1) for xy1 in discretize(xcol, datas)]
+
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 if __name__ == "__main__": main()
-
 
 
