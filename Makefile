@@ -1,6 +1,11 @@
-HOME=<a href="http://github.com/timm/2ez">home</a>
-LICENSE=<a href="https://github.com/timm/2ez/blob/main/LICENSE">issues</a>
-ISSUES=<a href="http://github.com/timm/2ez/issues">issues</a>
+HOME       = <a href="http://github.com/timm/ezr">home</a>
+CONTRIBUTE = <a href="https://github.com/timm/ezr/blob/main/CONRIBUTE.md">contribute</a>
+LICENSE    = <a href="https://github.com/timm/ezr/blob/main/LICENSE.md">license</a>
+ISSUES     = <a href="http://github.com/timm/ezr/issues">issues</a>
+MENU       = $(HOME) | $(CONTRIBUTE) | $(ISSUES) | $(LICENSE)
+IMAGE      = <img src="img/ezr.png" align=right width=150>
+CSS        = p { text-align: right;} pre,code {font-size: x-small;}
+
 #----------------------------------------------------------
 #SHELL     := bash 
 #MAKEFLAGS += --warn-undefined-variables
@@ -14,21 +19,22 @@ help      :  ## show help
 
 saved    : ## save
 	git commit -am saved; git push; git status
+
 name:
 	read -p "word> " w; figlet -f mini -W $$w  | gawk '$$0 {print "#        "$$0}' |pbcopy
 
 install   : ## install as  a local python package
 	pip install -e  . --break-system-packages 
 
-docs/%.html : %.py %.png ## .py ==> .html
-	mkdir -p $(dir $@)
-	pycco -d $(dir $@) $<
-	echo 'p {text-align: right;}' >> $(dir $@)/pycco.css
-	sed -i '' 's/$< : /<img src="$(basename $<).png" align=left width=170>&/' $@
-	sed -i '' 's?<h1>?$(HOME) | $(ISSUES) | $(LICENSE)<hr> &?' $@
-	cp $(basename $<).png $(dir $@)
-	cp $@ $(dir $@)index.html
-	open $@
+$(Root)/docs/index.html :$(Root)/docs/ezr.html ## install our html doco
+	cp $< $@
+
+$(Root)/docs/%.html : %.py
+	gawk -f $(Root)/etc/ab2ba.awk $< > $(Root)/docs/$<
+	cd $(Root)/docs; pycco -d . $<; rm $<
+	echo "$(CSS)" >> $(Root)/docs/pycco.css
+	sed -i '' 's?<h1>?$(MENU)<hr>$(IMAGE)&?' $@
+	@open $@
 
 ~/tmp/%.pdf: %.py  ## .py ==> .pdf
 	mkdir -p $(dirname $@)
