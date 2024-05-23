@@ -1047,7 +1047,8 @@ algorithm.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> 
-  <span class="n">cli</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">);</span> <span class="n">run</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Run</span><span class="p">)</span></pre></div>
+  <span class="n">cli</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+  <span class="n">run</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Run</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1056,10 +1057,15 @@ algorithm.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-68'>#</a>
       </div>
-      <p>Reset the seed. Run <code>eg[s]()</code>. Afterwards, restore old settings. Return &lsquo;1&rsquo; on failure.</p>
+      <p>Reset the seed. Run <code>eg.s()</code>. Afterwards, restore old settings. Return &lsquo;1&rsquo; on failure.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">s</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">s</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+  <span class="n">reset</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">the</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+  <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
+  <span class="n">out</span> <span class="o">=</span> <span class="n">run1</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">reset</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> <span class="n">the</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">=</span><span class="n">v</span>
+  <span class="k">return</span> <span class="n">out</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1068,20 +1074,15 @@ algorithm.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-69'>#</a>
       </div>
-      
+      <p>Return either the result for running <code>eg.s()</code>, or <code>False</code> (if there was a crash).</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">run1</span><span class="p">():</span>
-    <span class="k">try</span><span class="p">:</span>
-      <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">eg</span><span class="p">,</span> <span class="n">s</span><span class="p">)()</span>
-    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-      <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
-      <span class="k">return</span> <span class="kc">False</span>
-  <span class="n">reset</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">the</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-  <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
-  <span class="n">out</span> <span class="o">=</span> <span class="n">run1</span><span class="p">()</span>
-  <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">reset</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> <span class="n">the</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">=</span><span class="n">v</span>
-  <span class="k">return</span> <span class="n">out</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">run1</span><span class="p">(</span><span class="n">s</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">False</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="k">try</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">eg</span><span class="p">,</span> <span class="n">s</span><span class="p">)()</span>
+  <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+    <span class="k">return</span> <span class="kc">False</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>

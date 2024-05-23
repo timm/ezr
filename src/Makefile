@@ -9,6 +9,9 @@ PDOC=/Library/Frameworks/Python.framework/Versions/3.11/bin/pdoc
 saved:
 	git commit -am saved; git push; git status
 
+../docs/index.html : ../docs/ezr.html
+	cp $< $@
+
 ../docs/%.html : %.py
 	gawk -f ../etc/ab2ba.awk $< > ../docs/$<
 	cd ../docs; pycco -d . $<; 
