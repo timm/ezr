@@ -1,0 +1,15 @@
+| DATASET | Category | 
+| ----------- | ----------- |
+| SS-A | B | 
+| SS-B | A |
+| SS-C | B |
+| SS-D | A |
+| SS-E | A |
+| SS-F | A |
+| SS-G | A |
+| SS-H | A |
+| SS-I | A |
+| SS-J | A |
+| SS-K | A |
+| SS-L | A |
+| SS-N | A |
