@@ -16,7 +16,7 @@ saved:
 	gawk -f ../etc/ab2ba.awk $< > ../docs/$<
 	cd ../docs; pycco -d . $<; 
 	echo "p  { text-align: right; }" >> ../docs/pycco.css
-	echo "pre,code { font-size: small; }" >> ../docs/pycco.css
+	echo "pre,code { font-size: x-small; }" >> ../docs/pycco.css
 	sed -i '' 's?$< : ?<img src="img/$(basename $<).png" width=490><br clear=all>&?' $@
 	sed -i '' 's?<h1>?$(HOME) | $(CONTRIBUTE) | $(ISSUES) | $(LICENSE)<hr> &?' $@
 	@open $@

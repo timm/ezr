@@ -2,7 +2,7 @@
 # <!-- vim: set ts=2 sw=2 sts=2 et: -->
 """
     ezr.py :  an experiment in easier explainable AI. Less is more.    
-    (C) 2024 Tim Menzies, timm@ieee.org, BSD-2.    
+    (C) 2024 Tim Menzies (timm@ieee.org) BSD-2 license.    
         
     OPTIONS:    
       -a --any    #todo's to explore             = 100    
@@ -24,6 +24,10 @@
 # (FYI our seed is an 
 # [odious, apocalyptic, deficient, pernicious, polite, prime](https://numbersaplenty.com/1234567891) 
 # number.)      
+
+__author__  = "Tim Menzies"
+__version__ = "0.1.0"
+
 import re,ast,sys,math,random,copy,traceback
 from fileinput import FileInput as file_or_stdin
 from typing import Any as any
@@ -80,17 +84,17 @@ def _COLS(names: list[str]) -> cols:
   return o(this=COLS, x=[], y=[], all=[], klass=None, names=names)
 
 def SYM(txt=" ",at=0) -> sym:
-  "SYMs incrementally summarizes a stream of symbols."
+  "SYM columns incrementally summarizes a stream of symbols."
   return o(this=SYM, txt=txt, at=at, n=0, has={})
 
 def NUM(txt=" ",at=0,has=None) -> num:
-  "NUMs incrementally summarizes a stream of numbers."
+  "NUM cokumns incrementally summarizes a stream of numbers."
   return o(this=NUM, txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
            has=has, rank=0, # if has non-nil, used by the stats package
            mu=0, m2=0, maximize = txt[-1] != "-")
 
 def XY(at,txt,lo,hi=None,ys=None) -> xy:
-  "`ys` counts symbols of one column seen between `lo`.. `hi` of another column."
+  "`ys` counts symbols seen in one column between `lo`.. `hi` of another column."
   return o(this=XY,n=0,at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
@@ -298,8 +302,8 @@ def half(i:data, region:rows, sortp=False, before=None) -> tuple[rows,rows,row]:
   "Split the `region` in half according to each row's distance to two distant points. Used by `branch()`."
   mid = int(len(region) // 2)
   left,right,C = twoFaraway(i, region, sortp=sortp, before=before)
-  cos = lambda row1: (dists(i,row1,left)**2 + C**2 - dists(i,row1,right)**2)/(2*C)
-  tmp = sorted(region, key=cos)
+  project = lambda row1: (dists(i,row1,left)**2 + C**2 - dists(i,row1,right)**2)/(2*C)
+  tmp = sorted(region, key=project)
   return tmp[:mid], tmp[mid:], left
 
 def twoFaraway(i:data, region:rows,before=None, sortp=False) -> tuple[row,row,float]:
