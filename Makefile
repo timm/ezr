@@ -8,8 +8,9 @@ CSS        = p { text-align: right;} pre,code {font-size: x-small;}
 
 #----------------------------------------------------------
 SHELL     := bash 
-#MAKEFLAGS += --warn-undefined-variables
-#.SILENT:  
+MAKEFLAGS += --warn-undefined-variables
+.SILENT:  
+
 Root=$(shell git rev-parse --show-toplevel)
 
 help      :  ## show help
