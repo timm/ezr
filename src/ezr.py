@@ -94,8 +94,8 @@ def XY(at,txt,lo,hi=None,ys=None) -> xy:
   return o(this=XY,n=0,at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
-# ## CRUD (= create, read, update, delete
-# We don't need to delete (thanks to garbage collection). 
+# ## CRUD (create, read, update, delete)
+# We don't need to delete (thanks to garbage collection).  But we need create, update.
 # And "read" is really "read in from some source" and "read out; i.e. query the structs.
 
 # ### Create
@@ -130,17 +130,17 @@ def DATA(src=None, rank=False) -> data:
 # ### Update
 
 def add2data(i:data,row1:row) -> None:
-  "Update contents of a DATA. Needs `add2col()` or `COLS()`."
+  "Update contents of a DATA."
   if    i.cols: i.rows.append([add2col(col,x) for col,x in zip(i.cols.all,row1)])
   else: i.cols= COLS(row1)
 
 def adds(i:col, lst:list) -> col:
-  "Update a NUM or SYM with many items. Needs `add2col()`."
+  "Update a NUM or SYM with many items."
   [add2col(i,x) for x in lst]
   return i
 
 def add2col(i:col, x:any, n=1) -> any:
-  "`n` times, update NUM or SYM with one item. May need `add2num()`."
+  "`n` times, update NUM or SYM with one item. Used by `add2data()`." 
   if x != "?":
     i.n += n
     if i.this is NUM: add2num(i,x,n)
@@ -148,7 +148,7 @@ def add2col(i:col, x:any, n=1) -> any:
   return x
 
 def add2num(i:num, x:any, n:int) -> None:
-  "`n` times, update a NUM with one item."
+  "`n` times, update a NUM with one item. Used by `add2col()`."
   i.lo = min(x, i.lo)
   i.hi = max(x, i.hi)
   for _ in range(n):
@@ -192,10 +192,6 @@ def csv(file="-") -> row:
 
 # ### Read (read out: query the structs)
 
-def stats(i:data, fun=mid, what:cols=None) -> dict[str,atom]:
-  "Stats of some columns (defaults to `fun=mid` of `data.cols.x`), Needs `div()` or `mid()`.""
-  return {c.txt:fun(c) for c in what or i.cols.x}
-
 def mid(i:col) -> atom:
   "Middle of a column."
   return i.mu if i.this is NUM else max(i.has, key=i.has.get)
@@ -204,14 +200,23 @@ def div(i:col) -> float:
   "Diversity of a column."
   return  (0 if i.n <2 else (i.m2/(i.n-1))**.5) if i.this is NUM else ent(i.has)
 
+def stats(i:data, fun=mid, what:cols=None) -> dict[str,atom]:
+  "Stats of some columns (defaults to `fun=mid` of `data.cols.x`)."
+  return {c.txt:fun(c) for c in what or i.cols.x}
+
 def norm(i:num,x) -> float:
   "Normalize `x` to 0..1"
   return x if x=="?" else (x-i.lo)/(i.hi - i.lo - 1E-30)
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Discretization
+# Divide a range into many bins. Iteratively merge adjacent bins if the separate bins
+# are too small or too uniformative (as measured by entropy). This algorithm is unspired
+# by Kerber's 
+# [ChiMerge](https://sci2s.ugr.es/keel/pdf/algorithm/congreso/1992-Kerber-ChimErge-AAAI92.pdf)
+# algorithm.
 
-def discretize(i:col, datas:classes) -> list[xy] ::
+def discretize(i:col, datas:classes) -> list[xy] :
   "Find good ranges for the i-th column within `datas`."
   tmp = {}
   [send2xy(i, r[i.at], klass, tmp) for klass,rows1 in datas.items() for r in rows1]
@@ -228,13 +233,13 @@ def send2xy(i:col,x:atom, y:str, d:dict) -> None:
    add2xy(d[k],x,y)
 
 def merges(b4, small):
-  "Try merging adjacent items in `b4`. If successful, repeat. Used by `discretize()`.""
+  "Try merging adjacent items in `b4`. If successful, repeat. Used by `discretize()`."
   j, now  = 0, []
   while j <  len(b4):
     a = b4[j]
     if j <  len(b4) - 1:
       b = b4[j+1]
-      if ab := merge(a,b,small)
+      if ab := merge(a,b,small):
         a = ab
         j = j+1  # if i can merge, jump over the merged item
     now += [a]
@@ -242,12 +247,12 @@ def merges(b4, small):
   return b4 if len(now) == len(b4) else merges(now, small)
 
 def merge(xy1: xy, xy2: xy, small:int) -> xy | None:
-  "Return the merge  if the whole is better than the parts. Used  by `merges()`. 
+  "Return the merge  if the whole is better than the parts. Used  by `merges()`."
   xy3 = xys2xy(xy1,xy2)
   e1  = ent(xy1.ys)
   e2  = ent(xy2.ys)
-  e3  = ent(xys3.ys)
-  if n1 <  small or n2 < small or e3 <= (xy.n1*e1 + xy2.n*e2)/n3: return xy3 
+  e3  = ent(xy3.ys)
+  if xy1.n <  small or xy2.n < small or e3 <= (xy.n1*e1 + xy2.n*e2)/xy3.n: return xy3 
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Distances
@@ -258,12 +263,12 @@ def d2h(i:data, r:row) -> float:
   return (n / len(i.cols.y))**(1/the.p)
 
 def dists(i:data, r1:row, r2:row) -> float:
-  "Distances between two rows. Needs `dist()`."
+  "Distances between two rows."
   n = sum(dist(c, r1[c.at], r2[c.at])**the.p for c in i.cols.x)
   return (n / len(i.cols.x))**(1/the.p)
 
 def dist(i:col, x:any, y:any) -> float:
-  "Distance between two values."
+  "Distance between two values. Used by `dists()`."
   if  x==y=="?": return 1
   if i.this is SYM: return x != y
   x, y = norm(i,x), norm(i,y)
@@ -278,19 +283,19 @@ def neighbors(i:data, r1:row, region:rows=None) -> list[row]:
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Clustering
 
-def halves(i:data, region:rows=None, stop=None, rest=None, evals=1, before=None):
-  "Recursively bi-cluster `region`, reursing only down the best half. Needs `half()`."
+def branch(i:data, region:rows=None, stop=None, rest=None, evals=1, before=None):
+  "Recursively bi-cluster `region`, reursing only down the best half."
   region = region or i.rows
   stop = stop or 2*len(region)**the.N
   rest = rest or []
   if len(region) > stop:
     lefts,rights,left  = half(i,region, True, before)
-    return halves(i,lefts, stop, rest+rights, evals+1, left)
+    return branch(i,lefts, stop, rest+rights, evals+1, left)
   else:
     return region,rest,evals
 
 def half(i:data, region:rows, sortp=False, before=None) -> tuple[rows,rows,row]:
-  "Split the `region` in half according to each row's distance to two distant points. Needs `twofaraway()`."
+  "Split the `region` in half according to each row's distance to two distant points. Used by `branch()`."
   mid = int(len(region) // 2)
   left,right,C = twoFaraway(i, region, sortp=sortp, before=before)
   cos = lambda row1: (dists(i,row1,left)**2 + C**2 - dists(i,row1,right)**2)/(2*C)
@@ -298,7 +303,7 @@ def half(i:data, region:rows, sortp=False, before=None) -> tuple[rows,rows,row]:
   return tmp[:mid], tmp[mid:], left
 
 def twoFaraway(i:data, region:rows,before=None, sortp=False) -> tuple[row,row,float]:
-  "Find two distant points within the `region`. Needs `faraway()`."
+  "Find two distant points within the `region`. Used by `half()`." 
   region = random.choices(region, k=min(the.Half, len(region)))
   x = before or faraway(i, random.choice(region), region)
   y = faraway(i, x, region)
@@ -306,7 +311,7 @@ def twoFaraway(i:data, region:rows,before=None, sortp=False) -> tuple[row,row,fl
   return x, y,  dists(i,x,y)
 
 def faraway(i:data, r1:row, region:rows) -> row:
-  "Find something far away from `r1` with the `region`."
+  "Find something far away from `r1` with the `region`. Used by `twoFaraway()`."
   farEnough = int( len(region) * the.Far) # to avoid outliers, don't go 100% far away
   return neighbors(i,r1, region)[farEnough]
 
@@ -314,17 +319,17 @@ def faraway(i:data, r1:row, region:rows) -> row:
 # ## Likelihoods
 
 def loglikes(i:data, r:row, nall:int, nh:int) -> float:
-  "Likelihood of a `row` belonging to a DATA. Needs `like()`."
+  "Likelihood of a `row` belonging to a DATA. ."
   prior = (len(i.rows) + the.k) / (nall + the.k*nh)
   likes = [like(c, r[c.at], prior) for c in i.cols.x if r[c.at] != "?"]
   return sum(math.log(x) for x in likes + [prior] if x>0)
 
 def like(i:col, x:any, prior:float) -> float:
-  "Likelihood of `x` belonging to a col. May need `like4num()`."
+  "Likelihood of `x` belonging to a col. Used by `likes()`."  
   return like4num(i,x) if i.this is NUM else (i.has.get(x,0) + the.m*prior) / (i.n+the.m)
 
 def like4num(i:num,x):
-  "Likelihood of `x` belonging to a NUM."
+  "Likelihood of `x` belonging to a NUM. Used by `like()`."
   v     = div(i)**2 + 1E-30
   nom   = math.e**(-1*(x - mid(i))**2/(2*v)) + 1E-30
   denom = (2*math.pi*v) **0.5
@@ -483,12 +488,12 @@ class eg:
       x,y,C,=twoFaraway(data1,data1.rows)
       print(x,C);print(y)
 
-  def halves():
+  def branch():
     "Halve the data."
     data1= DATA(csv(the.file))
     a,b,_ = half(data1,data1.rows)
     print(len(a), len(b))
-    best,rest,n = halves(data1,stop=4)
+    best,rest,n = branch(data1,stop=4)
     print(n,d2h(data1,best[0]))
 
   def smo():

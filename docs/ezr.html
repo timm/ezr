@@ -365,7 +365,7 @@ create a NUM or SYM from <code>s</code>. Adds it to <code>x</code>, <code>y</cod
       <div class='octowrap'>
         <a class='octothorpe' href='#section-23'>#</a>
       </div>
-      <p>Update contents of a DATA. Needs <code>add2col()</code> or <code>COLS()</code>.</p>
+      <p>Update contents of a DATA.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">add2data</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span><span class="n">row1</span><span class="p">:</span><span class="n">row</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -379,7 +379,7 @@ create a NUM or SYM from <code>s</code>. Adds it to <code>x</code>, <code>y</cod
       <div class='octowrap'>
         <a class='octothorpe' href='#section-24'>#</a>
       </div>
-      <p>Update a NUM or SYM with many items. Needs <code>add2col()</code>.</p>
+      <p>Update a NUM or SYM with many items.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">adds</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">,</span> <span class="n">lst</span><span class="p">:</span><span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">col</span><span class="p">:</span>
@@ -393,7 +393,7 @@ create a NUM or SYM from <code>s</code>. Adds it to <code>x</code>, <code>y</cod
       <div class='octowrap'>
         <a class='octothorpe' href='#section-25'>#</a>
       </div>
-      <p><code>n</code> times, update NUM or SYM with one item. May need <code>add2num()</code>.</p>
+      <p><code>n</code> times, update NUM or SYM with one item. Used by <code>add2data()</code>. </p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">add2col</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span><span class="nb">any</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">any</span><span class="p">:</span>
@@ -410,7 +410,7 @@ create a NUM or SYM from <code>s</code>. Adds it to <code>x</code>, <code>y</cod
       <div class='octowrap'>
         <a class='octothorpe' href='#section-26'>#</a>
       </div>
-      <p><code>n</code> times, update a NUM with one item.</p>
+      <p><code>n</code> times, update a NUM with one item. Used by <code>add2col()</code>.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">add2num</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">num</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span><span class="nb">any</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -520,19 +520,6 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-33'>#</a>
       </div>
-      <p>Stats of some columns (defaults to <code>fun=mid</code> of <code>data.cols.x</code>), Needs <code>div()</code> or <code>mid()</code>.</p>
-    </div>
-    <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">stats</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="n">mid</span><span class="p">,</span> <span class="n">what</span><span class="p">:</span><span class="n">cols</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">atom</span><span class="p">]:</span>
-  <span class="k">return</span> <span class="p">{</span><span class="n">c</span><span class="o">.</span><span class="n">txt</span><span class="p">:</span><span class="n">fun</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">what</span> <span class="ow">or</span> <span class="n">i</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">x</span><span class="p">}</span></pre></div>
-    </div>
-  </div>
-  <div class='clearall'></div>
-  <div class='section' id='section-34'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-34'>#</a>
-      </div>
       <p>Middle of a column.</p>
     </div>
     <div class='code'>
@@ -541,16 +528,29 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-35'>
+  <div class='section' id='section-34'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-35'>#</a>
+        <a class='octothorpe' href='#section-34'>#</a>
       </div>
       <p>Diversity of a column.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">div</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
   <span class="k">return</span>  <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span><span class="mi">2</span> <span class="k">else</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">m2</span><span class="o">/</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">.5</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">this</span> <span class="ow">is</span> <span class="n">NUM</span> <span class="k">else</span> <span class="n">ent</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">has</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-35'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-35'>#</a>
+      </div>
+      <p>Stats of some columns (defaults to <code>fun=mid</code> of <code>data.cols.x</code>).</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">stats</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="n">mid</span><span class="p">,</span> <span class="n">what</span><span class="p">:</span><span class="n">cols</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span><span class="n">atom</span><span class="p">]:</span>
+  <span class="k">return</span> <span class="p">{</span><span class="n">c</span><span class="o">.</span><span class="n">txt</span><span class="p">:</span><span class="n">fun</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">what</span> <span class="ow">or</span> <span class="n">i</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">x</span><span class="p">}</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -574,6 +574,10 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       </div>
       <hr />
 <h2>Discretization</h2>
+<p>Divide a range into many bins. Iteratively merge adjacent bins if the separate bins
+are too small or too uniformative (as measured by entropy). This algorithm is unspired
+by Kerber&rsquo;s 
+<a href="https://sci2s.ugr.es/keel/pdf/algorithm/congreso/1992-Kerber-ChimErge-AAAI92.pdf">ChiMerge</a>,</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre></pre></div>
@@ -585,16 +589,15 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-38'>#</a>
       </div>
-      
+      <p>Find good ranges for the i-th column within <code>datas</code>.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">xys</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">classes</span><span class="p">,</span> <span class="n">small</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-  <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
-  <span class="p">[</span><span class="n">send2xy</span><span class="p">(</span><span class="n">col</span><span class="p">,</span><span class="n">row</span><span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">at</span><span class="p">],</span><span class="n">y</span><span class="p">,</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">y</span><span class="p">,</span><span class="n">rows</span> <span class="ow">in</span> <span class="n">classes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
-  <span class="n">tmp</span> <span class="o">=</span>  <span class="nb">sorted</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span><span class="n">z</span><span class="o">.</span><span class="n">lo</span><span class="p">)</span>
-  <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">this</span> <span class="ow">is</span> <span class="n">SYM</span><span class="p">:</span> <span class="k">return</span> <span class="n">tmp</span>
-  <span class="n">small</span><span class="o">=</span> <span class="n">small</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">rows</span> <span class="ow">in</span> <span class="n">classes</span><span class="o">.</span><span class="n">values</span><span class="p">))</span> <span class="o">/</span> <span class="n">the</span><span class="o">.</span><span class="n">xys</span>
-  <span class="k">return</span> <span class="n">merges</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">merge</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">:</span><span class="n">merge</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">small</span><span class="p">))</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">discretize</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">,</span> <span class="n">datas</span><span class="p">:</span><span class="n">classes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">xy</span><span class="p">]</span> <span class="p">:</span>
+  <span class="n">tmp</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="p">[</span><span class="n">send2xy</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">at</span><span class="p">],</span> <span class="n">klass</span><span class="p">,</span> <span class="n">tmp</span><span class="p">)</span> <span class="k">for</span> <span class="n">klass</span><span class="p">,</span><span class="n">rows1</span> <span class="ow">in</span> <span class="n">datas</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows1</span><span class="p">]</span>
+  <span class="n">tmp</span> <span class="o">=</span>  <span class="nb">sorted</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">z</span><span class="p">:</span><span class="n">z</span><span class="o">.</span><span class="n">lo</span><span class="p">)</span>
+  <span class="n">small</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rs</span><span class="p">)</span> <span class="k">for</span> <span class="n">rs</span> <span class="ow">in</span> <span class="n">datas</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">/</span> <span class="n">the</span><span class="o">.</span><span class="n">xys</span>
+  <span class="k">return</span> <span class="n">tmp</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">this</span> <span class="ow">is</span> <span class="n">SYM</span> <span class="k">else</span> <span class="n">merges</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">small</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -603,16 +606,15 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-39'>#</a>
       </div>
-      
+      <p>Store <code>x,y</code> in the right part of <code>d</code>. Used by <code>discretize()</code>.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">send2xy</span><span class="p">(</span><span class="n">col</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">d</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">send2xy</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">,</span><span class="n">x</span><span class="p">:</span><span class="n">atom</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span><span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
   <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span><span class="p">:</span>
-     <span class="n">k</span>  <span class="o">=</span> <span class="n">x</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">this</span> <span class="ow">is</span> <span class="n">SYM</span> <span class="k">else</span> <span class="nb">min</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">xys</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">xys</span> <span class="o">*</span> <span class="n">norm</span><span class="p">(</span><span class="n">col</span><span class="p">,</span><span class="n">x</span><span class="p">)))</span> 
-     <span class="n">it</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span> <span class="k">else</span> <span class="n">xy</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">at</span><span class="p">,</span><span class="n">col</span><span class="o">.</span><span class="n">txt</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
-     <span class="n">it</span><span class="o">.</span><span class="n">lo</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">it</span><span class="o">.</span><span class="n">lo</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-     <span class="n">it</span><span class="o">.</span><span class="n">hi</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">it</span><span class="o">.</span><span class="n">hi</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-     <span class="n">it</span><span class="o">.</span><span class="n">ys</span><span class="p">[</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="n">it</span><span class="o">.</span><span class="n">ys</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span></pre></div>
+   <span class="n">k</span> <span class="o">=</span> <span class="n">x</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">this</span> <span class="ow">is</span> <span class="n">SYM</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">xys</span> <span class="o">*</span> <span class="n">norm</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">x</span><span class="p">))</span>
+   <span class="n">k</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">the</span><span class="o">.</span><span class="n">xys</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># so we don&#39;t get one lonely item at max</span>
+   <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span> <span class="k">else</span> <span class="n">xy</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">at</span><span class="p">,</span><span class="n">col</span><span class="o">.</span><span class="n">txt</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>
+   <span class="n">add2xy</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">],</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -621,21 +623,21 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-40'>#</a>
       </div>
-      
+      <p>Try merging adjacent items in <code>b4</code>. If successful, repeat. Used by <code>discretize()</code>.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">merges</span><span class="p">(</span><span class="n">b4</span><span class="p">,</span> <span class="n">mergeFun</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">merges</span><span class="p">(</span><span class="n">b4</span><span class="p">,</span> <span class="n">small</span><span class="p">):</span>
   <span class="n">j</span><span class="p">,</span> <span class="n">now</span>  <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[]</span>
   <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span>  <span class="nb">len</span><span class="p">(</span><span class="n">b4</span><span class="p">):</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">b4</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">b4</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span>  <span class="nb">len</span><span class="p">(</span><span class="n">b4</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-      <span class="n">y</span> <span class="o">=</span> <span class="n">b4</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
-      <span class="k">if</span> <span class="n">xy</span> <span class="o">:=</span> <span class="n">mergeFun</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">xy</span>
+      <span class="n">b</span> <span class="o">=</span> <span class="n">b4</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+      <span class="k">if</span> <span class="n">ab</span> <span class="o">:=</span> <span class="n">merge</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">small</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">ab</span>
         <span class="n">j</span> <span class="o">=</span> <span class="n">j</span><span class="o">+</span><span class="mi">1</span>  <span class="c1"># if i can merge, jump over the merged item</span>
-    <span class="n">now</span> <span class="o">+=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>
+    <span class="n">now</span> <span class="o">+=</span> <span class="p">[</span><span class="n">a</span><span class="p">]</span>
     <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
-  <span class="k">return</span> <span class="n">b4</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">now</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">b4</span><span class="p">)</span> <span class="k">else</span> <span class="n">merges</span><span class="p">(</span><span class="n">now</span><span class="p">,</span> <span class="n">mergeFun</span><span class="p">)</span></pre></div>
+  <span class="k">return</span> <span class="n">b4</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">now</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">b4</span><span class="p">)</span> <span class="k">else</span> <span class="n">merges</span><span class="p">(</span><span class="n">now</span><span class="p">,</span> <span class="n">small</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -644,15 +646,15 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-41'>#</a>
       </div>
-      <p>Return the merge  if the whole is better than the parts. </p>
+      <p>Return the merge  if the whole is better than the parts. Used  by <code>merges()</code>.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="n">xy1</span><span class="p">:</span> <span class="n">xy</span><span class="p">,</span> <span class="n">xy2</span><span class="p">:</span> <span class="n">xy</span><span class="p">,</span> <span class="n">small</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xy</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="n">xy1</span><span class="p">:</span> <span class="n">xy</span><span class="p">,</span> <span class="n">xy2</span><span class="p">:</span> <span class="n">xy</span><span class="p">,</span> <span class="n">small</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xy</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
   <span class="n">xy3</span> <span class="o">=</span> <span class="n">xys2xy</span><span class="p">(</span><span class="n">xy1</span><span class="p">,</span><span class="n">xy2</span><span class="p">)</span>
   <span class="n">e1</span>  <span class="o">=</span> <span class="n">ent</span><span class="p">(</span><span class="n">xy1</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span>
   <span class="n">e2</span>  <span class="o">=</span> <span class="n">ent</span><span class="p">(</span><span class="n">xy2</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span>
-  <span class="n">e3</span>  <span class="o">=</span> <span class="n">ent</span><span class="p">(</span><span class="n">xys3</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span>
-  <span class="k">if</span> <span class="n">n1</span> <span class="o">&lt;</span>  <span class="n">small</span> <span class="ow">or</span> <span class="n">n2</span> <span class="o">&lt;</span> <span class="n">small</span> <span class="ow">or</span> <span class="n">e3</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">xy</span><span class="o">.</span><span class="n">n1</span><span class="o">*</span><span class="n">e1</span> <span class="o">+</span> <span class="n">xy2</span><span class="o">.</span><span class="n">n</span><span class="o">*</span><span class="n">e2</span><span class="p">)</span><span class="o">/</span><span class="n">n3</span><span class="p">:</span> <span class="k">return</span> <span class="n">xy3</span></pre></div>
+  <span class="n">e3</span>  <span class="o">=</span> <span class="n">ent</span><span class="p">(</span><span class="n">xy3</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">xy1</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span>  <span class="n">small</span> <span class="ow">or</span> <span class="n">xy2</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span> <span class="n">small</span> <span class="ow">or</span> <span class="n">e3</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">xy</span><span class="o">.</span><span class="n">n1</span><span class="o">*</span><span class="n">e1</span> <span class="o">+</span> <span class="n">xy2</span><span class="o">.</span><span class="n">n</span><span class="o">*</span><span class="n">e2</span><span class="p">)</span><span class="o">/</span><span class="n">xy3</span><span class="o">.</span><span class="n">n</span><span class="p">:</span> <span class="k">return</span> <span class="n">xy3</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -688,7 +690,7 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-44'>#</a>
       </div>
-      <p>Distances between two rows. Needs <code>dist()</code>.</p>
+      <p>Distances between two rows.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">dists</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">r1</span><span class="p">:</span><span class="n">row</span><span class="p">,</span> <span class="n">r2</span><span class="p">:</span><span class="n">row</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -702,7 +704,7 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-45'>#</a>
       </div>
-      <p>Distance between two values.</p>
+      <p>Distance between two values. Used by <code>dists()</code>.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">dist</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span><span class="nb">any</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span><span class="nb">any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -746,7 +748,7 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-48'>#</a>
       </div>
-      <p>Recursively bi-cluster <code>region</code>, reursing only down the best half. Needs <code>half()</code>.</p>
+      <p>Recursively bi-cluster <code>region</code>, reursing only down the best half.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">halves</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">region</span><span class="p">:</span><span class="n">rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rest</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">evals</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">before</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -766,7 +768,7 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-49'>#</a>
       </div>
-      <p>Split the <code>region</code> in half according to each row&rsquo;s distance to two distant points. Needs <code>twofaraway()</code>.</p>
+      <p>Split the <code>region</code> in half according to each row&rsquo;s distance to two distant points. Used by <code>halves()</code>.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">half</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">region</span><span class="p">:</span><span class="n">rows</span><span class="p">,</span> <span class="n">sortp</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">before</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">rows</span><span class="p">,</span><span class="n">rows</span><span class="p">,</span><span class="n">row</span><span class="p">]:</span>
@@ -783,7 +785,7 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-50'>#</a>
       </div>
-      <p>Find two distant points within the <code>region</code>. Needs <code>faraway()</code>.</p>
+      <p>Find two distant points within the <code>region</code>. Used by <code>half()</code>. </p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">twoFaraway</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">region</span><span class="p">:</span><span class="n">rows</span><span class="p">,</span><span class="n">before</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sortp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">row</span><span class="p">,</span><span class="n">row</span><span class="p">,</span><span class="nb">float</span><span class="p">]:</span>
@@ -800,7 +802,7 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-51'>#</a>
       </div>
-      <p>Find something far away from <code>r1</code> with the <code>region</code>.</p>
+      <p>Find something far away from <code>r1</code> with the <code>region</code>. Used by <code>twoFaraway()</code>.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">faraway</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">r1</span><span class="p">:</span><span class="n">row</span><span class="p">,</span> <span class="n">region</span><span class="p">:</span><span class="n">rows</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">row</span><span class="p">:</span>
@@ -827,7 +829,7 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-53'>#</a>
       </div>
-      <p>Likelihood of a <code>row</code> belonging to a DATA. Needs <code>like()</code>.</p>
+      <p>Likelihood of a <code>row</code> belonging to a DATA. .</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">loglikes</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span><span class="n">row</span><span class="p">,</span> <span class="n">nall</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">nh</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -842,7 +844,7 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-54'>#</a>
       </div>
-      <p>Likelihood of <code>x</code> belonging to a col. May need <code>like4num()</code>.</p>
+      <p>Likelihood of <code>x</code> belonging to a col. Used by <code>likes()</code>.  </p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">like</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span><span class="nb">any</span><span class="p">,</span> <span class="n">prior</span><span class="p">:</span><span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -855,7 +857,7 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-55'>#</a>
       </div>
-      <p>Likelihood of <code>x</code> belonging to a NUM.</p>
+      <p>Likelihood of <code>x</code> belonging to a NUM. Used by <code>like()</code>.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">like4num</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">num</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
