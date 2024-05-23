@@ -23,10 +23,10 @@
       -v --version show version                   = False
       -x --xys     max #bins in discretization    = 10    
 """
-# <center>See end-of-file for this file's  conventions / principles /practices.
+# <center><hr>See end-of-file for this file's  conventions / principles /practices.
 # And FYI, our random number seed is an 
 # [odious, apocalyptic, deficient, pernicious, polite, prime](https://numbersaplenty.com/1234567891) 
-# number. </center>     
+# number. <hr></center>     
 
 __author__  = "Tim Menzies"
 __version__ = "0.1.0"
