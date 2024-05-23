@@ -37,7 +37,25 @@ from typing import Any as any
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Conventions
 # 
-# - Any function starting with `_` is private; i.e. should not be called by outside functions.
+# - At top of file, add in all settings to the __doc__ string. 
+#   Parse that string to create `the` global settings.
+# - At end of file, add in demos/tests as methods of the `eg` class 
+#   Report a test failure by return `False`.
+# - Mark private functions with a leading  `_` 
+#   (such functions  should not be called by outside users).
+# - Every function gets a one line doc string. For documentation longer than one line,
+#   add this outside the function.
+# - Group together similar functionality for difference types (so don't use classes).
+# - Functions over 5 lines get a second look: can they be split in two?
+# - Some functions "chain"; i.e. `f1()` calls `f2()` which calls `f3()`.
+#   And the sub-functions are never called from anywhere else. For such chanined
+#   functions, add the comment (e.g. in `f3()`) `"Used by (e.g.) \f1()`".
+# - Code wider than 90 characters is  discouraged: try to shorten.
+# - If a function is about some data type, make `i` (not `self` and not `this`
+#   for first function argument).
+# - Don't use type names for variables or function names. 
+#   E.g. use `rows1` not `rows`; 
+#   E.g. use `klasses` not `classes`; 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Types
 

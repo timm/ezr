@@ -7,7 +7,7 @@ IMAGE      = <img src="img/ezr.png" align=right width=150>
 CSS        = p { text-align: right;} pre,code {font-size: x-small;}
 
 #----------------------------------------------------------
-#SHELL     := bash 
+SHELL     := bash 
 #MAKEFLAGS += --warn-undefined-variables
 #.SILENT:  
 Root=$(shell git rev-parse --show-toplevel)
@@ -26,13 +26,13 @@ name:
 install   : ## install as  a local python package
 	pip install -e  . --break-system-packages 
 
-$(Root)/docs/index.html :$(Root)/docs/ezr.html ## install our html doco
+docs/index.html :docs/ezr.html ## install our html doco
 	cp $< $@
 
-$(Root)/docs/%.html : %.py
-	gawk -f $(Root)/etc/ab2ba.awk $< > $(Root)/docs/$<
-	cd $(Root)/docs; pycco -d . $<; rm $<
-	echo "$(CSS)" >> $(Root)/docs/pycco.css
+docs/%.html : %.py
+	gawk -f etc/ab2ba.awk $< > docs/$<
+	cd docs; pycco -d . $<; rm $<
+	echo "$(CSS)" >> docs/pycco.css
 	sed -i '' 's?<h1>?$(MENU)<hr>$(IMAGE)&?' $@
 	@open $@
 
