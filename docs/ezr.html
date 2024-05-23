@@ -41,10 +41,11 @@ OPTIONS:
   -v --version show version                   = False
   -x --xys     max #bins in discretization    = 10
 </code></pre>
-<p><center>See end-of-file for this file&rsquo;s  conventions / principles /practices.
+<h2>Note</h2>
+<p align="left">See end-of-file for this file's  conventions / principles /practices.
 And FYI, our random number seed is an 
-<a href="https://numbersaplenty.com/1234567891">odious, apocalyptic, deficient, pernicious, polite, prime</a> 
-number. </center>     </p>
+[odious, apocalyptic, deficient, pernicious, polite, prime](https://numbersaplenty.com/1234567891) 
+number. </center>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span></span><span class="n">__author__</span>  <span class="o">=</span> <span class="s2">&quot;Tim Menzies&quot;</span>
@@ -1423,11 +1424,24 @@ algorithm.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-91'>#</a>
       </div>
-      <hr />
-<h2>Conventions in this code</h2>
-<ul>
+      <h2>Conventions in this code</h2>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-92'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-92'>#</a>
+      </div>
+      <ul>
+<li><strong>Software 2.0</strong>: SE projects are now divided into team1, team2 where team1 does convectional SE, while team2
+  is in charge of the care and feeding on an optimizer/model builder</li>
 <li><strong>Less is more:</strong> The model is already there, within the data.
     We  just have to chisel away the superfluous material. </li>
+<li><strong>Labelling is a problem:</strong> Do everything we can, with fewer labels.</li>
 <li><strong>Open science:</strong> Used DOIs to publish papers, and the scripts and data used in this papers.</li>
 <li><strong>Worse is better:</strong> Simpler code has better survival characteristics than the-right-thing.</li>
 <li><strong>Open source:</strong> Make code freely usable.</li>
@@ -1444,8 +1458,9 @@ algorithm.</p>
 <li><strong>Abstraction:</strong> Make much use of error handling and iterators.</li>
 <li><strong>Types:</strong> Use type hints for function args and return types.
   Don&rsquo;t use type names for variables or function names.  E.g. use <code>rows1</code> not <code>rows</code>. E.g. use <code>klasses</code> not <code>classes</code>; </li>
-<li><strong>OO? No!:</strong> Group together similar functionality for difference types (so don&rsquo;t use classes).
+<li><strong>OO? Hell no!:</strong> Group together similar functionality for difference types (so don&rsquo;t use classes).
   And to enable polymorphism, add a <code>this=CONSTRUCTOR</code> field to all objects.</li>
+<li>**Functional programming? heck yes!&rdquo;: lots of comprehensions and lambda bodies.</li>
 <li><strong>Information hiding:</strong> Mark private functions with a leading  &ldquo;_&rdquo;. 
   (such functions  should not be called by outside users).</li>
 <li><strong>Refactoring:</strong>  Functions over 5 lines get a second look: can they be split in two?

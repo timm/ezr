@@ -23,10 +23,10 @@
       -v --version show version                   = False
       -x --xys     max #bins in discretization    = 10    
 """
-# <center><hr>See end-of-file for this file's  conventions / principles /practices.
+# <h2>Note</h2><p align="left">See end-of-file for this file's  conventions / principles /practices.
 # And FYI, our random number seed is an 
 # [odious, apocalyptic, deficient, pernicious, polite, prime](https://numbersaplenty.com/1234567891) 
-# number. <hr></center>     
+# number. </center>     
 
 __author__  = "Tim Menzies"
 __version__ = "0.1.0"
@@ -34,6 +34,7 @@ __version__ = "0.1.0"
 import re,ast,sys,math,random,copy,traceback
 from fileinput import FileInput as file_or_stdin
 from typing import Any as any
+from typing import Callable as callable
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Types
@@ -44,7 +45,7 @@ class o:
   def __repr__(i): return i.__class__.__name__+str(show(i.__dict__))
 
 # Other types used in this system.
-xy,cols,data,num,sym = o,o,o,o,o
+xy,cols,data,node,num,sym = o,o,o,o,o,0
 col     = num    | sym
 number  = float  | int
 atom    = number | bool | str # and sometimes "?"
@@ -101,6 +102,10 @@ def NUM(txt=" ",at=0,has=None) -> num:
 def XY(at,txt,lo,hi=None,ys=None) -> xy:
   "`ys` counts symbols seen in one column between `lo`.. `hi` of another column."
   return o(this=XY, n=0, at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
+
+def NODE(x,left=None,right=None):
+  "NODEs are parts of binary trees."
+  return o(x=x, left=left, right=right)
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## CRUD (create, read, update, delete)
@@ -217,10 +222,13 @@ def norm(i:num,x) -> float:
   "Normalize `x` to 0..1"
   return x if x=="?" else (x-i.lo)/(i.hi - i.lo - 1E-30)
 
+def isLeaf(i:node):
+  "True if a node has no leaves."
+  return i.left==i.right==None
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Discretization
 # Divide a range into many bins. Iteratively merge adjacent bins if
-# they  are too underpopulated  or too uniformative (as measured by
+# they  are too underpopulated  or too uninformative (as measured by
 # entropy). This approach was inspired by Kerber's
 # [ChiMerge](https://sci2s.ugr.es/keel/pdf/algorithm/congreso/1992-Kerber-ChimErge-AAAI92.pdf)
 # algorithm.
@@ -269,6 +277,43 @@ def _span(xys : list[xy]) -> list[xy]:
   xys[0].lo  = -1E30
   xys[-1].hi =  1E30
   return xys
+
+#--------- --------- --------- --------- --------- --------- --------- --------- --------
+# ## Trees
+
+def tree(i:data, klasses:classes, stop:int=4) -> node:
+  cuts  = [cut for col1 in i.cols.x for cut in discretize(col1,klasses)]
+  return _grow(klasses,cuts,stop, 0,1E30)
+
+def _grow(klasses:classes, cuts, stop:int, lvl:int, above:int) -> node:
+  counts,total = classCounts(klasses)
+  most   = max(counts, key=counts.get)
+  node = NODE(klasses) 
+  if total > 2*stop and total < above and most < total: #most==total means "purity" (all of one class)
+    cut = max(cuts,  key=lambda cut0: _minEntMaxSupport( _split(cut,klasses)[0]), total)
+    left,right = _split(cut,klasses)
+    node.left  = _grow(left,  stop, lvl+1, total)
+    node.right = _grow(right, stop, lvl+1, total)
+  return node
+
+def  _minEntMaxSupport(klasss,total):
+  counts,myTotal = classCounts(klasses)
+  return (myTotal / total) /  ent(counts)
+
+def classCounts(klasses:classes):
+  d= {klass:len(rows1) for klass,rows1 in klasses.items()}
+  return d, sum(len(rows1) for rows1 in d.values())
+
+def _split(cut:xy, klasses:classes) -> tuple[classes,classes]
+  left  = {klass:[] for klass in klasses}
+  right = {klass:[] for klass in klasses}
+  for klass,rows1 in klasses.items():
+    [(left if i.selects(row1) else right)[klass].append(row1) for row1 in rows1]
+  return left,right
+
+def selects(i:xy, r:row) -> bool:
+  x = r[i.at]
+  return x=="?" or i.lo==x if i.lo==i.hi else i.lo <= x < i.hi
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Distances
@@ -383,7 +428,7 @@ def smo(i:data, score=lambda B,R: B-R):
   return _smo1(i.rows[the.label:], _ranked(i.rows[:the.label]))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
-# ## Misc Functions
+# ## Misc Functions:
 
 def ent(d:dict) -> float:
   "Entropy of a distribution."
@@ -563,11 +608,15 @@ class eg:
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 if __name__ == "__main__": main()
 
-#--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Conventions in this code
-#
+
+# - **Software 2.0**: SE projects are now divided into team1, team2 where team1 does convectional SE, while team2
+#   is in charge of the care and feeding on an optimizer/model builder
 # - **Less is more:** The model is already there, within the data.
 #     We  just have to chisel away the superfluous material. 
+# - **Labelling is a problem:** Do everything we can, with fewer labels.
+# - **Trees are just recursive ranges**
+# - **Naive Bayes is just N DATA**
 # - **Open science:** Used DOIs to publish papers, and the scripts and data used in this papers.
 # - **Worse is better:** Simpler code has better survival characteristics than the-right-thing.
 # - **Open source:** Make code freely usable.
@@ -586,7 +635,7 @@ if __name__ == "__main__": main()
 #   Don't use type names for variables or function names.  E.g. use `rows1` not `rows`. E.g. use `klasses` not `classes`; 
 # - **OO? Hell no!:** Group together similar functionality for difference types (so don't use classes).
 #   And to enable polymorphism, add a `this=CONSTRUCTOR` field to all objects.
-# - **Functional programming? heck yes!": lots of comprehensions and lambda bodies.
+# - **Functional programming? heck yeah! :** lots of comprehensions and lambda bodies.
 # - **Information hiding:** Mark private functions with a leading  "_". 
 #   (such functions  should not be called by outside users).
 # - **Refactoring:**  Functions over 5 lines get a second look: can they be split in two?
