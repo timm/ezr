@@ -584,8 +584,9 @@ if __name__ == "__main__": main()
 # - **Abstraction:** Make much use of error handling and iterators.
 # - **Types:** Use type hints for function args and return types.
 #   Don't use type names for variables or function names.  E.g. use `rows1` not `rows`. E.g. use `klasses` not `classes`; 
-# - **OO? No!:** Group together similar functionality for difference types (so don't use classes).
+# - **OO? Hell no!:** Group together similar functionality for difference types (so don't use classes).
 #   And to enable polymorphism, add a `this=CONSTRUCTOR` field to all objects.
+# - **Functional programming? heck yes!": lots of comprehensions and lambda bodies.
 # - **Information hiding:** Mark private functions with a leading  "_". 
 #   (such functions  should not be called by outside users).
 # - **Refactoring:**  Functions over 5 lines get a second look: can they be split in two?
