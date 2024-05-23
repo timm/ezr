@@ -5,21 +5,23 @@
     (C) 2024 Tim Menzies (timm@ieee.org) BSD-2 license.    
         
     OPTIONS:    
-      -a --any    #todo's to explore             = 100    
-      -d --decs   #decimals for showing floats   = 3    
-      -f --file   csv file for data              = ../data/misc/auto93.csv    
-      -F --Far    how far to seek faraway        = 0.8    
-      -k --k      bayes low frequency hack #1    = 1    
-      -H --Half   #rows for searching for poles  = 128    
-      -l --label  initial number of labelings    = 4    
-      -L --Last   max allow labelings            = 30    
-      -m --m      bayes low frequency hack #2    = 2    
-      -n --n      tinyN                          = 12    
-      -N --N      smallN                         = 0.5    
-      -p --p      distance function coefficient  = 2    
-      -R --Run    start up action method         = help    
-      -s --seed   random number seed             = 1234567891    
-      -x --xys    max #bins in discretization    = 16    
+      -a --any     #todo's to explore             = 100    
+      -d --decs    #decimals for showing floats   = 3    
+      -f --file    csv file for data              = ../data/misc/auto93.csv    
+      -F --Far     how far to seek faraway        = 0.8    
+      -h --help    show help                      = False
+      -k --k       bayes low frequency hack #1    = 1    
+      -H --Half    #rows for searching for poles  = 128    
+      -l --label   initial number of labelings    = 4    
+      -L --Last    max allow labelings            = 30    
+      -m --m       bayes low frequency hack #2    = 2    
+      -n --n       tinyN                          = 12    
+      -N --N       smallN                         = 0.5    
+      -p --p       distance function coefficient  = 2    
+      -R --Run     start up action method         = help    
+      -s --seed    random number seed             = 1234567891    
+      -v --version show version                  = False
+      -x --xys     max #bins in discretization    = 16    
 """
 # (FYI our seed is an 
 # [odious, apocalyptic, deficient, pernicious, polite, prime](https://numbersaplenty.com/1234567891) 
@@ -67,8 +69,9 @@ def cli(d:dict):
   for k,v in d.items():
     v = str(v)
     for c,arg in enumerate(sys.argv):
+      after = sys.argv[c+1] if c < len(sys.argv) - 1 else ""
       if arg in ["-"+k[0], "--"+k]:
-        d[k] = coerce("false" if v=="true" else ("true" if v=="false" else sys.argv[c+1]))
+        d[k] = coerce("False" if v=="True" else ("True" if v=="False" else after))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Structs
@@ -408,7 +411,9 @@ def btw(*args, **kwargs):
 def main() -> None: 
   "Update `the` from the command line; call the start-up command `the.Run`."
   cli(the.__dict__)
-  run(the.Run)
+  if   the.help: eg.help()
+  elif the.version: print("Ezr",__version__)
+  else: run(the.Run)
 
 def run(s:str) -> int:
   "Reset the seed. Run `eg.s()`, then restore old settings. Return '1' on failure. Called by `main()`."
