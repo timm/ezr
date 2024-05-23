@@ -407,7 +407,7 @@ def main() -> None:
   run(the.Run)
 
 def run(s:str) -> int:
-  "Reset the seed. Run `eg.s()`. Afterwards, restore old settings. Return '1' on failure."
+  "Reset the seed. Run `eg.s()`. Afterwards, restore old settings. Return '1' on failure. Called by `main()`."
   reset = {k:v for k,v in the.__dict__.items()}
   random.seed(the.seed)
   out = run1(s)
@@ -415,7 +415,7 @@ def run(s:str) -> int:
   return out
 
 def run1(s:str) -> False | None:
-  "Return either the result for running `eg.s()`, or `False` (if there was a crash)."
+  "Return either the result for running `eg.s()`, or `False` (if there was a crash). Called by `run()`."
   try:
     return getattr(eg, s)()
   except Exception:

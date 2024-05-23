@@ -18,7 +18,7 @@ saved:
 	echo "p  { text-align: right; }" >> ../docs/pycco.css
 	echo "pre,code { font-size: small; }" >> ../docs/pycco.css
 	sed -i '' 's?$< : ?<img src="img/$(basename $<).png" width=490><br clear=all>&?' $@
-	sed -i '' 's?<h1>?$(HOME) | $(CONTRIBUTE) | $(ISSUES) | $(LICENSE) &?' $@
+	sed -i '' 's?<h1>?$(HOME) | $(CONTRIBUTE) | $(ISSUES) | $(LICENSE)<hr> &?' $@
 	@open $@
 
 ~/tmp/%.pdf:  %.py

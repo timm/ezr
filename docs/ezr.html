@@ -1057,7 +1057,7 @@ algorithm.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-68'>#</a>
       </div>
-      <p>Reset the seed. Run <code>eg.s()</code>. Afterwards, restore old settings. Return &lsquo;1&rsquo; on failure.</p>
+      <p>Reset the seed. Run <code>eg.s()</code>. Afterwards, restore old settings. Return &lsquo;1&rsquo; on failure. Called by <code>main()</code>.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">s</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -1074,7 +1074,7 @@ algorithm.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-69'>#</a>
       </div>
-      <p>Return either the result for running <code>eg.s()</code>, or <code>False</code> (if there was a crash).</p>
+      <p>Return either the result for running <code>eg.s()</code>, or <code>False</code> (if there was a crash). Called by <code>run()</code>.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">run1</span><span class="p">(</span><span class="n">s</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">False</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
