@@ -23,9 +23,10 @@
       -v --version show version                   = False
       -x --xys     max #bins in discretization    = 10    
 """
-# (FYI our seed is an 
+# <center>See end-of-file for this file's  conventions / principles /practices.
+# And FYI, our random number seed is an 
 # [odious, apocalyptic, deficient, pernicious, polite, prime](https://numbersaplenty.com/1234567891) 
-# number.)      
+# number. </center>     
 
 __author__  = "Tim Menzies"
 __version__ = "0.1.0"
@@ -34,28 +35,6 @@ import re,ast,sys,math,random,copy,traceback
 from fileinput import FileInput as file_or_stdin
 from typing import Any as any
 
-#--------- --------- --------- --------- --------- --------- --------- --------- --------
-# ## Conventions
-# 
-# - At top of file, add in all settings to the __doc__ string. 
-#   Parse that string to create `the` global settings.
-# - At end of file, add in demos/tests as methods of the `eg` class 
-#   Report a test failure by return `False`.
-# - Mark private functions with a leading  `_` 
-#   (such functions  should not be called by outside users).
-# - Every function gets a one line doc string. For documentation longer than one line,
-#   add this outside the function.
-# - Group together similar functionality for difference types (so don't use classes).
-# - Functions over 5 lines get a second look: can they be split in two?
-# - Some functions "chain"; i.e. `f1()` calls `f2()` which calls `f3()`.
-#   And the sub-functions are never called from anywhere else. For such chanined
-#   functions, add the comment (e.g. in `f3()`) `"Used by (e.g.) \f1()`".
-# - Code wider than 90 characters is  discouraged: try to shorten.
-# - If a function is about some data type, make `i` (not `self` and not `this`
-#   for first function argument).
-# - Don't use type names for variables or function names. 
-#   E.g. use `rows1` not `rows`; 
-#   E.g. use `klasses` not `classes`; 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Types
 
@@ -584,4 +563,37 @@ class eg:
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 if __name__ == "__main__": main()
 
+#--------- --------- --------- --------- --------- --------- --------- --------- --------
+# ## Conventions in this code
+#
+# - **Less is more:** The model is already there, within the data.
+#     We  just have to chisel away the superfluous material. 
+# - **Open science:** Used DOIs to publish papers, and the scripts and data used in this papers.
+# - **Worse is better:** Simpler code has better survival characteristics than the-right-thing.
+# - **Open source:** Make code freely usable.
+# - **"Separate policy from mechanism:"** Make much use or domain-specific notations (e.g. regx, our
+#   __doc__ strings, our little language for column headers).
+# - **Doc, Config:** At top of file, add in all settings to the __doc__ string. 
+#   Parse that string to create `the` global settings.
+#   Also, every function gets a one line doc string. For documentation longer than one line,
+#   add this outside the function.
+# - **TDD:** At end of file, add in demos/tests as methods of the `eg` class 
+#   Report a test failure by return `False`. Note that `eg.all()` will run all demos/tests
+#   and return the number of failures to the operating system.
+# - **Composition:** Allow for reading from standard input (so this code can be used in a pipe).
+# - **Abstraction:** Make much use of error handling and iterators.
+# - **Types:** Use type hints for function args and return types.
+#   Don't use type names for variables or function names.  E.g. use `rows1` not `rows`. E.g. use `klasses` not `classes`; 
+# - **OO? No!:** Group together similar functionality for difference types (so don't use classes).
+#   And to enable polymorphism, add a `this=CONSTRUCTOR` field to all objects.
+# - **Information hiding:** Mark private functions with a leading  "_". 
+#   (such functions  should not be called by outside users).
+# - **Refactoring:**  Functions over 5 lines get a second look: can they be split in two?
+#   Also, line length,  try not to blow 90 characters.
+# - **Misc:**  Some functions "chain"; i.e. `f1()` calls `f2()` which calls `f3()`.
+#   And the sub-functions are never called from anywhere else. For such chained
+#   functions, add the comment (e.g.)  `Used by f1()`.
+#   Also,  if a function is about some data type, use `i` (not `self` and not `this`)
+#   for first function argument.
+#   And do not use `i` otherwise (e.g. not as a loop counter).
 
