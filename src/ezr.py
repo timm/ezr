@@ -211,37 +211,38 @@ def norm(i:num,x) -> float:
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Discretization
 
-def xys(col, classes, small=None):
-  d = {}
-  [send2xy(col,row[col.at],y,d) for y,rows in classes.items() for row in rows]
-  tmp =  sorted(d.values, key=lambda z:z.lo)
-  if col.this is SYM: return tmp
-  small= small or (sum(len(row) for rows in classes.values)) / the.xys
-  return merges(out, merge=lambda x,y:merge(x,y,small))
+def discretize(i:col, datas:classes) -> list[xy] ::
+  "Find good ranges for the i-th column within `datas`."
+  tmp = {}
+  [send2xy(i, r[i.at], klass, tmp) for klass,rows1 in datas.items() for r in rows1]
+  tmp =  sorted(tmp.values(), key=lambda z:z.lo)
+  small = sum(len(rs) for rs in datas.values()) / the.xys
+  return tmp if col.this is SYM else merges(tmp, small)
 
-def send2xy(col,x,y,d):
+def send2xy(i:col,x:atom, y:str, d:dict) -> None:
+  "Store `x,y` in the right part of `d`. Used by `discretize()`."
   if x != "?":
-     k  = x if col.this is SYM else min(the.xys - 1, int(the.xys * norm(col,x))) 
-     it = d[k] = d[k] if k in d else xy(col.at,col.txt,x)
-     it.lo = min(it.lo, x)
-     it.hi = max(it.hi, x)
-     it.ys[y] = it.ys.get(y,0) + 1
+   k = x if col.this is SYM else int(the.xys * norm(i,x))
+   k = min(k, the.xys - 1) # so we don't get one lonely item at max
+   d[k] = d[k] if k in d else xy(col.at,col.txt,x)
+   add2xy(d[k],x,y)
 
-def merges(b4, mergeFun):
+def merges(b4, small):
+  "Try merging adjacent items in `b4`. If successful, repeat. Used by `discretize()`.""
   j, now  = 0, []
   while j <  len(b4):
-    x = b4[j]
+    a = b4[j]
     if j <  len(b4) - 1:
-      y = b4[j+1]
-      if xy := mergeFun(x, y):
-        x = xy
+      b = b4[j+1]
+      if ab := merge(a,b,small)
+        a = ab
         j = j+1  # if i can merge, jump over the merged item
-    now += [x]
+    now += [a]
     j += 1
-  return b4 if len(now) == len(b4) else merges(now, mergeFun)
+  return b4 if len(now) == len(b4) else merges(now, small)
 
-def merge(xy1: xy, xy2: xy, small:int=1) -> xy | None:
-  "Return the merge  if the whole is better than the parts." 
+def merge(xy1: xy, xy2: xy, small:int) -> xy | None:
+  "Return the merge  if the whole is better than the parts. Used  by `merges()`. 
   xy3 = xys2xy(xy1,xy2)
   e1  = ent(xy1.ys)
   e2  = ent(xy2.ys)
