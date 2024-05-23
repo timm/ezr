@@ -69,7 +69,7 @@ def cli(d:dict):
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Structs
 
-# Anything named "_X" is a primitive constructor called by  another constuctor "X".
+# Anything named "_X" is a primitive constructor called by  another constructor "X".
 
 def _DATA() -> data:
   "DATA stores `rows` (whose columns  are summarized in `cols`)."
@@ -129,15 +129,15 @@ def DATA(src=None, rank=False) -> data:
 
 # ### Update
 
-def add2data(i:data,row1:row) -> None:
-  "Update contents of a DATA."
-  if    i.cols: i.rows.append([add2col(col,x) for col,x in zip(i.cols.all,row1)])
-  else: i.cols= COLS(row1)
-
 def adds(i:col, lst:list) -> col:
   "Update a NUM or SYM with many items."
   [add2col(i,x) for x in lst]
   return i
+
+def add2data(i:data,row1:row) -> None:
+  "Update contents of a DATA. Used by `DATA()`. First time through, `i.cols` is None."
+  if    i.cols: i.rows.append([add2col(col,x) for col,x in zip(i.cols.all,row1)])
+  else: i.cols= COLS(row1)
 
 def add2col(i:col, x:any, n=1) -> any:
   "`n` times, update NUM or SYM with one item. Used by `add2data()`." 
@@ -210,9 +210,9 @@ def norm(i:num,x) -> float:
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Discretization
-# Divide a range into many bins. Iteratively merge adjacent bins if the separate bins
-# are too small or too uniformative (as measured by entropy). This algorithm is unspired
-# by Kerber's 
+# Divide a range into many bins. Iteratively merge adjacent bins if
+# they  are too underpopulated  or too uniformative (as measured by
+# entropy). This approach was inspired by Kerber's
 # [ChiMerge](https://sci2s.ugr.es/keel/pdf/algorithm/congreso/1992-Kerber-ChimErge-AAAI92.pdf)
 # algorithm.
 
@@ -252,7 +252,7 @@ def merge(xy1: xy, xy2: xy, small:int) -> xy | None:
   e1  = ent(xy1.ys)
   e2  = ent(xy2.ys)
   e3  = ent(xy3.ys)
-  if xy1.n <  small or xy2.n < small or e3 <= (xy.n1*e1 + xy2.n*e2)/xy3.n: return xy3 
+  if xy1.n < small or xy2.n < small or e3 <= (xy1.n1*e1 + xy2.n*e2)/xy3.n: return xy3 
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Distances

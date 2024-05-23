@@ -193,7 +193,7 @@ For dictionary key <code>k</code>, if command line has <code>-k X</code>, then <
       <div class='octowrap'>
         <a class='octothorpe' href='#section-11'>#</a>
       </div>
-      <p>Anything named &ldquo;_X&rdquo; is a primitive constructor called by  another constuctor &ldquo;X&rdquo;.</p>
+      <p>Anything named &ldquo;_X&rdquo; is a primitive constructor called by  another constructor &ldquo;X&rdquo;.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre></pre></div>
@@ -273,8 +273,8 @@ For dictionary key <code>k</code>, if command line has <code>-k X</code>, then <
         <a class='octothorpe' href='#section-17'>#</a>
       </div>
       <hr />
-<h2>CRUD (= create, read, update, delete</h2>
-<p>We don&rsquo;t need to delete (thanks to garbage collection). 
+<h2>CRUD (create, read, update, delete)</h2>
+<p>We don&rsquo;t need to delete (thanks to garbage collection).  But we need create, update.
 And &ldquo;read&rdquo; is really &ldquo;read in from some source&rdquo; and &ldquo;read out; i.e. query the structs.</p>
     </div>
     <div class='code'>
@@ -365,12 +365,12 @@ create a NUM or SYM from <code>s</code>. Adds it to <code>x</code>, <code>y</cod
       <div class='octowrap'>
         <a class='octothorpe' href='#section-23'>#</a>
       </div>
-      <p>Update contents of a DATA.</p>
+      <p>Update a NUM or SYM with many items.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">add2data</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span><span class="n">row1</span><span class="p">:</span><span class="n">row</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-  <span class="k">if</span>    <span class="n">i</span><span class="o">.</span><span class="n">cols</span><span class="p">:</span> <span class="n">i</span><span class="o">.</span><span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">add2col</span><span class="p">(</span><span class="n">col</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">all</span><span class="p">,</span><span class="n">row1</span><span class="p">)])</span>
-  <span class="k">else</span><span class="p">:</span> <span class="n">i</span><span class="o">.</span><span class="n">cols</span><span class="o">=</span> <span class="n">COLS</span><span class="p">(</span><span class="n">row1</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">adds</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">,</span> <span class="n">lst</span><span class="p">:</span><span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">col</span><span class="p">:</span>
+  <span class="p">[</span><span class="n">add2col</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">]</span>
+  <span class="k">return</span> <span class="n">i</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -379,12 +379,12 @@ create a NUM or SYM from <code>s</code>. Adds it to <code>x</code>, <code>y</cod
       <div class='octowrap'>
         <a class='octothorpe' href='#section-24'>#</a>
       </div>
-      <p>Update a NUM or SYM with many items.</p>
+      <p>Update contents of a DATA. Used by <code>DATA()</code>. First time through, <code>i.cols</code> is None.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">adds</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">,</span> <span class="n">lst</span><span class="p">:</span><span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">col</span><span class="p">:</span>
-  <span class="p">[</span><span class="n">add2col</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">]</span>
-  <span class="k">return</span> <span class="n">i</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">add2data</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span><span class="n">row1</span><span class="p">:</span><span class="n">row</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="k">if</span>    <span class="n">i</span><span class="o">.</span><span class="n">cols</span><span class="p">:</span> <span class="n">i</span><span class="o">.</span><span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">add2col</span><span class="p">(</span><span class="n">col</span><span class="p">,</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">all</span><span class="p">,</span><span class="n">row1</span><span class="p">)])</span>
+  <span class="k">else</span><span class="p">:</span> <span class="n">i</span><span class="o">.</span><span class="n">cols</span><span class="o">=</span> <span class="n">COLS</span><span class="p">(</span><span class="n">row1</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -574,10 +574,11 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       </div>
       <hr />
 <h2>Discretization</h2>
-<p>Divide a range into many bins. Iteratively merge adjacent bins if the separate bins
-are too small or too uniformative (as measured by entropy). This algorithm is unspired
-by Kerber&rsquo;s 
-<a href="https://sci2s.ugr.es/keel/pdf/algorithm/congreso/1992-Kerber-ChimErge-AAAI92.pdf">ChiMerge</a>,</p>
+<p>Divide a range into many bins. Iteratively merge adjacent bins if
+they  are too underpopulated  or too uniformative (as measured by
+entropy). This approach was inspired by Kerber&rsquo;s
+<a href="https://sci2s.ugr.es/keel/pdf/algorithm/congreso/1992-Kerber-ChimErge-AAAI92.pdf">ChiMerge</a>
+algorithm.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre></pre></div>
@@ -654,7 +655,7 @@ by Kerber&rsquo;s
   <span class="n">e1</span>  <span class="o">=</span> <span class="n">ent</span><span class="p">(</span><span class="n">xy1</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span>
   <span class="n">e2</span>  <span class="o">=</span> <span class="n">ent</span><span class="p">(</span><span class="n">xy2</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span>
   <span class="n">e3</span>  <span class="o">=</span> <span class="n">ent</span><span class="p">(</span><span class="n">xy3</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span>
-  <span class="k">if</span> <span class="n">xy1</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span>  <span class="n">small</span> <span class="ow">or</span> <span class="n">xy2</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span> <span class="n">small</span> <span class="ow">or</span> <span class="n">e3</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">xy</span><span class="o">.</span><span class="n">n1</span><span class="o">*</span><span class="n">e1</span> <span class="o">+</span> <span class="n">xy2</span><span class="o">.</span><span class="n">n</span><span class="o">*</span><span class="n">e2</span><span class="p">)</span><span class="o">/</span><span class="n">xy3</span><span class="o">.</span><span class="n">n</span><span class="p">:</span> <span class="k">return</span> <span class="n">xy3</span></pre></div>
+  <span class="k">if</span> <span class="n">xy1</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span> <span class="n">small</span> <span class="ow">or</span> <span class="n">xy2</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span> <span class="n">small</span> <span class="ow">or</span> <span class="n">e3</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">xy1</span><span class="o">.</span><span class="n">n1</span><span class="o">*</span><span class="n">e1</span> <span class="o">+</span> <span class="n">xy2</span><span class="o">.</span><span class="n">n</span><span class="o">*</span><span class="n">e2</span><span class="p">)</span><span class="o">/</span><span class="n">xy3</span><span class="o">.</span><span class="n">n</span><span class="p">:</span> <span class="k">return</span> <span class="n">xy3</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -751,13 +752,13 @@ by Kerber&rsquo;s
       <p>Recursively bi-cluster <code>region</code>, reursing only down the best half.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">halves</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">region</span><span class="p">:</span><span class="n">rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rest</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">evals</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">before</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">branch</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">region</span><span class="p">:</span><span class="n">rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rest</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">evals</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">before</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
   <span class="n">region</span> <span class="o">=</span> <span class="n">region</span> <span class="ow">or</span> <span class="n">i</span><span class="o">.</span><span class="n">rows</span>
   <span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span> <span class="ow">or</span> <span class="mi">2</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">region</span><span class="p">)</span><span class="o">**</span><span class="n">the</span><span class="o">.</span><span class="n">N</span>
   <span class="n">rest</span> <span class="o">=</span> <span class="n">rest</span> <span class="ow">or</span> <span class="p">[]</span>
   <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">region</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">stop</span><span class="p">:</span>
     <span class="n">lefts</span><span class="p">,</span><span class="n">rights</span><span class="p">,</span><span class="n">left</span>  <span class="o">=</span> <span class="n">half</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">region</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">before</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">halves</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">lefts</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">rest</span><span class="o">+</span><span class="n">rights</span><span class="p">,</span> <span class="n">evals</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">branch</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">lefts</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">rest</span><span class="o">+</span><span class="n">rights</span><span class="p">,</span> <span class="n">evals</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
   <span class="k">else</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">region</span><span class="p">,</span><span class="n">rest</span><span class="p">,</span><span class="n">evals</span></pre></div>
     </div>
@@ -768,7 +769,7 @@ by Kerber&rsquo;s
       <div class='octowrap'>
         <a class='octothorpe' href='#section-49'>#</a>
       </div>
-      <p>Split the <code>region</code> in half according to each row&rsquo;s distance to two distant points. Used by <code>halves()</code>.</p>
+      <p>Split the <code>region</code> in half according to each row&rsquo;s distance to two distant points. Used by <code>branch()</code>.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">half</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">region</span><span class="p">:</span><span class="n">rows</span><span class="p">,</span> <span class="n">sortp</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">before</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">rows</span><span class="p">,</span><span class="n">rows</span><span class="p">,</span><span class="n">row</span><span class="p">]:</span>
@@ -1006,7 +1007,7 @@ by Kerber&rsquo;s
   <span class="k">if</span> <span class="n">it</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>   <span class="k">return</span> <span class="s2">&quot;(&quot;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;:</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">show</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span><span class="o">+</span><span class="s2">&quot;)&quot;</span>
   <span class="k">if</span> <span class="n">it</span> <span class="o">==</span> <span class="n">o</span><span class="p">:</span>      <span class="k">return</span> <span class="n">show</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
   <span class="k">if</span> <span class="n">it</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>    <span class="k">return</span> <span class="s1">&#39;&quot;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;&quot;&#39;</span>
-  <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>  <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="vm">__name__</span>
+  <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>  <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="vm">__name__</span>
   <span class="k">return</span> <span class="n">x</span></pre></div>
     </div>
   </div>
@@ -1280,11 +1281,11 @@ by Kerber&rsquo;s
       <p>Halve the data.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">halves</span><span class="p">():</span>
+      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">branch</span><span class="p">():</span>
     <span class="n">data1</span><span class="o">=</span> <span class="n">DATA</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">file</span><span class="p">))</span>
     <span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">half</span><span class="p">(</span><span class="n">data1</span><span class="p">,</span><span class="n">data1</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
-    <span class="n">best</span><span class="p">,</span><span class="n">rest</span><span class="p">,</span><span class="n">n</span> <span class="o">=</span> <span class="n">halves</span><span class="p">(</span><span class="n">data1</span><span class="p">,</span><span class="n">stop</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">best</span><span class="p">,</span><span class="n">rest</span><span class="p">,</span><span class="n">n</span> <span class="o">=</span> <span class="n">branch</span><span class="p">(</span><span class="n">data1</span><span class="p">,</span><span class="n">stop</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">d2h</span><span class="p">(</span><span class="n">data1</span><span class="p">,</span><span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span></pre></div>
     </div>
   </div>
