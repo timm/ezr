@@ -403,21 +403,24 @@ def btw(*args, **kwargs):
 
 def main() -> None: 
   "Update `the` from the command line; call the start-up command `the.Run`."
-  cli(the.__dict__); run(the.Run)
+  cli(the.__dict__)
+  run(the.Run)
 
 def run(s:str) -> int:
-  "Reset the seed. Run `eg[s]()`. Afterwards, restore old settings. Return '1' on failure."
-  def run1():
-    try:
-      return getattr(eg, s)()
-    except Exception:
-      print(traceback.format_exc())
-      return False
+  "Reset the seed. Run `eg.s()`. Afterwards, restore old settings. Return '1' on failure."
   reset = {k:v for k,v in the.__dict__.items()}
   random.seed(the.seed)
-  out = run1()
+  out = run1(s)
   for k,v in reset.items(): the.__dict__[k]=v
   return out
+
+def run1(s:str) -> False | None:
+  "Return either the result for running `eg.s()`, or `False` (if there was a crash)."
+  try:
+    return getattr(eg, s)()
+  except Exception:
+    print(traceback.format_exc())
+    return False
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Start-up Actions
