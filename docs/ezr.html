@@ -9,7 +9,7 @@
 <div id='container'>
   <div id="background"></div>
   <div class='section'>
-    <div class='docs'><a href="http://github.com/timm/ezr">home</a> | <a href="https://github.com/timm/ezr/blob/main/CONRIBUTE.md">contribute</a> | <a href="http://github.com/timm/ezr/issues">issues</a> | <a href="https://github.com/timm/ezr/blob/main/LICENSE.md">issues</a><hr> <h1>ezr.py</h1></div>
+    <div class='docs'><a href="http://github.com/timm/ezr">home</a> | <a href="https://github.com/timm/ezr/blob/main/CONRIBUTE.md">contribute</a> | <a href="http://github.com/timm/ezr/issues">issues</a> | <a href="https://github.com/timm/ezr/blob/main/LICENSE.md">license</a><hr><img src="img/ezr.png" align=right width=150><h1>ezr.py</h1></div>
   </div>
   <div class='clearall'>
   <div class='section' id='section-0'>
@@ -19,25 +19,27 @@
       </div>
       <!-- vim: set ts=2 sw=2 sts=2 et: -->
 
-<pre><code><img src="img/ezr.png" width=490><br clear=all>ezr.py :  an experiment in easier explainable AI. Less is more.    
+<pre><code>ezr.py : an experiment in easier explainable AI (less is more).    
 (C) 2024 Tim Menzies (timm@ieee.org) BSD-2 license.
 
 OPTIONS:    
-  -a --any    #todo's to explore             = 100    
-  -d --decs   #decimals for showing floats   = 3    
-  -f --file   csv file for data              = ../data/misc/auto93.csv    
-  -F --Far    how far to seek faraway        = 0.8    
-  -k --k      bayes low frequency hack #1    = 1    
-  -H --Half   #rows for searching for poles  = 128    
-  -l --label  initial number of labelings    = 4    
-  -L --Last   max allow labelings            = 30    
-  -m --m      bayes low frequency hack #2    = 2    
-  -n --n      tinyN                          = 12    
-  -N --N      smallN                         = 0.5    
-  -p --p      distance function coefficient  = 2    
-  -R --Run    start up action method         = help    
-  -s --seed   random number seed             = 1234567891    
-  -x --xys    max #bins in discretization    = 16
+  -a --any     #todo's to explore             = 100    
+  -d --decs    #decimals for showing floats   = 3    
+  -f --file    csv file for data              = ../data/misc/auto93.csv    
+  -F --Far     how far to seek faraway        = 0.8    
+  -h --help    show help                      = False
+  -k --k       bayes low frequency hack #1    = 1    
+  -H --Half    #rows for searching for poles  = 128    
+  -l --label   initial number of labelings    = 4    
+  -L --Last    max allow labelings            = 30    
+  -m --m       bayes low frequency hack #2    = 2    
+  -n --n       tinyN                          = 12    
+  -N --N       smallN                         = 0.5    
+  -p --p       distance function coefficient  = 2    
+  -R --Run     start up action method         = help    
+  -s --seed    random number seed             = 1234567891    
+  -v --version show version                  = False
+  -x --xys     max #bins in discretization    = 16
 </code></pre>
 <p>(FYI our seed is an 
 <a href="https://numbersaplenty.com/1234567891">odious, apocalyptic, deficient, pernicious, polite, prime</a> 
@@ -165,16 +167,18 @@ number.)      </p>
         <a class='octothorpe' href='#section-9'>#</a>
       </div>
       <p>All the settings in <code>the</code>  can be updated via command line. <br />
-For dictionary <code>d</code> with key <code>key</code>, if command line has <code>-k X</code>, then d[key]=coerce(X).
-For dictionary key <code>k</code>, if command line has <code>-k X</code>, then <code>d[k]=coerce(X)</code>.</p>
+If <code>the</code> has a key <code>xxx</code>, and if command line has <code>-x v</code>, then the[&ldquo;xxx&rdquo;]=coerce(v)<code>.
+Boolean settings don't need an argument (we just flip the default).
+For dictionary key</code>k<code>, if command line has</code>-k X<code>, then</code>d[k]=coerce(X)`.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">d</span><span class="p">:</span><span class="nb">dict</span><span class="p">):</span>
   <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="n">v</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">arg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">):</span>
+      <span class="n">after</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="n">c</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">c</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
       <span class="k">if</span> <span class="n">arg</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;-&quot;</span><span class="o">+</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;--&quot;</span><span class="o">+</span><span class="n">k</span><span class="p">]:</span>
-        <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">coerce</span><span class="p">(</span><span class="s2">&quot;false&quot;</span> <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="s2">&quot;true&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="s2">&quot;true&quot;</span> <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="s2">&quot;false&quot;</span> <span class="k">else</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="n">c</span><span class="o">+</span><span class="mi">1</span><span class="p">]))</span></pre></div>
+        <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">coerce</span><span class="p">(</span><span class="s2">&quot;False&quot;</span> <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="s2">&quot;True&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="s2">&quot;True&quot;</span> <span class="k">if</span> <span class="n">v</span><span class="o">==</span><span class="s2">&quot;False&quot;</span> <span class="k">else</span> <span class="n">after</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1051,7 +1055,9 @@ algorithm.</p>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> 
   <span class="n">cli</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
-  <span class="n">run</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Run</span><span class="p">)</span></pre></div>
+  <span class="k">if</span>   <span class="n">the</span><span class="o">.</span><span class="n">help</span><span class="p">:</span> <span class="n">eg</span><span class="o">.</span><span class="n">help</span><span class="p">()</span>
+  <span class="k">elif</span> <span class="n">the</span><span class="o">.</span><span class="n">version</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ezr&quot;</span><span class="p">,</span><span class="n">__version__</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span> <span class="n">run</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Run</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>

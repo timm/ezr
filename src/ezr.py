@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 -B
 # <!-- vim: set ts=2 sw=2 sts=2 et: -->
 """
-    ezr.py :  an experiment in easier explainable AI. Less is more.    
+    ezr.py : an experiment in easier explainable AI (less is more).    
     (C) 2024 Tim Menzies (timm@ieee.org) BSD-2 license.    
         
     OPTIONS:    
@@ -20,8 +20,8 @@
       -p --p       distance function coefficient  = 2    
       -R --Run     start up action method         = help    
       -s --seed    random number seed             = 1234567891    
-      -v --version show version                  = False
-      -x --xys     max #bins in discretization    = 16    
+      -v --version show version                   = False
+      -x --xys     max #bins in discretization    = 10    
 """
 # (FYI our seed is an 
 # [odious, apocalyptic, deficient, pernicious, polite, prime](https://numbersaplenty.com/1234567891) 
@@ -63,7 +63,8 @@ def coerce(s:str) -> atom:
 the=o(**{m[1]:coerce(m[2]) for m in re.finditer(r"--(\w+)[^=]*=\s*(\S+)",__doc__)})
 
 # All the settings in `the`  can be updated via command line.   
-# For dictionary `d` with key `key`, if command line has `-k X`, then d[key]=coerce(X).
+# If `the` has a key `xxx`, and if command line has `-x v`, then the["xxx"]=coerce(v)`.
+# Boolean settings don't need an argument (we just flip the default).
 def cli(d:dict):
   "For dictionary key `k`, if command line has `-k X`, then `d[k]=coerce(X)`."
   for k,v in d.items():
@@ -98,7 +99,7 @@ def NUM(txt=" ",at=0,has=None) -> num:
 
 def XY(at,txt,lo,hi=None,ys=None) -> xy:
   "`ys` counts symbols seen in one column between `lo`.. `hi` of another column."
-  return o(this=XY,n=0,at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
+  return o(this=XY, n=0, at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## CRUD (create, read, update, delete)
@@ -167,19 +168,19 @@ def add2num(i:num, x:any, n:int) -> None:
 def add2xy(i:xy, x: int | float , y:atom) -> None:
   "Update an XY with `x` and `y`."
   if x != "?":
-    i.n  += 1
-    i.lo =  min(i.lo, xy.lo)
-    i.hi =  max(i.hi, xy.hi)
-    xy.ys[y] = xy.ys[y].get(y,0) + 1
+    i.n    += 1
+    i.lo    =  min(i.lo, x)
+    i.hi    =  max(i.hi, x)
+    i.ys[y] = i.ys.get(y,0) + 1
 
 def xys2xy(*xys : list[xy]) -> xy:
   "Fuse together many XYs into one XY."
   out = XY(xys[0].at, xys[0].txt, xys[0].lo)
-  for xy in xys:
-    out.n += xy.n
-    out.lo =  min(out.lo, xy.lo)
-    out.hi =  max(out.hi, xy.hi)
-    for y,n in xy.ys.items(): out.ys[y] = out.ys[y].get(y,0) + n
+  for xy1 in xys:
+    out.n += xy1.n
+    out.lo = min(out.lo, xy1.lo)
+    out.hi = max(out.hi, xy1.hi)
+    for y,n in xy1.ys.items(): out.ys[y] = out.ys.get(y,0) + n
   return out
 
 # ### Read (read in from another source)
@@ -229,14 +230,14 @@ def discretize(i:col, datas:classes) -> list[xy] :
   [send2xy(i, r[i.at], klass, tmp) for klass,rows1 in datas.items() for r in rows1]
   tmp =  sorted(tmp.values(), key=lambda z:z.lo)
   small = sum(len(rs) for rs in datas.values()) / the.xys
-  return tmp if col.this is SYM else merges(tmp, small)
+  return tmp if i.this is SYM else span(merges(tmp, small))
 
 def send2xy(i:col,x:atom, y:str, d:dict) -> None:
   "Store `x,y` in the right part of `d`. Used by `discretize()`."
   if x != "?":
-   k = x if col.this is SYM else int(the.xys * norm(i,x))
+   k = x if i.this is SYM else int(the.xys * norm(i,x))
    k = min(k, the.xys - 1) # so we don't get one lonely item at max
-   d[k] = d[k] if k in d else xy(col.at,col.txt,x)
+   d[k] = d[k] if k in d else XY(i.at,i.txt,x)
    add2xy(d[k],x,y)
 
 def merges(b4, small):
@@ -255,11 +256,18 @@ def merges(b4, small):
 
 def merge(xy1: xy, xy2: xy, small:int) -> xy | None:
   "Return the merge  if the whole is better than the parts. Used  by `merges()`."
-  xy3 = xys2xy(xy1,xy2)
+  out = xys2xy(xy1,xy2)
   e1  = ent(xy1.ys)
   e2  = ent(xy2.ys)
-  e3  = ent(xy3.ys)
-  if xy1.n < small or xy2.n < small or e3 <= (xy1.n1*e1 + xy2.n*e2)/xy3.n: return xy3 
+  e3  = ent(out.ys)
+  if xy1.n < small or xy2.n < small or e3 <= (xy1.n*e1 + xy2.n*e2)/out.n: return out 
+
+def span(xys : list[xy]) -> list[xy]:
+  "Ensure there are no gaps in the `x` ranges of `xys`."
+  for j in range(1,len(xys)):  xys[j].lo = xys[j-1].hi
+  xys[0].lo  = -1E30
+  xys[-1].hi =  1E30
+  return xys
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Distances
@@ -535,10 +543,10 @@ class eg:
     print(the.file)
 
   def discretize():
-    "Show some distance calcs."
+    "Find useful ranges."
     n = 30
     data1 = DATA(csv(the.file), rank=True)
-    datas = dict(best=data1.rows[:n], rest=random.choices(data1.rows[n:], k=4*n))
+    datas = dict(best=data1.rows[:n], rest=(data1.rows[-4*n:]))
     for xcol in data1.cols.x:
       print("")
       [print(xy1) for xy1 in discretize(xcol, datas)]
