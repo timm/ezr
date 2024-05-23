@@ -35,6 +35,10 @@ from fileinput import FileInput as file_or_stdin
 from typing import Any as any
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
+# ## Conventions
+# 
+# - Any function starting with `_` is private; i.e. should not be called by outside functions.
+#--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Types
 
 class o:
@@ -151,11 +155,11 @@ def add2col(i:col, x:any, n=1) -> any:
   "`n` times, update NUM or SYM with one item. Used by `add2data()`." 
   if x != "?":
     i.n += n
-    if i.this is NUM: add2num(i,x,n)
+    if i.this is NUM: _add2num(i,x,n)
     else: i.has[x] = i.has.get(x,0) + n
   return x
 
-def add2num(i:num, x:any, n:int) -> None:
+def _add2num(i:num, x:any, n:int) -> None:
   "`n` times, update a NUM with one item. Used by `add2col()`."
   i.lo = min(x, i.lo)
   i.hi = max(x, i.hi)
@@ -224,23 +228,23 @@ def norm(i:num,x) -> float:
 # [ChiMerge](https://sci2s.ugr.es/keel/pdf/algorithm/congreso/1992-Kerber-ChimErge-AAAI92.pdf)
 # algorithm.
 
-def discretize(i:col, datas:classes) -> list[xy] :
-  "Find good ranges for the i-th column within `datas`."
+def discretize(i:col, klasses:classes) -> list[xy] :
+  "Find good ranges for the i-th column within `klasses`."
   tmp = {}
-  [send2xy(i, r[i.at], klass, tmp) for klass,rows1 in datas.items() for r in rows1]
+  [_divides(i, r[i.at], klass, tmp) for klass,rows1 in klasses.items() 
+                                   for r in rows1 if r[i.at] != "?"]
   tmp =  sorted(tmp.values(), key=lambda z:z.lo)
-  small = sum(len(rs) for rs in datas.values()) / the.xys
-  return tmp if i.this is SYM else span(merges(tmp, small))
+  small = sum(len(rs) for rs in klasses.values()) / the.xys
+  return tmp if i.this is SYM else _span(_merges(tmp, small))
 
-def send2xy(i:col,x:atom, y:str, d:dict) -> None:
+def _divides(i:col,x:atom, y:str, d:dict) -> None:
   "Store `x,y` in the right part of `d`. Used by `discretize()`."
-  if x != "?":
-   k = x if i.this is SYM else int(the.xys * norm(i,x))
-   k = min(k, the.xys - 1) # so we don't get one lonely item at max
-   d[k] = d[k] if k in d else XY(i.at,i.txt,x)
-   add2xy(d[k],x,y)
+  k = x if i.this is SYM else int(the.xys * norm(i,x))
+  k = min(k, the.xys - 1) # so we don't get one lonely item at max
+  d[k] = d[k] if k in d else XY(i.at,i.txt,x)
+  add2xy(d[k],x,y)
 
-def merges(b4, small):
+def _merges(b4, small):
   "Try merging adjacent items in `b4`. If successful, repeat. Used by `discretize()`."
   j, now  = 0, []
   while j <  len(b4):
@@ -252,7 +256,7 @@ def merges(b4, small):
         j = j+1  # if i can merge, jump over the merged item
     now += [a]
     j += 1
-  return b4 if len(now) == len(b4) else merges(now, small)
+  return b4 if len(now) == len(b4) else _merges(now, small)
 
 def merge(xy1: xy, xy2: xy, small:int) -> xy | None:
   "Return the merge  if the whole is better than the parts. Used  by `merges()`."
@@ -262,8 +266,8 @@ def merge(xy1: xy, xy2: xy, small:int) -> xy | None:
   e3  = ent(out.ys)
   if xy1.n < small or xy2.n < small or e3 <= (xy1.n*e1 + xy2.n*e2)/out.n: return out 
 
-def span(xys : list[xy]) -> list[xy]:
-  "Ensure there are no gaps in the `x` ranges of `xys`."
+def _span(xys : list[xy]) -> list[xy]:
+  "Ensure there are no gaps in the `x` ranges of `xys`. Used by `discretize()`."
   for j in range(1,len(xys)):  xys[j].lo = xys[j-1].hi
   xys[0].lo  = -1E30
   xys[-1].hi =  1E30
@@ -312,21 +316,21 @@ def branch(i:data, region:rows=None, stop=None, rest=None, evals=1, before=None)
 def half(i:data, region:rows, sortp=False, before=None) -> tuple[rows,rows,row]:
   "Split the `region` in half according to each row's distance to two distant points. Used by `branch()`."
   mid = int(len(region) // 2)
-  left,right,C = twoFaraway(i, region, sortp=sortp, before=before)
+  left,right,C = _twoFaraway(i, region, sortp=sortp, before=before)
   project = lambda row1: (dists(i,row1,left)**2 + C**2 - dists(i,row1,right)**2)/(2*C)
   tmp = sorted(region, key=project)
   return tmp[:mid], tmp[mid:], left
 
-def twoFaraway(i:data, region:rows,before=None, sortp=False) -> tuple[row,row,float]:
+def _twoFaraway(i:data, region:rows,before=None, sortp=False) -> tuple[row,row,float]:
   "Find two distant points within the `region`. Used by `half()`." 
   region = random.choices(region, k=min(the.Half, len(region)))
-  x = before or faraway(i, random.choice(region), region)
-  y = faraway(i, x, region)
+  x = before or _faraway(i, random.choice(region), region)
+  y = _faraway(i, x, region)
   if sortp and d2h(i,y) < d2h(i,x): x,y = y,x
   return x, y,  dists(i,x,y)
 
-def faraway(i:data, r1:row, region:rows) -> row:
-  "Find something far away from `r1` with the `region`. Used by `twoFaraway()`."
+def _faraway(i:data, r1:row, region:rows) -> row:
+  "Find something far away from `r1` with the `region`. Used by `_twoFaraway()`."
   farEnough = int( len(region) * the.Far) # to avoid outliers, don't go 100% far away
   return neighbors(i,r1, region)[farEnough]
 
@@ -341,9 +345,9 @@ def loglikes(i:data, r:row, nall:int, nh:int) -> float:
 
 def like(i:col, x:any, prior:float) -> float:
   "Likelihood of `x` belonging to a col. Used by `loglikes()`."  
-  return like4num(i,x) if i.this is NUM else (i.has.get(x,0) + the.m*prior) / (i.n+the.m)
+  return _like4num(i,x) if i.this is NUM else (i.has.get(x,0) + the.m*prior) / (i.n+the.m)
 
-def like4num(i:num,x):
+def _like4num(i:num,x):
   "Likelihood of `x` belonging to a NUM. Used by `like()`."
   v     = div(i)**2 + 1E-30
   nom   = math.e**(-1*(x - mid(i))**2/(2*v)) + 1E-30
@@ -355,12 +359,12 @@ def like4num(i:num,x):
 
 def smo(i:data, score=lambda B,R: B-R):
   "Sequential model optimization."
-  def ranked(lst:rows) -> rows:
-    "sort `lst` by distance to heaven"
+  def _ranked(lst:rows) -> rows:
+    "Sort `lst` by distance to heaven. Called by `_smo1()`."
     return sorted(lst, key = lambda r:d2h(i,r))
 
-  def guess(todo:rows, done:rows) -> rows:
-    "Divide `done` into `best`,`rest`. use those to guess the order of unlabelled rows."
+  def _guess(todo:rows, done:rows) -> rows:
+    "Divide `done` into `best`,`rest`. use those to guess the order of unlabelled rows. Called by `_smo1()`."
     cut  = int(.5 + len(done) ** the.N)
     best = clone(i, done[:cut])
     rest = clone(i, done[cut:])
@@ -369,17 +373,17 @@ def smo(i:data, score=lambda B,R: B-R):
     random.shuffle(todo) # optimization: only sort a random subset of todo 
     return sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
 
-  def smo1(todo:rows, done:rows) -> rows:
+  def _smo1(todo:rows, done:rows) -> rows:
     "Guess the `top`  unlabeled row, add that to `done`, resort `done`, and repeat"
     for _ in range(the.Last - the.label):
       if len(todo) < 3: break
-      top,*todo = guess(todo, done)
+      top,*todo = _guess(todo, done)
       done += [top]
-      done = ranked(done)
+      done = _ranked(done)
     return done
 
   random.shuffle(i.rows) # remove any  bias from older runs
-  return smo1(i.rows[the.label:], ranked(i.rows[:the.label]))
+  return _smo1(i.rows[the.label:], _ranked(i.rows[:the.label]))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Misc Functions
@@ -401,6 +405,7 @@ def bore(d,best=True,BEST=1,REST=1):
 def show(x:any) -> any:
   "Some pretty-print rules."
   it = type(x)
+  if it == o and x.this is XY: return showXY(x)
   if it == float:  return round(x,the.decs)
   if it == list:   return [show(v) for v in x]
   if it == dict:   return "("+' '.join([f":{k} {show(v)}" for k,v in x.items()])+")"
@@ -408,6 +413,12 @@ def show(x:any) -> any:
   if it == str:    return '"'+str(x)+'"'
   if callable(x):  return x.__name__
   return x
+
+def showXY(i:xy):
+  if i.lo == -1E30: return f"{i.txt} < {i.hi}"
+  if i.hi ==  1E30: return f"{i.txt} >= {i.lo}"
+  if i.lo == i.hi:  return f"{i.txt} == {i.lo}"
+  return f"{i.lo} <= {i.txt} < {i.hi}"
 
 def btw(*args, **kwargs):
   "Print to standard error, flush standard error, do not print newlines."
@@ -427,11 +438,11 @@ def run(s:str) -> int:
   "Reset the seed. Run `eg.s()`, then restore old settings. Return '1' on failure. Called by `main()`."
   reset = {k:v for k,v in the.__dict__.items()}
   random.seed(the.seed)
-  out = run1(s)
+  out = _run1(s)
   for k,v in reset.items(): the.__dict__[k]=v
   return out
 
-def run1(s:str) -> False:
+def _run1(s:str) -> False:
   "Return either the result for running `eg.s()`, or `False` (if there was a crash). Called by `run()`."
   try:
     return getattr(eg, s)()
@@ -478,7 +489,7 @@ class eg:
     s= adds(SYM(),"aaaabbc")
     print(show(dict(div=div(s), mid=mid(s))))
 
-  def datas():
+  def klasses():
     "Show sorted rows from a DATA."
     data1= DATA(csv(the.file), rank=True)
     print(show(stats(data1, what=data1.cols.y)))
@@ -544,12 +555,13 @@ class eg:
 
   def discretize():
     "Find useful ranges."
-    n = 30
     data1 = DATA(csv(the.file), rank=True)
-    datas = dict(best=data1.rows[:n], rest=(data1.rows[-4*n:]))
+    n = int(len(data1.rows)**.5)
+    klasses = dict(best=data1.rows[:n], rest=(data1.rows[n:]))
     for xcol in data1.cols.x:
       print("")
-      [print(xy1) for xy1 in discretize(xcol, datas)]
+      for xy1 in discretize(xcol, klasses):
+        print(show(bore(xy1.ys,"best",n,4*n)),f"{show(xy1):20}",xy1.ys,sep="\t") 
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 if __name__ == "__main__": main()
