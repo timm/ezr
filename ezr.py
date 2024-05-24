@@ -103,9 +103,9 @@ def XY(at,txt,lo,hi=None,ys=None) -> xy:
   "`ys` counts symbols seen in one column between `lo`.. `hi` of another column."
   return o(this=XY, n=0, at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
 
-def NODE(x,left=None,right=None):
+def NODE(klasses: classes, left=None, right=None):
   "NODEs are parts of binary trees."
-  return o(x=x, left=left, right=right)
+  return o(classes=klasses, left=left, right=right)
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## CRUD (create, read, update, delete)
@@ -225,6 +225,12 @@ def norm(i:num,x) -> float:
 def isLeaf(i:node):
   "True if a node has no leaves."
   return i.left==i.right==None
+
+def selects(i:xy, r:row) -> bool:
+  "Returns true if a row falls within the lo/hi range of an XY."
+  x = r[i.at]
+  return x=="?" or i.lo==x if i.lo==i.hi else i.lo <= x < i.hi
+
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Discretization
 # Divide a range into many bins. Iteratively merge adjacent bins if
@@ -281,39 +287,30 @@ def _span(xys : list[xy]) -> list[xy]:
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Trees
 
-def tree(i:data, klasses:classes, stop:int=4) -> node:
-  cuts  = [cut for col1 in i.cols.x for cut in discretize(col1,klasses)]
-  return _grow(klasses,cuts,stop, 0,1E30)
+def tree(i:data, klasses:classes, score:callable, stop:int=4) -> node:
+  def _grow(klasses:classes, lvl:int=1, above:int=1E30) -> node:
+    counts = {k:len(rows1) for k,rows1 in klasses.items()}
+    total  = sum(n for n in counts.values())
+    most   = max(counts, key=counts.get))
+    return _branch(NODE(klasses), lvl, above, total, most)
 
-def _grow(klasses:classes, cuts, stop:int, lvl:int, above:int) -> node:
-  counts,total = classCounts(klasses)
-  most   = max(counts, key=counts.get)
-  node = NODE(klasses) 
-  if total > 2*stop and total < above and most < total: #most==total means "purity" (all of one class)
-    cut = max(cuts,  key=lambda cut0: _minEntMaxSupport( _split(cut,klasses)[0]), total)
-    left,right = _split(cut,klasses)
-    node.left  = _grow(left,  stop, lvl+1, total)
-    node.right = _grow(right, stop, lvl+1, total)
-  return node
+  def _branch(here:node, lvl:int, above:int, total:int, most:int) -> node:
+    if total > 2*stop and total < above and most < total: #most==total means "purity" (all of one class)
+      cut = max(cuts,  key=lambda cut0: score(cut0, here.klasses))
+      left,right = _split(cut, here.klasses)
+      here.left  = _grow(left,  lvl+1, total)
+      here.right = _grow(right, lvl+1, total)
+    return here
 
-def  _minEntMaxSupport(klasss,total):
-  counts,myTotal = classCounts(klasses)
-  return (myTotal / total) /  ent(counts)
+  cuts = [cut for col1 in i.cols.x for cut in discretize(col1,klasses)]
+  return _grow(klasses)
 
-def classCounts(klasses:classes):
-  d= {klass:len(rows1) for klass,rows1 in klasses.items()}
-  return d, sum(len(rows1) for rows1 in d.values())
-
-def _split(cut:xy, klasses:classes) -> tuple[classes,classes]
+def _split(cut:xy, klasses:classes) -> tuple[classes,classes]:
   left  = {klass:[] for klass in klasses}
   right = {klass:[] for klass in klasses}
   for klass,rows1 in klasses.items():
     [(left if i.selects(row1) else right)[klass].append(row1) for row1 in rows1]
   return left,right
-
-def selects(i:xy, r:row) -> bool:
-  x = r[i.at]
-  return x=="?" or i.lo==x if i.lo==i.hi else i.lo <= x < i.hi
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Distances
