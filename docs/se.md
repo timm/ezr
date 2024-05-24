@@ -2,6 +2,9 @@
 
 # Just enough SE
 
+## Randomizes algorihtms
+
+seed
 ### Idioms
 #### Config from __doc__
 #### Types

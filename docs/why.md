@@ -54,4 +54,42 @@ can actually be described by a _comparatively small number of variables_.
 [^zhu2005semi]: ss
 
 
+## Why do we need it
 
+data scarcity:
+what happens if you start working in the long tail:
+No “Zero-Shot” Without Exponential Data: Pretraining Concept
+Frequency Determines Multimodal Model Performance
+https://arxiv.org/pdf/2404.04125
+
+human cognitive limits 7+- 2
+
+data errors:
+the bad labeling problem
+
+# Why does it work?
+
+The results of this code are strage: large problem spaces can be explored with just a few queries.
+Which is odd since conventional wisdom is that learnign requires a lot of data:
+
+TABLE
+
+so we are cheating int aht we are handling asoewhat special case:
+
+
+- Not ebst, jsut one statistical indistinguishable from best
+- not n good but one good
+- optimzation, not classification or regression (\*)
+- even though we cannot access Y, we cana ccess x
+
+Also, our data exhibits an itneresting keys propertty
+- look at the generated ranges. very few good 
+
+That said, this special case covers a wide number of case studies:
+
+- HPO
+- config
+- requirements discussion
+- all the tasks explored by sbse
+
+(\*) but we thing we can do regresions/classification using NN techniques.

@@ -14,12 +14,6 @@ the o class
 
 ### __repr___
 
-## Regular Expressions
+ss.sbyecode=true
 
-
-## Comprehensions
-
-### List Comprehensions
-
-### Dictionary Comprehensions
 

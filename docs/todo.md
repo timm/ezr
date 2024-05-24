@@ -12,6 +12,8 @@
 | Cart ||sktool | |
 | Kmeans ||sktool | |
 | apriori || | |
+| multi-regression |apriori| | |
+| multi-classification |apriori| | |
 | DATA synthesis | | |  |
 | Anomaly detection ||synthesis | |
 | Fairness || synthesis  | |
@@ -22,6 +24,12 @@
 |-----|--|------|----|
 |Text tool| tokeniztion, stemming, markov chains, tf\*idf | |
 |SktooL| translate data formats scikitlearn and DATA |
+|evalsym| eval stats for classifiers |
+|evalnum| eval stats for classifiers||
+|evalfake| eval stats for data synthesis||
+|missingy| handle case where the y values are actually empty| 
+|missingx| handle case where some of the x columns are not known e.g. multiregression||
+
 
 ## Reading
 
@@ -29,7 +37,6 @@
 |-----|--|------|----|
 |acquisition functions| what acqusition functions are in the literature?| |
 |sample sizes| who has what sample sizes for "limited learning"? | |
-
 
 ## Extend
 

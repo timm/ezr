@@ -376,8 +376,8 @@ def _faraway(i:data, r1:row, region:rows) -> row:
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Likelihoods
 
-def loglikes(i:data, r:row, nall:int, nh:int) -> float:
-  "Likelihood of a `row` belonging to a DATA. ."
+def loglikes(i:data, r:row|dict, nall:int, nh:int) -> float:
+  "Likelihood of a `row` belonging to a DATA."
   prior = (len(i.rows) + the.k) / (nall + the.k*nh)
   likes = [like(c, r[c.at], prior) for c in i.cols.x if r[c.at] != "?"]
   return sum(math.log(x) for x in likes + [prior] if x>0)
@@ -607,23 +607,11 @@ if __name__ == "__main__": main()
 
 # ## Conventions in this code
 
-# - **Software 2.0**: SE projects are now divided into team1, team2 where team1 does convectional SE, while team2
-#   is in charge of the care and feeding on an optimizer/model builder
-# - **Less is more:** The model is already there, within the data.
-#     We  just have to chisel away the superfluous material. 
-# - **Labelling is a problem:** Do everything we can, with fewer labels.
-# - **Trees are just recursive ranges**
-# - **Naive Bayes is just N DATA**
-# - **Open science:** Used DOIs to publish papers, and the scripts and data used in this papers.
-# - **Worse is better:** Simpler code has better survival characteristics than the-right-thing.
-# - **Open source:** Make code freely usable.
-# - **"Separate policy from mechanism:"** Make much use or domain-specific notations (e.g. regx, our
-#   __doc__ strings, our little language for column headers).
 # - **Doc, Config:** At top of file, add in all settings to the __doc__ string. 
 #   Parse that string to create `the` global settings.
 #   Also, every function gets a one line doc string. For documentation longer than one line,
 #   add this outside the function.
-# - **TDD:** At end of file, add in demos/tests as methods of the `eg` class 
+# - **TDD:** Lots of little tests. At end of file, add in demos/tests as methods of the `eg` class 
 #   Report a test failure by return `False`. Note that `eg.all()` will run all demos/tests
 #   and return the number of failures to the operating system.
 # - **Composition:** Allow for reading from standard input (so this code can be used in a pipe).
