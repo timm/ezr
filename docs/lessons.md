@@ -57,15 +57,7 @@
 
 #### CLI
 
-### Type hints
-type hints
-- types. errors. comilation
-- documentatiion
-- complexities (nested types)
-
 ss.sbyecode=true
-- interretation vs compilation
-- problems with traspiling
 
 ## Randomizes algorihtms
 
