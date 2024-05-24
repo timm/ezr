@@ -1,3 +1,10 @@
+#.   
+#.   .-.
+#.  (o o)     go ahead ...
+#.  | O \     ... make my day
+#.   \   \
+#.    `~~~'
+
 HOME       = <a href="http://github.com/timm/ezr">home</a>
 CONTRIBUTE = <a href="https://github.com/timm/ezr/blob/main/CONRIBUTE.md">contribute</a>
 LICENSE    = <a href="https://github.com/timm/ezr/blob/main/LICENSE.md">license</a>
@@ -17,8 +24,10 @@ Root=$(shell git rev-parse --show-toplevel)
 
 help      :  ## show help
 	awk 'BEGIN {FS = ":.*?## "; print "\nmake [WHAT]" } \
-			/^[^[:space:]].*##/ {printf "   \033[36m%-20s\033[0m : %s\n", $$1, $$2} \
-			' $(MAKEFILE_LIST)
+			/^[^[:space:]].*##/ {printf "   \033[36m%-18s\033[0m : %s\n", $$1, $$2} ' \
+		$(MAKEFILE_LIST)
+	awk 'sub(/#\. /,"") { printf "  \033[36m%-20s\033[0m \n", $$0}' Makefile
+	
 
 saved    : ## save
 	git commit -am saved; git push; git status
@@ -29,17 +38,17 @@ name:
 install   : ## install as  a local python package
 	pip install -e  . --break-system-packages 
 
-docs/index.html :docs/ezr.html ## install our html doco
+docs/index.html :docs/ezr.html ## make docs/index.html
 	cp $< $@
 
-docs/%.html : %.py
+docs/%.html : %.py ## .py --> .html
 	gawk -f etc/ab2ba.awk $< > docs/$<
 	cd docs; pycco -d . $<; rm $<
 	echo "$(CSS)" >> docs/pycco.css
 	sed -i '' 's?<h1>?$(MENU)<hr>$(IMAGE)&?' $@
 	@open $@
 
-~/tmp/%.pdf: %.py  ## .py ==> .pdf
+~/tmp/%.pdf: %.py  ## .py --> .pdf
 	mkdir -p $(dirname $@)
 	echo "pdf-ing $@ ... "
 	a2ps                 \
