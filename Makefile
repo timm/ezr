@@ -2,7 +2,9 @@ HOME       = <a href="http://github.com/timm/ezr">home</a>
 CONTRIBUTE = <a href="https://github.com/timm/ezr/blob/main/CONRIBUTE.md">contribute</a>
 LICENSE    = <a href="https://github.com/timm/ezr/blob/main/LICENSE.md">license</a>
 ISSUES     = <a href="http://github.com/timm/ezr/issues">issues</a>
+
 MENU       = $(HOME) | $(CONTRIBUTE) | $(ISSUES) | $(LICENSE)
+
 IMAGE      = <img src="img/ezr.png" align=right width=150>
 CSS        = p { text-align: right;} pre,code {font-size: x-small;}
 
@@ -15,7 +17,7 @@ Root=$(shell git rev-parse --show-toplevel)
 
 help      :  ## show help
 	awk 'BEGIN {FS = ":.*?## "; print "\nmake [WHAT]" } \
-			/^[^[:space:]].*##/ {printf "   \033[36m%-15s\033[0m : %s\n", $$1, $$2} \
+			/^[^[:space:]].*##/ {printf "   \033[36m%-20s\033[0m : %s\n", $$1, $$2} \
 			' $(MAKEFILE_LIST)
 
 saved    : ## save
