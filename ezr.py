@@ -261,12 +261,18 @@ def wanted(i:want, d:dict) -> float :
 
 def discretize(i:col, klasses:classes, want: callable) -> list[xy] :
   "Find good ranges for the i-th column within `klasses`."
-  d = {}
-  [_divides(i, r[i.at], klass, d) for klass,rows1 in klasses.items()
+  bins = {}
+  [_divideIntoBins(i, r[i.at], klass, bins) for klass,rows1 in klasses.items()
                                   for r in rows1 if r[i.at] != "?"]
-  return _combine(col, sorted(d.values(), key=lambda z:z.lo),
+  return _combine(col, sorted(bins.values(), key=lambda z:z.lo),
                        sum(len(rs) for rs in klasses.values()) / the.xys,
                        want)
+
+def _divideIntoBins(i:col,x:atom, y:str, bins:dict) -> None:
+  "Store `x,y` in the right part of `bins`. Used by `discretize()`."
+  k = x if i.this is SYM else min(the.xys -1, int(the.xys * norm(i,x)))
+  bins[k] = bins[k] if k in bins else XY(i.at,i.txt,x)
+  add2xy(bins[k],x,y)
 
 def _combine(i:col, xys: list[xy], small, want) -> list[xy] :
   if col.this is NUM:
@@ -274,13 +280,6 @@ def _combine(i:col, xys: list[xy], small, want) -> list[xy] :
     n   = the.wanted * sorted(wanted(want,xy1.ys) for xys1 in xys])[-1]
     xys = _merges(xys, lambda a,b: wanted(want, a.ys) < n wanted(want, b.ys) < n)
   return xys
-
-def _divides(i:col,x:atom, y:str, d:dict) -> None:
-  "Store `x,y` in the right part of `d`. Used by `discretize()`."
-  k = x if i.this is SYM else int(the.xys * norm(i,x))
-  k = min(k, the.xys - 1) # so we don't get one lonely item at max
-  d[k] = d[k] if k in d else XY(i.at,i.txt,x)
-  add2xy(d[k],x,y)
 
 def _merges(b4, fun):
   "Try merging adjacent items in `b4`. If successful, repeat. Used by `_combine()`."
