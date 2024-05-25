@@ -7,9 +7,8 @@ Then your block format will be
 This is good for copying in code blocks:
 
 ```python
-ef function():
+def function():
     """documentation string"""
-
     if True:
         print True
     else:
