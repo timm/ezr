@@ -406,7 +406,7 @@ def _like4num(i:num,x):
   return min(1, nom/(denom + 1E-30))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
-# ## Sequential model optimization
+# ## Optimization
 
 def smo(i:data, score=lambda B,R: B-R):
   "Sequential model optimization."
@@ -415,7 +415,7 @@ def smo(i:data, score=lambda B,R: B-R):
     return sorted(lst, key = lambda r:d2h(i,r))
 
   def _guess(todo:rows, done:rows) -> rows:
-    "Divide `done` into `best`,`rest`. use those to guess the order of unlabelled rows. Called by `_smo1()`."
+    "Divide `done` into `best`,`rest`. Use those to guess the order of unlabelled rows. Called by `_smo1()`."
     cut  = int(.5 + len(done) ** the.N)
     best = clone(i, done[:cut])
     rest = clone(i, done[cut:])
