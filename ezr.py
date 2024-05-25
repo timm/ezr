@@ -7,11 +7,10 @@
     OPTIONS:    
       -a --any     #todo's to explore             = 100    
       -d --decs    #decimals for showing floats   = 3    
-      -f --file    csv file for data              = ../data/misc/auto93.csv    
       -F --Far     how far to seek faraway        = 0.8    
       -h --help    show help                      = False
-      -k --k       bayes low frequency hack #1    = 1    
       -H --Half    #rows for searching for poles  = 128    
+      -k --k       bayes low frequency hack #1    = 1    
       -l --label   initial number of labelings    = 4    
       -L --Last    max allow labelings            = 30    
       -m --m       bayes low frequency hack #2    = 2    
@@ -20,7 +19,9 @@
       -p --p       distance function coefficient  = 2    
       -R --Run     start up action method         = help    
       -s --seed    random number seed             = 1234567891    
-      -v --version show version                   = False
+      -t --train   training data                  = ../data/misc/auto93.csv    
+      -T --test    test data (defaults to train)  = None  
+      -v --version show version                   = False   
       -x --xys     max #bins in discretization    = 10    
 """
 # <h2>Note</h2><p align="left">See end-of-file for this file's  conventions / principles /practices.
@@ -45,7 +46,7 @@ class o:
   def __repr__(i): return i.__class__.__name__+str(show(i.__dict__))
 
 # Other types used in this system.
-xy,cols,data,node,num,sym = o,o,o,o,o,0
+xy,cols,data,node,num,sym = o,o,o,o,o,o
 col     = num    | sym
 number  = float  | int
 atom    = number | bool | str # and sometimes "?"
@@ -287,14 +288,24 @@ def _span(xys : list[xy]) -> list[xy]:
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Trees
 
+def treeScore(best="best", BESTS=1,RESTS=1) -> callable:
+  "Return a function that can score a cut."
+  def fun(cut:xy, klasses:classes):
+     d= {k:len(rows1) for k,rows1 in _split(cut,klasses)[0].items()}
+     return bore(d, best, BESTS, RESTS)
+  return fun
+
 def tree(i:data, klasses:classes, score:callable, stop:int=4) -> node:
+  "Return a binary tree, each level splitting on the range  with most `score`."
   def _grow(klasses:classes, lvl:int=1, above:int=1E30) -> node:
+    "Collect the stats needed for branching, then call `_branch()`."
     counts = {k:len(rows1) for k,rows1 in klasses.items()}
     total  = sum(n for n in counts.values())
-    most   = max(counts, key=counts.get))
+    most   = max(counts, key=counts.get)
     return _branch(NODE(klasses), lvl, above, total, most)
 
   def _branch(here:node, lvl:int, above:int, total:int, most:int) -> node:
+    "Divide the data on tbe best cut. Recurse."
     if total > 2*stop and total < above and most < total: #most==total means "purity" (all of one class)
       cut = max(cuts,  key=lambda cut0: score(cut0, here.klasses))
       left,right = _split(cut, here.klasses)
@@ -306,11 +317,12 @@ def tree(i:data, klasses:classes, score:callable, stop:int=4) -> node:
   return _grow(klasses)
 
 def _split(cut:xy, klasses:classes) -> tuple[classes,classes]:
-  left  = {klass:[] for klass in klasses}
-  right = {klass:[] for klass in klasses}
+  "Find the  classes that `are`, `arent` selected by `cut`."
+  are  = {klass:[] for klass in klasses}
+  arent = {klass:[] for klass in klasses}
   for klass,rows1 in klasses.items():
-    [(left if i.selects(row1) else right)[klass].append(row1) for row1 in rows1]
-  return left,right
+    [(are if i.selects(row1) else arent)[klass].append(row1) for row1 in rows1]
+  return are,arent
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Distances
@@ -432,28 +444,30 @@ def ent(d:dict) -> float:
   N = sum(v for v in d.values())
   return -sum(v/N*math.log(v/N,2) for v in d.values())
 
-def bore(d,best=True,BEST=1,REST=1):
-  "Score a distribution by how often it selects for `best`."
-  b,r = 1E-30,1E-30
+def bore(d,best=True,BESTS=1,RESTS=1):
+  "Bore = best or rest. Score a distribution by how often it selects for `best`."
+  b,r = 1E-30,1E-30 # avoid divide by zero errors
   for k,v in d.items():
-    if k==best: b += v
-    else      : r += v
-  b,r = b/BEST, r/REST
-  return b**2/(b+r) # support * probability
+    if k==best: b += v/BESTS
+    else      : r += v/RESTS
+  support     = b        # how often we see best
+  probability = b/(b+r)  # probability of seeing best, relative to  all probabilities
+  return support * probability
 
 def show(x:any) -> any:
-  "Some pretty-print rules."
+  "Some pretty-print tricks."
   it = type(x)
   if it == o and x.this is XY: return showXY(x)
-  if it == float:  return round(x,the.decs)
-  if it == list:   return [show(v) for v in x]
-  if it == dict:   return "("+' '.join([f":{k} {show(v)}" for k,v in x.items()])+")"
-  if it == o:      return show(x.__dict__)
-  if it == str:    return '"'+str(x)+'"'
-  if callable(x):  return x.__name__
+  if it == float: return round(x,the.decs)
+  if it == list:  return [show(v) for v in x]
+  if it == dict:  return "("+' '.join([f":{k} {show(v)}" for k,v in x.items()])+")"
+  if it == o:     return show(x.__dict__)
+  if it == str:   return '"'+str(x)+'"'
+  if callable(x): return x.__name__
   return x
 
 def showXY(i:xy):
+  "Pretty prints for XYs. Used when (e.g.) printing  conditions in a tree."
   if i.lo == -1E30: return f"{i.txt} < {i.hi}"
   if i.hi ==  1E30: return f"{i.txt} >= {i.lo}"
   if i.lo == i.hi:  return f"{i.txt} == {i.lo}"
@@ -511,7 +525,7 @@ class eg:
 
   def csv(): 
     "Print some of the csv rows."
-    [print(x) for i,x in enumerate(csv(the.file)) if i%50==0]
+    [print(x) for i,x in enumerate(csv(the.train)) if i%50==0]
 
   def cols():
     "Demo of column generation."
@@ -530,7 +544,7 @@ class eg:
 
   def klasses():
     "Show sorted rows from a DATA."
-    data1= DATA(csv(the.file), rank=True)
+    data1= DATA(csv(the.train), rank=True)
     print(show(stats(data1, what=data1.cols.y)))
     print(data1.cols.names)
     for i,row in enumerate(data1.rows):
@@ -538,19 +552,19 @@ class eg:
 
   def clone():
     "Check that clones have same structure as original."
-    data1= DATA(csv(the.file), rank=True)
+    data1= DATA(csv(the.train), rank=True)
     print(show(stats(data1)))
     print(show(stats(clone(data1, data1.rows))))
 
   def loglike():
     "Show some bayes calcs."
-    data1= DATA(csv(the.file))
+    data1= DATA(csv(the.train))
     print(show(sorted(loglikes(data1,row,1000,2)
                       for i,row in enumerate(data1.rows) if i%10==0)))
 
   def dists():
     "Show some distance calcs."
-    data1= DATA(csv(the.file))
+    data1= DATA(csv(the.train))
     print(show(sorted(dists(data1, data1.rows[0], row)
                       for i,row in enumerate(data1.rows) if i%10==0)))
     for _ in range(5):
@@ -560,7 +574,7 @@ class eg:
 
   def branch():
     "Halve the data."
-    data1 = DATA(csv(the.file))
+    data1 = DATA(csv(the.train))
     a,b,_ = half(data1,data1.rows)
     print(len(a), len(b))
     best,rest,n = branch(data1,stop=4)
@@ -568,7 +582,7 @@ class eg:
 
   def smo():
     "Optimize something."
-    d = DATA(csv(the.file))
+    d = DATA(csv(the.train))
     print(show(d.cols.all[1]))
     print(">",len(d.rows))
     best = smo(d)
@@ -578,23 +592,23 @@ class eg:
     "Example of profiling."
     import cProfile
     import pstats
-    cProfile.run('smo(DATA(csv(the.file)))','/tmp/out1')
+    cProfile.run('smo(DATA(csv(the.train)))','/tmp/out1')
     p = pstats.Stats('/tmp/out1')
     p.sort_stats('time').print_stats(20)
 
   def smo20():
     "Run smo 20 times."
-    d   = DATA(src=csv(the.file))
+    d   = DATA(src=csv(the.train))
     b4  = adds(NUM(), [d2h(d,row) for row in d.rows])
     now = adds(NUM(), [d2h(d, smo(d)[0]) for _ in range(20)])
     sep=",\t"
     print("mid",show(mid(b4)), show(mid(now)),show(b4.lo),sep=sep,end=sep)
     print("div",show(div(b4)), show(div(now)),sep=sep,end=sep)
-    print(the.file)
+    print(the.train)
 
   def discretize():
     "Find useful ranges."
-    data1 = DATA(csv(the.file), rank=True)
+    data1 = DATA(csv(the.train), rank=True)
     n = int(len(data1.rows)**.5)
     klasses = dict(best=data1.rows[:n], rest=(data1.rows[n:]))
     for xcol in data1.cols.x:

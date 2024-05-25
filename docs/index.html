@@ -54,7 +54,7 @@ number. </center>
 <span class="kn">import</span> <span class="nn">re</span><span class="o">,</span><span class="nn">ast</span><span class="o">,</span><span class="nn">sys</span><span class="o">,</span><span class="nn">math</span><span class="o">,</span><span class="nn">random</span><span class="o">,</span><span class="nn">copy</span><span class="o">,</span><span class="nn">traceback</span>
 <span class="kn">from</span> <span class="nn">fileinput</span> <span class="kn">import</span> <span class="n">FileInput</span> <span class="k">as</span> <span class="n">file_or_stdin</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span> <span class="k">as</span> <span class="nb">any</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span> <span class="k">as</span> <span class="n">callable</span></pre></div>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span> <span class="k">as</span> <span class="nb">callable</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -285,8 +285,8 @@ For dictionary key</code>k<code>, if command line has</code>-k X<code>, then</co
       <p>NODEs are parts of binary trees.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">NODE</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">left</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">right</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-  <span class="k">return</span> <span class="n">o</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="n">right</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">NODE</span><span class="p">(</span><span class="n">klasses</span><span class="p">:</span> <span class="n">classes</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">o</span><span class="p">(</span><span class="n">classes</span><span class="o">=</span><span class="n">klasses</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="n">right</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -608,6 +608,20 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-39'>#</a>
       </div>
+      <p>Returns true if a row falls within the lo/hi range of an XY.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">selects</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">xy</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span><span class="n">row</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">at</span><span class="p">]</span>
+  <span class="k">return</span> <span class="n">x</span><span class="o">==</span><span class="s2">&quot;?&quot;</span> <span class="ow">or</span> <span class="n">i</span><span class="o">.</span><span class="n">lo</span><span class="o">==</span><span class="n">x</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">lo</span><span class="o">==</span><span class="n">i</span><span class="o">.</span><span class="n">hi</span> <span class="k">else</span> <span class="n">i</span><span class="o">.</span><span class="n">lo</span> <span class="o">&lt;=</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">i</span><span class="o">.</span><span class="n">hi</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-40'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-40'>#</a>
+      </div>
       <hr />
 <h2>Discretization</h2>
 <p>Divide a range into many bins. Iteratively merge adjacent bins if
@@ -621,10 +635,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-40'>
+  <div class='section' id='section-41'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-40'>#</a>
+        <a class='octothorpe' href='#section-41'>#</a>
       </div>
       <p>Find good ranges for the i-th column within <code>klasses</code>.</p>
     </div>
@@ -639,10 +653,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-41'>
+  <div class='section' id='section-42'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-41'>#</a>
+        <a class='octothorpe' href='#section-42'>#</a>
       </div>
       <p>Store <code>x,y</code> in the right part of <code>d</code>. Used by <code>discretize()</code>.</p>
     </div>
@@ -655,10 +669,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-42'>
+  <div class='section' id='section-43'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-42'>#</a>
+        <a class='octothorpe' href='#section-43'>#</a>
       </div>
       <p>Try merging adjacent items in <code>b4</code>. If successful, repeat. Used by <code>discretize()</code>.</p>
     </div>
@@ -678,10 +692,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-43'>
+  <div class='section' id='section-44'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-43'>#</a>
+        <a class='octothorpe' href='#section-44'>#</a>
       </div>
       <p>Return the merge  if the whole is better than the parts. Used  by <code>merges()</code>.</p>
     </div>
@@ -695,10 +709,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-44'>
+  <div class='section' id='section-45'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-44'>#</a>
+        <a class='octothorpe' href='#section-45'>#</a>
       </div>
       <p>Ensure there are no gaps in the <code>x</code> ranges of <code>xys</code>. Used by <code>discretize()</code>.</p>
     </div>
@@ -711,30 +725,16 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-45'>
+  <div class='section' id='section-46'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-45'>#</a>
+        <a class='octothorpe' href='#section-46'>#</a>
       </div>
       <hr />
 <h2>Trees</h2>
     </div>
     <div class='code'>
       <div class="highlight"><pre></pre></div>
-    </div>
-  </div>
-  <div class='clearall'></div>
-  <div class='section' id='section-46'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-46'>#</a>
-      </div>
-      
-    </div>
-    <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">tree</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">klasses</span><span class="p">:</span><span class="n">classes</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">node</span><span class="p">:</span>
-  <span class="n">cuts</span>  <span class="o">=</span> <span class="p">[</span><span class="n">cut</span> <span class="k">for</span> <span class="n">col1</span> <span class="ow">in</span> <span class="n">i</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">x</span> <span class="k">for</span> <span class="n">cut</span> <span class="ow">in</span> <span class="n">discretize</span><span class="p">(</span><span class="n">col1</span><span class="p">,</span><span class="n">klasses</span><span class="p">)]</span>
-  <span class="k">return</span> <span class="n">_grow</span><span class="p">(</span><span class="n">klasses</span><span class="p">,</span><span class="n">cuts</span><span class="p">,</span><span class="n">stop</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="mf">1E30</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -746,16 +746,7 @@ algorithm.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_grow</span><span class="p">(</span><span class="n">klasses</span><span class="p">:</span><span class="n">classes</span><span class="p">,</span> <span class="n">cuts</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">lvl</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">above</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">node</span><span class="p">:</span>
-  <span class="n">counts</span><span class="p">,</span><span class="n">total</span> <span class="o">=</span> <span class="n">classCounts</span><span class="p">(</span><span class="n">klasses</span><span class="p">)</span>
-  <span class="n">most</span>   <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
-  <span class="n">node</span> <span class="o">=</span> <span class="n">NODE</span><span class="p">(</span><span class="n">klasses</span><span class="p">)</span> 
-  <span class="k">if</span> <span class="n">total</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="o">*</span><span class="n">stop</span> <span class="ow">and</span> <span class="n">total</span> <span class="o">&lt;</span> <span class="n">above</span> <span class="ow">and</span> <span class="n">most</span> <span class="o">&lt;</span> <span class="n">total</span><span class="p">:</span> <span class="c1">#most==total means &quot;purity&quot; (all of one class)</span>
-    <span class="n">cut</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">cuts</span><span class="p">,</span>  <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">cut0</span><span class="p">:</span> <span class="n">_minEntMaxSupport</span><span class="p">(</span> <span class="n">_split</span><span class="p">(</span><span class="n">cut</span><span class="p">,</span><span class="n">klasses</span><span class="p">)[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">total</span><span class="p">)</span>
-    <span class="n">left</span><span class="p">,</span><span class="n">right</span> <span class="o">=</span> <span class="n">_split</span><span class="p">(</span><span class="n">cut</span><span class="p">,</span><span class="n">klasses</span><span class="p">)</span>
-    <span class="n">node</span><span class="o">.</span><span class="n">left</span>  <span class="o">=</span> <span class="n">_grow</span><span class="p">(</span><span class="n">left</span><span class="p">,</span>  <span class="n">stop</span><span class="p">,</span> <span class="n">lvl</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">total</span><span class="p">)</span>
-    <span class="n">node</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="n">_grow</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">lvl</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">total</span><span class="p">)</span>
-  <span class="k">return</span> <span class="n">node</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">tree</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">klasses</span><span class="p">:</span><span class="n">classes</span><span class="p">,</span> <span class="n">score</span><span class="p">:</span><span class="nb">callable</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">node</span><span class="p">:</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -767,9 +758,11 @@ algorithm.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span>  <span class="nf">_minEntMaxSupport</span><span class="p">(</span><span class="n">klasss</span><span class="p">,</span><span class="n">total</span><span class="p">):</span>
-  <span class="n">counts</span><span class="p">,</span><span class="n">myTotal</span> <span class="o">=</span> <span class="n">classCounts</span><span class="p">(</span><span class="n">klasses</span><span class="p">)</span>
-  <span class="k">return</span> <span class="p">(</span><span class="n">myTotal</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span> <span class="o">/</span>  <span class="n">ent</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">_grow</span><span class="p">(</span><span class="n">klasses</span><span class="p">:</span><span class="n">classes</span><span class="p">,</span> <span class="n">lvl</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">above</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mf">1E30</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">node</span><span class="p">:</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">rows1</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">rows1</span> <span class="ow">in</span> <span class="n">klasses</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">total</span>  <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">counts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="n">most</span>   <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">_branch</span><span class="p">(</span><span class="n">NODE</span><span class="p">(</span><span class="n">klasses</span><span class="p">),</span> <span class="n">lvl</span><span class="p">,</span> <span class="n">above</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">most</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -781,9 +774,16 @@ algorithm.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">classCounts</span><span class="p">(</span><span class="n">klasses</span><span class="p">:</span><span class="n">classes</span><span class="p">):</span>
-  <span class="n">d</span><span class="o">=</span> <span class="p">{</span><span class="n">klass</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">rows1</span><span class="p">)</span> <span class="k">for</span> <span class="n">klass</span><span class="p">,</span><span class="n">rows1</span> <span class="ow">in</span> <span class="n">klasses</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-  <span class="k">return</span> <span class="n">d</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows1</span><span class="p">)</span> <span class="k">for</span> <span class="n">rows1</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></pre></div>
+      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">_branch</span><span class="p">(</span><span class="n">here</span><span class="p">:</span><span class="n">node</span><span class="p">,</span> <span class="n">lvl</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">above</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">most</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">node</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">total</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="o">*</span><span class="n">stop</span> <span class="ow">and</span> <span class="n">total</span> <span class="o">&lt;</span> <span class="n">above</span> <span class="ow">and</span> <span class="n">most</span> <span class="o">&lt;</span> <span class="n">total</span><span class="p">:</span> <span class="c1">#most==total means &quot;purity&quot; (all of one class)</span>
+      <span class="n">cut</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">cuts</span><span class="p">,</span>  <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">cut0</span><span class="p">:</span> <span class="n">score</span><span class="p">(</span><span class="n">cut0</span><span class="p">,</span> <span class="n">here</span><span class="o">.</span><span class="n">klasses</span><span class="p">))</span>
+      <span class="n">left</span><span class="p">,</span><span class="n">right</span> <span class="o">=</span> <span class="n">_split</span><span class="p">(</span><span class="n">cut</span><span class="p">,</span> <span class="n">here</span><span class="o">.</span><span class="n">klasses</span><span class="p">)</span>
+      <span class="n">here</span><span class="o">.</span><span class="n">left</span>  <span class="o">=</span> <span class="n">_grow</span><span class="p">(</span><span class="n">left</span><span class="p">,</span>  <span class="n">lvl</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">total</span><span class="p">)</span>
+      <span class="n">here</span><span class="o">.</span><span class="n">right</span> <span class="o">=</span> <span class="n">_grow</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">lvl</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">total</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">here</span>
+
+  <span class="n">cuts</span> <span class="o">=</span> <span class="p">[</span><span class="n">cut</span> <span class="k">for</span> <span class="n">col1</span> <span class="ow">in</span> <span class="n">i</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">x</span> <span class="k">for</span> <span class="n">cut</span> <span class="ow">in</span> <span class="n">discretize</span><span class="p">(</span><span class="n">col1</span><span class="p">,</span><span class="n">klasses</span><span class="p">)]</span>
+  <span class="k">return</span> <span class="n">_grow</span><span class="p">(</span><span class="n">klasses</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -795,7 +795,7 @@ algorithm.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_split</span><span class="p">(</span><span class="n">cut</span><span class="p">:</span><span class="n">xy</span><span class="p">,</span> <span class="n">klasses</span><span class="p">:</span><span class="n">classes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">classes</span><span class="p">,</span><span class="n">classes</span><span class="p">]</span>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_split</span><span class="p">(</span><span class="n">cut</span><span class="p">:</span><span class="n">xy</span><span class="p">,</span> <span class="n">klasses</span><span class="p">:</span><span class="n">classes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">classes</span><span class="p">,</span><span class="n">classes</span><span class="p">]:</span>
   <span class="n">left</span>  <span class="o">=</span> <span class="p">{</span><span class="n">klass</span><span class="p">:[]</span> <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="n">klasses</span><span class="p">}</span>
   <span class="n">right</span> <span class="o">=</span> <span class="p">{</span><span class="n">klass</span><span class="p">:[]</span> <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="n">klasses</span><span class="p">}</span>
   <span class="k">for</span> <span class="n">klass</span><span class="p">,</span><span class="n">rows1</span> <span class="ow">in</span> <span class="n">klasses</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -809,20 +809,6 @@ algorithm.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-51'>#</a>
       </div>
-      
-    </div>
-    <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">selects</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">xy</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span><span class="n">row</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-  <span class="n">x</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">at</span><span class="p">]</span>
-  <span class="k">return</span> <span class="n">x</span><span class="o">==</span><span class="s2">&quot;?&quot;</span> <span class="ow">or</span> <span class="n">i</span><span class="o">.</span><span class="n">lo</span><span class="o">==</span><span class="n">x</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">lo</span><span class="o">==</span><span class="n">i</span><span class="o">.</span><span class="n">hi</span> <span class="k">else</span> <span class="n">i</span><span class="o">.</span><span class="n">lo</span> <span class="o">&lt;=</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">i</span><span class="o">.</span><span class="n">hi</span></pre></div>
-    </div>
-  </div>
-  <div class='clearall'></div>
-  <div class='section' id='section-52'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-52'>#</a>
-      </div>
       <hr />
 <h2>Distances</h2>
     </div>
@@ -831,10 +817,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-53'>
+  <div class='section' id='section-52'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-53'>#</a>
+        <a class='octothorpe' href='#section-52'>#</a>
       </div>
       <p>distance to <code>heaven</code> (which is the distance of the <code>y</code> vals to the best values).</p>
     </div>
@@ -845,10 +831,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-54'>
+  <div class='section' id='section-53'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-54'>#</a>
+        <a class='octothorpe' href='#section-53'>#</a>
       </div>
       <p>Distances between two rows.</p>
     </div>
@@ -859,10 +845,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-55'>
+  <div class='section' id='section-54'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-55'>#</a>
+        <a class='octothorpe' href='#section-54'>#</a>
       </div>
       <p>Distance between two values. Used by <code>dists()</code>.</p>
     </div>
@@ -877,10 +863,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-56'>
+  <div class='section' id='section-55'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-56'>#</a>
+        <a class='octothorpe' href='#section-55'>#</a>
       </div>
       <p>Sort the <code>region</code> (default=<code>i.rows</code>),ascending, by distance to <code>r1</code>.</p>
     </div>
@@ -890,10 +876,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-57'>
+  <div class='section' id='section-56'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-57'>#</a>
+        <a class='octothorpe' href='#section-56'>#</a>
       </div>
       <hr />
 <h2>Clustering</h2>
@@ -903,10 +889,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-58'>
+  <div class='section' id='section-57'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-58'>#</a>
+        <a class='octothorpe' href='#section-57'>#</a>
       </div>
       <p>Recursively bi-cluster <code>region</code>, reursing only down the best half.</p>
     </div>
@@ -923,10 +909,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-59'>
+  <div class='section' id='section-58'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-59'>#</a>
+        <a class='octothorpe' href='#section-58'>#</a>
       </div>
       <p>Split the <code>region</code> in half according to each row&rsquo;s distance to two distant points. Used by <code>branch()</code>.</p>
     </div>
@@ -940,10 +926,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-60'>
+  <div class='section' id='section-59'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-60'>#</a>
+        <a class='octothorpe' href='#section-59'>#</a>
       </div>
       <p>Find two distant points within the <code>region</code>. Used by <code>half()</code>. </p>
     </div>
@@ -957,10 +943,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-61'>
+  <div class='section' id='section-60'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-61'>#</a>
+        <a class='octothorpe' href='#section-60'>#</a>
       </div>
       <p>Find something far away from <code>r1</code> with the <code>region</code>. Used by <code>_twoFaraway()</code>.</p>
     </div>
@@ -971,10 +957,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-62'>
+  <div class='section' id='section-61'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-62'>#</a>
+        <a class='octothorpe' href='#section-61'>#</a>
       </div>
       <hr />
 <h2>Likelihoods</h2>
@@ -984,25 +970,25 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-63'>
+  <div class='section' id='section-62'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-63'>#</a>
+        <a class='octothorpe' href='#section-62'>#</a>
       </div>
-      <p>Likelihood of a <code>row</code> belonging to a DATA. .</p>
+      <p>Likelihood of a <code>row</code> belonging to a DATA.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">loglikes</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span><span class="n">row</span><span class="p">,</span> <span class="n">nall</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">nh</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">loglikes</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span><span class="n">row</span><span class="o">|</span><span class="nb">dict</span><span class="p">,</span> <span class="n">nall</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">nh</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
   <span class="n">prior</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span> <span class="o">+</span> <span class="n">the</span><span class="o">.</span><span class="n">k</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nall</span> <span class="o">+</span> <span class="n">the</span><span class="o">.</span><span class="n">k</span><span class="o">*</span><span class="n">nh</span><span class="p">)</span>
   <span class="n">likes</span> <span class="o">=</span> <span class="p">[</span><span class="n">like</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">at</span><span class="p">],</span> <span class="n">prior</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">i</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">x</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">at</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span><span class="p">]</span>
   <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">likes</span> <span class="o">+</span> <span class="p">[</span><span class="n">prior</span><span class="p">]</span> <span class="k">if</span> <span class="n">x</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-64'>
+  <div class='section' id='section-63'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-64'>#</a>
+        <a class='octothorpe' href='#section-63'>#</a>
       </div>
       <p>Likelihood of <code>x</code> belonging to a col. Used by <code>loglikes()</code>.  </p>
     </div>
@@ -1012,10 +998,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-65'>
+  <div class='section' id='section-64'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-65'>#</a>
+        <a class='octothorpe' href='#section-64'>#</a>
       </div>
       <p>Likelihood of <code>x</code> belonging to a NUM. Used by <code>like()</code>.</p>
     </div>
@@ -1028,10 +1014,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-66'>
+  <div class='section' id='section-65'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-66'>#</a>
+        <a class='octothorpe' href='#section-65'>#</a>
       </div>
       <hr />
 <h2>Sequential model optimization</h2>
@@ -1041,10 +1027,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-67'>
+  <div class='section' id='section-66'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-67'>#</a>
+        <a class='octothorpe' href='#section-66'>#</a>
       </div>
       <p>Sequential model optimization.</p>
     </div>
@@ -1053,10 +1039,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-68'>
+  <div class='section' id='section-67'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-68'>#</a>
+        <a class='octothorpe' href='#section-67'>#</a>
       </div>
       <p>Sort <code>lst</code> by distance to heaven. Called by <code>_smo1()</code>.</p>
     </div>
@@ -1066,10 +1052,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-69'>
+  <div class='section' id='section-68'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-69'>#</a>
+        <a class='octothorpe' href='#section-68'>#</a>
       </div>
       <p>Divide <code>done</code> into <code>best</code>,<code>rest</code>. use those to guess the order of unlabelled rows. Called by <code>_smo1()</code>.</p>
     </div>
@@ -1085,10 +1071,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-70'>
+  <div class='section' id='section-69'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-70'>#</a>
+        <a class='octothorpe' href='#section-69'>#</a>
       </div>
       <p>Guess the <code>top</code>  unlabeled row, add that to <code>done</code>, resort <code>done</code>, and repeat</p>
     </div>
@@ -1106,10 +1092,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-71'>
+  <div class='section' id='section-70'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-71'>#</a>
+        <a class='octothorpe' href='#section-70'>#</a>
       </div>
       <hr />
 <h2>Misc Functions:</h2>
@@ -1119,10 +1105,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-72'>
+  <div class='section' id='section-71'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-72'>#</a>
+        <a class='octothorpe' href='#section-71'>#</a>
       </div>
       <p>Entropy of a distribution.</p>
     </div>
@@ -1133,10 +1119,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-73'>
+  <div class='section' id='section-72'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-73'>#</a>
+        <a class='octothorpe' href='#section-72'>#</a>
       </div>
       <p>Score a distribution by how often it selects for <code>best</code>.</p>
     </div>
@@ -1151,10 +1137,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-74'>
+  <div class='section' id='section-73'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-74'>#</a>
+        <a class='octothorpe' href='#section-73'>#</a>
       </div>
       <p>Some pretty-print rules.</p>
     </div>
@@ -1167,15 +1153,15 @@ algorithm.</p>
   <span class="k">if</span> <span class="n">it</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>   <span class="k">return</span> <span class="s2">&quot;(&quot;</span><span class="o">+</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s2">&quot;:</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">show</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span><span class="o">+</span><span class="s2">&quot;)&quot;</span>
   <span class="k">if</span> <span class="n">it</span> <span class="o">==</span> <span class="n">o</span><span class="p">:</span>      <span class="k">return</span> <span class="n">show</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
   <span class="k">if</span> <span class="n">it</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>    <span class="k">return</span> <span class="s1">&#39;&quot;&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;&quot;&#39;</span>
-  <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>  <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="vm">__name__</span>
+  <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>  <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="vm">__name__</span>
   <span class="k">return</span> <span class="n">x</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-75'>
+  <div class='section' id='section-74'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-75'>#</a>
+        <a class='octothorpe' href='#section-74'>#</a>
       </div>
       
     </div>
@@ -1188,10 +1174,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-76'>
+  <div class='section' id='section-75'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-76'>#</a>
+        <a class='octothorpe' href='#section-75'>#</a>
       </div>
       <p>Print to standard error, flush standard error, do not print newlines.</p>
     </div>
@@ -1201,10 +1187,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-77'>
+  <div class='section' id='section-76'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-77'>#</a>
+        <a class='octothorpe' href='#section-76'>#</a>
       </div>
       <hr />
 <h2>Main</h2>
@@ -1214,10 +1200,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-78'>
+  <div class='section' id='section-77'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-78'>#</a>
+        <a class='octothorpe' href='#section-77'>#</a>
       </div>
       <p>Update <code>the</code> from the command line; call the start-up command <code>the.Run</code>.</p>
     </div>
@@ -1230,10 +1216,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-79'>
+  <div class='section' id='section-78'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-79'>#</a>
+        <a class='octothorpe' href='#section-78'>#</a>
       </div>
       <p>Reset the seed. Run <code>eg.s()</code>, then restore old settings. Return &lsquo;1&rsquo; on failure. Called by <code>main()</code>.</p>
     </div>
@@ -1247,10 +1233,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-80'>
+  <div class='section' id='section-79'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-80'>#</a>
+        <a class='octothorpe' href='#section-79'>#</a>
       </div>
       <p>Return either the result for running <code>eg.s()</code>, or <code>False</code> (if there was a crash). Called by <code>run()</code>.</p>
     </div>
@@ -1264,10 +1250,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-81'>
+  <div class='section' id='section-80'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-81'>#</a>
+        <a class='octothorpe' href='#section-80'>#</a>
       </div>
       <hr />
 <h2>Start-up Actions</h2>
@@ -1278,10 +1264,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-82'>
+  <div class='section' id='section-81'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-82'>#</a>
+        <a class='octothorpe' href='#section-81'>#</a>
       </div>
       <p>Store all the start up actions</p>
     </div>
@@ -1290,10 +1276,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-83'>
+  <div class='section' id='section-82'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-83'>#</a>
+        <a class='octothorpe' href='#section-82'>#</a>
       </div>
       <p>Run all actions. Return to OS a count of failing actions (those returning <code>False</code>..</p>
     </div>
@@ -1303,10 +1289,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-84'>
+  <div class='section' id='section-83'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-84'>#</a>
+        <a class='octothorpe' href='#section-83'>#</a>
       </div>
       <p>Print help.</p>
     </div>
@@ -1318,10 +1304,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-85'>
+  <div class='section' id='section-84'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-85'>#</a>
+        <a class='octothorpe' href='#section-84'>#</a>
       </div>
       <p>Show settings.</p>
     </div>
@@ -1331,10 +1317,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-86'>
+  <div class='section' id='section-85'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-86'>#</a>
+        <a class='octothorpe' href='#section-85'>#</a>
       </div>
       <p>Print some of the csv rows.</p>
     </div>
@@ -1344,10 +1330,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-87'>
+  <div class='section' id='section-86'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-87'>#</a>
+        <a class='octothorpe' href='#section-86'>#</a>
       </div>
       <p>Demo of column generation.</p>
     </div>
@@ -1358,10 +1344,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-88'>
+  <div class='section' id='section-87'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-88'>#</a>
+        <a class='octothorpe' href='#section-87'>#</a>
       </div>
       <p>Show mid and div from NUMbers.</p>
     </div>
@@ -1372,10 +1358,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-89'>
+  <div class='section' id='section-88'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-89'>#</a>
+        <a class='octothorpe' href='#section-88'>#</a>
       </div>
       <p>Show mid and div from SYMbols.</p>
     </div>
@@ -1386,10 +1372,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-90'>
+  <div class='section' id='section-89'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-90'>#</a>
+        <a class='octothorpe' href='#section-89'>#</a>
       </div>
       <p>Show sorted rows from a DATA.</p>
     </div>
@@ -1403,10 +1389,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-91'>
+  <div class='section' id='section-90'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-91'>#</a>
+        <a class='octothorpe' href='#section-90'>#</a>
       </div>
       <p>Check that clones have same structure as original.</p>
     </div>
@@ -1418,10 +1404,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-92'>
+  <div class='section' id='section-91'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-92'>#</a>
+        <a class='octothorpe' href='#section-91'>#</a>
       </div>
       <p>Show some bayes calcs.</p>
     </div>
@@ -1433,10 +1419,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-93'>
+  <div class='section' id='section-92'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-93'>#</a>
+        <a class='octothorpe' href='#section-92'>#</a>
       </div>
       <p>Show some distance calcs.</p>
     </div>
@@ -1452,10 +1438,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-94'>
+  <div class='section' id='section-93'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-94'>#</a>
+        <a class='octothorpe' href='#section-93'>#</a>
       </div>
       <p>Halve the data.</p>
     </div>
@@ -1469,10 +1455,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-95'>
+  <div class='section' id='section-94'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-95'>#</a>
+        <a class='octothorpe' href='#section-94'>#</a>
       </div>
       <p>Optimize something.</p>
     </div>
@@ -1486,10 +1472,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-96'>
+  <div class='section' id='section-95'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-96'>#</a>
+        <a class='octothorpe' href='#section-95'>#</a>
       </div>
       <p>Example of profiling.</p>
     </div>
@@ -1503,10 +1489,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-97'>
+  <div class='section' id='section-96'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-97'>#</a>
+        <a class='octothorpe' href='#section-96'>#</a>
       </div>
       <p>Run smo 20 times.</p>
     </div>
@@ -1522,10 +1508,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-98'>
+  <div class='section' id='section-97'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-98'>#</a>
+        <a class='octothorpe' href='#section-97'>#</a>
       </div>
       <p>Find useful ranges.</p>
     </div>
@@ -1541,10 +1527,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-99'>
+  <div class='section' id='section-98'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-99'>#</a>
+        <a class='octothorpe' href='#section-98'>#</a>
       </div>
       <hr />
     </div>
@@ -1553,10 +1539,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-100'>
+  <div class='section' id='section-99'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-100'>#</a>
+        <a class='octothorpe' href='#section-99'>#</a>
       </div>
       <h2>Conventions in this code</h2>
     </div>
@@ -1565,29 +1551,17 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-101'>
+  <div class='section' id='section-100'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-101'>#</a>
+        <a class='octothorpe' href='#section-100'>#</a>
       </div>
       <ul>
-<li><strong>Software 2.0</strong>: SE projects are now divided into team1, team2 where team1 does convectional SE, while team2
-  is in charge of the care and feeding on an optimizer/model builder</li>
-<li><strong>Less is more:</strong> The model is already there, within the data.
-    We  just have to chisel away the superfluous material. </li>
-<li><strong>Labelling is a problem:</strong> Do everything we can, with fewer labels.</li>
-<li><strong>Trees are just recursive ranges</strong></li>
-<li><strong>Naive Bayes is just N DATA</strong></li>
-<li><strong>Open science:</strong> Used DOIs to publish papers, and the scripts and data used in this papers.</li>
-<li><strong>Worse is better:</strong> Simpler code has better survival characteristics than the-right-thing.</li>
-<li><strong>Open source:</strong> Make code freely usable.</li>
-<li><strong>&ldquo;Separate policy from mechanism:&rdquo;</strong> Make much use or domain-specific notations (e.g. regx, our
-  <strong>doc</strong> strings, our little language for column headers).</li>
 <li><strong>Doc, Config:</strong> At top of file, add in all settings to the <strong>doc</strong> string. 
   Parse that string to create <code>the</code> global settings.
   Also, every function gets a one line doc string. For documentation longer than one line,
   add this outside the function.</li>
-<li><strong>TDD:</strong> At end of file, add in demos/tests as methods of the <code>eg</code> class 
+<li><strong>TDD:</strong> Lots of little tests. At end of file, add in demos/tests as methods of the <code>eg</code> class 
   Report a test failure by return <code>False</code>. Note that <code>eg.all()</code> will run all demos/tests
   and return the number of failures to the operating system.</li>
 <li><strong>Composition:</strong> Allow for reading from standard input (so this code can be used in a pipe).</li>
