@@ -1,0 +1,16 @@
+Start with a space in the first column,
+(before the <nowiki>).
+
+Then your block format will be
+    maintained.
+
+This is good for copying in code blocks:
+
+ def function():
+    """documentation string"""
+
+    if True:
+        print True
+    else:
+        print False
+
