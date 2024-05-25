@@ -7,6 +7,7 @@
     OPTIONS:    
       -a --any     #todo's to explore             = 100    
       -d --decs    #decimals for showing floats   = 3    
+      -e --enough  want cuts at least this good   = 0.1   
       -F --Far     how far to seek faraway        = 0.8    
       -h --help    show help                      = False
       -H --Half    #rows for searching for poles  = 128    
@@ -180,8 +181,16 @@ def add2xy(i:xy, x: int | float , y:atom) -> None:
     i.hi    =  max(i.hi, x)
     i.ys[y] = i.ys.get(y,0) + 1
 
-def xys2xy(*xys : list[xy]) -> xy:
-  "Fuse together many XYs into one XY."
+def mergable(xy1: xy, xy2: xy, small:int) -> xy | None:
+  "Return the merge  if the whole is better than the parts. Used  by `merges()`."
+  mabye = merge([xy1,xy2])
+  e1  = ent(xy1.ys)
+  e2  = ent(xy2.ys)
+  e3  = ent(out.ys)
+  if xy1.n < small or xy2.n < small or e3 <= (xy1.n*e1 + xy2.n*e2)/out.n: return maybe 
+
+def merge(xys : list[xy]) -> xy:
+  "Fuse together some  XYs into one XY. Called by `mergable`."
   out = XY(xys[0].at, xys[0].txt, xys[0].lo)
   for xy1 in xys:
     out.n += xy1.n
@@ -232,6 +241,16 @@ def selects(i:xy, r:row) -> bool:
   x = r[i.at]
   return x=="?" or i.lo==x if i.lo==i.hi else i.lo <= x < i.hi
 
+def wanted(i:want, d:dict) -> float :
+  "How much does d selects for `i.best`? "
+  b,r = 1E-30,1E-30 # avoid divide by zero errors
+  for k,v in d.items():
+    if k==i.best: b += v/i.BESTS
+    else        : r += v/i.RESTS
+  support     = b        # how often we see best
+  probability = b/(b+r)  # probability of seeing best, relative to  all probabilities
+  return support * probability
+
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Discretization
 # Divide a range into many bins. Iteratively merge adjacent bins if
@@ -240,14 +259,21 @@ def selects(i:xy, r:row) -> bool:
 # [ChiMerge](https://sci2s.ugr.es/keel/pdf/algorithm/congreso/1992-Kerber-ChimErge-AAAI92.pdf)
 # algorithm.
 
-def discretize(i:col, klasses:classes) -> list[xy] :
+def discretize(i:col, klasses:classes, want: callable) -> list[xy] :
   "Find good ranges for the i-th column within `klasses`."
-  tmp = {}
-  [_divides(i, r[i.at], klass, tmp) for klass,rows1 in klasses.items() 
-                                   for r in rows1 if r[i.at] != "?"]
-  tmp =  sorted(tmp.values(), key=lambda z:z.lo)
-  small = sum(len(rs) for rs in klasses.values()) / the.xys
-  return tmp if i.this is SYM else _span(_merges(tmp, small))
+  d = {}
+  [_divides(i, r[i.at], klass, d) for klass,rows1 in klasses.items()
+                                  for r in rows1 if r[i.at] != "?"]
+  return _combine(col, sorted(d.values(), key=lambda z:z.lo),
+                       sum(len(rs) for rs in klasses.values()) / the.xys,
+                       want)
+
+def _combine(i:col, xys: list[xy], small, want) -> list[xy] :
+  if col.this is NUM:
+    xys = _span(_merges(xys, lambda a,b: mergable(a,b,small))) 
+    n   = the.wanted * sorted(wanted(want,xy1.ys) for xys1 in xys])[-1]
+    xys = _merges(xys, lambda a,b: wanted(want, a.ys) < n wanted(want, b.ys) < n)
+  return xys
 
 def _divides(i:col,x:atom, y:str, d:dict) -> None:
   "Store `x,y` in the right part of `d`. Used by `discretize()`."
@@ -256,27 +282,19 @@ def _divides(i:col,x:atom, y:str, d:dict) -> None:
   d[k] = d[k] if k in d else XY(i.at,i.txt,x)
   add2xy(d[k],x,y)
 
-def _merges(b4, small):
-  "Try merging adjacent items in `b4`. If successful, repeat. Used by `discretize()`."
+def _merges(b4, fun):
+  "Try merging adjacent items in `b4`. If successful, repeat. Used by `_combine()`."
   j, now  = 0, []
   while j <  len(b4):
     a = b4[j]
     if j <  len(b4) - 1:
       b = b4[j+1]
-      if ab := merge(a,b,small):
+      if ab := fun(a,b):
         a = ab
         j = j+1  # if i can merge, jump over the merged item
     now += [a]
     j += 1
-  return b4 if len(now) == len(b4) else _merges(now, small)
-
-def merge(xy1: xy, xy2: xy, small:int) -> xy | None:
-  "Return the merge  if the whole is better than the parts. Used  by `merges()`."
-  out = xys2xy(xy1,xy2)
-  e1  = ent(xy1.ys)
-  e2  = ent(xy2.ys)
-  e3  = ent(out.ys)
-  if xy1.n < small or xy2.n < small or e3 <= (xy1.n*e1 + xy2.n*e2)/out.n: return out 
+  return b4 if len(now) == len(b4) else _merges(now, fun)
 
 def _span(xys : list[xy]) -> list[xy]:
   "Ensure there are no gaps in the `x` ranges of `xys`. Used by `discretize()`."
@@ -288,14 +306,7 @@ def _span(xys : list[xy]) -> list[xy]:
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Trees
 
-def treeScore(best="best", BESTS=1,RESTS=1) -> callable:
-  "Return a function that can score a cut."
-  def fun(cut:xy, klasses:classes):
-     d= {k:len(rows1) for k,rows1 in _split(cut,klasses)[0].items()}
-     return bore(d, best, BESTS, RESTS)
-  return fun
-
-def tree(i:data, klasses:classes, score:callable, stop:int=4) -> node:
+def tree(i:data, klasses:classes, wanted:callable, stop:int=4) -> node:
   "Return a binary tree, each level splitting on the range  with most `score`."
   def _grow(klasses:classes, lvl:int=1, above:int=1E30) -> node:
     "Collect the stats needed for branching, then call `_branch()`."
@@ -307,11 +318,15 @@ def tree(i:data, klasses:classes, score:callable, stop:int=4) -> node:
   def _branch(here:node, lvl:int, above:int, total:int, most:int) -> node:
     "Divide the data on tbe best cut. Recurse."
     if total > 2*stop and total < above and most < total: #most==total means "purity" (all of one class)
-      cut = max(cuts,  key=lambda cut0: score(cut0, here.klasses))
+      cut = max(cuts,  key=lambda cut0: _want(cut0, here.klasses))
       left,right = _split(cut, here.klasses)
       here.left  = _grow(left,  lvl+1, total)
       here.right = _grow(right, lvl+1, total)
     return here
+
+  def _want(cut:xy, klasses:classes) -> float :
+    "How much do we want each way that `cut` can split the `klasses`?"
+    return want(wanted, {k:len(rows1) for k,rows1 in _split(cut,klasses)[0].items()})
 
   cuts = [cut for col1 in i.cols.x for cut in discretize(col1,klasses)]
   return _grow(klasses)
@@ -444,15 +459,6 @@ def ent(d:dict) -> float:
   N = sum(v for v in d.values())
   return -sum(v/N*math.log(v/N,2) for v in d.values())
 
-def bore(d,best=True,BESTS=1,RESTS=1):
-  "Bore = best or rest. Score a distribution by how often it selects for `best`."
-  b,r = 1E-30,1E-30 # avoid divide by zero errors
-  for k,v in d.items():
-    if k==best: b += v/BESTS
-    else      : r += v/RESTS
-  support     = b        # how often we see best
-  probability = b/(b+r)  # probability of seeing best, relative to  all probabilities
-  return support * probability
 
 def show(x:any) -> any:
   "Some pretty-print tricks."

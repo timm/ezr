@@ -33,6 +33,8 @@
 - **Abstraction:** Make much use of error handling and iterators.
 - **Types:** Use type hints for function args and return types.
   Don't use type names for variables or function names.  E.g. use `rows1` not `rows`. E.g. use `klasses` not `classes`; 
+  - Bythe way, Python typs system is a msss. upated all the times. tools not keeping up with the updates. lots of things undefined
+  - for a real types language, see rust. but be warned "fight with compiler". to be fair, lots of programemrs report happiness with rust. and lots of cool new tools coming out of the rust universe. so definitely one to look at.
 - **OO? Hell no!:** Group together similar functionality for difference types (so don't use classes).
   And to enable polymorphism, add a `this=CONSTRUCTOR` field to all objects.
 - **Functional programming? heck yeah! :** lots of comprehensions and lambda bodies.
