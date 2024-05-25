@@ -1,0 +1,4 @@
+EZR=`git rev-parse --show-toplevel`
+
+alias gp="git commit -am as; git push; git status"
+alias index="(cd $EZR; make -B docs/index.html)"
