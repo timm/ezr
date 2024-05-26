@@ -20,7 +20,7 @@
       -p --p       distance function coefficient  = 2    
       -R --Run     start up action method         = help    
       -s --seed    random number seed             = 1234567891    
-      -t --train   training data                  = ../data/misc/auto93.csv    
+      -t --train   training data                  = data/misc/auto93.csv    
       -T --test    test data (defaults to train)  = None  
       -v --version show version                   = False   
       -x --xys     max #bins in discretization    = 10    
@@ -36,7 +36,7 @@ __version__ = "0.1.0"
 import re,ast,sys,math,random,copy,traceback
 from fileinput import FileInput as file_or_stdin
 from typing import Any as any
-from typing import Callable as callable
+from typing import Callable 
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Types
@@ -47,7 +47,7 @@ class o:
   def __repr__(i): return i.__class__.__name__+str(show(i.__dict__))
 
 # Other types used in this system.
-xy,cols,data,node,num,sym = o,o,o,o,o,o
+xy,cols,data,node,num,sym,node,want = o,o,o,o,o,o,o,o
 col     = num    | sym
 number  = float  | int
 atom    = number | bool | str # and sometimes "?"
@@ -99,16 +99,19 @@ def NUM(txt=" ",at=0,has=None) -> num:
   "NUM cokumns incrementally summarizes a stream of numbers."
   return o(this=NUM, txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
            has=has, rank=0, # if has non-nil, used by the stats package
-           mu=0, m2=0, maximize = txt[-1] != "-")
+           mu=0, m2=0, sd=0, maximize = txt[-1] != "-")
 
 def XY(at,txt,lo,hi=None,ys=None) -> xy:
   "`ys` counts symbols seen in one column between `lo`.. `hi` of another column."
   return o(this=XY, n=0, at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
 
-def NODE(klasses: classes, left=None, right=None):
+def NODE(klasses: classes, left=None, right=None) -> node:
   "NODEs are parts of binary trees."
-  return o(classes=klasses, left=left, right=right)
+  return o(this=NODE, klasses=klasses, left=left, right=right)
 
+def WANT(best="best", bests=1, rests=1) -> want:
+  "Used to score how well a distribution selects for  `best'."
+  return o(this=WANT, best=best, bests=bests, rests=rests)
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## CRUD (create, read, update, delete)
 # We don't need to delete (thanks to garbage collection).  But we need create, update.
@@ -172,6 +175,7 @@ def _add2num(i:num, x:any, n:int) -> None:
     d     = x - i.mu
     i.mu += d / i.n
     i.m2 += d * (x -  i.mu)
+    i.sd  = 0 if i.n <2 else (i.m2/(i.n-1))**.5
 
 def add2xy(i:xy, x: int | float , y:atom) -> None:
   "Update an XY with `x` and `y`."
@@ -183,11 +187,11 @@ def add2xy(i:xy, x: int | float , y:atom) -> None:
 
 def mergable(xy1: xy, xy2: xy, small:int) -> xy | None:
   "Return the merge  if the whole is better than the parts. Used  by `merges()`."
-  mabye = merge([xy1,xy2])
+  maybe = merge([xy1,xy2])
   e1  = ent(xy1.ys)
   e2  = ent(xy2.ys)
-  e3  = ent(out.ys)
-  if xy1.n < small or xy2.n < small or e3 <= (xy1.n*e1 + xy2.n*e2)/out.n: return maybe 
+  if xy1.n < small or xy2.n < small: return maybe
+  if ent(maybe.ys) <= (xy1.n*e1 + xy2.n*e2)/maybe.n: return maybe
 
 def merge(xys : list[xy]) -> xy:
   "Fuse together some  XYs into one XY. Called by `mergable`."
@@ -222,7 +226,7 @@ def mid(i:col) -> atom:
 
 def div(i:col) -> float:
   "Diversity of a column."
-  return  (0 if i.n <2 else (i.m2/(i.n-1))**.5) if i.this is NUM else ent(i.has)
+  return i.sd if i.this is NUM else ent(i.has)
 
 def stats(i:data, fun=mid, what:cols=None) -> dict[str,atom]:
   "Stats of some columns (defaults to `fun=mid` of `data.cols.x`)."
@@ -245,8 +249,8 @@ def wanted(i:want, d:dict) -> float :
   "How much does d selects for `i.best`? "
   b,r = 1E-30,1E-30 # avoid divide by zero errors
   for k,v in d.items():
-    if k==i.best: b += v/i.BESTS
-    else        : r += v/i.RESTS
+    if k==i.best: b += v/i.bests
+    else        : r += v/i.rests
   support     = b        # how often we see best
   probability = b/(b+r)  # probability of seeing best, relative to  all probabilities
   return support * probability
@@ -259,14 +263,14 @@ def wanted(i:want, d:dict) -> float :
 # [ChiMerge](https://sci2s.ugr.es/keel/pdf/algorithm/congreso/1992-Kerber-ChimErge-AAAI92.pdf)
 # algorithm.
 
-def discretize(i:col, klasses:classes, want: callable) -> list[xy] :
+def discretize(i:col, klasses:classes, want1: Callable) -> list[xy] :
   "Find good ranges for the i-th column within `klasses`."
   bins = {}
   [_divideIntoBins(i, r[i.at], klass, bins) for klass,rows1 in klasses.items()
                                   for r in rows1 if r[i.at] != "?"]
-  return _combine(col, sorted(bins.values(), key=lambda z:z.lo),
-                       sum(len(rs) for rs in klasses.values()) / the.xys,
-                       want)
+  return _combine(i, sorted(bins.values(), key=lambda z:z.lo),
+                     sum(len(rs) for rs in klasses.values()) / the.xys,
+                     want1)
 
 def _divideIntoBins(i:col,x:atom, y:str, bins:dict) -> None:
   "Store `x,y` in the right part of `bins`. Used by `discretize()`."
@@ -274,12 +278,16 @@ def _divideIntoBins(i:col,x:atom, y:str, bins:dict) -> None:
   bins[k] = bins[k] if k in bins else XY(i.at,i.txt,x)
   add2xy(bins[k],x,y)
 
-def _combine(i:col, xys: list[xy], small, want) -> list[xy] :
-  if col.this is NUM:
-    xys = _span(_merges(xys, lambda a,b: mergable(a,b,small))) 
-    n   = the.wanted * sorted(wanted(want,xy1.ys) for xys1 in xys])[-1]
-    xys = _merges(xys, lambda a,b: wanted(want, a.ys) < n wanted(want, b.ys) < n)
-  return xys
+def _combine(i:col, xys: list[xy], small, want1) -> list[xy] :
+  def mergeDull(a,b,n):
+    if wanted(want1,a.ys) < n and wanted(want1,b.ys) < n:
+      return merge([a,b])
+
+  if i.this is NUM:
+    xys = _span(_merges(xys, lambda a,b: mergable(a,b,small)))
+    n   = the.enough * sorted([wanted(want1,xy1.ys) for xy1 in xys])[-1]
+    xys = _merges(xys, lambda a,b: mergeDull(a,b,n))
+  return  [] if len(xys)==1 else xys
 
 def _merges(b4, fun):
   "Try merging adjacent items in `b4`. If successful, repeat. Used by `_combine()`."
@@ -305,13 +313,13 @@ def _span(xys : list[xy]) -> list[xy]:
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Trees
 
-def tree(i:data, klasses:classes, wanted:callable, stop:int=4) -> node:
+def tree(i:data, klasses:classes, want1:Callable, stop:int=4) -> node:
   "Return a binary tree, each level splitting on the range  with most `score`."
   def _grow(klasses:classes, lvl:int=1, above:int=1E30) -> node:
     "Collect the stats needed for branching, then call `_branch()`."
     counts = {k:len(rows1) for k,rows1 in klasses.items()}
     total  = sum(n for n in counts.values())
-    most   = max(counts, key=counts.get)
+    most   = counts[max(counts, key=counts.get)]
     return _branch(NODE(klasses), lvl, above, total, most)
 
   def _branch(here:node, lvl:int, above:int, total:int, most:int) -> node:
@@ -325,9 +333,9 @@ def tree(i:data, klasses:classes, wanted:callable, stop:int=4) -> node:
 
   def _want(cut:xy, klasses:classes) -> float :
     "How much do we want each way that `cut` can split the `klasses`?"
-    return want(wanted, {k:len(rows1) for k,rows1 in _split(cut,klasses)[0].items()})
+    return wanted(want1, {k:len(rows1) for k,rows1 in _split(cut,klasses)[0].items()})
 
-  cuts = [cut for col1 in i.cols.x for cut in discretize(col1,klasses)]
+  cuts = [cut for col1 in i.cols.x for cut in discretize(col1,klasses,want1)]
   return _grow(klasses)
 
 def _split(cut:xy, klasses:classes) -> tuple[classes,classes]:
@@ -335,9 +343,18 @@ def _split(cut:xy, klasses:classes) -> tuple[classes,classes]:
   are  = {klass:[] for klass in klasses}
   arent = {klass:[] for klass in klasses}
   for klass,rows1 in klasses.items():
-    [(are if i.selects(row1) else arent)[klass].append(row1) for row1 in rows1]
+    [(are if selects(cut,row1) else arent)[klass].append(row1) for row1 in rows1]
   return are,arent
 
+def nodes(i:node, lvl=0, left=True) -> node:
+  if i:
+    yield i,lvl,left
+    for j,lvl1,left1 in nodes(i.left,  lvl+1, left=True) : yield j,lvl1,left1
+    for j,lvl1,right1 in nodes(i.right, lvl+1, left=False): yield j,lvl1,right1
+
+def showTree(i:node):
+  for j,lvl,isLeft in nodes(i):
+     print("|.. "*lvl,  "if" if isLeft else "else", {k:len(rows) for k,rows in j.klasses.items()})
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Distances
 
@@ -574,7 +591,7 @@ class eg:
                       for i,row in enumerate(data1.rows) if i%10==0)))
     for _ in range(5):
       print("")
-      x,y,C = twoFaraway(data1,data1.rows)
+      x,y,C = _twoFaraway(data1,data1.rows)
       print(x,C);print(y)
 
   def branch():
@@ -613,13 +630,24 @@ class eg:
 
   def discretize():
     "Find useful ranges."
-    data1 = DATA(csv(the.train), rank=True)
-    n = int(len(data1.rows)**.5)
-    klasses = dict(best=data1.rows[:n], rest=(data1.rows[n:]))
+    data1   = DATA(csv(the.train), rank=True)
+    bests   = int(len(data1.rows)**.5)
+    rests   = len(data1.rows) - bests
+    klasses = dict(best=data1.rows[:bests], rest=(data1.rows[bests:]))
+    want1   = WANT(best="best", bests=bests, rests=rests)
+    print("\nbaseline", " "*22, dict(best=bests,rest=rests))
     for xcol in data1.cols.x:
       print("")
-      for xy1 in discretize(xcol, klasses):
-        print(show(bore(xy1.ys,"best",n,4*n)),f"{show(xy1):20}",xy1.ys,sep="\t") 
+      for xy1 in discretize(xcol, klasses, want1):
+        print(show(wanted(want1,xy1.ys)),f"{show(xy1):20}",xy1.ys,sep="\t") 
+
+  def tree():
+    data1   = DATA(csv(the.train), rank=True)
+    bests   = int(len(data1.rows)**.5)
+    rests   = len(data1.rows) - bests
+    klasses = dict(best=data1.rows[:bests], rest=(data1.rows[bests:]))
+    want1   = WANT(best="best", bests=bests, rests=rests)
+    showTree(tree(data1,klasses,want1))
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 if __name__ == "__main__": main()
