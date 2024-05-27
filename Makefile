@@ -13,12 +13,12 @@ ISSUES     = <a href="http://github.com/timm/ezr/issues">issues</a>
 MENU       = $(HOME) | $(CONTRIBUTE) | $(ISSUES) | $(LICENSE)
 
 IMAGE      = <img src="img/ezr.png" align=right width=150>
-CSS        = p { text-align: right;} pre,code {font-size: x-small;}
+CSS        = pre,code {font-size: x-small;}
 
 #----------------------------------------------------------
 SHELL     := bash 
 MAKEFLAGS += --warn-undefined-variables
-.SILENT:  
+#.SILENT:  
 
 Root=$(shell git rev-parse --show-toplevel)
 
@@ -38,10 +38,13 @@ name:
 install   : ## install as  a local python package
 	pip install -e  . --break-system-packages 
 
-tests :
-	[[ python3 -B erz.py -R all ]] \
-		&& sed -i '' '1 s/failing-red/passing-green/' README.md \
-		|| sed -i '' '1 s/passing-green/failing-red/' README.md  
+tests:
+	-python3 -B ezr.py -R all; if [ $$? -eq 0 ];               \
+	then printf "\n\033[1;32m==> PASSES\033[0m\n";              \
+	     sed -i '' '1 s/failing-red/passing-green/' README.md;   \
+	else printf "\n\033[1;31m==> FAILS\033[0m\n";                 \
+			 sed -i '' '1 s/passing-green/failing-red/' README.md;     \
+  fi
 
 docs/index.html :docs/ezr.html ## make docs/index.html
 	cp $< $@
@@ -77,10 +80,10 @@ OUTS= $(subst data/config,var/out,$(wildcard data/config/*.csv)) \
       $(subst data/process,var/out,$(wildcard data/process/*.csv)) \
       $(subst data/hpo,var/out,$(wildcard data/hpo/*.csv))
 
-var/out/%.csv : data/config/%.csv  ; src/ezr.py -f $< -R smo20 | tee $@
-var/out/%.csv : data/misc/%.csv    ; src/ezr.py -f $< -R smo20 | tee $@
-var/out/%.csv : data/process/%.csv ; src/ezr.py -f $< -R smo20 | tee $@
-var/out/%.csv : data/hpo/%.csv     ; src/ezr.py -f $< -R smo20 | tee $@
+var/out/%.csv : data/config/%.csv  ; ezr.py -f $< -R smo20 | tee $@
+var/out/%.csv : data/misc/%.csv    ; ezr.py -f $< -R smo20 | tee $@
+var/out/%.csv : data/process/%.csv ; ezr.py -f $< -R smo20 | tee $@
+var/out/%.csv : data/hpo/%.csv     ; ezr.py -f $< -R smo20 | tee $@
 
 eg1: 
 	$(MAKE) -j 8 $(OUTS)

@@ -27,8 +27,8 @@
 """
 # <h2>Note</h2><p align="left">See end-of-file for this file's  conventions / principles /practices.
 # And FYI, our random number seed is an 
-# [odious, apocalyptic, deficient, pernicious, polite, prime](https://numbersaplenty.com/1234567891) 
-# number. </center>     
+# odious, apocalyptic, deficient, pernicious, polite, prime number
+# (see https://numbersaplenty.com/1234567891).
 
 __author__  = "Tim Menzies"
 __version__ = "0.1.0"
@@ -37,7 +37,6 @@ import re,ast,sys,math,random,copy,traceback
 from fileinput import FileInput as file_or_stdin
 from typing import Any as any
 from typing import Callable 
-
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Types
 
@@ -131,9 +130,9 @@ def COLS(names: list[str]) -> cols:
 # (3) A trailing 'X' denotes 'ignore'.      
 # (4)  If not ignoring, then the column is either a dependent goals (held in `cols.y`) or 
 #   a independent variable (held in `cols.x`  
-# Using those rules,
+
 def add2cols(i:cols, n:int, s:str) -> col:
-  "create a NUM or SYM from `s`. Adds it to `x`, `y`, `all` (if appropriate)."
+  "Create a NUM or SYM from `s` using the above rules. Adds it to `x`, `y`, `all` (if appropriate)."
   new = (NUM if s[0].isupper() else SYM)(txt=s, at=n)
   if s[-1] == "!": i.klass = new
   if s[-1] != "X": (i.y if s[-1] in "!+-" else i.x).append(new)
@@ -350,12 +349,14 @@ def _split(cut:xy, klasses:classes) -> tuple[classes,classes]:
   return are,arent
 
 def nodes(i:node, lvl=0, left=True) -> node:
+  "Iterator to return nodes."
   if i:
     yield i,lvl,left
     for j,lvl1,left1  in nodes(i.left,  lvl+1, left=True) : yield j,lvl1,left1
     for j,lvl1,right1 in nodes(i.right, lvl+1, left=False): yield j,lvl1,right1
 
 def showTree(i:node):
+  "Pretty print a tree."
   print("")
   for j,lvl,isLeft in nodes(i):
     pre=""
@@ -650,6 +651,7 @@ class eg:
         print(show(wanted(want1,xy1.ys)),f"{show(xy1):20}",xy1.ys,sep="\t") 
 
   def tree():
+    "Test the generation of binary decision tree."
     data1   = DATA(csv(the.train), rank=True)
     bests   = int(len(data1.rows)**.5)
     rests   = len(data1.rows) - bests
@@ -657,7 +659,11 @@ class eg:
     want1   = WANT(best="best", bests=bests, rests=rests)
     showTree(tree(data1,klasses,want1))
 
+  def _bad():
+    "To test if `ezr.py -R all`  can handle failing tests,  remove underscore in this function's name."
+
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
+
 if __name__ == "__main__": main()
 
 # ## Conventions in this code

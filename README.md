@@ -1,4 +1,4 @@
-<img alt="Tests" src="https://img.shields.io/badge/tests-failing-red"> <img 
+<img alt="Tests" src="https://img.shields.io/badge/tests-passing-green"> <img 
 alt="Pything" src="https://img.shields.io/badge/python-v13-blue"> <a 
 href="https://github.com/timm/2ez/blob/main/LICENSE"><img
 alt="License" src="https://img.shields.io/badge/license-BSD2-pink"></a> <img

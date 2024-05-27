@@ -98,6 +98,10 @@ containers
 Functions over 5 lines get a second look: can they be split in two?
   Also, line length,  try not to blow 90 characters.
 
+### Debugging
+
+See marcello's comments at  https://mail.google.com/mail/u/2/#inbox/KtbxLxGPlKwzqGZDqgxdFsdxcMGtdpdJNV
+
 ## KE
 
 ### Less is more
@@ -115,11 +119,10 @@ Do everything we can, with fewer labels.
 
 ### Trees are just recursive ranges
 
-### Naive Bayes is just N DATA
+### Naive Bayes is just N DATA*
 - **Worse is better:** Simpler code has better survival characteristics than the-right-thing.
 - ** learning in the long tail**
 
-----------
 # Just enough SE
 
 
