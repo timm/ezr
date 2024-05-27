@@ -38,6 +38,11 @@ name:
 install   : ## install as  a local python package
 	pip install -e  . --break-system-packages 
 
+tests :
+	[[ python3 -B erz.py -R all ]] \
+		&& sed -i '' '1 s/failing-red/passing-green/' README.md \
+		|| sed -i '' '1 s/passing-green/failing-red/' README.md  
+
 docs/index.html :docs/ezr.html ## make docs/index.html
 	cp $< $@
 
