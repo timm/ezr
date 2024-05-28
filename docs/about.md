@@ -84,11 +84,9 @@ in `-` is a numeric goal to be `maximzed`.
 
 ```python
 def SYM(txt=" ",at=0) -> sym:
-  "SYM columns incrementally summarizes a stream of symbols."
   return o(this=SYM, txt=txt, at=at, n=0, has={})
 
 def NUM(txt=" ",at=0,has=None) -> num:
-  "NUM cokumns incrementally summarizes a stream of numbers."
   return o(this=NUM, txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
            has=has, rank=0, # if has non-nil, used by the stats package
            mu=0, m2=0, sd=0, maximize = txt[-1] != "-")
@@ -132,36 +130,34 @@ def add2data(i:data,row1:row) -> None:
   else: i.cols= COLS(row1)
 ```
 
-When a `row` is added to a DATA, we walk though `data.cols.all`
-columns, updating each.  When  a new `row1` is `appended()` to NUMs,
+In `add2data()`, when a `row` is added to a DATA, we walk though `i.cols.all`
+columns, updating each.  When  a new `row1` is `append()`ed to NUMs,
 we update the counters needed to incrementally compute mean and
 standard deviation [^welford]. Also, if `num.has` exists, we use
-it to cache the observed numeric values.
+it to cache the observed numeric values (for now, we do not need that cache-- but it will
+be needed when  e talk to stats).
 
 [^welford]: https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
 
 ```python
-def append(data,row1):
-  if    data.cols: data.rows.append([add(col,x) for col,x in zip(data.cols.all,row1)])
-  else: data.cols= cols(row1)
-
-def adds(col,lst): [add(col,x) for x in lst]; return col
-
-def add(col,x,n=1):
-  if x!="?":
-    col.n += n
-    if col.isNum: _add2num(col,x,n)
-    else: col.has[x] = col.has.get(x,0) + n
+def add2col(i:col, x:any, n=1) -> any:
+  "`n` times, update NUM or SYM with one item. Used by `add2data()`." 
+  if x != "?":
+    i.n += n
+    if i.this is NUM: _add2num(i,x,n)
+    else: i.has[x] = i.has.get(x,0) + n
   return x
 
-def _add2num(num,x,n):
-  num.lo = min(x, num.lo)
-  num.hi = max(x, num.hi)
+def _add2num(i:num, x:any, n:int) -> None:
+  "`n` times, update a NUM with one item. Used by `add2col()`."
+  i.lo = min(x, i.lo)
+  i.hi = max(x, i.hi)
   for _ in range(n):
-    if num.has != None: num.has += [x] # used later, when we do statistics
-    d       = x - num.mu
-    num.mu += d / num.n
-    num.m2 += d * (x -  num.mu)
+    if i.has != None: i.has += [x]
+    d     = x - i.mu
+    i.mu += d / i.n
+    i.m2 += d * (x -  i.mu)
+    i.sd  = 0 if i.n <2 else (i.m2/(i.n-1))**.5
 ```
 
 In her wisdom, the programmer added a sort function that could order the rows
@@ -173,11 +169,12 @@ and `d2h` is the distance from some goals to that  heaven.
 [^rowOrder]: domiantion, etc
 
 ```python
-def d2h(data,row):
-  n = sum(abs(norm(num,row[num.at]) - num.maximize)**the.p for num in data.cols.y)
-  return (n / len(data.cols.y))**(1/the.p)
+def d2h(i:data, r:row) -> float:
+  n = sum(abs(norm(num,r[num.at]) - num.maximize)**the.p for num in i.cols.y)
+  return (n / len(i.cols.y))**(1/the.p)
 
-def norm(num,x): return x if x=="?" else (x-num.lo)/(num.hi - num.lo - 1E-30)
+def norm(i:num,x) -> float:
+  return x if x=="?" else (x-i.lo)/(i.hi - i.lo - 1E-30)
 ```
 
 > [!NOTE]
