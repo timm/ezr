@@ -94,7 +94,7 @@ So now we ask two questions:
 
 Aside: formally, Question1 is a multi-objective explanation problem and Question2 is an active learning problem [^semi].
 
-Of the two questions, the second one is far more interesting.  There are many tasks in this world and only
+Of the two questions, the second one is far more interesting.  Life is short but the road is long. There are many tasks in this world and only
 limited time to collect data and reason about each one. In fact, all of science (and, indeed, much of the
 human condition) might
 be characterized by "of all the things you we do, how to quickly find out what should we do?". For this question, It turns out we have some very
