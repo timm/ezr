@@ -283,24 +283,24 @@ of "best" and "rest" are selected by the bin.
 
 
 ```
-score   bin                     holds
------   -----------             -------------------------  
-0.748	68 <= Volume < 91	    {'best': 16, 'rest': 40}
-0.037	96 <= Volume < 116	    {'best': 2, 'rest': 74}
-0.013	119 <= Volume < 140	    {'best': 1, 'rest': 59}
-0.0	    141 <= Volume < 163	    {'rest': 26}
-0.0	    168 <= Volume < 183	    {'rest': 9}
-0.0	    198 <= Volume < 200	    {'rest': 13}
-0.0	    225 <= Volume < 232	    {'rest': 32}
-0.0	    250 <= Volume < 260	    {'rest': 25}
-0.0	    262 <= Volume < 267	    {'rest': 3}
-0.0	    302 <= Volume < 307	    {'rest': 25}
-0.0	    Volume == 318	        {'rest': 17}
-0.0	    340 <= Volume < 351	    {'rest': 27}
-0.0	    Volume == 360	        {'rest': 4}
-0.0	    383 <= Volume < 400	    {'rest': 16}
-0.0	    Volume == 429	        {'rest': 3}
-0.0	   440 <= Volume < 455	    {'rest': 6}
+score   bin                      holds
+-----   -----------              -------------------------  
+0.748   68 <= Volume < 91        {'best': 16, 'rest': 40}
+0.037   96 <= Volume < 116       {'best': 2, 'rest': 74}
+0.013   119 <= Volume < 140      {'best': 1, 'rest': 59}
+0.0     141 <= Volume < 163      {'rest': 26}
+0.0     168 <= Volume < 183      {'rest': 9}
+0.0     198 <= Volume < 200      {'rest': 13}
+0.0     225 <= Volume < 232      {'rest': 32}
+0.0     250 <= Volume < 260      {'rest': 25}
+0.0     262 <= Volume < 267      {'rest': 3}
+0.0     302 <= Volume < 307      {'rest': 25}
+0.0     Volume == 318            {'rest': 17}
+0.0     340 <= Volume < 351      {'rest': 27}
+0.0     Volume == 360            {'rest': 4}
+0.0     383 <= Volume < 400      {'rest': 16}
+0.0     Volume == 429            {'rest': 3}
+0.0     440 <= Volume < 455      {'rest': 6}
 ```
 
 In the above, `holds` shows how many rows were selected (out of 20
