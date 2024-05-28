@@ -1,6 +1,5 @@
 | DATASET | Category | 
 | ----------- | ----------- |
-| china | C | 
 | COC1000 | A | 
 | nasa93dem | B | 
 | pom3a | A | 
