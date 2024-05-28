@@ -88,11 +88,12 @@ So now we ask two questions:
 1. What is in the contrast between "best" and "rest"?
   That is to say, what attribute ranges select for "best" and let us avoid the "rest"?
   The answer to this question will let us define a method for exploring the better cars and ignoring the worst ones.
-2.  How can we answer Question1 with minimum effort? One way to answer Question1 is to drive all 400 cars for
+2.  How can we answer Question1 with minimum effort? We ask this since there are hard ways, and much easier ways, to answer Question1. The hardest way would be to drive all 400 cars for
    a day each, then write down the observed mileage , acceleration, etc. But can we do better than that? Just
    drive a few cars and let that experience tells us what cars to try next?
 
-Formally, Question1 is a multi-objective explanation problem and Question2 is an active learning problem [^semi].
+Aside: formally, Question1 is a multi-objective explanation problem and Question2 is an active learning problem [^semi].
+
 Of the two questions, the second one is far more interesting.  There are many tasks in this world and only
 limited time to collect data and reason about each one. In fact, all of science (and, indeed, much of the
 human condition) might
