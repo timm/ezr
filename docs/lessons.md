@@ -46,6 +46,22 @@ Lots of little tests. At end of file, add in demos/tests as methods of the `eg` 
 - set up (reset seed, save settings)
 - tear down (restore)
 
+it is difficult to teach debugging on non-trivial examples; students need domain knowledge about the SUT to make a judgement on whether a location is buggy or not.
+
+- run tests. re-run tests. beck's watch comamnd
+- black-box, white-box, formal: fuzzing, clustering, safety crtical ssytems
+- shaperio: https://damorim.github.io/publications/li-etal-icse2018.pdf
+- whylines: needs specific tool support. but it does teach us that testing has a search structure
+- delta debugging
+
+testing big is very different to testing small
+- know the location is not even relevant (zhe's work)
+- test prioritizaition strategies 
+  - saved google 2015 (sebansian etc)
+  - test new, test things that failred, test thigns that have nt been tested lately
+- big test is like big exmpore
+  - seqiential model optmization. how to test a little then go forth and hunt down the rest.
+
 ### Composition
 
 Allow for reading from standard input (so this code can be used in a pipe).

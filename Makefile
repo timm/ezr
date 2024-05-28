@@ -13,7 +13,7 @@ ISSUES     = <a href="http://github.com/timm/ezr/issues">issues</a>
 MENU       = $(HOME) | $(CONTRIBUTE) | $(ISSUES) | $(LICENSE)
 
 IMAGE      = <img src="img/ezr.png" align=right width=150>
-CSS        = pre,code {font-size: x-small;}
+CSS        = p { text-align: right; } pre,code {font-size: x-small;}
 
 #----------------------------------------------------------
 SHELL     := bash 

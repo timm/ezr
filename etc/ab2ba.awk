@@ -4,7 +4,7 @@ END {n=length(a)
        if (a[i+1] ~ /^[ \t]+"/) {
          gsub(/"/,     "", a[i+1])
          sub(/^[ \t]*/,"", a[i+1])
-         print "# <p align=right>" a[i+1] "</p>"
+         print "# " a[i+1] 
          print a[i]
          i++ 
        } else
