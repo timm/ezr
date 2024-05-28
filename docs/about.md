@@ -190,7 +190,8 @@ distances between the dependent `y` goal values. Usually distance is defined as 
 distance between the independent `x` values-- see `dists()` (below).
 
 To sort rows, when we call `DATA(rows, ranl=True)`. 
-If we sort the car data (described above)  in this way, then print ever 20th car, the generates
+If we sort the car data (described above)  in this way, then print ever 20th car, thos
+results in the following. 
 
 ```
 N       Clndrs   Volume   HpX   Model   origin   Lbs-   Acc+   Mpg+
@@ -216,29 +217,36 @@ N       Clndrs   Volume   HpX   Model   origin   Lbs-   Acc+   Mpg+
 340 	 8       400      150      70    1       3761     9.5   20
 360 	 8       351      153      71    1       4154    13.5   10
 380 	 8       400      175      72    1       4385    12     10
+```
+This data has 398 examples
+and we can call the top $\sqrt{398} \approx 20$ rows the "best" and the remainder
+the "rest". In the above, we see that the "best" cars have  much lower weight,
+and have much more acceleration and miles per hour. 
 
-N  Clndrs   Volume   HpX   Model   origin   Lbs-   Acc+   Mpg+
--- ------   ------
-0 	 [4       97         52      82        2          2130     24.6     40]
-20 	 [4      91         60      78        3          1800     16.4     40]
-40 	 [4      112        88      82        1          2605     19.6     30]
-60 	 [4      112        88      82        1          2395     18       30]
-80 	 [4      97         88      72        3          2100     16.5     30]
-100 	 [4     79         67      74        2          1963     15.5     30]
-120 	 [4     98         60      76        1          2164     22.1     20]
-140 	 [4     140        88      78        1          2720     15.4     30]
-160 	 [4     140        72      71        1          2408     19       20]
-180 	 [8     260        90      79        1          3420     22.2     20]
-200 	 [6     250        78      76        1          3574     21       20]
-220 	 [6     232        100     75        1          2914     16       20]
-240 	 [6     225        110     78        1          3620     18.7     20]
-260 	 [6     225        100     76        1          3651     17.7     20]
-280 	 [6     250        88      71        1          3139     14.5     20]
-300 	 [8     262        110     75        1          3221     13.5     20]
-320 	 [8     318        150     70        1          3436     11       20]
-340 	 [8     400        150     70        1          3761     9.5      20]
-360 	 [8     351        153     71        1          4154     13.5     10]
-380 	 [8     400        175     72        1          4385     12       10]
+So now the question becomes, what is in the contrast between "best" and "rest"?
+That is to say, what attribute ranges select for "best" and let us avoid the "rest"?
+To answer that, lets turn to discretizatiom.
+
+## Dsicretization : Condensing Knowledge to Just  a Few Ranges
+
+One way to understand data is to ask which parts of it select from what classes (in our case, "best" and
+"rest"). For example, if we are always awake when we go to work, and if "at work" is what we are trying
+to predict, then 24 hours in a day might be descretized into two  bins:
+
+- another for 8am to 6pm
+- one for 6pm to 8am
+
+There  are many ways to discretize data (e.g. see the 100+  methods discussed in Garcia et. al. [^garcia12]).
+Here, just do something simple:
+
+- Sort the numerics of one column then divide them into some very small bins with borders _(max-min)/16_. 
+
+[^garcia12]: Garcia, S., Luengo, J., Sáez, J. A., Lopez, V., & Herrera, F. (2012). A survey of discretization techniques: Taxonomy and empirical analysis in supervised learning. IEEE transactions on Knowledge and Data Engineering, 25(4), 734-750.
+https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6152258
+
+[^rama2025]: Ramírez-Gallego, Sergio, Salvador García, Héctor Mouriño-Talín, David Martínez-Rego, Verónica Bolón-Canedo, Amparo Alonso-Betanzos, José Manuel Benítez, and Francisco Herrera. "Data discretization: taxonomy and big data challenge." (2015).
+https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=760d884819877959b6a3e1176ed30633e6fdb1f8
+
 
 in that sort
 proFor the car dat described above,
