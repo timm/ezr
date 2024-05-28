@@ -21,7 +21,15 @@ ezr -t fie.csv -R smo20
 
 ## Exercise1
 
-Make your own data. Find something where there are multiple goals. Echo the format of
+Make your own data. At least 50 lines. e.g. 
+
+- find 50 movies
+- then 20 times,
+  - pick 3 items at random and ask people which one is best. Add one to the score of that movie
+    and zero to the others). 
+  - List some details about the movie (location, running time,  number of big name stars, get creative)
+
+      Echo the format of
 the data in that directory. See what you get:
 
 ```

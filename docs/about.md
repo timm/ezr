@@ -49,6 +49,67 @@ with and `X`). Also, we want light cars (since they are cheaper to
 build and buy), fast acceleration, and good miles per gallon. So
 these get marked with `Lhs-,Acc+,Mpg+`
 
+TO be more specific, this data set has around 400 cars.
+Using the `d2h` measure (see below), we can sort those cars best to worst.
+Lets say the top $\sqrt{N}=20$ items in that sort are "best" and the others
+are "rest". Here's every 20th car in that sort, with a line showing the border
+between "best" and "rest".
+In the above, we see that the "best" cars have  much lower weight,
+and have much more acceleration and miles per hour. 
+
+
+```
+N       Clndrs   Volume   HpX   Model   origin   Lbs-   Acc+   Mpg+
+--      ------   -------  ---   -----   ------   ----   ----   ----
+0 	     4        97       52      82    2       2130    24.6   40
+20 	     4        91       60      78    3       1800    16.4   40
+--      ------   -------  ---   -----   ------   ----   ----   ----
+40 	     4       112       88      82    1       2605    19.6   30
+60 	     4       112       88      82    1       2395    18     30
+80 	     4        97       88      72    3       2100    16.5   30
+100 	 4        79       67      74    2       1963    15.5   30
+120 	 4        98       60      76    1       2164    22.1   20
+140 	 4       140       88      78    1       2720    15.4   30
+160 	 4       140       72      71    1       2408    19     20
+180 	 8       260       90      79    1       3420    22.2   20
+200 	 6       250       78      76    1       3574    21     20
+220 	 6       232      100      75    1       2914    16     20
+240 	 6       225      110      78    1       3620    18.7   20
+260 	 6       225      100      76    1       3651    17.7   20
+280 	 6       250       88      71    1       3139    14.5   20
+300 	 8       262      110      75    1       3221    13.5   20
+320 	 8       318      150      70    1       3436    11     20
+340 	 8       400      150      70    1       3761     9.5   20
+360 	 8       351      153      71    1       4154    13.5   10
+380 	 8       400      175      72    1       4385    12     10
+```
+So now we ask two questions:
+
+1. What is in the contrast between "best" and "rest"?
+  That is to say, what attribute ranges select for "best" and let us avoid the "rest"?
+  The answer to this question will let us define a method for exploring the better cars and ignoring the worst ones.
+2.  How can we answer Question1 with minimum effort? One way to answer Question1 is to drive all 400 cars for
+   a day each, then write down the observed mileage , acceleration, etc. But can we do better than that? Just
+   drive a few cars and let that experience tells us what cars to try next?
+
+Formally, Question1 is a multi-objective explanation problem and Question2 is an active learning problem [^semi].
+Of the two questions, the second one is far more interesting.  There are many tasks in this world and only
+limited time to collect data and reason about each one. In fact, all of science (and, indeed, much of the
+human condition) might
+be characterized by "of all the things you we do, how to quickly find out what should we do?". For this question, It turns out we have some very
+interesting answers.
+
+The rest of this work answers these two questions. For simplicty's sake, we will explore Question1 before Question2.
+
+[^semi]: Active learning is to a broader area called "semi-supervised
+learning", As [Pooja Palod]{(https://www.linkedin.com/pulse/active-learning-same-semi-supervised-pooja-palod/)
+says, "Semi supervised and Active Learning are trying to solve same
+problem (learn more form unlabeled data) the way in which they do
+is different.  Active learning focus on learning from important
+examples from unlabeled data ( i.e. labels of some data points are
+more informative than others) while semi supervised learning prefer
+to use entire unlabeled dataset."
+
 ## COLS : managing sets of columns
 
 And the programmer wrote code to turn these names into NUMeric and
