@@ -3,7 +3,7 @@ alt="Pything" src="https://img.shields.io/badge/python-v13-blue"> <a
 href="https://github.com/timm/2ez/blob/main/LICENSE"><img
 alt="License" src="https://img.shields.io/badge/license-BSD2-pink"></a> <img
 src="https://img.shields.io/badge/purpose-ai%20,%20se-blueviolet"> <img
-alt="Platform" src="https://img.shields.io/badge/platform-osx%20,%20linux-lightgrey"><a 
+alt="Platform" src="https://img.shields.io/badge/platform-osx%20,%20linux-lightgrey"> <a 
 href="https://zenodo.org/doi/10.5281/zenodo.11183058"><img src="https://zenodo.org/badge/750626390.svg" alt="DOI"></a><br clear=all>
 <a href="/docs/why.md">why less?</a> |
 <a href="/docs/less.md">why less?</a> |
