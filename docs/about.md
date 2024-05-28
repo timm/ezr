@@ -11,15 +11,15 @@ kilowatt-hours per 100 miles (kWh/100m);
 
 >[!NOTE]
 > <b> We present a successful  experiment in coding XAI (explainable AI) in the fewest
-lines of code. The code is written in functional style (so no classes and lots
-of list comprehensions).
-The work is guided by the [5-lines-per-function](https://coderanch.com/t/733272/engineering/Lines-Code-lines)
-rule (which, sometimes, we break).
-Instead of coding standard
-AI algorithms, we look under-the-hood to refactor and combine shared structures.
-Further, we assume that "less is more", both in our coding style and
-in our data processing (so the first we do with  data, is throw
-most of it away).</b>
+lines of code. The code is written in functional style (so no classes
+and lots of list comprehensions).  The work is guided by the
+[5-lines-per-function](https://coderanch.com/t/733272/engineering/Lines-Code-lines)
+rule (which, sometimes, we break).  Instead of coding standard AI
+algorithms, we look under-the-hood to find ways to combine all that
+functionality into just five classes (NUM,SYM,DATA,COLS,XY).  Further,
+we assume that "less is more", both in our coding style and in our
+data processing (so the first we do with  data, is throw most of
+it away).</b>
 
 In the beginning there was the data and the data was without form,
 and void; and confusion was upon the face of the humans.  And the
@@ -55,41 +55,47 @@ convenience) also maybe in `x` (for the independent variables) and maybe in `y` 
 the dependent goals that we want to predict or  minimize or maximize).
 
 ```python
-def COL(names):    # define a COLS struct
-      return o(x=[], y=[], all=[], klass=None, names=names)
+def _COLS(names: list[str]) -> cols:
+  return o(this=COLS, x=[], y=[], all=[], klass=None, names=names)
 
-def cols(names):   # COLS constructor
-  cols1 = COLS(names)
-  cols1.all = [_cols(cols1,n,s) for n,s in enumerate(names)]
-  return cols1
+def COLS(names: list[str]) -> cols:
+  i = _COLS(names)
+  i.all = [add2cols(i,n,s) for n,s in enumerate(names)]
+  return i
 
-def _cols(cols1, n, s):
-  col = (NUM if s[0].isupper() else SYM)(txt=s, at=n)
-  if s[-1] == "!": cols1.klass = col
-  if s[-1] != "X": (cols1.y if s[-1] in "!+-" else cols1.x).append(col)
-  return col
+def add2cols(i:cols, n:int, s:str) -> col:
+  new = (NUM if s[0].isupper() else SYM)(txt=s, at=n)
+  if s[-1] == "!": i.klass = new
+  if s[-1] != "X": (i.y if s[-1] in "!+-" else i.x).append(new)
+  return new
 ```
 
 And the code needed some help. NUM and SYM summarize streams of number
-and symbols. Both these know the `txt` of their column name; what
+and symbols. 
+
+- Both these know the `txt` of their column name; what
 column position they are `at`;  and how many `n` items they have
-seen so far. SYMs get a count of symbols seen so far in `has`, while for NUMs,
-keeping the numbers in `has` is optional.  NUMs also track the `lo`est and
+seen so far. 
+- SYMs get a count of symbols seen so far in `has`, while for NUMs,
+keeping the numbers in `has` is optional.  
+- NUMs also track the `lo`est and
 `hi`est values seen so far as well as their mean `mu`. And anything not ending
 in `-` is a numeric goal to be `maximzed`.
 
 ```python
-def SYM(txt=" ", at=0): 
-      return o(isNum=False, txt=txt, at=at, n=0, has={})
+def SYM(txt=" ",at=0) -> sym:
+  "SYM columns incrementally summarizes a stream of symbols."
+  return o(this=SYM, txt=txt, at=at, n=0, has={})
 
-def NUM(txt=" ", at=0, has=None):
-  return o(isNum=True,  txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
+def NUM(txt=" ",at=0,has=None) -> num:
+  "NUM cokumns incrementally summarizes a stream of numbers."
+  return o(this=NUM, txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
            has=has, rank=0, # if has non-nil, used by the stats package
-           mu=0, m2=0, maximize = txt[-1] != "-")
+           mu=0, m2=0, sd=0, maximize = txt[-1] != "-")
 ```
 
-To distinguish NUMs from SYMs, the programmer added a `isNum` flag (which
-as false for SYMs).
+To distinguish NUMs from SYMs, the programmer added a `this=NUM` and
+`this=SYM` flag.
 
 Internally, NUM and SYM are both `o`bjects where `o` is something
 that knows how to pretty-print itself.
@@ -99,14 +105,15 @@ class o:
   def __init__(i,**d): i.__dict__.update(d)
   def __repr__(i): return i.__class__.__name__+str(show(i.__dict__))
 
-def show(x):
+def show(x:any) -> any:
   it = type(x)
-  if it == float:  return round(x,the.decs)
-  if it == list:   return [show(v) for v in x]
-  if it == dict:   return "("+' '.join([f":{k} {show(v)}" for k,v in x.items()])+")"
-  if it == o:      return show(x.__dict__)
-  if it == str:    return '"'+str(x)+'"'
-  if callable(x):  return x.__name__
+  if it == o and x.this is XY: return showXY(x)
+  if it == float: return round(x,the.decs)
+  if it == list:  return [show(v) for v in x]
+  if it == dict:  return "("+' '.join([f":{k} {show(v)}" for k,v in x.items()])+")"
+  if it == o:     return show(x.__dict__)
+  if it == str:   return '"'+str(x)+'"'
+  if callable(x): return x.__name__
   return x
 ```
 
@@ -114,14 +121,15 @@ The programmer did place the rows in a DATA object that held the `rows`. Also,
 a summary of those rows is maintained in `cols` (which is a COLS object). 
 
 ```python
-def DATA():                       # define a DATA struct
-  return o(rows=[], cols=[])
+def DATA(src=None, rank=False) -> data:
+  i = _DATA()
+  [add2data(i,lst) for  lst in src or []]
+  if rank: i.rows.sort(key = lambda r:d2h(i,r))
+  return i
 
-def data(src=None, rank=False):   # DATA constructor
-  data1=DATA()
-  [append(data1,lst) for  lst in src or []]
-  if rank: data1.rows.sort(key = lambda lst:d2h(data1,lst))
-  return data1
+def add2data(i:data,row1:row) -> None:
+  if    i.cols: i.rows.append([add2col(col,x) for col,x in zip(i.cols.all,row1)])
+  else: i.cols= COLS(row1)
 ```
 
 When a `row` is added to a DATA, we walk though `data.cols.all`
