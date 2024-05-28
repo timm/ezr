@@ -576,10 +576,9 @@ class eg:
   def klasses():
     "Show sorted rows from a DATA."
     data1= DATA(csv(the.train), rank=True)
-    print(show(stats(data1, what=data1.cols.y)))
-    print(data1.cols.names)
+    print(', '.join(["N"]+ data1.cols.names))
     for i,row in enumerate(data1.rows):
-      if i % 40 == 0: print(i,"\t",row)
+      if i % 20 == 0: print(i,"\t",row)
 
   def clone():
     "Check that clones have same structure as original."
