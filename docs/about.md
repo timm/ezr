@@ -49,39 +49,39 @@ with and `X`). Also, we want light cars (since they are cheaper to
 build and buy), fast acceleration, and good miles per gallon. So
 these get marked with `Lhs-,Acc+,Mpg+`
 
-TO be more specific, this data set has around 400 cars.
+To be more specific, this data set has around 400 cars.
 Using the `d2h` measure (see below), we can sort those cars best to worst.
 Lets say the top $\sqrt{N}=20$ items in that sort are "best" and the others
 are "rest". Here's every 20th car in that sort, with a line showing the border
 between "best" and "rest".
-In the above, we see that the "best" cars have  much lower weight,
+We see that the "best" cars have  much lower weight,
 and have much more acceleration and miles per hour. 
 
 
 ```
 N       Clndrs   Volume   HpX   Model   origin   Lbs-   Acc+   Mpg+
+--       -----   -------  ---   -----   ------   ----   ----   ----
+0        4        97       52      82    2       2130    24.6   40
+20       4        91       60      78    3       1800    16.4   40
 --      ------   -------  ---   -----   ------   ----   ----   ----
-0 	     4        97       52      82    2       2130    24.6   40
-20 	     4        91       60      78    3       1800    16.4   40
---      ------   -------  ---   -----   ------   ----   ----   ----
-40 	     4       112       88      82    1       2605    19.6   30
-60 	     4       112       88      82    1       2395    18     30
-80 	     4        97       88      72    3       2100    16.5   30
-100 	 4        79       67      74    2       1963    15.5   30
-120 	 4        98       60      76    1       2164    22.1   20
-140 	 4       140       88      78    1       2720    15.4   30
-160 	 4       140       72      71    1       2408    19     20
-180 	 8       260       90      79    1       3420    22.2   20
-200 	 6       250       78      76    1       3574    21     20
-220 	 6       232      100      75    1       2914    16     20
-240 	 6       225      110      78    1       3620    18.7   20
-260 	 6       225      100      76    1       3651    17.7   20
-280 	 6       250       88      71    1       3139    14.5   20
-300 	 8       262      110      75    1       3221    13.5   20
-320 	 8       318      150      70    1       3436    11     20
-340 	 8       400      150      70    1       3761     9.5   20
-360 	 8       351      153      71    1       4154    13.5   10
-380 	 8       400      175      72    1       4385    12     10
+40       4       112       88      82    1       2605    19.6   30
+60       4       112       88      82    1       2395    18     30
+80       4        97       88      72    3       2100    16.5   30
+100      4        79       67      74    2       1963    15.5   30
+120      4        98       60      76    1       2164    22.1   20
+140      4       140       88      78    1       2720    15.4   30
+160      4       140       72      71    1       2408    19     20
+180      8       260       90      79    1       3420    22.2   20
+200      6       250       78      76    1       3574    21     20
+220      6       232      100      75    1       2914    16     20
+240      6       225      110      78    1       3620    18.7   20
+260      6       225      100      76    1       3651    17.7   20
+280      6       250       88      71    1       3139    14.5   20
+300      8       262      110      75    1       3221    13.5   20
+320      8       318      150      70    1       3436    11     20
+340      8       400      150      70    1       3761     9.5   20
+360      8       351      153      71    1       4154    13.5   10
+380      8       400      175      72    1       4385    12     10
 ```
 So now we ask two questions:
 
