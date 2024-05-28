@@ -41,13 +41,15 @@ Clndrs  Volume  HpX  Model  origin  Lbs-  Acc+  Mpg+
 8       304     193  70     1       4732  18.5  10
 8       360     215  70     1       4615  14    10
 8       307     200  70     1       4376  15    10
-	...
+...     ...     ...  ...    ...     ...   ...   ...
 ```
 
 Here,  we have decided to ignore horsepower (so it ends
 with and `X`). Also, we want light cars (since they are cheaper to
 build and buy), fast acceleration, and good miles per gallon. So
 these get marked with `Lhs-,Acc+,Mpg+`
+
+## COLS : managing sets of columns
 
 And the programmer wrote code to turn these names into NUMeric and
 SYMbolic columns, then to store all of them in `all` and (for
@@ -69,6 +71,8 @@ def add2cols(i:cols, n:int, s:str) -> col:
   if s[-1] != "X": (i.y if s[-1] in "!+-" else i.x).append(new)
   return new
 ```
+
+## NUM, SYM : incrementally summarizing 
 
 And the code needed some help. NUM and SYM summarize streams of number
 and symbols. 
@@ -114,6 +118,7 @@ def show(x:any) -> any:
   if callable(x): return x.__name__
   return x
 ```
+## DATA : storing rows, and their summaries
 
 The programmer did place the rows in a DATA object that held the `rows`. Also,
 a summary of those rows is maintained in `cols` (which is a COLS object). 
@@ -159,6 +164,8 @@ def _add2num(i:num, x:any, n:int) -> None:
     i.m2 += d * (x -  i.mu)
     i.sd  = 0 if i.n <2 else (i.m2/(i.n-1))**.5
 ```
+
+## Sorting Rows : best and rest
 
 In her wisdom, the programmer added a sort function that could order the rows
 best to worse using `d2h`, or distance to heaven [^rowOrder]. Given a goal
