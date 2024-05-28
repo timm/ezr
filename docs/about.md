@@ -159,7 +159,7 @@ def NUM(txt=" ",at=0,has=None) -> num:
            mu=0, m2=0, sd=0, maximize = txt[-1] != "-")
 ```
 
-note that
+Note that:
 
 - To distinguish NUMs from SYMs, the programmer added a `this=NUM` and
 `this=SYM` flag.
@@ -341,8 +341,22 @@ def _span(xys : list[xy]) -> list[xy]:
   xys[-1].hi =  1E30
   return xys
 ```
+Secondly, if we are after $N$ bins, and one bin has less that $1/N$ rows, then we should merge it with its
+neighbor. Similarly, we should merge if the diversity of the merged distribution is not worse than the
+two parts. Here, we measure diversity using entropy, which is a measure of the effort required
+to recreate a signal 
 
-Secondly,  if two adjacent bins have poor scores,  we may as well merge them (since one bad idea is easier to manage than two). To implement this, we
+- e.g. in a array with 32 items, if the first 8 items represent elephants and the last
+4 items represent lions, then the probabilities of our two animals are $p_1=8/32=0.25$ and
+$p_2=4/31=1/8$ respectively.
+- If we search of our animals using a binary chop, then that will require up to $\log_2(p_i)$ steps.
+- Hence, the expected value of the effort required to recreate our animals is $\sum_i p_i\log_2(p_i)$
+    (which is called the entropy).
+- The 
+
+animal, times the effort required to find them 
+Secondly,  if t adjacent bins have poor scores,  
+we may as well merge them (since one bad idea is easier to manage than two). To implement this, we
   - collect all the scored for one column, 
   - then say 10% times max score is "enough"
   - then merge adjacent bins if they do not have "enough"
