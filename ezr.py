@@ -23,7 +23,7 @@
       -t --train   training data                  = data/misc/auto93.csv    
       -T --test    test data (defaults to train)  = None  
       -v --version show version                   = False   
-      -x --xys     max #bins in discretization    = 10    
+      -x --xys     max #bins in discretization    = 16    
 """
 # <h2>Note</h2><p align="left">See end-of-file for this file's  conventions / principles /practices.
 # And FYI, our random number seed is an 
@@ -635,6 +635,20 @@ class eg:
     print("mid",show(mid(b4)), show(mid(now)),show(b4.lo),sep=sep,end=sep)
     print("div",show(div(b4)), show(div(now)),sep=sep,end=sep)
     print(the.train)
+
+  def divide():
+    data1   = DATA(csv(the.train), rank=True)
+    bests   = int(len(data1.rows)**.5)
+    rests   = len(data1.rows) - bests
+    klasses = dict(best=data1.rows[:bests], rest=(data1.rows[bests:]))
+    want1   = WANT(best="best", bests=bests, rests=rests)
+    for col1 in data1.cols.x :
+      print("")
+      bins = {}
+      [_divideIntoBins(col1, r[col1.at], klass, bins) for klass,rows1 in klasses.items()
+                                  for r in rows1 if r[col1.at] != "?"]
+      for bin in sorted(bins.values(), key=lambda b:b.lo):
+         print(show(wanted(want1,bin.ys)), show(bin), bin.ys, show(ent(bin.ys)),sep="\t") 
 
   def discretize():
     "Find useful ranges."

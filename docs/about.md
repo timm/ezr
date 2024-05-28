@@ -113,7 +113,8 @@ to use entire unlabeled dataset."
 
 ## COLS : managing sets of columns
 
-And the programmer wrote code to turn these names into NUMeric and
+Our programmer looked at the data and say that there are different kinds
+of columns. So she wrote code to turn these names (on line one) into NUMeric and
 SYMbolic columns, then to store all of them in `all` and (for
 convenience) also maybe in `x` (for the independent variables) and maybe in `y` (for
 the dependent goals that we want to predict or  minimize or maximize).
@@ -158,8 +159,11 @@ def NUM(txt=" ",at=0,has=None) -> num:
            mu=0, m2=0, sd=0, maximize = txt[-1] != "-")
 ```
 
-To distinguish NUMs from SYMs, the programmer added a `this=NUM` and
+note that
+
+- To distinguish NUMs from SYMs, the programmer added a `this=NUM` and
 `this=SYM` flag.
+- `NUM`s have a `maximize` flag telling us which direction is best for a particular `NUM`eric column. For `Lbs-` and `Acc+` `maximize` is False and True, respectively.
 
 Internally, NUM and SYM are both `o`bjects where `o` is something
 that knows how to pretty-print itself.
@@ -251,41 +255,10 @@ def norm(i:num,x) -> float:
 distances between the dependent `y` goal values. Usually distance is defined as the
 distance between the independent `x` values-- see `dists()` (below).
 
-To sort rows, when we call `DATA(rows, ranl=True)`. 
-If we sort the car data (described above)  in this way, then print ever 20th car, thos
-results in the following. 
+In the `DATA()` function (above), rows are sorted via the datt `DATA(sec, rank=True)`.
+That call would result in the row sort order shown above.
 
-```
-N       Clndrs   Volume   HpX   Model   origin   Lbs-   Acc+   Mpg+
---      ------   -------  ---   -----   ------   ----   ----   ----
-0 	     4        97       52      82    2       2130    24.6   40
-20 	     4        91       60      78    3       1800    16.4   40
---      ------   -------  ---   -----   ------   ----   ----   ----
-40 	     4       112       88      82    1       2605    19.6   30
-60 	     4       112       88      82    1       2395    18     30
-80 	     4        97       88      72    3       2100    16.5   30
-100 	 4        79       67      74    2       1963    15.5   30
-120 	 4        98       60      76    1       2164    22.1   20
-140 	 4       140       88      78    1       2720    15.4   30
-160 	 4       140       72      71    1       2408    19     20
-180 	 8       260       90      79    1       3420    22.2   20
-200 	 6       250       78      76    1       3574    21     20
-220 	 6       232      100      75    1       2914    16     20
-240 	 6       225      110      78    1       3620    18.7   20
-260 	 6       225      100      76    1       3651    17.7   20
-280 	 6       250       88      71    1       3139    14.5   20
-300 	 8       262      110      75    1       3221    13.5   20
-320 	 8       318      150      70    1       3436    11     20
-340 	 8       400      150      70    1       3761     9.5   20
-360 	 8       351      153      71    1       4154    13.5   10
-380 	 8       400      175      72    1       4385    12     10
-```
-This data has 398 examples
-and we can call the top $\sqrt{398} \approx 20$ rows the "best" and the remainder
-the "rest". In the above, we see that the "best" cars have  much lower weight,
-and have much more acceleration and miles per hour. 
-
-So now the question becomes, what is in the contrast between "best" and "rest"?
+So now out task is to find the  contrast between "best" and "rest"?
 That is to say, what attribute ranges select for "best" and let us avoid the "rest"?
 To answer that, lets turn to discretizatiom.
 
@@ -298,10 +271,95 @@ to predict, then 24 hours in a day might be descretized into two  bins:
 - another for 8am to 6pm
 - one for 6pm to 8am
 
-There  are many ways to discretize data (e.g. see the 100+  methods discussed in Garcia et. al. [^garcia12]).
+There  are many ways to discretize data (e.g. see the 100+  methods discussed in Garcia et. al. [^garcia12]). 
 Here, just do something simple:
 
-- Sort the numerics of one column then divide them into some very small bins with borders _(max-min)/16_. 
+- We sort the numbers of one column;
+- Divide those numbers into some very small bins with borders _(max-min)/16_. 
+
+With out cars, that produces the following. Note that if a bin cotnains no data, we do not even print it.
+The `Vlume` column of the auto dataset produces the following bins. Here, "holds" shows how many rows
+of "best" and "rest" are selected by the bin.
+
+
+```
+score   bin                     holds
+-----   -----------             -------------------------  
+0.748	68 <= Volume < 91	    {'best': 16, 'rest': 40}
+0.037	96 <= Volume < 116	    {'best': 2, 'rest': 74}
+0.013	119 <= Volume < 140	    {'best': 1, 'rest': 59}
+0.0	    141 <= Volume < 163	    {'rest': 26}
+0.0	    168 <= Volume < 183	    {'rest': 9}
+0.0	    198 <= Volume < 200	    {'rest': 13}
+0.0	    225 <= Volume < 232	    {'rest': 32}
+0.0	    250 <= Volume < 260	    {'rest': 25}
+0.0	    262 <= Volume < 267	    {'rest': 3}
+0.0	    302 <= Volume < 307	    {'rest': 25}
+0.0	    Volume == 318	        {'rest': 17}
+0.0	    340 <= Volume < 351	    {'rest': 27}
+0.0	    Volume == 360	        {'rest': 4}
+0.0	    383 <= Volume < 400	    {'rest': 16}
+0.0	    Volume == 429	        {'rest': 3}
+0.0	   440 <= Volume < 455	    {'rest': 6}
+```
+
+In the above, `holds` shows how many rows were selected (out of 20
+`bests` and 378 `rests`). Also `score` shows the probability times
+support that any bin offers for selecting for best. This `score`
+is calculated by passing the dictionary from the `holds` column
+into `wanted()` (with `bests=20` and `rests=278`). 
+
+
+```python
+def WANT(best="best", bests=1, rests=1) -> want:
+  return o(this=WANT, best=best, bests=bests, rests=rests)
+
+def wanted(i:want, d:dict) -> float :
+  b,r = 1E-30,1E-30 # avoid divide by zero errors
+  for k,v in d.items():
+    if k==i.best: b += v/i.bests
+    else        : r += v/i.rests
+  support     = b        # how often we see best
+  probability = b/(b+r)  # probability of seeing best, relative to  all probabilities
+  return support * probability
+```
+
+Looking at these bins, there any many we can improve these ranges. Firstly, there "gaps" between the ranges
+where our training data does not mention certain values.  For example, in the above there are many gaps such as the gap seen from 429 to 440.
+To fill those gaps, we increase the span of  our bins from the `hi` point of one bins to the `lo` value of its neighbor. In the following,
+a "bin" is represented as a `XY` which stores the `lo` and `hi` of one column (the `x` column) as well as the symbols see in that range in another column 
+(see the `ys` counts):
+
+```python
+def XY(at,txt,lo,hi=None,ys=None) -> xy:
+  return o(this=XY, n=0, at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
+
+def _span(xys : list[xy]) -> list[xy]:
+  "Ensure there are no gaps in the `x` ranges of `xys`. Used by `discretize()`."
+  for j in range(1,len(xys)):  xys[j].lo = xys[j-1].hi
+  xys[0].lo  = -1E30
+  xys[-1].hi =  1E30
+  return xys
+```
+
+Secondly,  if two adjacent bins have poor scores,  we may as well merge them (since one bad idea is easier to manage than two). To implement this, we
+  - collect all the scored for one column, 
+  - then say 10% times max score is "enough"
+  - then merge adjacent bins if they do not have "enough"
+
+Another i
+
+- If, after merging, the class distribution 
+
+of spurirous.
+
+- Look for ranges we can merge with its adjacent neighbor. We merge if
+  - a bin holds less that $1/16$th of the data
+  - the merged bins are simpler than if they are spIf any bin holds less than $1/16$th of the data, we merge that- Then we look for bins we can merge with their neighbors; e.g 
+- If any bin is "trivial", then we merge it with its neighbors. Bins are trivla if:
+  - they contain less than $1/16$th of the data;
+  - if the class distribution is clearer in th 
+
 
 [^garcia12]: Garcia, S., Luengo, J., Sáez, J. A., Lopez, V., & Herrera, F. (2012). A survey of discretization techniques: Taxonomy and empirical analysis in supervised learning. IEEE transactions on Knowledge and Data Engineering, 25(4), 734-750.
 https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6152258
