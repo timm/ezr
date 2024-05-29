@@ -25,7 +25,7 @@ If you are a Python newbie, before you read the code, you might want to
 review:
 
 - Regular expressions                 (the [re](https://www.w3schools.com/python/python_regex.asp) package)
-- Some of the dunder methods such as [__repr__](https://www.geeksforgeeks.org/python-__repr__-magic-method/?ref=ml_lbp)
+- Some of the dunder methods such as [\_\_repr\_\_](https://www.geeksforgeeks.org/python-__repr__-magic-method/?ref=ml_lbp)
 
 Also, this code makes
 extensive use of  
