@@ -31,7 +31,7 @@ Also, this code makes
 extensive use of  
 
 a.                 [iDestructuring](https://blog.ashutoshkrris.in/mastering-list-destructuring-and-packing-in-python-a-comprehensive-guide)   
-b. some       [other Python tricks](https://www.datacamp.com/tutorial/python-tips-examples)
+b. some       [other Python tricks](https://www.datacamp.com/tutorial/python-tips-examples)         
 c. some  common [Python one-liners](https://allwin-raju-12.medium.com/50-python-one-liners-everyone-should-know-182ea7c8de9d)   
 d. some other           [one-lines](https://github.com/Allwin12/python-one-liners?tab=readme-ov-file#unpacking-elements)
 
