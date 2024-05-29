@@ -85,7 +85,7 @@ symbols. And some of the words were goals have special marks
 denoting things we wanted to predict ("!") or  minimize ("-") or maximize ("+").  So
 If our data was about cars then it might look like this:
 
-```
+```python
 Clndrs  Volume  HpX  Model  origin  Lbs-  Acc+  Mpg+
 8       304     193  70     1       4732  18.5  10
 8       360     215  70     1       4615  14    10
@@ -107,7 +107,7 @@ We see that the "best" cars have  much lower weight,
 and have much more acceleration and miles per hour. 
 
 
-```
+```python
 N       Clndrs   Volume   HpX   Model   origin   Lbs-   Acc+   Mpg+
 --       -----   -------  ---   -----   ------   ----   ----   ----
 0        4        97       52      82    2       2130    24.6   40
@@ -420,7 +420,7 @@ def add2xy(i:xy, x: int | float , y:atom) -> None:
 If we `_divideIntBins` the "Volumne" column from our data, this generate the following.
 Recall that "best" were our $\sqrt{N}$ best rows and "rest" were all the other 378 rows.:
 
-```
+```python
 score   bin                      holds
 -----   -----------              -------------------------  
 0.748   68 <= Volume < 91        {'best': 16, 'rest': 40}
@@ -523,7 +523,7 @@ def _merges(b4: list[xy], fun):
   return b4 if len(now) == len(b4) else _merges(now, fun)
 ```
 Putting this all together, , we need the high-level controller for the discretisation:
-```
+```python
 def discretize(i:col, klasses:classes, want1: Callable) -> list[xy] :
   "Find good ranges for the i-th column within `klasses`."
   bins = {}
@@ -563,7 +563,7 @@ baseline                        {'best': 19, 'rest': 379}
 And we can go even further. Tbe highest `wanted()` score in the above is 0.748. Ignoring everything with
 less than 10% of that, takes us to:
 
-```
+```python
 0.62	Clndrs < 4          	{'rest': 190, 'best': 18}
 
 0.748	Volume < 91         	{'best': 16, 'rest': 40}
