@@ -7,8 +7,6 @@ by Tim Menzies and the EZRites
 http://github.com/timm/ezr
 
 
-kilowatt-hours per 100 miles (kWh/100m);
-
 >[!NOTE]
 > <b> We present a successful  experiment in coding XAI (explainable AI) in the fewest
 lines of code. The code is written in functional style (so no classes
@@ -21,6 +19,50 @@ we assume that "less is more", both in our coding style and in our
 data processing (so the first we do with  data, is throw most of
 it away).</b>
 
+## Before we begin...
+
+If you are a Python newbie, before you read the code, you might want to 
+review:
+
+- Regular expressions (the [re](https://www.w3schools.com/python/python_regex.asp) package(
+- Some of the dunder methods such as [__repr__](https://www.geeksforgeeks.org/python-__repr__-magic-method/?ref=ml_lbp)
+
+Also, this code makes
+extensive use of  
+
+a. [Destructing](https://blog.ashutoshkrris.in/mastering-list-destructuring-and-packing-in-python-a-comprehensive-guide)
+b. some [other Python tricks](https://www.geeksforgeeks.org/python-__repr__-magic-method/?ref=ml_lbp)
+c. some  common [Python one-liners](https://allwin-raju-12.medium.com/50-python-one-liners-everyone-should-know-182ea7c8de9d)
+d. some other [one-lines](https://github.com/Allwin12/python-one-liners?tab=readme-ov-file#unpacking-elements
+
+| # | Note| 
+---|----|
+[b28| args & kwargs|
+|c4| swap to values|
+|c11| combine nested lists to a single list|
+|c15| List comprehension using “for” and “if”|
+|c17, c18, c19 | list, dictionary and set compreshsions|
+|c20| if-else (ternery)|
+|c23| lambda bodies|
+|c45| sort dictionary with values|
+|d| unpacking elements|
+
+You might also want to review
+[Python type hints](https://realpython.com/python-type-checking/).
+FYI: this code uses the standard type hints plus the following:
+
+```python'from typing import Any as any
+from typing import Callable 
+xy,cols,data,node,num,sym,node,want = # my own classes
+col     = num    | sym
+number  = float  | int
+atom    = number | bool | str # and sometimes "?"
+row     = list[atom]
+rows    = list[row]
+classes = dict[str,rows] # `str` is the class name
+```
+
+## In the Beginning
 In the beginning there was the data and the data was without form,
 and void; and confusion was upon the face of the humans.  And the
 programmer  said, let there be workflows that 
@@ -463,6 +505,17 @@ def _merges(b4: list[xy], fun):
     now += [a]
     j += 1
   return b4 if len(now) == len(b4) else _merges(now, fun)
+```
+Finally, we need the high-level controoler for the discretisation:
+```
+def discretize(i:col, klasses:classes, want1: Callable) -> list[xy] :
+  "Find good ranges for the i-th column within `klasses`."
+  bins = {}
+  [_divideIntoBins(i, r[i.at], klass, bins) for klass,rows1 in klasses.items()
+                                  for r in rows1 if r[i.at] != "?"]
+  return _combine(i, sorted(bins.values(), key=lambda z:z.lo),
+                     sum(len(rs) for rs in klasses.values()) / the.xys,
+                     want1)
 ```
 
 After applying all theabove, there is one ore priblem: ranges with small`wanted()` scores.
