@@ -30,7 +30,7 @@ review:
 Also, this code makes
 extensive use of  
 
-a.                 [iDestructuring](https://blog.ashutoshkrris.in/mastering-list-destructuring-and-packing-in-python-a-comprehensive-guide)   
+a.                 [Destructuring](https://blog.ashutoshkrris.in/mastering-list-destructuring-and-packing-in-python-a-comprehensive-guide)   
 b. some       [other Python tricks](https://www.datacamp.com/tutorial/python-tips-examples)         
 c. some  common [Python one-liners](https://allwin-raju-12.medium.com/50-python-one-liners-everyone-should-know-182ea7c8de9d)   
 d. some other          [one-liners](https://github.com/Allwin12/python-one-liners?tab=readme-ov-file#unpacking-elements)
@@ -39,7 +39,7 @@ d. some other          [one-liners](https://github.com/Allwin12/python-one-liner
 ---|----|
 |b4|generators|
 |b16| leading underscore|
-|b18| __name__ == “__main__”}
+|b18| \_\_name\_\_ == “\_\_main\_\_”}
 |b26| exception handling|
 |b28| args & kwargs|
 |c4| swap to values|
