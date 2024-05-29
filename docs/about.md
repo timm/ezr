@@ -380,7 +380,7 @@ def wanted(i:want, d:dict) -> float :
   return support * probability
 ```
 
-Looking at these bins, there any many we can improve these ranges.
+Looking at these bins, there any many we can reduce and clarify the ranges for "Volume".
 Firstly, we can combine together anything that is `mergeable()` (and if we are afer
 $N$ bins, we say that we should merge bins with less than $1/N$ items.
 
