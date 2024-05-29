@@ -33,7 +33,7 @@ extensive use of
 a.                 [iDestructuring](https://blog.ashutoshkrris.in/mastering-list-destructuring-and-packing-in-python-a-comprehensive-guide)   
 b. some       [other Python tricks](https://www.datacamp.com/tutorial/python-tips-examples)         
 c. some  common [Python one-liners](https://allwin-raju-12.medium.com/50-python-one-liners-everyone-should-know-182ea7c8de9d)   
-d. some other           [one-lines](https://github.com/Allwin12/python-one-liners?tab=readme-ov-file#unpacking-elements)
+d. some other          [one-liners](https://github.com/Allwin12/python-one-liners?tab=readme-ov-file#unpacking-elements)
 
 | # | Note| 
 ---|----|
@@ -385,11 +385,20 @@ $p_2=4/32=1/8$ respectively.
 
 ### An Example of Discretization
 
-There  are many ways to discretize data (e.g. see the 100+  methods discussed in Garcia et. al. [^garcia12]). 
+There  are many ways to discretize data (e.g. see the 100+  methods discussed in Garcia et. al. [^garcia12] [^rama2025]). 
 Here, just do something simple:
 
 - We sort the numbers of one column;
 - Divide those numbers into some very small bins with borders _(max-min)/16_. 
+
+[^garcia12]: Garcia, S., Luengo, J., Sáez, J. A., Lopez, V., & Herrera, F. (2012). A survey of discretization techniques: 
+Taxonomy and empirical analysis in supervised learning. IEEE transactions on Knowledge and Data Engineering, 25(4), 734-750.
+https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6152258
+
+[^rama2025]: Ramírez-Gallego, Sergio, Salvador García, Héctor Mouriño-Talín, David Martínez-Rego, Verónica Bolón-Canedo, 
+Amparo Alonso-Betanzos, José Manuel Benítez, and Francisco Herrera. "Data discretization: taxonomy and big data challenge." (2015).
+https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=760d884819877959b6a3e1176ed30633e6fdb1f8
+
 
 For `SYM`bolic columns, we create one bin for each value. Otherwise, we `norm()`alize those
 values 0..1 (over the range min..max) then multiple that by the number of bins:
@@ -513,7 +522,7 @@ def _merges(b4: list[xy], fun):
     j += 1
   return b4 if len(now) == len(b4) else _merges(now, fun)
 ```
-Finally, we need the high-level controoler for the discretisation:
+Putting this all together, , we need the high-level controller for the discretisation:
 ```
 def discretize(i:col, klasses:classes, want1: Callable) -> list[xy] :
   "Find good ranges for the i-th column within `klasses`."
@@ -524,37 +533,54 @@ def discretize(i:col, klasses:classes, want1: Callable) -> list[xy] :
                      sum(len(rs) for rs in klasses.values()) / the.xys,
                      want1)
 ```
+When this is caled on the car data, we get a very different set of ranges. Note that, in the following,
+"Volime" now has just 2 bins instead of the 16 shown above.
+Also, its first bin now selects for $16/19=approx84$%  of the "best" rows and just $40/379\approx 10$%
+of the other rows.
 
-After applying all theabove, there is one ore priblem: ranges with small`wanted()` scores.
+```python
+baseline                        {'best': 19, 'rest': 379}
 
-neighbor.
-animal, times the effort required to find them 
-Secondly,  if t adjacent bins have poor scores,  
-we may as well merge them (since one bad idea is easier to manage than two). To implement this, we
-  - collect all the scored for one column, 
-  - then say 10% times max score is "enough"
-  - then merge adjacent bins if they do not have "enough"
+0.62	Clndrs < 4          	{'rest': 190, 'best': 18}
+0.005	Clndrs >= 4         	{'best': 1, 'rest': 189}
 
-Another i
+0.748	Volume < 91         	{'best': 16, 'rest': 40}
+0.024	Volume >= 91        	{'best': 3, 'rest': 339}
 
-- If, after merging, the class distribution 
+0.022	Model < 74          	{'rest': 150, 'best': 2}
+0.032	74 <= Model < 77    	{'rest': 90, 'best': 2}
+0.057	77 <= Model < 78    	{'best': 2, 'rest': 34}
+0.0	78 <= Model < 79    	{'rest': 29}
+0.318	79 <= Model < 80    	{'best': 7, 'rest': 22}
+0.11	80 <= Model < 81    	{'best': 3, 'rest': 26}
+0.108	Model >= 81         	{'best': 3, 'rest': 28}
 
-of spurirous.
+0.015	origin == 1         	{'best': 2, 'rest': 247}
+0.254	origin == 2         	{'best': 7, 'rest': 63}
+0.391	origin == 3         	{'best': 10, 'rest': 69}
+```
 
-- Look for ranges we can merge with its adjacent neighbor. We merge if
-  - a bin holds less that $1/16$th of the data
-  - the merged bins are simpler than if they are spIf any bin holds less than $1/16$th of the data, we merge that- Then we look for bins we can merge with their neighbors; e.g 
-- If any bin is "trivial", then we merge it with its neighbors. Bins are trivla if:
-  - they contain less than $1/16$th of the data;
-  - if the class distribution is clearer in th 
+And we can go even further. Tbe highest `wanted()` score in the above is 0.748. Ignoring everything with
+less than 10% of that, takes us to:
 
+```
+0.62	Clndrs < 4          	{'rest': 190, 'best': 18}
 
-[^garcia12]: Garcia, S., Luengo, J., Sáez, J. A., Lopez, V., & Herrera, F. (2012). A survey of discretization techniques: Taxonomy and empirical analysis in supervised learning. IEEE transactions on Knowledge and Data Engineering, 25(4), 734-750.
-https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=6152258
+0.748	Volume < 91         	{'best': 16, 'rest': 40}
 
-[^rama2025]: Ramírez-Gallego, Sergio, Salvador García, Héctor Mouriño-Talín, David Martínez-Rego, Verónica Bolón-Canedo, Amparo Alonso-Betanzos, José Manuel Benítez, and Francisco Herrera. "Data discretization: taxonomy and big data challenge." (2015).
-https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=760d884819877959b6a3e1176ed30633e6fdb1f8
+0.0	78 <= Model < 79    	{'rest': 29}
+0.318	79 <= Model < 80    	{'best': 7, 'rest': 22}
+0.11	80 <= Model < 81    	{'best': 3, 'rest': 26}
+0.108	Model >= 81         	{'best': 3, 'rest': 28}
 
+0.254	origin == 2         	{'best': 7, 'rest': 63}
+0.391	origin == 3         	{'best': 10, 'rest': 69}
+```
+
+To say all that another way, the problem of multi-objective analysis has been reduced from to just
+two binary decisions (about "Clnders' and "Volume"); another binary decision about "orgin" and a four-part decision
+about "Model"; i.e. 2*2*2*4=32 options. This is small enough to take to some committee meeting and say "for the next
+hour, we will debate this 32 options".
 
 in that sort
 proFor the car dat described above,
