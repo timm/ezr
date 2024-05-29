@@ -328,9 +328,10 @@ To compute entropy, we ask "what is the effort required to recreate a signal:
 with 32 items, the first 8 items of which represent elephants and the last
 4 items represent lions.
 - the probabilities of our two animals are $p_1=8/32=0.25$ and
-$p_2=4/31=1/8$ respectively. This is also the odds that we will go searching from these animals.
+$p_2=4/32=1/8$ respectively. 
 - If we search our animals using a binary chop, then that search  require up to $\log_2(p_i)$ steps.
-- Hence, the expected value of the effort required to recreate our animals is $\sum_i p_i\log_2(p_i)$
+- When recreating a signal, the prevalance of (say) lions will control often we search for them.
+   Hence, the expected value of the effort required to recreate our animals is $\sum_i p_i\log_2(p_i)$
     (which is comptued in `entropy()`).
 
 ### An Example of Discretization
@@ -341,8 +342,25 @@ Here, just do something simple:
 - We sort the numbers of one column;
 - Divide those numbers into some very small bins with borders _(max-min)/16_. 
 
-The `Volume` column of the auto dataset produces the following bins. 
+For `SYM`bolic columns, we create one bin for each value. Otherwise, we `norm()`alize those
+values 0..1 (over the range min..max) then multiple that by the number of bins:
 
+```python
+def _divideIntoBins(i:col,x:atom, y:str, bins:dict) -> None:
+  k = x if i.this is SYM else min(the.xys -1, int(the.xys * norm(i,x)))
+  bins[k] = bins[k] if k in bins else XY(i.at,i.txt,x)
+  add2xy(bins[k],x,y)
+
+def add2xy(i:xy, x: int | float , y:atom) -> None:
+  if x != "?":
+    i.n    += 1
+    i.lo    =  min(i.lo, x)
+    i.hi    =  max(i.hi, x)
+    i.ys[y] = i.ys.get(y,0) + 1
+```
+
+If we `_divideIntBins` the "Volumne" column from our data, this generate the following.
+Recall that "best" were our $\sqrt{N}$ best rows and "rest" were all the other 378 rows.:
 
 ```
 score   bin                      holds
@@ -386,8 +404,7 @@ def wanted(i:want, d:dict) -> float :
 ```
 
 Looking at these bins, there any many we can reduce and clarify the ranges for "Volume".
-Firstly, we can combine together anything that is `mergeable()` (and if we are afer
-$N$ bins, we say that we should merge bins with less than $1/N$ items.
+Firstly, we can check  if any of them are `mergeable()` (using the above code).
 
 Secondly, there "gaps" between the ranges where our training data
 does not mention certain values.  For example, in the above there
@@ -402,6 +419,23 @@ def _span(xys : list[xy]) -> list[xy]:
   xys[0].lo  = -1E30
   xys[-1].hi =  1E30
   return xys
+```
+
+Thirdly,  if two adjacent bins are not `wanted()` much, then there is no value if keeping them seperate.
+In our code, for each column, we find maximum `wanted(0` then try to merge anything with less than 10% of
+max `wanted()`.
+
+```python
+def _combine(i:col, xys: list[xy], small, want1) -> list[xy] :
+  def mergeDull(a,b,n):
+    if wanted(want1,a.ys) < n and wanted(want1,b.ys) < n:
+      return merge([a,b])
+
+  if i.this is NUM:
+    xys = _span(_merges(xys, lambda a,b: mergable(a,b,small)))
+    n   = the.enough * sorted([wanted(want1,xy1.ys) for xy1 in xys])[-1]
+    xys = _merges(xys, lambda a,b: mergeDull(a,b,n))
+  return  [] if len(xys)==1 else xys
 ```
 
 After applying all theabove, there is one ore priblem: ranges with small`wanted()` scores.
