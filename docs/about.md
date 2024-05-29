@@ -297,16 +297,19 @@ def merge(xys : list[xy]) -> xy:
     for y,n in xy1.ys.items(): out.ys[y] = out.ys.get(y,0) + n
   return out
 ```
-Bins are  `mergeable()` if either  (a) thet hold less than some
-`small` amount or (b) the merge is simpler than the parts.
+Bins are  `mergeable()` if either:
+&#9312; the merge is simpler than the parts. 
+&#8312;  they hold less than some
+`small` amount. Fr 
 
 ```python
 def mergable(xy1: xy, xy2: xy, small:int) -> xy | None:
   maybe = merge([xy1,xy2])
   e1  = entropy(xy1.ys)
   e2  = entropy(xy2.ys)
-  if xy1.n < small or xy2.n < small: return maybe
-  if entropy(maybe.ys) <= (xy1.n*e1 + xy2.n*e2)/maybe.n: return maybe
+  if xy1.n < small or xy2.n < small: return maybe        # &#9312;
+  if entropy(maybe.ys) <= (xy1.n*e1 + xy2.n*e2)/maybe.n: # &#9313;
+    return maybe
 
 def entropy(d:dict) -> float:
   N = sum(v for v in d.values())
@@ -314,10 +317,11 @@ def entropy(d:dict) -> float:
 ```
 
 Entropy is a way of measuring the simplicity of a distribution.
-Simpler distributions have lower entropy and mention fewer things.
+Simpler distributions have lower entropy and mention  smaller number
+of different things.
 Hence they are better at predicting things
 (since there are fewer choices to make).
-To compute entropy, we ask "what is the effort required to recreate a signal.
+To compute entropy, we ask "what is the effort required to recreate a signal:
 
 - Suppose we had an array
 with 32 items, the first 8 items of which represent elephants and the last
