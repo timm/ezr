@@ -421,10 +421,10 @@ def _span(xys : list[xy]) -> list[xy]:
   return xys
 ```
 
-Thirdly,  if two adjacent bins are not `wanted()` much, then they are unwanted since there no value if keeping them seperate.
-In our code, for each column, we find maximum `wanted()` then try to merge the unwanted bins (those
-with with less than 10% of
-max `wanted()`).  Note that purging the unwanted bins  hasto be happen _after_ we do all the other merges (since, otherwise,
+Thirdly,  if two adjacent bins are not `wanted()` much, then there no value if keeping them separate.
+In our code, for each column, we find maximum `wanted()` then try to merge adjacent bins
+with less than 10% of
+max `wanted()`.  Note that purging these unwanted bins  has to  be happen _after_ we do all the other merges (since, otherwise,
 we will not know what the max bin is):
 
 ```python
@@ -439,6 +439,9 @@ def _combine(i:col, xys: list[xy], small, want1) -> list[xy] :
     xys = _merges(xys, lambda a,b: mergeDull(a,b,n)) # final merge of the unwanted ranges.
   return  [] if len(xys)==1 else xys
 ```
+(Note the last line `[] if len(xys)==1 else xys`. This says that is all our merging
+results in a single range, then we are unable to find a useful division of this column.
+Hence we should return nothing at all.)
 
 The actual mechanics of merging is handled by `_merges`. This function
 is based a list of bins and a `fun` function that returns a new bin (if two bins can be merged) or `None`.
