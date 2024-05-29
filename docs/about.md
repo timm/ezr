@@ -298,9 +298,10 @@ def merge(xys : list[xy]) -> xy:
   return out
 ```
 Bins are  `mergeable()` if either:
-[1] the merge is simpler than the parts. 
-[2]  they hold less than some
-`small` amount. Fr 
+
+- [1] the merged bins are simpler than the parts. 
+- [2] the bins  hold less than some `small` amount. For example, if we are dividing the data into $N$ bins,
+       they each bin should hold at least $1/N$th of the data.
 
 ```python
 def mergable(xy1: xy, xy2: xy, small:int) -> xy | None:
