@@ -24,13 +24,13 @@ it away).</b>
 If you are a Python newbie, before you read the code, you might want to 
 review:
 
-- Regular expressions                 (the [re](https://www.w3schools.com/python/python_regex.asp) package(
+- Regular expressions                 (the [re](https://www.w3schools.com/python/python_regex.asp) package)
 - Some of the dunder methods such as [__repr__](https://www.geeksforgeeks.org/python-__repr__-magic-method/?ref=ml_lbp)
 
 Also, this code makes
 extensive use of  
 
-a.                    [Destructing](https://blog.ashutoshkrris.in/mastering-list-destructuring-and-packing-in-python-a-comprehensive-guide)   
+a.                 [iDestructuring](https://blog.ashutoshkrris.in/mastering-list-destructuring-and-packing-in-python-a-comprehensive-guide)   
 b. some       [other Python tricks](https://www.datacamp.com/tutorial/python-tips-examples)
 c. some  common [Python one-liners](https://allwin-raju-12.medium.com/50-python-one-liners-everyone-should-know-182ea7c8de9d)   
 d. some other           [one-lines](https://github.com/Allwin12/python-one-liners?tab=readme-ov-file#unpacking-elements)
