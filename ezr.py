@@ -187,10 +187,10 @@ def add2xy(i:xy, x: int | float , y:atom) -> None:
 def mergable(xy1: xy, xy2: xy, small:int) -> xy | None:
   "Return the merge  if the whole is better than the parts. Used  by `merges()`."
   maybe = merge([xy1,xy2])
-  e1  = ent(xy1.ys)
-  e2  = ent(xy2.ys)
+  e1  = entropy(xy1.ys)
+  e2  = entropy(xy2.ys)
   if xy1.n < small or xy2.n < small: return maybe
-  if ent(maybe.ys) <= (xy1.n*e1 + xy2.n*e2)/maybe.n: return maybe
+  if entropy(maybe.ys) <= (xy1.n*e1 + xy2.n*e2)/maybe.n: return maybe
 
 def merge(xys : list[xy]) -> xy:
   "Fuse together some  XYs into one XY. Called by `mergable`."
@@ -225,7 +225,7 @@ def mid(i:col) -> atom:
 
 def div(i:col) -> float:
   "Diversity of a column."
-  return i.sd if i.this is NUM else ent(i.has)
+  return i.sd if i.this is NUM else entropy(i.has)
 
 def stats(i:data, fun=mid, what:cols=None) -> dict[str,atom]:
   "Stats of some columns (defaults to `fun=mid` of `data.cols.x`)."
@@ -479,7 +479,7 @@ def smo(i:data, score=lambda B,R: B-R):
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Misc Functions:
 
-def ent(d:dict) -> float:
+def entropy(d:dict) -> float:
   "Entropy of a distribution."
   N = sum(v for v in d.values())
   return -sum(v/N*math.log(v/N,2) for v in d.values())
@@ -648,7 +648,7 @@ class eg:
       [_divideIntoBins(col1, r[col1.at], klass, bins) for klass,rows1 in klasses.items()
                                   for r in rows1 if r[col1.at] != "?"]
       for bin in sorted(bins.values(), key=lambda b:b.lo):
-         print(show(wanted(want1,bin.ys)), show(bin), bin.ys, show(ent(bin.ys)),sep="\t") 
+         print(show(wanted(want1,bin.ys)), show(bin), bin.ys, show(entropy(bin.ys)),sep="\t") 
 
   def discretize():
     "Find useful ranges."

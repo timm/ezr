@@ -271,15 +271,72 @@ to predict, then 24 hours in a day might be descretized into two  bins:
 - another for 8am to 6pm
 - one for 6pm to 8am
 
+### Bins are held in `XY` objects
+
+Our bins are held in `XY` objects (we cannot call them "bin"s since that word is already in use
+in our Python systems).
+ `XY`s stores the `lo` and `hi` of one
+column (the "x" column) as well as the symbols see in that range
+in another column (see the `ys` counts). 
+
+```python
+def XY(at,txt,lo,hi=None,ys=None) -> xy:
+  return o(this=XY, n=0, at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
+```
+
+One thing we do, a lot, is to `merge()` adjacent bins (and the new bin runs from
+the `lo` of the first bin to the `hi` of the second bin).
+
+```python
+def merge(xys : list[xy]) -> xy:
+  out = XY(xys[0].at, xys[0].txt, xys[0].lo)
+  for xy1 in xys:
+    out.n += xy1.n
+    out.lo = min(out.lo, xy1.lo)
+    out.hi = max(out.hi, xy1.hi)
+    for y,n in xy1.ys.items(): out.ys[y] = out.ys.get(y,0) + n
+  return out
+```
+Bins are  `mergeable()` if either  (a) thet hold less than some
+`small` amount or (b) the merge is simpler than the parts.
+
+```python
+def mergable(xy1: xy, xy2: xy, small:int) -> xy | None:
+  maybe = merge([xy1,xy2])
+  e1  = entropy(xy1.ys)
+  e2  = entropy(xy2.ys)
+  if xy1.n < small or xy2.n < small: return maybe
+  if entropy(maybe.ys) <= (xy1.n*e1 + xy2.n*e2)/maybe.n: return maybe
+
+def entropy(d:dict) -> float:
+  N = sum(v for v in d.values())
+  return -sum(v/N*math.log(v/N,2) for v in d.values())
+```
+
+Entropy is a way of measuring the simplicity of a distribution.
+Simpler distributions have lower entropy and mention fewer things.
+Hence they are better at predicting things
+(since there are fewer choices to make).
+To compute entropy, we ask "what is the effort required to recreate a signal.
+
+- Suppose we had an array
+with 32 items, the first 8 items of which represent elephants and the last
+4 items represent lions.
+- the probabilities of our two animals are $p_1=8/32=0.25$ and
+$p_2=4/31=1/8$ respectively. This is also the odds that we will go searching from these animals.
+- If we search our animals using a binary chop, then that search  require up to $\log_2(p_i)$ steps.
+- Hence, the expected value of the effort required to recreate our animals is $\sum_i p_i\log_2(p_i)$
+    (which is comptued in `entropy()`).
+
+### An Example of Discretization
+
 There  are many ways to discretize data (e.g. see the 100+  methods discussed in Garcia et. al. [^garcia12]). 
 Here, just do something simple:
 
 - We sort the numbers of one column;
 - Divide those numbers into some very small bins with borders _(max-min)/16_. 
 
-With out cars, that produces the following. Note that if a bin cotnains no data, we do not even print it.
-The `Vlume` column of the auto dataset produces the following bins. Here, "holds" shows how many rows
-of "best" and "rest" are selected by the bin.
+The `Volume` column of the auto dataset produces the following bins. 
 
 
 ```
@@ -303,12 +360,11 @@ score   bin                      holds
 0.0     440 <= Volume < 455      {'rest': 6}
 ```
 
-In the above, `holds` shows how many rows were selected (out of 20
+Here,  `holds` shows how many rows were selected (out of 20
 `bests` and 378 `rests`). Also `score` shows the probability times
 support that any bin offers for selecting for best. This `score`
 is calculated by passing the dictionary from the `holds` column
 into `wanted()` (with `bests=20` and `rests=278`). 
-
 
 ```python
 def WANT(best="best", bests=1, rests=1) -> want:
@@ -324,16 +380,17 @@ def wanted(i:want, d:dict) -> float :
   return support * probability
 ```
 
-Looking at these bins, there any many we can improve these ranges. Firstly, there "gaps" between the ranges
-where our training data does not mention certain values.  For example, in the above there are many gaps such as the gap seen from 429 to 440.
-To fill those gaps, we increase the span of  our bins from the `hi` point of one bins to the `lo` value of its neighbor. In the following,
-a "bin" is represented as a `XY` which stores the `lo` and `hi` of one column (the `x` column) as well as the symbols see in that range in another column 
-(see the `ys` counts):
+Looking at these bins, there any many we can improve these ranges.
+Firstly, we can combine together anything that is `mergeable()` (and if we are afer
+$N$ bins, we say that we should merge bins with less than $1/N$ items.
+
+Secondly, there "gaps" between the ranges where our training data
+does not mention certain values.  For example, in the above there
+are many gaps such as the gap seen from 429 to 440.  To fill those
+gaps, we increase the span of  our bins from the `hi` point of one
+bins to the `lo` value of its neighbor. 
 
 ```python
-def XY(at,txt,lo,hi=None,ys=None) -> xy:
-  return o(this=XY, n=0, at=at, txt=txt, lo=lo, hi=hi or lo, ys=ys or {})
-
 def _span(xys : list[xy]) -> list[xy]:
   "Ensure there are no gaps in the `x` ranges of `xys`. Used by `discretize()`."
   for j in range(1,len(xys)):  xys[j].lo = xys[j-1].hi
@@ -341,19 +398,10 @@ def _span(xys : list[xy]) -> list[xy]:
   xys[-1].hi =  1E30
   return xys
 ```
-Secondly, if we are after $N$ bins, and one bin has less that $1/N$ rows, then we should merge it with its
-neighbor. Similarly, we should merge if the diversity of the merged distribution is not worse than the
-two parts. Here, we measure diversity using entropy, which is a measure of the effort required
-to recreate a signal 
 
-- e.g. in a array with 32 items, if the first 8 items represent elephants and the last
-4 items represent lions, then the probabilities of our two animals are $p_1=8/32=0.25$ and
-$p_2=4/31=1/8$ respectively.
-- If we search of our animals using a binary chop, then that will require up to $\log_2(p_i)$ steps.
-- Hence, the expected value of the effort required to recreate our animals is $\sum_i p_i\log_2(p_i)$
-    (which is called the entropy).
-- The 
+After applying all theabove, there is one ore priblem: ranges with small`wanted()` scores.
 
+neighbor.
 animal, times the effort required to find them 
 Secondly,  if t adjacent bins have poor scores,  
 we may as well merge them (since one bad idea is easier to manage than two). To implement this, we
