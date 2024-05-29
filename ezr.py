@@ -288,7 +288,7 @@ def _combine(i:col, xys: list[xy], small, want1) -> list[xy] :
     xys = _merges(xys, lambda a,b: mergeDull(a,b,n))
   return  [] if len(xys)==1 else xys
 
-def _merges(b4, fun):
+def _merges(b4:list[xy], fun):
   "Try merging adjacent items in `b4`. If successful, repeat. Used by `_combine()`."
   j, now  = 0, []
   while j <  len(b4):
