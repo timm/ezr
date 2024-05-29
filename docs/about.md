@@ -298,8 +298,8 @@ def merge(xys : list[xy]) -> xy:
   return out
 ```
 Bins are  `mergeable()` if either:
-&#9312; the merge is simpler than the parts. 
-&#8312;  they hold less than some
+[1] the merge is simpler than the parts. 
+[2]  they hold less than some
 `small` amount. Fr 
 
 ```python
@@ -307,8 +307,8 @@ def mergable(xy1: xy, xy2: xy, small:int) -> xy | None:
   maybe = merge([xy1,xy2])
   e1  = entropy(xy1.ys)
   e2  = entropy(xy2.ys)
-  if xy1.n < small or xy2.n < small: return maybe        # &#9312;
-  if entropy(maybe.ys) <= (xy1.n*e1 + xy2.n*e2)/maybe.n: # &#9313;
+  if xy1.n < small or xy2.n < small: return maybe        # [1]
+  if entropy(maybe.ys) <= (xy1.n*e1 + xy2.n*e2)/maybe.n: # [2]
     return maybe
 
 def entropy(d:dict) -> float:
