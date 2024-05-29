@@ -421,9 +421,11 @@ def _span(xys : list[xy]) -> list[xy]:
   return xys
 ```
 
-Thirdly,  if two adjacent bins are not `wanted()` much, then there is no value if keeping them seperate.
-In our code, for each column, we find maximum `wanted(0` then try to merge anything with less than 10% of
-max `wanted()`.
+Thirdly,  if two adjacent bins are not `wanted()` much, then they are unwanted since there no value if keeping them seperate.
+In our code, for each column, we find maximum `wanted()` then try to merge the unwanted bins (those
+with with less than 10% of
+max `wanted()`).  Note that purging the unwanted bins  hasto be happen _after_ we do all the other merges (since, otherwise,
+we will not know what the max bin is):
 
 ```python
 def _combine(i:col, xys: list[xy], small, want1) -> list[xy] :
@@ -432,10 +434,32 @@ def _combine(i:col, xys: list[xy], small, want1) -> list[xy] :
       return merge([a,b])
 
   if i.this is NUM:
-    xys = _span(_merges(xys, lambda a,b: mergable(a,b,small)))
+    xys = _span(_merges(xys, lambda a,b: mergable(a,b,small))) 
     n   = the.enough * sorted([wanted(want1,xy1.ys) for xy1 in xys])[-1]
-    xys = _merges(xys, lambda a,b: mergeDull(a,b,n))
+    xys = _merges(xys, lambda a,b: mergeDull(a,b,n)) # final merge of the unwanted ranges.
   return  [] if len(xys)==1 else xys
+```
+
+The actual mechanics of merging is handled by `_merges`. This function
+is based a list of bins and a `fun` function that returns a new bin (if two bins can be merged) or `None`.
+If anything can be merged with its neighbor
+then this code keeps the merged bin, then  jumps forward one bin (over the merged item),  looking for anything else mergeable.
+If this leads to a shorter list of bins, then call `_merges()` (at which point we go back to the beginning
+of the list and look for any other merges).
+
+```python
+def _merges(b4: list[xy], fun):
+  j, now  = 0, []
+  while j <  len(b4):
+    a = b4[j]
+    if j <  len(b4) - 1:
+      b = b4[j+1]
+      if ab := fun(a,b):
+        a = ab
+        j = j+1  # if i can merge, jump over the merged item
+    now += [a]
+    j += 1
+  return b4 if len(now) == len(b4) else _merges(now, fun)
 ```
 
 After applying all theabove, there is one ore priblem: ranges with small`wanted()` scores.
