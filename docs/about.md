@@ -55,7 +55,7 @@ You might also want to review
 [Python type hints](https://realpython.com/python-type-checking/).
 FYI: this code uses the standard type hints plus the following:
 
-```python'
+```python
 from typing import Any as any
 from typing import Callable 
 
