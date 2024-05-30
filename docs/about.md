@@ -577,10 +577,120 @@ less than 10% of that, takes us to:
 0.391	origin == 3         	{'best': 10, 'rest': 69}
 ```
 
-To say all that another way, the problem of multi-objective analysis has been reduced from to just
-two binary decisions (about "Clnders' and "Volume"); another binary decision about "orgin" and a four-part decision
-about "Model"; i.e. 2*2*2*4=32 options. This is small enough to take to some committee meeting and say "for the next
-hour, we will debate this 32 options".
+## Trees
+
+The above example with ranges looks interesting. We saw how
+the problem of multi-objective analysis can be reduced to decisions about just a few ranges.
+But there is a way to do even better.
+Often, useful bins from different attributes select for the same rows. So as a final step in
+this process, we should ignore bins that cover the same things as other bins.
+
+Enter decision trees.  In the following we talk about `klasses` which are rows stored in a dictonary
+(and the klass names are the keys of the different dictionaries). 
+
+
+### `tree()`
+
+The `tree()` algorithm is pretty simple since, as it turns
+out, most of the heavy lifting has already been done during discretization.
+In the following, we say the `XY` bins are called `cuts`. 
+
+- Using discretiization, find  all the ways we can  `cuts` the data.
+- Using those `cuts`, then `_grow()` the tree
+  - Cut  the  data into the rows that are/aren't covered by that bin;
+  - Recurse on each cut.
+
+This code returns a tree of `NODE`s where each `NODE` has `left` and `right` pointers
+to sub-trees.
+
+```python
+def NODE(klasses: classes,  left=None, right=None) -> node:
+  return o(this=NODE, klasses=klasses, left=left, right=right, cut=None)
+
+def tree(i:data, klasses:classes, want1:Callable, stop:int=4) -> node:
+  # For details on these three functions, see below
+  def _grow(klasses:classes, lvl:int=1) -> node:
+  def _branch(here:node, lvl:int,  total:int, most:int) -> node:
+  def _want(cut:xy, klasses:classes) -> float :
+
+  cuts = [cut for col1 in i.cols.x for cut in discretize(col1,klasses,want1)]
+  return _grow()
+
+def _cut(cut:xy, klasses:classes) -> tuple[classes,classes]:
+  are  = {klass:[] for klass in klasses}
+  arent = {klass:[] for klass in klasses}
+  for klass,rows1 in klasses.items():
+    [(are if selects(cut,row1) else arent)[klass].append(row1) for row1 in rows1]
+  return are,arent
+```
+
+### Details
+
+Just to fill in some details, `_tree()` calls `_grow()` (to collects some statistics on rows
+in the current cut) which  then calls `_branch()` (to do the actual work). 
+
+```python
+ def _grow(klasses:classes, lvl:int=1) -> node:
+    "Collect the stats needed for branching, then call `_branch()`."
+    counts = {k:len(rows1) for k,rows1 in klasses.items()}
+    total  = sum(counts.values())
+    most   = counts[max(counts, key=counts.get)]
+    return _branch(NODE(klasses), lvl, total, most)
+
+  def _branch(here:node, lvl:int,  total:int, most:int) -> node:
+    "Divide the data on tbe best cut. Recurse."
+    if total > 2*stop and  most < total: #most==total means "purity" (all of one: class)
+      here.cut = max(cuts,  key=lambda cut0: _want(cut0, here.klasses))
+      left,right = _cut(here.cut, here.klasses)
+      leftn = sum(len(rows1) for rows1 in left.values())
+      rightn = sum(len(rows1) for rows1 in right.values())
+      if leftn < total and rightn < total:
+         here.left  = _grow(left,  lvl+1)
+         here.right = _grow(right, lvl+1)
+    return here
+```
+The `if` statements in `_branch()` tell us when it is useful to  grow subtrees.
+If `total` is the number of rows seen before the cuts, and `leftn`,`rightn` are the number
+of rows in each cut, then:
+
+- `total &gt; 2` : there are enough examples to generate two more subtrees;
+- `most &lt; total` : not all the data is in one class since, if it where, that would mean
+    this branch had managed to isolate on class (which would be a  reason to stop growing this branch);
+- `leftn &lt; total` and `rightn &lt; total`: the new subtrees reduce the number of examples in the
+    sub-tree by at least one item per branch.
+
+As to `_want()`, this applies the `wanted()` logic (discussed above) to each cut:
+
+```python
+  def _want(cut:xy, klasses:classes) -> float :
+    return wanted(want1, {k:len(rows1) for k,rows1 in _cut(cut,klasses)[0].items()})
+``
+### Trees, Example
+For our cars,if we create a `classes` containing  $\sqrt{N}$ "best" rows  and $1-\sqrt{N}$` "rest" rows,
+then we can generate the following tree:
+
+```python
+$ ./ezr.py -R tree
+
+                                    (:best 19 :rest 379)
+if Volume < 91                      (:best 15 :rest 29)
+|.. if Clndrs >= 4                  (:best 15 :rest 25)
+|.. else                            (:best 0 :rest 4)
+else                                (:best 4 :rest 350)
+|.. if Model >= 81                  (:best 3 :rest 52)
+|.. else                            (:best 1 :rest 298)
+|.. |.. if 80 <= Model < 81         (:best 1 :rest 19)
+|.. |.. |.. if origin == 2          (:best 1 :rest 4)
+|.. |.. |.. else                    (:best 0 :rest 15)
+|.. |.. else                        (:best 0 :rest 279)
+```
+
+Note our best outcome
+
+- Given 19 and 379 best and rest cars,
+- Given three goals "Weight-,Acc+, Mpg+"
+- Then with two tests on "Volume" and "Cylndrs", we can find 15 and 29 best and  rest cars
+  (which is 83\% and 6\% of the initial population).
 
 in that sort
 proFor the car dat described above,

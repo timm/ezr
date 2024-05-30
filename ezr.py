@@ -325,7 +325,7 @@ def tree(i:data, klasses:classes, want1:Callable, stop:int=4) -> node:
     "Divide the data on tbe best cut. Recurse."
     if total > 2*stop and  most < total: #most==total means "purity" (all of one: class)
       here.cut = max(cuts,  key=lambda cut0: _want(cut0, here.klasses))
-      left,right = _split(here.cut, here.klasses)
+      left,right = _cut(here.cut, here.klasses)
       leftn = sum(len(rows1) for rows1 in left.values())
       rightn = sum(len(rows1) for rows1 in right.values())
       if leftn < total and rightn < total:
@@ -335,12 +335,12 @@ def tree(i:data, klasses:classes, want1:Callable, stop:int=4) -> node:
 
   def _want(cut:xy, klasses:classes) -> float :
     "How much do we want each way that `cut` can split the `klasses`?"
-    return wanted(want1, {k:len(rows1) for k,rows1 in _split(cut,klasses)[0].items()})
+    return wanted(want1, {k:len(rows1) for k,rows1 in _cut(cut,klasses)[0].items()})
 
   cuts = [cut for col1 in i.cols.x for cut in discretize(col1,klasses,want1)]
   return _grow(klasses)
 
-def _split(cut:xy, klasses:classes) -> tuple[classes,classes]:
+def _cut(cut:xy, klasses:classes) -> tuple[classes,classes]:
   "Find the  classes that `are`, `arent` selected by `cut`."
   are  = {klass:[] for klass in klasses}
   arent = {klass:[] for klass in klasses}

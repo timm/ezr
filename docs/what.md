@@ -18,6 +18,7 @@
 | DATA synthesis | | |  |
 | Anomaly detection ||synthesis | |
 | Fairness || synthesis  | |
+| standard rig | ensembles, smote, hpo. can do all in one with our tools?|classifiers | |
 
 ## Tools
 

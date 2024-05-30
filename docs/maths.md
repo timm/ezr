@@ -5,7 +5,7 @@
 here are two boxes with a set of numbers of symols. are the same? can we fuse them rand reason about fewer boxes?
 
 ## Distance
-euclideam, manitbal
+euclideam, manitbal, chekshev
 
 ### Manifold
 ### reduction
@@ -15,6 +15,7 @@ euclideam, manitbal
 ## Diversity
  entropy
 
- stnadard deviation
+ stnadard deviation. welford icnremental
 
-## statas
+## stats
+ - two questions: can you tell them apart? are they far enough apart?
