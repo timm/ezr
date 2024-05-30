@@ -622,6 +622,10 @@ def _cut(cut:xy, klasses:classes) -> tuple[classes,classes]:
   for klass,rows1 in klasses.items():
     [(are if selects(cut,row1) else arent)[klass].append(row1) for row1 in rows1]
   return are,arent
+
+def selects(i:xy, r:row) -> bool:
+  x = r[i.at]
+  return x=="?" or i.lo==x if i.lo==i.hi else i.lo <= x < i.hi
 ```
 
 ### Details
@@ -653,10 +657,10 @@ The `if` statements in `_branch()` tell us when it is useful to  grow subtrees.
 If `total` is the number of rows seen before the cuts, and `leftn`,`rightn` are the number
 of rows in each cut, then:
 
-- `total &gt; 2` : there are enough examples to generate two more subtrees;
-- `most &lt; total` : not all the data is in one class since, if it where, that would mean
+- `total > 2*top` : there are enough examples to generate two more subtrees;
+- `most < total` : not all the data is in one class since, if it where, that would mean
     this branch had managed to isolate on class (which would be a  reason to stop growing this branch);
-- `leftn &lt; total` and `rightn &lt; total`: the new subtrees reduce the number of examples in the
+- `leftn < total` and `rightn <  total`: the new subtrees reduce the number of examples in the
     sub-tree by at least one item per branch.
 
 As to `_want()`, this applies the `wanted()` logic (discussed above) to each cut:
@@ -664,7 +668,7 @@ As to `_want()`, this applies the `wanted()` logic (discussed above) to each cut
 ```python
   def _want(cut:xy, klasses:classes) -> float :
     return wanted(want1, {k:len(rows1) for k,rows1 in _cut(cut,klasses)[0].items()})
-``
+```
 ### Trees, Example
 For our cars,if we create a `classes` containing  $\sqrt{N}$ "best" rows  and $1-\sqrt{N}$` "rest" rows,
 then we can generate the following tree:
