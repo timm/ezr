@@ -678,7 +678,7 @@ $ ./ezr.py -R tree
 
                                     (:best 19 :rest 379)
 if Volume < 91                      (:best 15 :rest 29)
-|.. if Clndrs >= 4                  (:best 15 :rest 25)
+|.. if Clndrs >= 4                  (:best 15 :rest 25)  <== best outcome
 |.. else                            (:best 0 :rest 4)
 else                                (:best 4 :rest 350)
 |.. if Model >= 81                  (:best 3 :rest 52)
@@ -689,19 +689,12 @@ else                                (:best 4 :rest 350)
 |.. |.. else                        (:best 0 :rest 279)
 ```
 
-Note our best outcome
+Note our best outcome:
 
 - Given 19 and 379 best and rest cars,
 - Given three goals "Weight-,Acc+, Mpg+"
-- Then with two tests on "Volume" and "Cylndrs", we can find 15 and 29 best and  rest cars
-  (which is 83\% and 6\% of the initial population).
-
-in that sort
-proFor the car dat described above,
-t
-doty. fing deta between best and rest.
-
-
+- Then with two tests on "Volume" and "Cylndrs", we can find 15 and 29 best and  rest cars.
+- So, initially, the "best"s where a tiny minority and now we can find  83\% of them.
 
 ## Some Details
 
