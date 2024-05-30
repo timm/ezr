@@ -95,7 +95,7 @@ def SYM(txt=" ",at=0) -> sym:
   return o(this=SYM, txt=txt, at=at, n=0, has={})
 
 def NUM(txt=" ",at=0,has=None) -> num:
-  "NUM cokumns incrementally summarizes a stream of numbers."
+  "NUM columns incrementally summarizes a stream of numbers."
   return o(this=NUM, txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
            has=has, rank=0, # if has non-nil, used by the stats package
            mu=0, m2=0, sd=0, maximize = txt[-1] != "-")

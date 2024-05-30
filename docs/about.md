@@ -21,8 +21,31 @@ it away).</b>
 
 ## Before we begin...
 
+### For Newcomers to Data Mining
+
+If you are a Data Mining newbies, before you read this code, you might want to brush up on:
+
+- [Entropy](XXX)
+- [Mean and standard deviation](xxx)  (and the welford icnremental algorthm)
+- Bayes classifiers
+- [Decision trees](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/)
+  - [see also](https://link.springer.com/article/10.1007/s10462-022-10275-5)
+- [Discretization](xxx) unsupervised EWD, EFD. supervised entropy, goal-oriented, otehrs in the lirterature 
+- [Effect sizes and significance tests](xxx) and sk 
+- [Keys](xxx): druzdel's systems, SE results.
+- [Semi-supervised learning and Active learning and sequential model optimization](xxx)
+- [Distance measures](xxx) Euclidean,Minkowski, Chebyshev, JC's space, distance2heaven , Zitzler, 
+- [PCA and Fastmap]
+- CLustering, kmeans, rrp (cwunsupervised) , sway (semi-supervised)
+- optimization, simulated aannearling, pareto, GAs, maxwalksat, surrogate modelsing, sequaianl model optimization
+- Hyper-parameter optimization
+- Data synthesis
+- Privacy, fairness
+
+### For Newcomers to Python
+
 If you are a Python newbie, before you read the code, you might want to 
-review:
+brush up on:
 
 - Regular expressions                 (the [re](https://www.w3schools.com/python/python_regex.asp) package)
 - Some of the dunder methods such as [\_\_repr\_\_](https://www.geeksforgeeks.org/python-__repr__-magic-method/?ref=ml_lbp)
