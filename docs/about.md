@@ -21,30 +21,10 @@ it away).</b>
 
 ## Before we begin...
 
-### For Newcomers to Data Mining
+If you are a Data Mining newbies, before you read this code, you might want to brush up on
+[some data mining concepts].
 
-If you are a Data Mining newbies, before you read this code, you might want to brush up on:
-
-- [Entropy](XXX)
-- [Mean and standard deviation](xxx)  (and the welford icnremental algorthm)
-- Bayes classifiers
-- [Decision trees](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/)
-  - [see also](https://link.springer.com/article/10.1007/s10462-022-10275-5)
-- [Discretization](xxx) unsupervised EWD, EFD. supervised entropy, goal-oriented, otehrs in the lirterature 
-- [Effect sizes and significance tests](xxx) and sk 
-- [Keys](xxx): druzdel's systems, SE results.
-- [Semi-supervised learning and Active learning and sequential model optimization](xxx)
-- [Distance measures](xxx) Euclidean,Minkowski, Chebyshev, JC's space, distance2heaven , Zitzler, 
-- [PCA and Fastmap]
-- CLustering, kmeans, rrp (cwunsupervised) , sway (semi-supervised)
-- optimization, simulated aannearling, pareto, GAs, maxwalksat, surrogate modelsing, sequaianl model optimization
-- Hyper-parameter optimization
-- Data synthesis
-- Privacy, fairness
-
-### For Newcomers to Python
-
-If you are a Python newbie, before you read the code, you might want to 
+And if you are a Python newbie, before you read the code, you might want to 
 brush up on:
 
 - Regular expressions                 (the [re](https://www.w3schools.com/python/python_regex.asp) package)
@@ -718,6 +698,38 @@ Note our best outcome:
 - Given three goals "Weight-,Acc+, Mpg+"
 - Then with two tests on "Volume" and "Cylndrs", we can find 15 and 29 best and  rest cars.
 - So, initially, the "best"s where a tiny minority and now we can find  83\% of them.
+
+## Stage2: Active Learning
+
+There are several things wrong  with the above. First, it is boring. It is all
+standard stuff and, all in all, we like doing  do new stuff. So in the following, we
+will push the envelope of what is known in machine learning to come up with a novel approach.
+
+Secondly, the above might suffer from 
+a generalization error. In all the above, we reasoned about some
+data, then applied
+what was learned _to the same data_. A better way would be test
+the current model against data _not seen in training_
+(which means that when new data arrives, we need to
+test the model on that new data
+before changing and biasing that model
+with that new information). So in the following, we will apply an incremental learning strategy
+whee  a nidek learned from the first  $i < N$ 
+examples is applied to all the remaining 
+$i+1 < j \le N$.
+
+Thridly, the above assumed 100% labels
+exmaples
+exampleto step through the data,
+and testing the current model against new data before biasing the model w
+learn something from what was seen so far, then apply that to a , it is a "self-test"; i.e. when we a
+In the above, we are trying to find what lets us minimizing the weight of a car while
+increasing 
+All the above assumes that we can label all the cars; i.e. we know
+Sometiems, we have some
+general knowledge that lets us rapidly label examples.
+In practice, given 400 cars,
+taht ght mean ahvng to take each one out for a day-long drive to measure their imiles-per-gallowm
 
 ## Some Details
 

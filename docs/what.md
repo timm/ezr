@@ -52,7 +52,8 @@
 
 | what | notes| needs | who |
 |------|--|-----|-----|
-| early stop |  |     |     |
+| business intelligence | see [Fig7](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/MSR-TR-2011-8.pdf). How of those can we do? | | |
+| early stop | (a) look for patterns in the improvements, learn when enough is enough <br>(b) combine rrp (pass1) with smo (pass2)<br>(c) do acquire|     |     |
 | streaming| updating the model| | |
 | runtime  cerification assurance | monitoring, planning  [google](https://scholar.google.com/scholar?q=runtime+Certificate+Envelope&hl=en&as_sdt=0%2C34&as_ylo=2014&as_yhi=) | |
 | pivacy | | readings on privacy | |
