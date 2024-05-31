@@ -87,6 +87,7 @@ The first part shows how to  write code that
 to best achieve multiple goals
 
 #### Part 2 
+
 That first part is fun since it shows how much can be done with so little.
 On the other hand, that code has certain flaws.
 Firstly, it does not break new ground.
@@ -104,7 +105,7 @@ the current model against data _not seen in training_
 test the model on that new data
 before changing and biasing that model
 with that new information). So in part two,  we will apply an incremental learning strategy
-where  a model learned from the first  $i < N$ examples is applied to all the remaining $(i+1)  < j \le N$.
+where  a model learned from the first  $i < N$ examples is applied to all the remaining $(i+1)  \le j \le N$.
 
 Thridly, the first part assumes we can acccess correct labels for all the data-- which may not be true.
 For example, suppose we are standing in a used car yard with 400 cars.
