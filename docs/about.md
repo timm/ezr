@@ -20,54 +20,15 @@ data processing (so the first we do with  data, is throw most of
 it away).</b>
 
 ## Before we begin...
-### Two Parts to this work
-This work is in two parts. The first part shows how to  write code that
-
-- reads in data, summarizes it in interesting ranges,
-- then poke around the data to generate a succinct decision tree that tells you how
-to best achieve multiple goals
-
-That first part is fun since it shows how much can be done with so little.
-On the other hand, that code has certain flaws.
-Firstly, it does not break new ground.
-It is all
-standard stuff. And, all in all, we like doing  do new stuff. So in  the second part, we
-will push the envelope of what is known in machine learning to come up with a novel approach.
-
-Secondly, the analysis in the first part
-suffers from 
-a generalization problem. In that code,  we will reason about some
-data, then applied
-the learned model _to the same data_. A more convincing approach would be test
-the current model against data _not seen in training_
-(which means that when new data arrives, we need to
-test the model on that new data
-before changing and biasing that model
-with that new information). So in part two,  we will apply an incremental learning strategy
-where  a model learned from the first  $i < N$ examples is applied to all the remaining $i+1 < j \le N$.
-
-Thridly, the first part assumes we can acccess correct labels for all the data-- which may not be true.
-For example, suppose we are standing in a used car yard with 400 cars.
-Suppose further we want a car that is light (since they cost less),  and which has
-good acceleration and miles per gallon:
-Since these are used cars, we cannot be sure what those
-values might be (especially miles per hour and acceleration). 
-
-To get those labels, one thing we could do
-is take out all 400 cars one at at time,  drive them around for a while, and label
-(e.g.)
-the miles per hour.
-But that would take too long. So instead, in part two, we will employ active
-learning to look at everything unlabelled, then pick the least number of potentially
-most informative things to label next. As we shall these, this will alllow us to exlore
-10,000s of examples with just a few dozen labels.
+### Do you Know your Data Mining?
 
 Before you read this code, 
 if you are a Data Mining newbie, 
 you might want to brush up on
 [some data mining concepts].
 
-And if you are a Python newbie, before you read the code, you might want to 
+### Do you Know your Python?
+If you are a Python newbie, before you read the code, you might want to 
 brush up on:
 
 - Regular expressions                 (the [re](https://www.w3schools.com/python/python_regex.asp) package)
@@ -114,6 +75,53 @@ row     = list[atom]
 rows    = list[row]
 classes = dict[str,rows] # `str` is the class name
 ```
+### Two Parts to this work
+This work is in two parts. 
+
+#### Part 1 
+
+The first part shows how to  write code that
+
+- reads in data, summarizes it in interesting ranges,
+- then poke around the data to generate a succinct decision tree that tells you how
+to best achieve multiple goals
+
+#### Part 2 
+That first part is fun since it shows how much can be done with so little.
+On the other hand, that code has certain flaws.
+Firstly, it does not break new ground.
+It is all
+standard stuff. And, all in all, we like doing  do new stuff. So in  the second part, we
+will push the envelope of what is known in machine learning to come up with a novel approach.
+
+Secondly, the analysis in the first part
+suffers from 
+a generalization problem. In that code,  we will reason about some
+data, then applied
+the learned model _to the same data_. A more convincing approach would be test
+the current model against data _not seen in training_
+(which means that when new data arrives, we need to
+test the model on that new data
+before changing and biasing that model
+with that new information). So in part two,  we will apply an incremental learning strategy
+where  a model learned from the first  $i < N$ examples is applied to all the remaining $i+1 < j \le N$.
+
+Thridly, the first part assumes we can acccess correct labels for all the data-- which may not be true.
+For example, suppose we are standing in a used car yard with 400 cars.
+Suppose further we want a car that is light (since they cost less),  and which has
+good acceleration and miles per gallon:
+Since these are used cars, we cannot be sure what those
+values might be (especially miles per hour and acceleration). 
+
+To get those labels, one thing we could do
+is take out all 400 cars one at at time,  drive them around for a while, and label
+(e.g.)
+the miles per hour.
+But that would take too long. So instead, in part two, we will employ active
+learning to look at everything unlabelled, then pick the least number of potentially
+most informative things to label next. As we shall these, this will alllow us to exlore
+10,000s of examples with just a few dozen labels.
+
 
 ## In the Beginning
 In the beginning there was the data and the data was without form,
