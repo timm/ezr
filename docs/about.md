@@ -104,7 +104,7 @@ the current model against data _not seen in training_
 test the model on that new data
 before changing and biasing that model
 with that new information). So in part two,  we will apply an incremental learning strategy
-where  a model learned from the first  $i < N$ examples is applied to all the remaining $i+1 < j \le N$.
+where  a model learned from the first  $i < N$ examples is applied to all the remaining $(i+1)  < j \le N$.
 
 Thridly, the first part assumes we can acccess correct labels for all the data-- which may not be true.
 For example, suppose we are standing in a used car yard with 400 cars.
