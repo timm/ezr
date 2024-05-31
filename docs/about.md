@@ -20,8 +20,51 @@ data processing (so the first we do with  data, is throw most of
 it away).</b>
 
 ## Before we begin...
+### Two Parts to this work
+This work is in two parts. The first part shows how to  write code that
 
-If you are a Data Mining newbies, before you read this code, you might want to brush up on
+- reads in data, summarizes it in interesting ranges,
+- then poke around the data to generate a succinct decision tree that tells you how
+to best achieve multiple goals
+
+That first part is fun since it shows how much can be done with so little.
+On the other hand, that code has certain flaws.
+Firstly, it does not break new ground.
+It is all
+standard stuff. And, all in all, we like doing  do new stuff. So in  the second part, we
+will push the envelope of what is known in machine learning to come up with a novel approach.
+
+Secondly, the analysis in the first part
+suffers from 
+a generalization problem. In that code,  we will reason about some
+data, then applied
+the learned model _to the same data_. A more convincing approach would be test
+the current model against data _not seen in training_
+(which means that when new data arrives, we need to
+test the model on that new data
+before changing and biasing that model
+with that new information). So in part two,  we will apply an incremental learning strategy
+where  a model learned from the first  $i < N$ examples is applied to all the remaining $i+1 < j \le N$.
+
+Thridly, the first part assumes we can acccess correct labels for all the data-- which may not be true.
+For example, suppose we are standing in a used car yard with 400 cars.
+Suppose further we want a car that is light (since they cost less),  and which has
+good acceleration and miles per gallon:
+Since these are used cars, we cannot be sure what those
+values might be (especially miles per hour and acceleration). 
+
+To get those labels, one thing we could do
+is take out all 400 cars one at at time,  drive them around for a while, and label
+(e.g.)
+the miles per hour.
+But that would take too long. So instead, in part two, we will employ active
+learning to look at everything unlabelled, then pick the least number of potentially
+most informative things to label next. As we shall these, this will alllow us to exlore
+10,000s of examples with just a few dozen labels.
+
+Before you read this code, 
+if you are a Data Mining newbie, 
+you might want to brush up on
 [some data mining concepts].
 
 And if you are a Python newbie, before you read the code, you might want to 
@@ -699,37 +742,6 @@ Note our best outcome:
 - Then with two tests on "Volume" and "Cylndrs", we can find 15 and 29 best and  rest cars.
 - So, initially, the "best"s where a tiny minority and now we can find  83\% of them.
 
-## Stage2: Active Learning
-
-There are several things wrong  with the above. First, it is boring. It is all
-standard stuff and, all in all, we like doing  do new stuff. So in the following, we
-will push the envelope of what is known in machine learning to come up with a novel approach.
-
-Secondly, the above might suffer from 
-a generalization error. In all the above, we reasoned about some
-data, then applied
-what was learned _to the same data_. A better way would be test
-the current model against data _not seen in training_
-(which means that when new data arrives, we need to
-test the model on that new data
-before changing and biasing that model
-with that new information). So in the following, we will apply an incremental learning strategy
-whee  a nidek learned from the first  $i < N$ 
-examples is applied to all the remaining 
-$i+1 < j \le N$.
-
-Thridly, the above assumed 100% labels
-exmaples
-exampleto step through the data,
-and testing the current model against new data before biasing the model w
-learn something from what was seen so far, then apply that to a , it is a "self-test"; i.e. when we a
-In the above, we are trying to find what lets us minimizing the weight of a car while
-increasing 
-All the above assumes that we can label all the cars; i.e. we know
-Sometiems, we have some
-general knowledge that lets us rapidly label examples.
-In practice, given 400 cars,
-taht ght mean ahvng to take each one out for a day-long drive to measure their imiles-per-gallowm
 
 ## Some Details
 
