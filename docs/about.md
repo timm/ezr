@@ -25,7 +25,7 @@ it away).</b>
 Before you read this code, 
 if you are a Data Mining newbie, 
 you might want to brush up on
-[some data mining concepts].
+[some data mining concepts](xxx).
 
 ### Do you Know your Python?
 If you are a Python newbie, before you read the code, you might want to 
