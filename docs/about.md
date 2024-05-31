@@ -78,7 +78,7 @@ classes = dict[str,rows] # `str` is the class name
 ### Two Parts to this work
 This work is in two parts. 
 
-#### Part 1 
+#### Part 1 : Standard Learning
 
 The first part shows how to  write code that
 
@@ -86,7 +86,7 @@ The first part shows how to  write code that
 - then poke around the data to generate a succinct decision tree that tells you how
 to best achieve multiple goals
 
-#### Part 2 
+#### Part 2  : Active Learning
 
 That first part is fun since it shows how much can be done with so little.
 On the other hand, that code has certain flaws.
@@ -752,47 +752,166 @@ Note our best outcome:
 - So, initially, the "best"s where a tiny minority and now we can find  83\% of them.
 
 
-## Some Details
+## Part2: Active Learning
 
-### Other Distance Functions
+Ok. So now we know how to 
+The first part shows how to write code that
+reads in data, summarizes it in interesting ranges,
+then poke around the data to find
+a succinct decision tree that tells you how to best achieve multiple goals.
+And as we said before, this is all well and good but it has certain problems
+that we need to fix:
 
-XXX otehr kinds of d
-The general Minkowski distance  says that the distance between things
-comes from the distance between their independent `x` columns,  raised to some power $p$.
-Boring old Euclidean distance uses $p=2$, but our programmer knew that
-this is a parameter that can be tuned. She stored all such tuneables
-in a `the` variable. So our Minkowski distance function is:
+- Innovation: we want to push the sate of the art, not just reepat old stuff;
+- Minimum labels: instead of looking at all labels, we will do what we can with fewest labels.
+- Generaliztion: we want to test our results, using data not used in training.
 
-$$d(x,y)=\left(\sum^n_i (x_i - y_i)^p /n\right)^{1/p}$$
+Our main trick will be as follows.
+When learning some model $f$ of the form $y=f(x)$, while 
+the
+$y$ values can be very expensive to obtain,
+we
+can often access $x$ very cheaply.
+Returnign to that used car lot at the top of this page, finding the mileage for each car
+can take a while (since it could mean driving each car around for a day).
+But we can glance around the cars
+to quickly write down the model numbers and their eyar of manufactoer. 
+So what we will do is look at a lot of $x$ values before looking at the $y$.
 
-We divide by $n$ so all our distances fall between zero and one.
+### Classifier
 
-This disance is defined bif nuermisa dn is XXX
-Which, in Pythons is:
+More specifically, we will
+
+1. Label a few things (say, four)
+2. Divided the labelled things into `best` and `rest`
+3. Build a classifier that can guess the probability $b,r$ that something belongs to `best` or `rest`
+4. Sort all the unlabelled examples by `b/r`;
+5. Label the top thing in that sort;
+6. Loop back to step2.
+
+For the classifier we will use Naive Bayes since it handles small data problems and missing values.
+Given ${\mathit nh}=2$ classes ("best" and "rest"), the likelihood
+of a row belonging to a class is the probablity of that class things the likelihood of that row's attributes
+belonging to that class. We will add the log of these probabilities (rather than miltiplying them) since debugging
+with (say) -22 is much easier than debugging with 2.3841857910156e-07.
+
 
 ```python
-# Distance between two rows
-def dists(data,row1,row2):
-  n = sum(dist(col, row1[col.at], row2[col.at])**the.p for col in data.cols.x)
-  return (n / len(data.cols.x))**(1/the.p)
+def loglikes(i:data, r:row|dict, nall:int, nh:int) -> float:
+  prior = (len(i.rows) + the.k) / (nall + the.k*nh)
+  likes = [like(c, r[c.at], prior) for c in i.cols.x if r[c.at] != "?"]
+  return sum(math.log(x) for x in likes + [prior] if x>0)
 
-# Distance between two values (called by dists).
-def dist(col,x,y):
-  if  x==y=="?": return 1
-  if not col.isNum: return x != y
-  x, y = norm(col,x), norm(col,y)
-  x = x if x !="?" else (1 if y<0.5 else 0)
-  y = y if y !="?" else (1 if x<0.5 else 0)
-  return abs(x-y)
-```	
+def like(i:col, x:any, prior:float) -> float:
+  return _like4num(i,x) if i.this is NUM else (i.has.get(x,0) + the.m*prior) / (i.n+the.m)
 
-### Olace to store the config
+def _like4num(i:num,x):
+  v     = div(i)**2 + 1E-30
+  nom   = math.e**(-1*(x - mid(i))**2/(2*v)) + 1E-30
+  denom = (2*math.pi*v) **0.5
+  return min(1, nom/(denom + 1E-30))
+```
+Note that for `loglikes()` does its work by asking each column to report how much it `likes()`  each `cols.x` val.
+Also, in the above, there are magic the.k` and `the.m` values that handle certain low-frequency cases
+(see section 3.1 of (this paper)[https://i.giwebb.com/wp-content/papercite-data/pdf/yangwebb03.pdf]). These `m,k`
+values are very small and default to $m=2,k=1$. This means their effect disappears once we collect more than, say, 20 examples.
 
-## Difference to Other Approaches
+Anyway, with this classifier, we can run "sequential model" optimizer that learns a little, guesses a lot, then labels its best guess.
+In the following, for testing purposes, our `data` comes with y labels on everything. But we  only every look at the y-labels
+used in `_ranked()` which in sorts the rows. 
 
-`Y=f(x)`. the rave from IEEE  trans
+```python
+def smo(i:data, score=lambda B,R: B-R):
+  def _ranked(lst:rows) -> rows:
+    return sorted(lst, key = lambda r:d2h(i,r))
 
-[^rowRoder:] There are many ways to rank examples with multiple objectives. 
-_Binary domination_ says...
-The _Zitler says__
-Peter Chen.
+  def _guess(todo:rows, done:rows) -> rows:
+    cut  = int(.5 + len(done) ** the.N)
+    best = clone(i, done[:cut])
+    rest = clone(i, done[cut:])
+    key  = lambda r: score(loglikes(best, r, len(done), 2),
+                           loglikes(rest, r, len(done), 2))
+    random.shuffle(todo) # optimization: only sort a random subset of todo 
+    return sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
+
+  def _smo1(todo:rows, done:rows) -> rows:
+    for _ in range(the.Last - the.label):
+      if len(todo) < 3: break
+      top,*todo = _guess(todo, done)
+      done += [top]
+      done = _ranked(done)
+    return done
+
+  random.shuffle(i.rows) # remove any  bias from older runs
+  return _smo1(i.rows[the.label:], _ranked(i.rows[:the.label]))
+```
+In summary, this code first shuffles the rows (to get rid of any pre-existing bias) them divides the shuffled rows
+into the first `the.label=4$ rows, and the rest.  These first four items are `_ranked()` and become the `done` set passed
+to `_smo()`, then to `guess()`. Inside `guess()`, the `done` list is divided into $\sqrt{N}$ "best" and the "rest" which 
+is used by a customization `score` function
+to 
+generate porbabilities that some 
+unlabbeled example is best or otherwise.  Early versions of this code then sorted all the  unlabelled examples by `score`.
+A ten-fold speed up in execution time was achieved when we realized we only need to say, say, `the.any=100` items looking for a
+good one.
+
+When `guess()` returns, theose results are divied into `top,*todo` where `top` is the example that seems most likely to best.
+This is then moved from `todo` to `done` and the process repeats.
+
+Here we see the mean and standard deviation of the `d2h()` score of the unabelled examples selected by `smo()` and moved to "good"
+(and here _smaller_ values are _better_. Note that most of the improvements is seen in the first ten examples.
+
+```python
+
+./ezr.py -R smo
+labels  mu    (sd)
+------  ----- -----
+    4 :  0.61 (0.169)                                                    --------++++++++
+    5 : 0.583 (0.158)                                                   -------+++++++
+    6 : 0.548 (0.165)                                              --------++++++++
+    7 : 0.528 ( 0.16)                                             -------+++++++
+    8 : 0.497 (0.173)                                         --------++++++++
+    9 : 0.479 ( 0.17)                                       --------++++++++
+   10 : 0.474 (0.161)                                       --------++++++++
+   11 : 0.476 (0.153)                                        -------+++++++
+   12 : 0.464 (0.152)                                       -------+++++++
+   13 : 0.461 (0.146)                                       -------+++++++
+   14 : 0.457 (0.141)                                      -------+++++++
+   15 : 0.452 (0.137)                                       ------++++++
+   16 : 0.448 (0.134)                                      ------++++++
+   17 : 0.441 (0.133)                                      ------++++++
+   18 : 0.448 (0.133)                                      ------++++++
+   19 : 0.445 ( 0.13)                                      ------++++++
+   20 : 0.443 (0.127)                                      ------++++++
+   21 : 0.448 (0.126)                                      ------++++++
+   22 : 0.439 (0.131)                                     ------++++++
+   23 : 0.428 (0.138)                                    ------++++++
+   24 :  0.43 (0.135)                                     ------++++++
+   25 : 0.421 (0.141)                                   -------+++++++
+   26 : 0.421 (0.138)                                    ------++++++
+   27 : 0.413 (0.142)                                  -------+++++++
+   28 : 0.415 ( 0.14)                                   ------++++++
+   29 : 0.411 (0.139)                                   ------++++++
+   30 : 0.412 (0.137)                                   ------++++++
+```
+
+Just to finsih up, we took the `done` list that is returned from `smo()`, divided into
+$\sqrt{N}$ best and rest, then called our decision tree learner on those two sets.
+Here's what it came up with:
+
+```
+                                    (:best 5 :rest 25)
+if Volume < 91                      (:best 4 :rest 5)
+else                                (:best 1 :rest 20)
+|.. if Model >= 81                  (:best 1 :rest 8)
+|.. else                            (:best 0 :rest 12)
+```
+This is very similar to the tree found above (that needed 398 labels)
+whereas this one only needed 30. And just to hammer home the point, 
+$30/398 \approx 8$% of the data. 
+
+To say that another way, you don't need to crazy on data collection. There are ways
+to dramatically reduce the cost of reasoning about data.
+
+
+[^rowRoder:] There are many ways to rank examples with multiple objectives.  _Binary domination_ says...  The _Zitler says__ Peter Chen.

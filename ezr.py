@@ -447,12 +447,21 @@ def _like4num(i:num,x):
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Optimization
+def _tile(lst):
+   num = adds(NUM(),lst)
+   n=100
+   print(f"{len(lst):5} : {num.mu:5.3} ({num.sd:5.3})",end="")
+   sd=int(num.sd*n/2)
+   mu=int(num.mu*n)
+   print(" "*(mu-sd), "-"*sd,"+"*sd,sep="")
 
-def smo(i:data, score=lambda B,R: B-R):
+def smo(i:data, score=lambda B,R: B-R, callBack=lambda x:x ):
   "Sequential model optimization."
   def _ranked(lst:rows) -> rows:
     "Sort `lst` by distance to heaven. Called by `_smo1()`."
-    return sorted(lst, key = lambda r:d2h(i,r))
+    lst = sorted(lst, key = lambda r:d2h(i,r))
+    callBack([d2h(i,r) for r in lst])
+    return lst
 
   def _guess(todo:rows, done:rows) -> rows:
     "Divide `done` into `best`,`rest`. Use those to guess the order of unlabelled rows. Called by `_smo1()`."
@@ -613,10 +622,14 @@ class eg:
   def smo():
     "Optimize something."
     d = DATA(csv(the.train))
-    print(show(d.cols.all[1]))
     print(">",len(d.rows))
-    best = smo(d)
-    print(len(best),d2h(d, best[0]))
+    done = smo(d,lambda B,R: B-R, _tile)
+    bests   = int(len(done)**.5)
+    rests   = len(done) - bests
+    klasses = dict(best=done[:bests], rest=(done[bests:]))
+    want1   = WANT(best="best", bests=bests, rests=rests)
+    showTree(tree(d,klasses,want1))
+
 
   def profileSmo():
     "Example of profiling."
@@ -629,7 +642,9 @@ class eg:
   def smo20():
     "Run smo 20 times."
     d   = DATA(src=csv(the.train))
-    b4  = adds(NUM(), [d2h(d,row) for row in d.rows])
+    b4  = [d2h(d,row) for row in d.rows]
+    _tile(b4,20)
+    b4  = adds(NUM(), b4)
     now = adds(NUM(), [d2h(d, smo(d)[0]) for _ in range(20)])
     sep=",\t"
     print("mid",show(mid(b4)), show(mid(now)),show(b4.lo),sep=sep,end=sep)
