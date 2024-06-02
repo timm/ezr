@@ -18,7 +18,7 @@ CSS        = p { text-align: right; } pre,code {font-size: x-small;}
 #----------------------------------------------------------
 SHELL     := bash 
 MAKEFLAGS += --warn-undefined-variables
-#.SILENT:  
+.SILENT:  
 
 Root=$(shell git rev-parse --show-toplevel)
 
@@ -32,7 +32,7 @@ pull    : ## download
 	git pull
 
 push    : ## save
-	echo -n "> why saving? "; read x; git commit -am "$$x"; git push; git status
+	echo -n "> Say, why are you saving? "; read x; git commit -am "$$x"; git push; git status
 
 name:
 	read -p "word> " w; figlet -f mini -W $$w  | gawk '$$0 {print "#        "$$0}' |pbcopy
