@@ -2,10 +2,105 @@ import sys, random
 import ezr
 from ezr import adds,NUM,coerce,mid,div
 
+R=random.random
+
+class Some:
+    def __init__(i, txt="", max=256, has=[]): 
+      i.txt,i.max=txt,max
+      i.rank,i.n,i._has,i.ok = 0,0,{},True
+      i += inits
+
+    def __repr__(i): 
+      return  'Some(' + str(dict(txt=i.txt,rank="i.rank",n=i.n, all=len(i._has), ok=i.ok)) + ")"
+
+    def __iadd__(i,lst): [i + x for x in lst]
+
+    def __add__(i,x):
+      i.n += 1
+      now  = len(i._has)
+      if   now < i.max   : i.ok=False; i._has += [x]
+      elif R() <= now/i.n: i.ok=False; i._has[ int(R() * now) ]
+
+    def __ne__(i.j):
+      return not cohen(i,j) and not cliffs(i,j) and not bootstrap(i,j)
+
+    def has(i):
+      if not i.ok: i._has.sort()
+      i.ok=True
+      return i._has
+
+    def mid(i):
+       l=i.has()
+       return l[len(l)//2]
+
+    def div(i):
+       l=i.has()
+       n=len(l)
+       return ((l[-1] - l[0]) if n<10 else (l[int(0.9*n)] - l[int(0.1*n)]))/2.56
+
+    def pooledSd(i,j)
+      sd1,sd2= i.div(), j.div()
+      return (((i.n - 1)*sd1 * sd1 + (j.n-1)*sd2 * sd2) / (i.n + j.n-2))**.5
+
+    def delta(i,j):
+      return abs(i.mid() - j.mid()) / ((i.div()**2/i.n + j.div()**2/j.n)**.5 + 1E-30)
+    def cohen(i,j):
+      return math.abs( mid(i) - mid(j) ) < 0.35 * i.pooledSd(i,j)
+
+    def cliffs(i,j, dull=0.147):
+      """non-parametric effect size. threshold is border between small=.11 and medium=.28 
+      from Table1 of  https://doi.org/10.3102/10769986025002101"""
+      n,lt,gt = 0,0,0
+      for x1 in i.has():
+        for y1 in j.has():
+          n += 1
+          if x1 > y1: gt += 1
+          if x1 < y1: lt += 1
+      return abs(lt - gt)/n  < dull # true if different
+
+   def  bootstrap(i,j,confidence=.05,samples=512,):
+     """non-parametric significance test From Introduction to Bootstrap, 
+        Efron and Tibshirani, 1993, chapter 20. https://doi.org/10.1201/9780429246593"""
+     y0,z0 = i.has(), j.has()
+     x,y,z = Some(has=y0+z0), Some(has=y0), Some(has=z0)
+     delta0= y.delta(z)
+     yhat  = [y1 - y.mid() + x.mid() for y1 in y0]
+     zhat  = [z1 - z.mid() + x.mid()  for z1 in z0]
+     sample= lambda l:Some(has= random.choices(l, k=len(l)))
+     n = sum( sample(yhat).delta(sample(zhat) > delta0 for _ in range(samples)))
+     return n / samples >= confidence # true if different
+
+def sk(nums):
+  "sort nums on mid. give adjacent nums the same rank if they are statistically the same"
+  def sk1(nums, rank,lvl=1):
+    all = lambda lst:  [x for num in lst for x in num.has]
+    b4, cut = adds(NUM(), all(nums)), None
+    most =  -1
+    for i in range(1,len(nums)):
+      lhs = adds(NUM(), all(nums[:i]))
+      rhs = adds(NUM(), all(nums[i:]))
+      tmp = (lhs.n*abs(mid(lhs) - mid(b4)) + rhs.n*abs(mid(rhs) - mid(b4))) / b4.n
+      if tmp > most:
+         most,cut = tmp,i
+    if cut and different( all(nums[:cut]), all(nums[cut:])):
+      rank = sk1(nums[:cut], rank, lvl+1) + 1
+      rank = sk1(nums[cut:], rank, lvl+1)
+    else:
+      for num in nums: num.rank = rank
+    return rank
+  #------------ 
+  nums = sorted(nums, key=lambda num:mid(num))
+  sk1(nums,0)
+  return nums
+
+def asNum(s):
+  try: return float(s)
+  except: Exception: return s
+
 def file2nums(file):
   nums,lst,last= [],[],None
   with open(file) as fp: 
-    for word in [coerce(x) for s in fp.readlines() for x in s.split()]:
+    for word in [asNum(x) for s in fp.readlines() for x in s.split()]:
       if isinstance(word,(int,float)):
         lst += [word]
       else:
@@ -34,65 +129,6 @@ def bar(num, has, fmt="%8.3f", word="%10s", width=50):
   out[nc] = "*"
   return ', '.join(["%2d" % num.rank, word % num.txt, fmt%c, fmt%(d-b),
                     ''.join(out),fmt%num.lo,fmt%num.hi])
-
-def different(x,y):
-  "non-parametric effect size and significance test"
-  return cliffsDelta(x,y) and bootstrap(x,y) and cohens(x,y)
-
-def cohens(x, y, small=.35):
-  "parametric effect size. threshold is border between small=.2 and medium=.5"
-  x,y,z = adds(NUM(),x), adds(NUM(),y), adds(NUM(), x+y)
-  return abs(x.mu - y.mu) > small * div(z)
-
-def cliffsDelta(x, y, effectSize=0.2):
-  """non-parametric effect size. threshold is border between small=.11 and medium=.28 
-     from Table1 of  https://doi.org/10.3102/10769986025002101"""
-  n,lt,gt = 0,0,0
-  for x1 in x:
-    for y1 in y:
-      n += 1
-      if x1 > y1: gt += 1
-      if x1 < y1: lt += 1
-  return abs(lt - gt)/n  > effectSize # true if different
-
-def bootstrap(y0,z0,confidence=.05,samples=512,):
-  """non-parametric significance test From Introduction to Bootstrap, 
-     Efron and Tibshirani, 1993, chapter 20. https://doi.org/10.1201/9780429246593"""
-  obs   = lambda x,y: abs(mid(x) - mid(y)) / ((div(x)**2/x.n + div(y)**2/y.n)**.5 + 1E-30)
-  x,y,z = adds(NUM(), y0+z0), adds(NUM(), y0), adds(NUM(),z0)
-  d     = obs(y,z)
-  yhat  = [y1 - mid(y) + mid(x) for y1 in y0]
-  zhat  = [z1 - mid(z) + mid(x)  for z1 in z0]
-  n     = 0
-  for _ in range(samples):
-    ynum = adds(NUM(), random.choices(yhat,k=len(yhat)))
-    znum = adds(NUM(), random.choices(zhat,k=len(zhat)))
-    if obs(ynum, znum) > d:
-      n += 1
-  return n / samples < confidence # true if different
-
-def sk(nums):
-  "sort nums on mid. give adjacent nums the same rank if they are statistically the same"
-  def sk1(nums, rank,lvl=1):
-    all = lambda lst:  [x for num in lst for x in num.has]
-    b4, cut = adds(NUM(), all(nums)), None
-    most =  -1
-    for i in range(1,len(nums)):
-      lhs = adds(NUM(), all(nums[:i]))
-      rhs = adds(NUM(), all(nums[i:]))
-      tmp = (lhs.n*abs(mid(lhs) - mid(b4)) + rhs.n*abs(mid(rhs) - mid(b4))) / b4.n
-      if tmp > most:
-         most,cut = tmp,i
-    if cut and different( all(nums[:cut]), all(nums[cut:])):
-      rank = sk1(nums[:cut], rank, lvl+1) + 1
-      rank = sk1(nums[cut:], rank, lvl+1)
-    else:
-      for num in nums: num.rank = rank
-    return rank
-  #------------ 
-  nums = sorted(nums, key=lambda num:mid(num))
-  sk1(nums,0)
-  return nums
 
 #--------------------------------------------
 class eg:

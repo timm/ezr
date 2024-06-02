@@ -97,7 +97,6 @@ def SYM(txt=" ",at=0) -> sym:
 def NUM(txt=" ",at=0,has=None) -> num:
   "NUM columns incrementally summarizes a stream of numbers."
   return o(this=NUM, txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
-           has=has, rank=0, # if has non-nil, used by the stats package
            mu=0, m2=0, sd=0, maximize = txt[-1] != "-")
 
 def XY(at,txt,lo,hi=None,ys=None) -> xy:
@@ -170,7 +169,6 @@ def _add2num(i:num, x:any, n:int) -> None:
   i.lo = min(x, i.lo)
   i.hi = max(x, i.hi)
   for _ in range(n):
-    if i.has != None: i.has += [x]
     d     = x - i.mu
     i.mu += d / i.n
     i.m2 += d * (x -  i.mu)
