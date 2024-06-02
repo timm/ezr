@@ -5,12 +5,12 @@
 #.   \   \
 #.    `~~~'
 
-HOME       = <a href="http://github.com/timm/ezr">home</a>
+HUME       = <a href="http://github.com/timm/ezr">home</a>
 CONTRIBUTE = <a href="https://github.com/timm/ezr/blob/main/CONRIBUTE.md">contribute</a>
 LICENSE    = <a href="https://github.com/timm/ezr/blob/main/LICENSE.md">license</a>
 ISSUES     = <a href="http://github.com/timm/ezr/issues">issues</a>
 
-MENU       = $(HOME) | $(CONTRIBUTE) | $(ISSUES) | $(LICENSE)
+MENU       = $(HUME) | $(CONTRIBUTE) | $(ISSUES) | $(LICENSE)
 
 IMAGE      = <img src="img/ezr.png" align=right width=150>
 CSS        = p { text-align: right; } pre,code {font-size: x-small;}
@@ -28,9 +28,11 @@ help      :  ## show help
 		$(MAKEFILE_LIST)
 	awk 'sub(/#\. /,"") { printf "  \033[36m%-20s\033[0m \n", $$0}' Makefile
 	
+pull    : ## download
+	git pull
 
-saved    : ## save
-	git commit -am saved; git push; git status
+push    : ## save
+	echo -n "> why saving? "; read x; git commit -am "$$x"; git push; git status
 
 name:
 	read -p "word> " w; figlet -f mini -W $$w  | gawk '$$0 {print "#        "$$0}' |pbcopy
