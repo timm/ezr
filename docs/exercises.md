@@ -1,5 +1,3 @@
-.
-
 # Exercises
 
 All the following are small extensions to the current `ezr` code base. So before anything,

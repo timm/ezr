@@ -1,5 +1,3 @@
-.
-
 # Makefile
 
 A Makefile is designed to automate various aspects of project management, including documentation, 

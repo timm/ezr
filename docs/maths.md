@@ -1,21 +1,42 @@
-.
-
 # Just Enough Maths
 
 here are two boxes with a set of numbers of symols. are the same? can we fuse them rand reason about fewer boxes?
+
+## non-numerics
+
+- centrality = mid= mode
+= -diversity = entropy
+
+## Distributions
+
+One number, N numbers, 
+- centrality = mean 
+- diversty = stamdard deviation 
+
+computing sd
+- welford
+- nonparametric: median, (90=10)/2.58 (only keep some, resort when needed)
+
+explore versus explore (b or (b+r)/abs(b-r)
+
+- are they distinguishable? significance
+  - quick and nasty; cohen's D
+  - more considered: bootstrap (nonparametric)
+- are they different, enough?
+  - effect size: cliffs delta
+
+that's for two distributions.
+- for n, we do a top down clustering (scott-knott)
 
 ## Distance
 euclideam, manitbal, chekshev
 
 ### Manifold
 ### reduction
+## comrpession
 
 ## Centrality
 
 ## Diversity
  entropy
 
- stnadard deviation. welford icnremental
-
-## stats
- - two questions: can you tell them apart? are they far enough apart?

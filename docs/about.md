@@ -1,5 +1,3 @@
-.
-
 # Easier XAI
 
 by Tim Menzies and the EZRites  
