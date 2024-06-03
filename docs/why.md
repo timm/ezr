@@ -1,5 +1,3 @@
-.
-
 # Introduction: All you Need is Less
  ## from chatgtp
 

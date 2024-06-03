@@ -1,4 +1,4 @@
-. # Screts of analytics
+# Screts of analytics
 
 the real world is fuzzy
 
@@ -10,7 +10,7 @@ have to checkle when people report teh result as 0.6913 when theor stamdard devo
 
 Lets respect what 
 
-
+- espsiolon effects
 - Not quite All Roads lead to Roam bu
 - most Roads lead to similar places
 

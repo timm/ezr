@@ -1,5 +1,3 @@
-.
-
 # Shortcuts
 
 ## \*lst,\* *kw

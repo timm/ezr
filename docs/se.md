@@ -1,5 +1,3 @@
-.
-
 # Just enough SE
 
 ## Randomizes algorihtms

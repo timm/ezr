@@ -1,5 +1,3 @@
-
-
 # References
 
 
