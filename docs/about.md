@@ -17,47 +17,7 @@ we assume that "less is more", both in our coding style and in our
 data processing (so the first we do with  data, is throw most of
 it away).</b>
 
-## Before we begin...
-### Do you Know your Data Mining?
-
-Before you read this code, 
-if you are a Data Mining newbie, 
-you might want to brush up on
-[some data mining concepts](xxx).
-
-### Do you Know your Python?
-If you are a Python newbie, before you read the code, you might want to 
-brush up on:
-
-- Regular expressions                 (the [re](https://www.w3schools.com/python/python_regex.asp) package)
-- Some of the dunder methods such as [\_\_repr\_\_](https://www.geeksforgeeks.org/python-__repr__-magic-method/?ref=ml_lbp)
-
-Also, this code makes
-extensive use of  
-
-a.                 [Destructuring](https://blog.ashutoshkrris.in/mastering-list-destructuring-and-packing-in-python-a-comprehensive-guide)   
-b. some       [other Python tricks](https://www.datacamp.com/tutorial/python-tips-examples)         
-c. some  common [Python one-liners](https://allwin-raju-12.medium.com/50-python-one-liners-everyone-should-know-182ea7c8de9d)   
-d. some other          [one-liners](https://github.com/Allwin12/python-one-liners?tab=readme-ov-file#unpacking-elements)
-
-| # | Note| 
----|----|
-|b4|generators|
-|b16| leading underscore|
-|b18| \_\_name\_\_ == “\_\_main\_\_”}
-|b26| exception handling|
-|b28| args & kwargs|
-|c4| swap to values|
-|c11| combine nested lists to a single list|
-|c15| List comprehension using “for” and “if”|
-|c17, c18, c19 | list, dictionary and set compreshsions|
-|c20| if-else (ternery)|
-|c23| lambda bodies|
-|c45| sort dictionary with values|
-|d| unpacking elements|
-
-You might also want to review
-[Python type hints](https://realpython.com/python-type-checking/).
+## Before we begin
 FYI: this code uses the standard type hints plus the following:
 
 ```python
