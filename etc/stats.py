@@ -4,6 +4,7 @@ from ezr import adds,NUM,coerce,mid,div
 
 R=random.random
 
+% todo i.has min max
 class Some:
     def __init__(i, txt="", max=256, has=[]): 
       i.txt,i.max=txt,max
@@ -42,8 +43,26 @@ class Some:
       sd1,sd2= i.div(), j.div()
       return (((i.n - 1)*sd1 * sd1 + (j.n-1)*sd2 * sd2) / (i.n + j.n-2))**.5
 
+    def norm(i, n):
+      l= i.has()
+      return (n-l[0])/(l[-1] - l[0] + 1E-30)
+
+    def bar(i, fmt="%8.3f", word="%10s", width=50):
+      has = i.has()
+      out  = [' '] * width
+      cap = lambda x: 1 if x > 1 else (0 if x<0 else x)
+      pos = lambda x: int(width * cap(i.norm(x)))
+      [a, b, c, d, e]  = [has[int(len(has)*x)] for x in [0.05,0.25,0.5,0.75,0.95]]
+      [na,nb,nc,nd,ne] = [pos(x) for x in [a,b,c,d,e]]
+      for j in range(nb,nd): out[j] = "-"
+      out[width//2] = "|"
+      out[nc] = "*"
+      return ', '.join(["%2d" % i.rank, word % i.txt, fmt%c, fmt%(d-b),
+                        ''.join(out),fmt%has[0],fmt%has[-1]])
+
     def delta(i,j):
       return abs(i.mid() - j.mid()) / ((i.div()**2/i.n + j.div()**2/j.n)**.5 + 1E-30)
+
     def cohen(i,j):
       return math.abs( mid(i) - mid(j) ) < 0.35 * i.pooledSd(i,j)
 
@@ -116,19 +135,6 @@ def bars(nums, width=40):
     if num.rank != last: print("#")
     last=num.rank
     print(bar(all, num.has, width=width, word="%20s", fmt="%5.2f"))
-
-def bar(num, has, fmt="%8.3f", word="%10s", width=50):
-  has = sorted(has)
-  out  = [' '] * width
-  cap = lambda x: 1 if x > 1 else (0 if x<0 else x)
-  pos = lambda x: int(width * cap(norm(num,x)))
-  [a, b, c, d, e]  = [has[int(len(has)*x)] for x in [0.05,0.25,0.5,0.75,0.95]]
-  [na,nb,nc,nd,ne] = [pos(x) for x in [a,b,c,d,e]]
-  for i in range(nb,nd): out[i] = "-"
-  out[width//2] = "|"
-  out[nc] = "*"
-  return ', '.join(["%2d" % num.rank, word % num.txt, fmt%c, fmt%(d-b),
-                    ''.join(out),fmt%num.lo,fmt%num.hi])
 
 #--------------------------------------------
 class eg:
