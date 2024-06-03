@@ -641,7 +641,7 @@ class eg:
     "Run smo 20 times."
     d   = DATA(src=csv(the.train))
     b4  = [d2h(d,row) for row in d.rows]
-    _tile(b4,20)
+    _tile(b4)
     b4  = adds(NUM(), b4)
     now = adds(NUM(), [d2h(d, smo(d)[0]) for _ in range(20)])
     sep=",\t"

@@ -41,7 +41,7 @@ OPTIONS:
   -t --train   training data                  = data/misc/auto93.csv    
   -T --test    test data (defaults to train)  = None  
   -v --version show version                   = False   
-  -x --xys     max #bins in discretization    = 10
+  -x --xys     max #bins in discretization    = 16
 </code></pre>
 <h2>Note</h2>
 <p align="left">See end-of-file for this file's  conventions / principles /practices.
@@ -256,12 +256,11 @@ For dictionary key</code>k<code>, if command line has</code>-k X<code>, then</co
       <div class='octowrap'>
         <a class='octothorpe' href='#section-15'>#</a>
       </div>
-      <p>NUM cokumns incrementally summarizes a stream of numbers.</p>
+      <p>NUM columns incrementally summarizes a stream of numbers.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">NUM</span><span class="p">(</span><span class="n">txt</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="n">at</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">has</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">num</span><span class="p">:</span>
   <span class="k">return</span> <span class="n">o</span><span class="p">(</span><span class="n">this</span><span class="o">=</span><span class="n">NUM</span><span class="p">,</span> <span class="n">txt</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span> <span class="n">at</span><span class="o">=</span><span class="n">at</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hi</span><span class="o">=-</span><span class="mf">1E30</span><span class="p">,</span> <span class="n">lo</span><span class="o">=</span><span class="mf">1E30</span><span class="p">,</span> 
-           <span class="n">has</span><span class="o">=</span><span class="n">has</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="c1"># if has non-nil, used by the stats package</span>
            <span class="n">mu</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">m2</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sd</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">maximize</span> <span class="o">=</span> <span class="n">txt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span></pre></div>
     </div>
   </div>
@@ -465,7 +464,6 @@ And &ldquo;read&rdquo; is really &ldquo;read in from some source&rdquo; and &ldq
   <span class="n">i</span><span class="o">.</span><span class="n">lo</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">lo</span><span class="p">)</span>
   <span class="n">i</span><span class="o">.</span><span class="n">hi</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">hi</span><span class="p">)</span>
   <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">has</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span> <span class="n">i</span><span class="o">.</span><span class="n">has</span> <span class="o">+=</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span>
     <span class="n">d</span>     <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="n">i</span><span class="o">.</span><span class="n">mu</span>
     <span class="n">i</span><span class="o">.</span><span class="n">mu</span> <span class="o">+=</span> <span class="n">d</span> <span class="o">/</span> <span class="n">i</span><span class="o">.</span><span class="n">n</span>
     <span class="n">i</span><span class="o">.</span><span class="n">m2</span> <span class="o">+=</span> <span class="n">d</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span>  <span class="n">i</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
@@ -500,10 +498,10 @@ And &ldquo;read&rdquo; is really &ldquo;read in from some source&rdquo; and &ldq
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">mergable</span><span class="p">(</span><span class="n">xy1</span><span class="p">:</span> <span class="n">xy</span><span class="p">,</span> <span class="n">xy2</span><span class="p">:</span> <span class="n">xy</span><span class="p">,</span> <span class="n">small</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xy</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
   <span class="n">maybe</span> <span class="o">=</span> <span class="n">merge</span><span class="p">([</span><span class="n">xy1</span><span class="p">,</span><span class="n">xy2</span><span class="p">])</span>
-  <span class="n">e1</span>  <span class="o">=</span> <span class="n">ent</span><span class="p">(</span><span class="n">xy1</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span>
-  <span class="n">e2</span>  <span class="o">=</span> <span class="n">ent</span><span class="p">(</span><span class="n">xy2</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span>
+  <span class="n">e1</span>  <span class="o">=</span> <span class="n">entropy</span><span class="p">(</span><span class="n">xy1</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span>
+  <span class="n">e2</span>  <span class="o">=</span> <span class="n">entropy</span><span class="p">(</span><span class="n">xy2</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span>
   <span class="k">if</span> <span class="n">xy1</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span> <span class="n">small</span> <span class="ow">or</span> <span class="n">xy2</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span> <span class="n">small</span><span class="p">:</span> <span class="k">return</span> <span class="n">maybe</span>
-  <span class="k">if</span> <span class="n">ent</span><span class="p">(</span><span class="n">maybe</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">xy1</span><span class="o">.</span><span class="n">n</span><span class="o">*</span><span class="n">e1</span> <span class="o">+</span> <span class="n">xy2</span><span class="o">.</span><span class="n">n</span><span class="o">*</span><span class="n">e2</span><span class="p">)</span><span class="o">/</span><span class="n">maybe</span><span class="o">.</span><span class="n">n</span><span class="p">:</span> <span class="k">return</span> <span class="n">maybe</span></pre></div>
+  <span class="k">if</span> <span class="n">entropy</span><span class="p">(</span><span class="n">maybe</span><span class="o">.</span><span class="n">ys</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">xy1</span><span class="o">.</span><span class="n">n</span><span class="o">*</span><span class="n">e1</span> <span class="o">+</span> <span class="n">xy2</span><span class="o">.</span><span class="n">n</span><span class="o">*</span><span class="n">e2</span><span class="p">)</span><span class="o">/</span><span class="n">maybe</span><span class="o">.</span><span class="n">n</span><span class="p">:</span> <span class="k">return</span> <span class="n">maybe</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -603,7 +601,7 @@ Iteratively  return <code>row</code> from a file, or standard input.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">div</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">col</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-  <span class="k">return</span> <span class="n">i</span><span class="o">.</span><span class="n">sd</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">this</span> <span class="ow">is</span> <span class="n">NUM</span> <span class="k">else</span> <span class="n">ent</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">has</span><span class="p">)</span></pre></div>
+  <span class="k">return</span> <span class="n">i</span><span class="o">.</span><span class="n">sd</span> <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">this</span> <span class="ow">is</span> <span class="n">NUM</span> <span class="k">else</span> <span class="n">entropy</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">has</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -770,7 +768,7 @@ algorithm.</p>
       <p>Try merging adjacent items in <code>b4</code>. If successful, repeat. Used by <code>_combine()</code>.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_merges</span><span class="p">(</span><span class="n">b4</span><span class="p">,</span> <span class="n">fun</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_merges</span><span class="p">(</span><span class="n">b4</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="n">xy</span><span class="p">],</span> <span class="n">fun</span><span class="p">):</span>
   <span class="n">j</span><span class="p">,</span> <span class="n">now</span>  <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[]</span>
   <span class="k">while</span> <span class="n">j</span> <span class="o">&lt;</span>  <span class="nb">len</span><span class="p">(</span><span class="n">b4</span><span class="p">):</span>
     <span class="n">a</span> <span class="o">=</span> <span class="n">b4</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
@@ -853,7 +851,7 @@ algorithm.</p>
       <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">_branch</span><span class="p">(</span><span class="n">here</span><span class="p">:</span><span class="n">node</span><span class="p">,</span> <span class="n">lvl</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span>  <span class="n">total</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">most</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">node</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">total</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="o">*</span><span class="n">stop</span> <span class="ow">and</span>  <span class="n">most</span> <span class="o">&lt;</span> <span class="n">total</span><span class="p">:</span> <span class="c1">#most==total means &quot;purity&quot; (all of one: class)</span>
       <span class="n">here</span><span class="o">.</span><span class="n">cut</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">cuts</span><span class="p">,</span>  <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">cut0</span><span class="p">:</span> <span class="n">_want</span><span class="p">(</span><span class="n">cut0</span><span class="p">,</span> <span class="n">here</span><span class="o">.</span><span class="n">klasses</span><span class="p">))</span>
-      <span class="n">left</span><span class="p">,</span><span class="n">right</span> <span class="o">=</span> <span class="n">_split</span><span class="p">(</span><span class="n">here</span><span class="o">.</span><span class="n">cut</span><span class="p">,</span> <span class="n">here</span><span class="o">.</span><span class="n">klasses</span><span class="p">)</span>
+      <span class="n">left</span><span class="p">,</span><span class="n">right</span> <span class="o">=</span> <span class="n">_cut</span><span class="p">(</span><span class="n">here</span><span class="o">.</span><span class="n">cut</span><span class="p">,</span> <span class="n">here</span><span class="o">.</span><span class="n">klasses</span><span class="p">)</span>
       <span class="n">leftn</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows1</span><span class="p">)</span> <span class="k">for</span> <span class="n">rows1</span> <span class="ow">in</span> <span class="n">left</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
       <span class="n">rightn</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows1</span><span class="p">)</span> <span class="k">for</span> <span class="n">rows1</span> <span class="ow">in</span> <span class="n">right</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
       <span class="k">if</span> <span class="n">leftn</span> <span class="o">&lt;</span> <span class="n">total</span> <span class="ow">and</span> <span class="n">rightn</span> <span class="o">&lt;</span> <span class="n">total</span><span class="p">:</span>
@@ -872,7 +870,7 @@ algorithm.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">_want</span><span class="p">(</span><span class="n">cut</span><span class="p">:</span><span class="n">xy</span><span class="p">,</span> <span class="n">klasses</span><span class="p">:</span><span class="n">classes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="p">:</span>
-    <span class="k">return</span> <span class="n">wanted</span><span class="p">(</span><span class="n">want1</span><span class="p">,</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">rows1</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">rows1</span> <span class="ow">in</span> <span class="n">_split</span><span class="p">(</span><span class="n">cut</span><span class="p">,</span><span class="n">klasses</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+    <span class="k">return</span> <span class="n">wanted</span><span class="p">(</span><span class="n">want1</span><span class="p">,</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">rows1</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">rows1</span> <span class="ow">in</span> <span class="n">_cut</span><span class="p">(</span><span class="n">cut</span><span class="p">,</span><span class="n">klasses</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
 
   <span class="n">cuts</span> <span class="o">=</span> <span class="p">[</span><span class="n">cut</span> <span class="k">for</span> <span class="n">col1</span> <span class="ow">in</span> <span class="n">i</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">x</span> <span class="k">for</span> <span class="n">cut</span> <span class="ow">in</span> <span class="n">discretize</span><span class="p">(</span><span class="n">col1</span><span class="p">,</span><span class="n">klasses</span><span class="p">,</span><span class="n">want1</span><span class="p">)]</span>
   <span class="k">return</span> <span class="n">_grow</span><span class="p">(</span><span class="n">klasses</span><span class="p">)</span></pre></div>
@@ -887,7 +885,7 @@ algorithm.</p>
       <p>Find the  classes that <code>are</code>, <code>arent</code> selected by <code>cut</code>.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_split</span><span class="p">(</span><span class="n">cut</span><span class="p">:</span><span class="n">xy</span><span class="p">,</span> <span class="n">klasses</span><span class="p">:</span><span class="n">classes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">classes</span><span class="p">,</span><span class="n">classes</span><span class="p">]:</span>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_cut</span><span class="p">(</span><span class="n">cut</span><span class="p">:</span><span class="n">xy</span><span class="p">,</span> <span class="n">klasses</span><span class="p">:</span><span class="n">classes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">classes</span><span class="p">,</span><span class="n">classes</span><span class="p">]:</span>
   <span class="n">are</span>  <span class="o">=</span> <span class="p">{</span><span class="n">klass</span><span class="p">:[]</span> <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="n">klasses</span><span class="p">}</span>
   <span class="n">arent</span> <span class="o">=</span> <span class="p">{</span><span class="n">klass</span><span class="p">:[]</span> <span class="k">for</span> <span class="n">klass</span> <span class="ow">in</span> <span class="n">klasses</span><span class="p">}</span>
   <span class="k">for</span> <span class="n">klass</span><span class="p">,</span><span class="n">rows1</span> <span class="ow">in</span> <span class="n">klasses</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1150,7 +1148,13 @@ algorithm.</p>
 <h2>Optimization</h2>
     </div>
     <div class='code'>
-      <div class="highlight"><pre></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_tile</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
+   <span class="n">num</span> <span class="o">=</span> <span class="n">adds</span><span class="p">(</span><span class="n">NUM</span><span class="p">(),</span><span class="n">lst</span><span class="p">)</span>
+   <span class="n">n</span><span class="o">=</span><span class="mi">100</span>
+   <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span><span class="si">:</span><span class="s2">5</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">num</span><span class="o">.</span><span class="n">mu</span><span class="si">:</span><span class="s2">5.3</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">num</span><span class="o">.</span><span class="n">sd</span><span class="si">:</span><span class="s2">5.3</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+   <span class="n">sd</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">sd</span><span class="o">*</span><span class="n">n</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+   <span class="n">mu</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">mu</span><span class="o">*</span><span class="n">n</span><span class="p">)</span>
+   <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">*</span><span class="p">(</span><span class="n">mu</span><span class="o">-</span><span class="n">sd</span><span class="p">),</span> <span class="s2">&quot;-&quot;</span><span class="o">*</span><span class="n">sd</span><span class="p">,</span><span class="s2">&quot;+&quot;</span><span class="o">*</span><span class="n">sd</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1162,7 +1166,7 @@ algorithm.</p>
       <p>Sequential model optimization.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">smo</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="k">lambda</span> <span class="n">B</span><span class="p">,</span><span class="n">R</span><span class="p">:</span> <span class="n">B</span><span class="o">-</span><span class="n">R</span><span class="p">):</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">smo</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">data</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="k">lambda</span> <span class="n">B</span><span class="p">,</span><span class="n">R</span><span class="p">:</span> <span class="n">B</span><span class="o">-</span><span class="n">R</span><span class="p">,</span> <span class="n">callBack</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span> <span class="p">):</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1175,7 +1179,9 @@ algorithm.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">_ranked</span><span class="p">(</span><span class="n">lst</span><span class="p">:</span><span class="n">rows</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">rows</span><span class="p">:</span>
-    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span><span class="n">d2h</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">r</span><span class="p">))</span></pre></div>
+    <span class="n">lst</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">lst</span><span class="p">,</span> <span class="n">key</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span><span class="n">d2h</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">r</span><span class="p">))</span>
+    <span class="n">callBack</span><span class="p">([</span><span class="n">d2h</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">lst</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1240,7 +1246,7 @@ algorithm.</p>
       <p>Entropy of a distribution.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">ent</span><span class="p">(</span><span class="n">d</span><span class="p">:</span><span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">entropy</span><span class="p">(</span><span class="n">d</span><span class="p">:</span><span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
   <span class="n">N</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
   <span class="k">return</span> <span class="o">-</span><span class="nb">sum</span><span class="p">(</span><span class="n">v</span><span class="o">/</span><span class="n">N</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">v</span><span class="o">/</span><span class="n">N</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></pre></div>
     </div>
@@ -1491,10 +1497,9 @@ algorithm.</p>
     <div class='code'>
       <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">klasses</span><span class="p">():</span>
     <span class="n">data1</span><span class="o">=</span> <span class="n">DATA</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">train</span><span class="p">),</span> <span class="n">rank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">show</span><span class="p">(</span><span class="n">stats</span><span class="p">(</span><span class="n">data1</span><span class="p">,</span> <span class="n">what</span><span class="o">=</span><span class="n">data1</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">y</span><span class="p">)))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">data1</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;N&quot;</span><span class="p">]</span><span class="o">+</span> <span class="n">data1</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">names</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data1</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
-      <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">40</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">row</span><span class="p">)</span></pre></div>
+      <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">20</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">row</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1574,10 +1579,13 @@ algorithm.</p>
     <div class='code'>
       <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">smo</span><span class="p">():</span>
     <span class="n">d</span> <span class="o">=</span> <span class="n">DATA</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">train</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">show</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">all</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">rows</span><span class="p">))</span>
-    <span class="n">best</span> <span class="o">=</span> <span class="n">smo</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">best</span><span class="p">),</span><span class="n">d2h</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">best</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span></pre></div>
+    <span class="n">done</span> <span class="o">=</span> <span class="n">smo</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="k">lambda</span> <span class="n">B</span><span class="p">,</span><span class="n">R</span><span class="p">:</span> <span class="n">B</span><span class="o">-</span><span class="n">R</span><span class="p">,</span> <span class="n">_tile</span><span class="p">)</span>
+    <span class="n">bests</span>   <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">done</span><span class="p">)</span><span class="o">**</span><span class="mf">.5</span><span class="p">)</span>
+    <span class="n">rests</span>   <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">done</span><span class="p">)</span> <span class="o">-</span> <span class="n">bests</span>
+    <span class="n">klasses</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">best</span><span class="o">=</span><span class="n">done</span><span class="p">[:</span><span class="n">bests</span><span class="p">],</span> <span class="n">rest</span><span class="o">=</span><span class="p">(</span><span class="n">done</span><span class="p">[</span><span class="n">bests</span><span class="p">:]))</span>
+    <span class="n">want1</span>   <span class="o">=</span> <span class="n">WANT</span><span class="p">(</span><span class="n">best</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">,</span> <span class="n">bests</span><span class="o">=</span><span class="n">bests</span><span class="p">,</span> <span class="n">rests</span><span class="o">=</span><span class="n">rests</span><span class="p">)</span>
+    <span class="n">showTree</span><span class="p">(</span><span class="n">tree</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">klasses</span><span class="p">,</span><span class="n">want1</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1608,7 +1616,9 @@ algorithm.</p>
     <div class='code'>
       <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">smo20</span><span class="p">():</span>
     <span class="n">d</span>   <span class="o">=</span> <span class="n">DATA</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">train</span><span class="p">))</span>
-    <span class="n">b4</span>  <span class="o">=</span> <span class="n">adds</span><span class="p">(</span><span class="n">NUM</span><span class="p">(),</span> <span class="p">[</span><span class="n">d2h</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">rows</span><span class="p">])</span>
+    <span class="n">b4</span>  <span class="o">=</span> <span class="p">[</span><span class="n">d2h</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">rows</span><span class="p">]</span>
+    <span class="n">_tile</span><span class="p">(</span><span class="n">b4</span><span class="p">)</span>
+    <span class="n">b4</span>  <span class="o">=</span> <span class="n">adds</span><span class="p">(</span><span class="n">NUM</span><span class="p">(),</span> <span class="n">b4</span><span class="p">)</span>
     <span class="n">now</span> <span class="o">=</span> <span class="n">adds</span><span class="p">(</span><span class="n">NUM</span><span class="p">(),</span> <span class="p">[</span><span class="n">d2h</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">smo</span><span class="p">(</span><span class="n">d</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">)])</span>
     <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;,</span><span class="se">\t</span><span class="s2">&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mid&quot;</span><span class="p">,</span><span class="n">show</span><span class="p">(</span><span class="n">mid</span><span class="p">(</span><span class="n">b4</span><span class="p">)),</span> <span class="n">show</span><span class="p">(</span><span class="n">mid</span><span class="p">(</span><span class="n">now</span><span class="p">)),</span><span class="n">show</span><span class="p">(</span><span class="n">b4</span><span class="o">.</span><span class="n">lo</span><span class="p">),</span><span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span><span class="n">end</span><span class="o">=</span><span class="n">sep</span><span class="p">)</span>
@@ -1621,6 +1631,30 @@ algorithm.</p>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-104'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">divide</span><span class="p">():</span>
+    <span class="n">data1</span>   <span class="o">=</span> <span class="n">DATA</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">train</span><span class="p">),</span> <span class="n">rank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">bests</span>   <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data1</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span><span class="o">**</span><span class="mf">.5</span><span class="p">)</span>
+    <span class="n">rests</span>   <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data1</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span> <span class="o">-</span> <span class="n">bests</span>
+    <span class="n">klasses</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">best</span><span class="o">=</span><span class="n">data1</span><span class="o">.</span><span class="n">rows</span><span class="p">[:</span><span class="n">bests</span><span class="p">],</span> <span class="n">rest</span><span class="o">=</span><span class="p">(</span><span class="n">data1</span><span class="o">.</span><span class="n">rows</span><span class="p">[</span><span class="n">bests</span><span class="p">:]))</span>
+    <span class="n">want1</span>   <span class="o">=</span> <span class="n">WANT</span><span class="p">(</span><span class="n">best</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">,</span> <span class="n">bests</span><span class="o">=</span><span class="n">bests</span><span class="p">,</span> <span class="n">rests</span><span class="o">=</span><span class="n">rests</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">col1</span> <span class="ow">in</span> <span class="n">data1</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">x</span> <span class="p">:</span>
+      <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+      <span class="n">bins</span> <span class="o">=</span> <span class="p">{}</span>
+      <span class="p">[</span><span class="n">_divideIntoBins</span><span class="p">(</span><span class="n">col1</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="n">col1</span><span class="o">.</span><span class="n">at</span><span class="p">],</span> <span class="n">klass</span><span class="p">,</span> <span class="n">bins</span><span class="p">)</span> <span class="k">for</span> <span class="n">klass</span><span class="p">,</span><span class="n">rows1</span> <span class="ow">in</span> <span class="n">klasses</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                                  <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows1</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">col1</span><span class="o">.</span><span class="n">at</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span><span class="p">]</span>
+      <span class="k">for</span> <span class="nb">bin</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">bins</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">b</span><span class="p">:</span><span class="n">b</span><span class="o">.</span><span class="n">lo</span><span class="p">):</span>
+         <span class="nb">print</span><span class="p">(</span><span class="n">show</span><span class="p">(</span><span class="n">wanted</span><span class="p">(</span><span class="n">want1</span><span class="p">,</span><span class="nb">bin</span><span class="o">.</span><span class="n">ys</span><span class="p">)),</span> <span class="n">show</span><span class="p">(</span><span class="nb">bin</span><span class="p">),</span> <span class="nb">bin</span><span class="o">.</span><span class="n">ys</span><span class="p">,</span> <span class="n">show</span><span class="p">(</span><span class="n">entropy</span><span class="p">(</span><span class="nb">bin</span><span class="o">.</span><span class="n">ys</span><span class="p">)),</span><span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-105'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-105'>#</a>
       </div>
       <p>Find useful ranges.</p>
     </div>
@@ -1639,10 +1673,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-105'>
+  <div class='section' id='section-106'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-105'>#</a>
+        <a class='octothorpe' href='#section-106'>#</a>
       </div>
       <p>Test the generation of binary decision tree.</p>
     </div>
@@ -1657,10 +1691,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-106'>
+  <div class='section' id='section-107'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-106'>#</a>
+        <a class='octothorpe' href='#section-107'>#</a>
       </div>
       <p>To test if <code>ezr.py -R all</code>  can handle failing tests,  remove underscore in this function&rsquo;s name.</p>
     </div>
@@ -1669,10 +1703,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-107'>
+  <div class='section' id='section-108'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-107'>#</a>
+        <a class='octothorpe' href='#section-108'>#</a>
       </div>
       <hr />
     </div>
@@ -1681,10 +1715,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-108'>
+  <div class='section' id='section-109'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-108'>#</a>
+        <a class='octothorpe' href='#section-109'>#</a>
       </div>
       <h2>Conventions in this code</h2>
     </div>
@@ -1693,10 +1727,10 @@ algorithm.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-109'>
+  <div class='section' id='section-110'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-109'>#</a>
+        <a class='octothorpe' href='#section-110'>#</a>
       </div>
       <ul>
 <li><strong>Doc, Config:</strong> At top of file, add in all settings to the <strong>doc</strong> string. 

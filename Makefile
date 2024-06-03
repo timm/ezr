@@ -48,9 +48,6 @@ tests:
 			 sed -i '' '1 s/passing-green/failing-red/' README.md;     \
   fi
 
-docs/index.html :docs/ezr.html ## make docs/index.html
-	cp $< $@
-
 docs/%.html : %.py ## .py --> .html
 	gawk -f etc/ab2ba.awk $< > docs/$<
 	cd docs; pycco -d . $<; rm $<
