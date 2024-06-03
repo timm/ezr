@@ -1,4 +1,4 @@
-# Easier XAI
+# A Tutorial on Easier XAI
 
 by Tim Menzies and the EZRites  
 (c) 2024, CC-SA 4.0  
@@ -33,8 +33,7 @@ row     = list[atom]
 rows    = list[row]
 classes = dict[str,rows] # `str` is the class name
 ```
-### Two Parts to this work
-This work is in two parts. 
+Also, this work is in two parts. 
 
 #### Part 1 : Standard Learning
 
@@ -63,9 +62,10 @@ the current model against data _not seen in training_
 test the model on that new data
 before changing and biasing that model
 with that new information). So in part two,  we will apply an incremental learning strategy
-where  a model learned from the first  $i < N$ examples is applied to all the remaining $(i+1)  \le j \le N$.
+where  a model learned from the first  $ i \lt N $ examples is applied to 
+all the remaining $ (i+1)  \le j \le N $.
 
-Thridly, the first part assumes we can acccess correct labels for all the data-- which may not be true.
+Thirdly, the first part assumes we can access correct labels for all the data-- which may not be true.
 For example, suppose we are standing in a used car yard with 400 cars.
 Suppose further we want a car that is light (since they cost less),  and which has
 good acceleration and miles per gallon:
@@ -78,7 +78,7 @@ is take out all 400 cars one at at time,  drive them around for a while, and lab
 the miles per hour.
 But that would take too long. So instead, in part two, we will employ active
 learning to look at everything unlabelled, then pick the least number of potentially
-most informative things to label next. As we shall these, this will alllow us to exlore
+most informative things to label next. As we shall these, this will allow us to explore
 10,000s of examples with just a few dozen labels.
 
 
@@ -86,7 +86,7 @@ most informative things to label next. As we shall these, this will alllow us to
 In the beginning there was the data and the data was without form,
 and void; and confusion was upon the face of the humans.  And the
 programmer  said, let there be workflows that 
-succinctly  explain the contrast between good and bad things [^whycon] [^conplan]
+succinctly  explain the contrast between good and bad things [[^whycon],[^conplan]].
 And then there was light.
 
 [^whycon]: difference between things can be shorter than the things
