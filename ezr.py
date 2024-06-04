@@ -12,8 +12,8 @@
       -h --help    show help                      = False
       -H --Half    #rows for searching for poles  = 128    
       -k --k       bayes low frequency hack #1    = 1    
-      -l --label   initial number of labelings    = 4    
-      -L --Last    max allow labelings            = 30    
+      -l --label   initial number for labelling    = 4    
+      -L --Last    max allow #labelling            = 30    
       -m --m       bayes low frequency hack #2    = 2    
       -n --n       tinyN                          = 12    
       -N --N       smallN                         = 0.5    
@@ -90,11 +90,11 @@ def _COLS(names: list[str]) -> cols:
   "COLS are factories to make columns. Stores independent/dependent cols `x`/`y` and `all`."
   return o(this=COLS, x=[], y=[], all=[], klass=None, names=names)
 
-def SYM(txt=" ",at=0) -> sym:
+def SYM(txt=" ",at=0) -> sym:  
   "SYM columns incrementally summarizes a stream of symbols."
   return o(this=SYM, txt=txt, at=at, n=0, has={})
 
-def NUM(txt=" ",at=0,has=None) -> num:
+def NUM(txt=" ",at=0,has=None) -> num:  
   "NUM columns incrementally summarizes a stream of numbers."
   return o(this=NUM, txt=txt, at=at, n=0, hi=-1E30, lo=1E30, 
            mu=0, m2=0, sd=0, maximize = txt[-1] != "-")
@@ -324,9 +324,9 @@ def tree(i:data, klasses:classes, want1:Callable, stop:int=4) -> node:
     if total > 2*stop and  most < total: #most==total means "purity" (all of one: class)
       here.cut = max(cuts,  key=lambda cut0: _want(cut0, here.klasses))
       left,right = _cut(here.cut, here.klasses)
-      leftn = sum(len(rows1) for rows1 in left.values())
-      rightn = sum(len(rows1) for rows1 in right.values())
-      if leftn < total and rightn < total:
+      lefts = sum(len(rows1) for rows1 in left.values())
+      rights = sum(len(rows1) for rows1 in right.values())
+      if lefts < total and rights < total:
          here.left  = _grow(left,  lvl+1, here)
          here.right = _grow(right, lvl+1, here)
     return here
@@ -339,12 +339,12 @@ def tree(i:data, klasses:classes, want1:Callable, stop:int=4) -> node:
   return _grow(klasses)
 
 def _cut(cut:xy, klasses:classes) -> tuple[classes,classes]:
-  "Find the  classes that `are`, `arent` selected by `cut`."
+  "Find the  classes that `are`, `arenot` selected by `cut`."
   are  = {klass:[] for klass in klasses}
-  arent = {klass:[] for klass in klasses}
+  arenot = {klass:[] for klass in klasses}
   for klass,rows1 in klasses.items():
-    [(are if selects(cut,row1) else arent)[klass].append(row1) for row1 in rows1]
-  return are,arent
+    [(are if selects(cut,row1) else arenot)[klass].append(row1) for row1 in rows1]
+  return are,arenot
 
 def nodes(i:node, lvl=0, left=True) -> node:
   "Iterator to return nodes."
@@ -392,7 +392,7 @@ def neighbors(i:data, r1:row, region:rows=None) -> list[row]:
 # ## Clustering
 
 def branch(i:data, region:rows=None, stop=None, rest=None, evals=1, before=None):
-  "Recursively bi-cluster `region`, reursing only down the best half."
+  "Recursively bi-cluster `region`, recurse only down the best half."
   region = region or i.rows
   stop = stop or 2*len(region)**the.N
   rest = rest or []
@@ -671,9 +671,9 @@ class eg:
     klasses = dict(best=data1.rows[:bests], rest=(data1.rows[bests:]))
     want1   = WANT(best="best", bests=bests, rests=rests)
     print("\nbaseline", " "*22, dict(best=bests,rest=rests))
-    for xcol in data1.cols.x:
+    for x in data1.cols.x:
       print("")
-      for xy1 in discretize(xcol, klasses, want1):
+      for xy1 in discretize(x, klasses, want1):
         print(show(wanted(want1,xy1.ys)),f"{show(xy1):20}",xy1.ys,sep="\t") 
 
   def tree():
