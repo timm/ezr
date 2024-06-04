@@ -56,18 +56,18 @@ class Some:
     def norm(i, n):
       return (n-i.lo)/(i.hi - i.lo + 1E-30)
 
-    def bar(i, has, fmt="%8.3f", word="%10s", width=50):
-      has.sort() 
+    def bar(i, some, fmt="%8.3f", word="%10s", width=50):
+      has = some.has() 
       out = [' '] * width
       cap = lambda x: 1 if x > 1 else (0 if x<0 else x)
       pos = lambda x: int(width * cap(i.norm(x)))
-      [a, b, c, d, e]  = [has[int(len(has)*x)] for x in [0.05,0.25,0.5,0.75,0.95]]
-      [na,nb,nc,nd,ne] = [pos(x) for x in [a,b,c,d,e]]
-      print([nb,nc,nd])
-      for j in range(nb,nd): out[j] = "-"
+      [a, b, c, d, e]  = [has[int(len(has)*x)] for x in [0.1,0.3,0.5,0.7,0.9]]
+      [na,nb,nc,nd,ne] = [pos(x) for x in [a,b,c,d,e]] 
+      for j in range(na,nb): out[j] = "-"
+      for j in range(nd,ne): out[j] = "-"
       out[width//2] = "|"
-      out[nc] = "*"
-      return ', '.join(["%2d" % i.rank, word % i.txt, fmt%c, fmt%(d-b),
+      out[nc] = "*" 
+      return ', '.join(["%2d" % some.rank, word % some.txt, fmt%c, fmt%(d-b),
                         ''.join(out),fmt%has[0],fmt%has[-1]])
 
     def delta(i,j:Some): 
@@ -150,7 +150,7 @@ def eg0(somes):
   for some in sk(somes):
     if some.rank != last: print("#")
     last=some.rank
-    print(all.bar(some.has(),width=40,word="%20s", fmt="%5.2f"))
+    print(all.bar(some,width=40,word="%20s", fmt="%5.2f"))
 
 class eg:
   def basic(): 
@@ -190,7 +190,7 @@ class eg:
   def eg2(n=5):
     eg0([ Some([0.34, 0.49 ,0.51, 0.6]*n,   txt="x1"),
           Some([0.6  ,0.7 , 0.8 , 0.89]*n,  txt="x2"),
-          Some([0.13 ,0.23, 0.38 , 0.38]*n, txt="x3"),
+          Some([0.13 ,0.23, 0.38 , 0.48]*n, txt="x3"),
           Some([0.6  ,0.7,  0.8 , 0.9]*n,   txt="x4"),
           Some([0.1  ,0.2,  0.3 , 0.4]*n,   txt="x5")])
     
@@ -198,10 +198,10 @@ class eg:
     eg0([ Some([0.32,  0.45,  0.50,  0.5,  0.55],    "one"),
           Some([ 0.76,  0.90,  0.95,  0.99,  0.995], "two")])
 
-  def eg4(n=5):
-    eg0([ Some([0.34, 0.49 ,0.51, 0.6]*n,   "x1"),
+  def eg4(n=20):
+    eg0([ Some([0.24, 0.25 ,0.26, 0.29]*n,   "x1"),
           Some([0.35, 0.52 ,0.63, 0.8]*n,   "x2"),
-          Some([0.13 ,0.23, 0.38 , 0.38]*n, "x4"),
+          Some([0.13 ,0.23, 0.38 , 0.48]*n, "x3"),
           ])
 
 if __name__ == "__main__": 
