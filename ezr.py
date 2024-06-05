@@ -520,9 +520,9 @@ class Some:
       if   now < i.max   : i.ok=False; i._has += [x]
       elif R() <= now/i.n: i.ok=False; i._has[ int(R() * now) ]
 
-    def __ne__(i,j:Some) -> bool:
-      "False if any of cohen/cliffs/bootstrap say you are the same."
-      return not i.cohen(j) and not i.cliffs(j) and not i.bootstrap(j)
+    def __eq__(i,j:Some) -> bool:
+      "True if all of cohen/cliffs/bootstrap say you are the same."
+      return i.cohen(j) and i.cliffs(j) and i.bootstrap(j) ## ordered slowest to fastest
 
     def has(i) -> list[number]:
       "Return the numbers, sorted."
@@ -574,14 +574,15 @@ class Some:
 
     def cliffs(i,j:Some, dull=0.147) -> bool:
       """non-parametric effect size. threshold is border between small=.11 and medium=.28 
-      from Table1 of  https://doi.org/10.3102/10769986025002101"""
+      from Table1 of  https://doi.org/10.3102/10769986025002101
+      """
       n,lt,gt = 0,0,0
       for x1 in i.has():
         for y1 in j.has():
           n += 1
           if x1 > y1: gt += 1
           if x1 < y1: lt += 1
-      return abs(lt - gt)/n  < dull # true if different
+      return abs(lt - gt)/n  < dull # true if same
 
     def  bootstrap(i,j:Some,confidence=.05,samples=512) -> bool:
       """non-parametric significance test From Introduction to Bootstrap, 
@@ -802,12 +803,16 @@ class eg:
     d   = DATA(src=csv(the.train))
     b4  = [d2h(d,row) for row in d.rows]
     _tile(b4)
-    b4  = adds(NUM(), b4)
-    now = adds(NUM(), [d2h(d, smo(d)[0]) for _ in range(20)])
-    sep=",\t"
-    print("mid",show(mid(b4)), show(mid(now)),show(b4.lo),sep=sep,end=sep)
-    print("div",show(div(b4)), show(div(now)),sep=sep,end=sep)
-    print(the.train)
+    for n in [10,20,40,80,160,320]:
+      print("")
+      the.Label=n
+      d   = DATA(src=csv(the.train))
+      b4  = [d2h(d,row) for row in d.rows] 
+      b4  = adds(NUM(), b4)
+      now = adds(NUM(), [d2h(d, smo(d)[0]) for _ in range(20)])
+      sep=",\t"
+      print("mid",n,show(mid(b4)), show(mid(now)), "lo:", show(b4.lo),sep=sep)
+      print("div",n,show(div(b4)), show(div(now)), sep=sep)
 
   def divide():
     data1   = DATA(csv(the.train), rank=True)
@@ -865,25 +870,24 @@ class eg:
     "Read somes from file."
     [print(x) for x in file2somes("data/stats.txt")]
 
-  def cliffEtAl():
-    print("inc","\tcd","\tboot","\tc+b", "\tsd/3")
+  def someSame():
+    print("inc","\tcd","\tboot","\tcohen","==")
     x=1
-    while x<1.5:
+    while x<1.75:
       a1 = [random.gauss(10,3) for x in range(20)]
       a2 = [y*x for y in a1]
       s1 = Some(a1)
-      s2 = Some(a2)  
-      s12= Some(a1+a2)
+      s2 = Some(a2)   
       t1 = s1.cliffs(s2) 
       t2 = s1.bootstrap(s2) 
-      t3= abs(s1.mid()-s2.mid()) < s12.div()/3
-      print(round(x,3),t1, t2,t1 and t2, t3, sep="\t")
+      t3 = s1.cohen(s2) 
+      print(round(x,3),t1, t2,  t3, s1==s2, sep="\t")
       x *= 1.02
 
   def some2(n=5):
     eg0([ Some([0.34, 0.49 ,0.51, 0.6]*n,   txt="x1"),
           Some([0.6  ,0.7 , 0.8 , 0.89]*n,  txt="x2"),
-          Some([0.13 ,0.23, 0.38 , 0.48]*n, txt="x3"),
+          Some([0.09 ,0.22, 0.28 , 0.5]*n, txt="x3"),
           Some([0.6  ,0.7,  0.8 , 0.9]*n,   txt="x4"),
           Some([0.1  ,0.2,  0.3 , 0.4]*n,   txt="x5")])
     

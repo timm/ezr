@@ -50,6 +50,8 @@
 
 | what | notes| needs | who |
 |------|--|-----|-----|
+|feature selection |---|--|--|
+|instance  selection |---|--|--|
 | business intelligence | see [Fig7](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/MSR-TR-2011-8.pdf). How of those can we do? | | |
 | early stop | (a) look for patterns in the improvements, learn when enough is enough <br>(b) combine rrp (pass1) with smo (pass2)<br>(c) do acquire|     |     |
 | streaming| updating the model| | |
