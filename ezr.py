@@ -508,8 +508,7 @@ class Some:
     def adds(i,a:any) -> None: 
       "Handle multiple nests samples."
       for b in a:
-        if   isinstance(b,(list,tuple)): [i.adds(c) for c in b] 
-        #elif callable(b):                [i.adds(c) for c in b()]
+        if   isinstance(b,(list,tuple)): [i.adds(c) for c in b]  
         elif isinstance(b,Some):         [i.add(c) for c in b._has]
         else: i.add(b) 
 
@@ -599,12 +598,15 @@ class Some:
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Misc Functions:
 
+# Some general Python tricks
+
 def entropy(d:dict) -> float:
   "Entropy of a distribution."
   N = sum(v for v in d.values())
   return -sum(v/N*math.log(v/N,2) for v in d.values())
 
 def normal(mu:number,sd:number) -> float:
+  "Generate a number from `N(mu,sd)`."
   return mu+sd*math.sqrt(-2*math.log(R())) * math.cos(2*math.pi*R())
 
 def show(x:any) -> any:
@@ -646,7 +648,7 @@ def sk(somes:list[Some]) -> list[Some]:
     else:
       for some in somes: some.rank = rank
     return rank
-  #------------ 
+   
   somes = sorted(somes, key=lambda some: some.mid()) #lambda some : some.mid())
   sk1(somes,0)
   return somes
@@ -656,7 +658,7 @@ def file2somes(file:str) -> list[Some]:
   def asNum(s):
     try: return float(s)
     except Exception: return s
-  #-------------------------
+   
   somes=[]
   with open(file) as fp: 
     for word in [asNum(x) for s in fp.readlines() for x in s.split()]:

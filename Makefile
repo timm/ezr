@@ -56,7 +56,7 @@ docs/%.html : %.py ## .py --> .html
 	@open $@
 
 ~/tmp/%.pdf: %.py  ## .py --> .pdf
-	mkdir -p $(dirname $@)
+	mkdir -p ~/tmp
 	echo "pdf-ing $@ ... "
 	a2ps                 \
 		-Br                 \
