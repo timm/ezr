@@ -40,4 +40,29 @@ ss.sbyecode=true
 
 ## Randomizes algorihtms
 
-seed
+keep you seed
+
+
+# Scripting tricks
+
+##  50  cool python one liners
+Comprehensions, destructing, etc etc
+##  100 cool shell one liners
+
+- The Enlightened Ones say that....
+
+  - You should never use C if you can do it with a script;
+  - You should never use a script if you can do it with awk;
+  - Never use awk if you can do it with sed;
+  -  Never use sed if you can do it with grep.
+
+
+
+- 25  cool shell (bash/zsh) one liners
+- 25  cool Make one liners
+- 25 cool awk one liners
+- 25 cool sed one liners
+
+
+o
+
