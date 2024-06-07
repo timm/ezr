@@ -187,12 +187,13 @@ def add2xy(i:xy, x: int | float , y:atom) -> None:
     i.hi    =  max(i.hi, x)
     i.ys[y] = i.ys.get(y,0) + 1
 
-def mergable(xy1: xy, xy2: xy, small:int) -> xy | None:
+def mergable(xy1: xy, xy2: xy, small:int,want:Want,enough:number) -> xy | None:
   "Return the merge  if the whole is better than the parts. Used  by `merges()`."
   maybe = merge([xy1,xy2])
   e1  = entropy(xy1.ys)
   e2  = entropy(xy2.ys)
   if xy1.n < small or xy2.n < small: return maybe
+  if wanted(want,xy1.ys) < enough or wanted(want,xy2.ys) < enough : return maybe
   if entropy(maybe.ys) <= (xy1.n*e1 + xy2.n*e2)/maybe.n: return maybe
 
 def merge(xys : list[xy]) -> xy:
@@ -270,9 +271,10 @@ def discretize(i:col, klasses:classes, want1: Callable) -> list[xy] :
   bins = {}
   [_divideIntoBins(i, r[i.at], klass, bins) for klass,rows1 in klasses.items()
                                   for r in rows1 if r[i.at] != "?"]
-  return _combine(i, sorted(bins.values(), key=lambda z:z.lo),
-                     sum(len(rs) for rs in klasses.values()) / the.xys,
-                     want1)
+  return _combine(i,sorted(bins.values(), key=lambda z:z.lo),
+                    1/the.xys  * sum(len(rs) for rs in klasses.values()),
+                    the.enough * sorted([wanted(want1,z.ys) for z in bins.values()])[-1],
+                    want1)
 
 def _divideIntoBins(i:col,x:atom, y:str, bins:dict) -> None:
   "Store `x,y` in the right part of `bins`. Used by `discretize()`."
@@ -280,15 +282,9 @@ def _divideIntoBins(i:col,x:atom, y:str, bins:dict) -> None:
   bins[k] = bins[k] if k in bins else XY(i.at,i.txt,x)
   add2xy(bins[k],x,y)
 
-def _combine(i:col, xys: list[xy], small, want1) -> list[xy] :
-  def mergeDull(a,b,n):
-    if wanted(want1,a.ys) < n and wanted(want1,b.ys) < n:
-      return merge([a,b])
-
+def _combine(i:col, xys: list[xy], small, wantedEnough, want1) -> list[xy] :
   if i.this is NUM:
-    xys = _span(_merges(xys, lambda a,b: mergable(a,b,small)))
-    n   = the.enough * sorted([wanted(want1,xy1.ys) for xy1 in xys])[-1]
-    xys = _merges(xys, lambda a,b: mergeDull(a,b,n))
+    xys = _span(_merges(xys, lambda a,b: mergable(a,b,small,want1,wantedEnough)))
   return  [] if len(xys)==1 else xys
 
 def _merges(b4:list[xy], fun):
@@ -539,8 +535,6 @@ class Some:
        "Return the deviance from the middle." 
        l = i.has()
        n = len(l)//10
-       return ((l[-1] - l[0]) if n<10 else (l[int(9*n)] - l[int(1*n)]))/2.56
-
     def pooledSd(i,j:Some) -> number:
       "Return a measure of the combined standard deviation."
       sd1, sd2 = i.div(), j.div()
@@ -788,7 +782,6 @@ class eg:
     klasses = dict(best=done[:bests], rest=(done[bests:]))
     want1   = WANT(best="best", bests=bests, rests=rests)
     showTree(tree(d,klasses,want1))
-
 
   def profileSmo():
     "Example of profiling."

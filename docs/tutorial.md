@@ -5,7 +5,7 @@ by Tim Menzies and the EZRites
 http://github.com/timm/ezr
 
 
->[!NOTE]
+> [!NOTE]
 > <b> We present a successful  experiment in coding XAI (explainable AI) in the fewest
 lines of code. The code is written in functional style (so no classes
 and lots of list comprehensions).  The work is guided by the
