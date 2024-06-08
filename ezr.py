@@ -267,19 +267,22 @@ def wanted(i:want, d:dict) -> float :
 
 def discretize(i:col, klasses:classes) -> list[xy] :
   "Find good ranges for the i-th column within `klasses`."
-  bins = {}
-  [_divideIntoBins(i, r[i.at], klass, bins) for klass,rows1 in klasses.items()
-                                  for r in rows1 if r[i.at] != "?"]
-  return _combine(i,sorted(bins.values(), key=lambda z:z.lo),
+  xys = {}
+  for klass,rows1 in klasses.items():
+    for r in rows1:
+      _divide(i, r[i.at], klass, xys)
+  return _combine(i,sorted(xys.values(), key=lambda z:z.lo),
                     1/the.xys  * sum(len(rs) for rs in klasses.values()))
 
-def _divideIntoBins(i:col,x:atom, y:str, bins:dict) -> None:
-  "Store `x,y` in the right part of `bins`. Used by `discretize()`."
-  k = x if i.this is SYM else min(the.xys -1, int(the.xys * norm(i,x)))
-  bins[k] = bins[k] if k in bins else XY(i.at,i.txt,x)
-  add2xy(bins[k],x,y)
+def _divide(i:col,x:atom, y:str, xys:dict) -> None:
+  "Store `x,y` in the right part of `xys`. Used by `discretize()`."
+  if x  != "?":
+    k = x if i.this is SYM else min(the.xys -1, int(the.xys * norm(i,x)))
+    xys[k] = xys[k] if k in xys else XY(i.at,i.txt,x)
+    add2xy(xys[k],x,y)
 
 def _combine(i:col, xys: list[xy], small) -> list[xy] :
+  "For numerics, combine similar adjacent ranges."
   xys = xys if i.this is SYM else _span(_merges(xys, lambda a,b: mergable(a,b,small)))
   return [] if len(xys) < 2 else xys
 
