@@ -267,41 +267,38 @@ def wanted(i:want, d:dict) -> float :
 
 def discretize(i:col, klasses:classes) -> list[xy] :
   "Find good ranges for the i-th column within `klasses`."
-  xys = {}
+  d,n  = {},0
   for klass,rows1 in klasses.items():
     for r in rows1:
-      _divide(i, r[i.at], klass, xys)
-  return _combine(i,sorted(xys.values(), key=lambda z:z.lo),
-                    1/the.xys  * sum(len(rs) for rs in klasses.values()))
-
-def _divide(i:col,x:atom, y:str, xys:dict[atom,xy]) -> None:
-  "Store `x,y` in the right part of `xys`. Used by `discretize()`."
-  if x  != "?":
-    k = x if i.this is SYM else min(the.xys -1, int(the.xys * norm(i,x)))
-    xys[k] = xys[k] if k in xys else XY(i.at,i.txt,x)
-    add2xy(xys[k],x,y)
-
-def _combine(i:col, xys: list[xy], small) -> list[xy] :
-  "For numerics, combine similar adjacent ranges."
-  xys = xys if i.this is SYM else _span(_merges(xys, lambda a,b: mergable(a,b,small)))
+      n += 1
+      x = r[i.at]
+      if x !="?": add2xy(_where(d,x,i), x, klass)
+  xys = sorted(d.values(), key=lambda z:z.lo)
+  xys = xys if i.this is SYM else _merges(xys, n/the.xys)
   return [] if len(xys) < 2 else xys
 
-def _merges(b4:list[xy], fun):
+def _where(xys:dict[atom,xy], x:atom, i:col) -> xy:
+  "Find and return the `k`-th bin within `xys` that should hold `x`."
+  k = x if i.this is SYM else min(the.xys - 1, int(the.xys * norm(i,x)))
+  xys[k] = xys[k] if k in xys else XY(i.at,i.txt,x)
+  return xys[k]
+
+def _merges(b4:list[xy], enough):
   "Try merging adjacent items in `b4`. If successful, repeat. Used by `_combine()`."
   j, now  = 0, []
   while j <  len(b4):
     a = b4[j]
     if j <  len(b4) - 1:
       b = b4[j+1]
-      if ab := fun(a,b):
+      if ab := mergable(a,b,enough):
         a = ab
         j = j+1  # if i can merge, jump over the merged item
     now += [a]
     j += 1
-  return b4 if len(now) == len(b4) else _merges(now, fun)
+  return _span(b4) if len(now) == len(b4) else _merges(now, enough)
 
 def _span(xys : list[xy]) -> list[xy]:
-  "Ensure there are no gaps in the `x` ranges of `xys`. Used by `discretize()`."
+  "Ensure there are no gaps in the `x` ranges of `xys`. Used by `_merges()`."
   for j in range(1,len(xys)):  xys[j].lo = xys[j-1].hi
   xys[0].lo  = -1E30
   xys[-1].hi =  1E30
