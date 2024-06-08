@@ -274,7 +274,7 @@ def discretize(i:col, klasses:classes) -> list[xy] :
   return _combine(i,sorted(xys.values(), key=lambda z:z.lo),
                     1/the.xys  * sum(len(rs) for rs in klasses.values()))
 
-def _divide(i:col,x:atom, y:str, xys:dict) -> None:
+def _divide(i:col,x:atom, y:str, xys:dict[atom,xy]) -> None:
   "Store `x,y` in the right part of `xys`. Used by `discretize()`."
   if x  != "?":
     k = x if i.this is SYM else min(the.xys -1, int(the.xys * norm(i,x)))
