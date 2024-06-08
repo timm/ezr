@@ -12,42 +12,53 @@ Make code freely usable.
 
 ### Software 2.0
 
-SE projects are now divided into team1, team2 where team1 does convectional SE, while team2
+SE projects are now divided into team1, team2 where team1 does conventional SE, while team2
    is in charge of the care and feeding on an optimizer/model builder
+o
+### Product lines / Separate policy from mechanism
 
-### Separate policy from mechanism
+Your current code is but an example of one product within a large space of similar products
 
-Your current code is but an example of one product within a large space of similar prodicts
-
-Make much use or domain-specific notations (e.g. regx, our
+So:
+- Make much use or domain-specific notations (e.g. regx, our
   __doc__ strings, our little language for column headers).
 
-### Doc, Config
+### Config, matters
 
-At top of file, add in all settings to the __doc__ string. 
-  Parse that string to create `the` global settings.
-  Also, every function gets a one line doc string. For documentation longer than one line,
-  add this outside the function.
 - Config matters
   - fast growth in config options
   - slower growth in the options we use
   - gap in the middle (beween we do and what we can do)
 
-###  TDD 
+### Doc, matters
+Every pieces of software needs documentation.
 
-hald tthe time in testing
+So:
+- At top of file, add in all settings to the __doc__ string. 
+-  Parse that string to create `the` global settings.
+  Also, every function gets a one line doc string. For documentation longer than one line,
+  add this outside the function.
+- pycco
 
-Lots of little tests. At end of file, add in demos/tests as methods of the `eg` class 
-  Report a test failure by return `False`. Note that `eg.all()` will run all demos/tests
-  and return the number of failures to the operating system.
+###  Test-driven development 
 
+Half the development time is in tessting
+
+Standard patterns for tests:
 - set up (reset seed, save settings)
 - tear down (restore)
 
-it is difficult to teach debugging on non-trivial examples; students need domain knowledge about the SUT to make a judgement on whether a location is buggy or not.
+so:
+- write Lots of little tests. At end of file, add in demos/tests as methods of the `eg` class 
+-  Report a test failure by return `False`. Note that `eg.all()` will run all demos/tests
+  and return the number of failures to the operating system.
 
-- run tests. re-run tests. beck's watch comamnd
-- black-box, white-box, formal: fuzzing, clustering, safety crtical ssytems
+it is difficult to teach debugging on non-trivial examples; students
+need domain knowledge about the SUT to make a judgement on whether
+a location is buggy or not.
+
+- run tests. re-run tests. beck's watch command
+- black-box, white-box, formal: fuzzing, clustering, safety critical systems
 - shaperio: https://damorim.github.io/publications/li-etal-icse2018.pdf
 - whylines: needs specific tool support. but it does teach us that testing has a search structure
 - delta debugging
@@ -55,17 +66,20 @@ it is difficult to teach debugging on non-trivial examples; students need domain
 testing big is very different to testing small
 - know the location is not even relevant (zhe's work)
 - test prioritizaition strategies 
-  - saved google 2015 (sebansian etc)
-  - test new, test things that failred, test thigns that have nt been tested lately
-- big test is like big exmpore
-  - seqiential model optmization. how to test a little then go forth and hunt down the rest.
+  - saved google 2015 (sebastian etc)
+  - test new, test things that failed, test things that have not been tested lately
+- big test is like big explore
+  - sequential model optimizaion. how to test a little then go forth and hunt down the rest.
 
 ### Composition
 
 Allow for reading from standard input (so this code can be used in a pipe).
 
+So: 
 -  Pipelines
    - my testing pre-commit hook
+
+Note limiataions with pipels (cant go backwards)
 
 ### Abstraction
 

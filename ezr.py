@@ -187,13 +187,12 @@ def add2xy(i:xy, x: int | float , y:atom) -> None:
     i.hi    =  max(i.hi, x)
     i.ys[y] = i.ys.get(y,0) + 1
 
-def mergable(xy1: xy, xy2: xy, small:int,want:Want,enough:number) -> xy | None:
+def mergable(xy1: xy, xy2: xy, small:int) -> xy | None:
   "Return the merge  if the whole is better than the parts. Used  by `merges()`."
   maybe = merge([xy1,xy2])
   e1  = entropy(xy1.ys)
   e2  = entropy(xy2.ys)
   if xy1.n < small or xy2.n < small: return maybe
-  if wanted(want,xy1.ys) < enough or wanted(want,xy2.ys) < enough : return maybe
   if entropy(maybe.ys) <= (xy1.n*e1 + xy2.n*e2)/maybe.n: return maybe
 
 def merge(xys : list[xy]) -> xy:
@@ -266,15 +265,13 @@ def wanted(i:want, d:dict) -> float :
 # [ChiMerge](https://sci2s.ugr.es/keel/pdf/algorithm/congreso/1992-Kerber-ChimErge-AAAI92.pdf)
 # algorithm.
 
-def discretize(i:col, klasses:classes, want1: Callable) -> list[xy] :
+def discretize(i:col, klasses:classes) -> list[xy] :
   "Find good ranges for the i-th column within `klasses`."
   bins = {}
   [_divideIntoBins(i, r[i.at], klass, bins) for klass,rows1 in klasses.items()
                                   for r in rows1 if r[i.at] != "?"]
   return _combine(i,sorted(bins.values(), key=lambda z:z.lo),
-                    1/the.xys  * sum(len(rs) for rs in klasses.values()),
-                    the.enough * sorted([wanted(want1,z.ys) for z in bins.values()])[-1],
-                    want1)
+                    1/the.xys  * sum(len(rs) for rs in klasses.values()))
 
 def _divideIntoBins(i:col,x:atom, y:str, bins:dict) -> None:
   "Store `x,y` in the right part of `bins`. Used by `discretize()`."
@@ -282,10 +279,9 @@ def _divideIntoBins(i:col,x:atom, y:str, bins:dict) -> None:
   bins[k] = bins[k] if k in bins else XY(i.at,i.txt,x)
   add2xy(bins[k],x,y)
 
-def _combine(i:col, xys: list[xy], small, wantedEnough, want1) -> list[xy] :
-  if i.this is NUM:
-    xys = _span(_merges(xys, lambda a,b: mergable(a,b,small,want1,wantedEnough)))
-  return  [] if len(xys)==1 else xys
+def _combine(i:col, xys: list[xy], small) -> list[xy] :
+  xys = xys if i.this is SYM else _span(_merges(xys, lambda a,b: mergable(a,b,small)))
+  return [] if len(xys) < 2 else xys
 
 def _merges(b4:list[xy], fun):
   "Try merging adjacent items in `b4`. If successful, repeat. Used by `_combine()`."
@@ -336,7 +332,7 @@ def tree(i:data, klasses:classes, want1:Callable, stop:int=4) -> node:
     "How much do we want each way that `cut` can split the `klasses`?"
     return wanted(want1, {k:len(rows1) for k,rows1 in _cut(cut,klasses)[0].items()})
 
-  cuts = [cut for col1 in i.cols.x for cut in discretize(col1,klasses,want1)]
+  cuts = [cut for col1 in i.cols.x for cut in discretize(col1,klasses)]
   return _grow(klasses)
 
 def _cut(cut:xy, klasses:classes) -> tuple[classes,classes]:
@@ -831,7 +827,7 @@ class eg:
     print("\nbaseline", " "*22, dict(best=bests,rest=rests))
     for x in data1.cols.x:
       print("")
-      for xy1 in discretize(x, klasses, want1):
+      for xy1 in discretize(x, klasses):
         print(show(wanted(want1,xy1.ys)),f"{show(xy1):20}",xy1.ys,sep="\t") 
 
   def tree():

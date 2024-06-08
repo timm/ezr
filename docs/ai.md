@@ -17,7 +17,9 @@
 
 
 -  intuitions version space. hyperspace. hyerspace boundaries. PCA to fastmap.
-   explotation vs exploration. generalization error (no self test).
+   explotation vs exploration. 
+   - https://medium.com/@mustgofaster/to-explore-or-to-exploit-thats-the-question-dc5152be0468
+   generalization error (no self test).
    the chessbpard model (for classification). the snakes and ladders board (for optimization).
    attractors (simliar things have similar properties). y=f(X). g=f(w); y=g(X) .
    feature selection (why should the indenepent variables predict for the dependent).
