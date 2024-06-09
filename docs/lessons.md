@@ -1,5 +1,15 @@
 # Lessons
 
+- Merging PRs in GitHub
+- Diffing on the command line
+- Running code on the command line
+- Using a command line editor like vim
+- Resolving merge conflicts in GitHub
+- Rebasing on GitHub
+- Describing a data set using descriptive statistics
+- Using a debugger this: https://www.youtube.com/watch?v=oCcTiRGPogQ
+t
+
 ## Science
 
 - **Open science:** Used DOIs to publish papers, and the scripts and data used in this papers.
@@ -70,6 +80,43 @@ testing big is very different to testing small
   - test new, test things that failed, test things that have not been tested lately
 - big test is like big explore
   - sequential model optimizaion. how to test a little then go forth and hunt down the rest.
+
+## Principles and Patterns:
+
+What can we  learn from one applciations that might
+apply to others?
+
+
+
+### Principles:
+Principles, which if taught to newbies can might simplify their code
+might make them better programmers/managers, faster
+
+- DRY, 
+- YAGNI, 
+- Do1Thing
+  - Curly's Law: A entity (class, function, variable) should mean one thing, and one thing only. It should not mean one thing in one circumstance and carry a different value from a different domain some other time. It should not mean two things at once. It should mean One Thing and should mean it all of the time 
+- Conway's Law
+  - Any piece of software reflects the organizational structure that produced it.
+  - it's hard for someone to change something if the thing he/she wants to change is owned by someone else.
+  - So, structure teams to look like your target architecture, or structure
+     your architecture according to your current teams
+  - practical consquences: bird/basili, icse 2008
+- Brooks' Law"Adding (staff) to a late software project makes it later."
+- Hyrum's Law With a sufficient number of users of an API, it does not matter what you promise in the contract: all observable behaviors of your system will be depended on by somebody.
+
+### Patterns
+
+1. An architectural pattern expresses a fundamental structural organization schema for software systems. It provides a set of predefined subsystems, specifies their responsibilities, and includes rules and guidelines for organizing the relationships between them.
+2. A design pattern provides a scheme for refining the subsystems or components of a software system, or the relationships between them. It describes a commonly-recumng structure of communicating com- ponents that solves a general design problem within a particular context
+3. Idiom: An idiom is a low-level pattern specific to a programming language. An idiom describes how to implement particular aspects of components or the relationships between them using the features of the given language.
+4. Anti-patterns: common examples of worst-practice.
+   - WET
+   - Premature optimization is the root of all evil
+
+
+
+
 
 ### Composition
 
