@@ -230,6 +230,9 @@ def div(i:col) -> float:
   "Diversity of a column."
   return i.sd if i.this is NUM else entropy(i.has)
 
+def mids(i:data,what:cols=None):
+  return [mid(c) for c in what or i.cols.all]
+
 def stats(i:data, fun=mid, what:cols=None) -> dict[str,atom]:
   "Stats of some columns (defaults to `fun=mid` of `data.cols.x`)."
   return {c.txt:fun(c) for c in what or i.cols.x}
@@ -388,13 +391,32 @@ def neighbors(i:data, r1:row, region:rows=None) -> list[row]:
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Clustering
 
+def dendogram(i:data, region:rows=None, stop=None, before=None):
+  region = region or i.rows
+  stop = stop or 2*len(region)**the.N
+  node = o(this="dendogram",here=clone(i,region),left=None,right=None)
+  if len(region) > stop:
+    lefts,rights,left,right  = half(i,region, True, before)
+    node.left=dendogram(i,lefts, stop, left)
+    node.right=dendogram(i,rights,stop, right) 
+  return node 
+
+def showDendo(node,lvl=0):
+    print(("|.. "*lvl) + str( len(node.here.rows)),end="")
+    if node.left or node.right: print("")
+    else: print("\t",show(mids(node.here,node.here.cols.y)))
+
+    if node.left: showDendo(node.left,lvl+1)
+    if node.right: showDendo(node.right,lvl+1)
+
+
 def branch(i:data, region:rows=None, stop=None, rest=None, evals=1, before=None):
   "Recursively bi-cluster `region`, recurse only down the best half."
   region = region or i.rows
   stop = stop or 2*len(region)**the.N
   rest = rest or []
   if len(region) > stop:
-    lefts,rights,left  = half(i,region, True, before)
+    lefts,rights,left,_  = half(i,region, True, before)
     return branch(i,lefts, stop, rest+rights, evals+1, left)
   else:
     return region,rest,evals
@@ -405,7 +427,7 @@ def half(i:data, region:rows, sortp=False, before=None) -> tuple[rows,rows,row]:
   left,right,C = _twoFaraway(i, region, sortp=sortp, before=before)
   project = lambda row1: (dists(i,row1,left)**2 + C**2 - dists(i,row1,right)**2)/(2*C)
   tmp = sorted(region, key=project)
-  return tmp[:mid], tmp[mid:], left
+  return tmp[:mid], tmp[mid:], left, right
 
 def _twoFaraway(i:data, region:rows,before=None, sortp=False) -> tuple[row,row,float]:
   "Find two distant points within the `region`. Used by `half()`." 
@@ -763,10 +785,16 @@ class eg:
   def branch():
     "Halve the data."
     data1 = DATA(csv(the.train))
-    a,b,_ = half(data1,data1.rows)
+    a,b,_,__ = half(data1,data1.rows)
     print(len(a), len(b))
     best,rest,n = branch(data1,stop=4)
     print(n,d2h(data1,best[0]))
+
+  def dendogram():
+    "Genrate a tree"
+    data1 = DATA(csv(the.train))
+    d = dendogram(data1)
+    showDendo(d)
 
   def smo():
     "Optimize something."
