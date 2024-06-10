@@ -391,12 +391,24 @@ def neighbors(i:data, r1:row, region:rows=None) -> list[row]:
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## Clustering
 
+def where(i:data, dendo, row):
+  if dendo.reference:
+    if dists(i,row,dendo.reference) < dendo.enough:
+       return where(i, dendo.right, row)
+    return where(i, dendo.left,row)
+  else:
+    return dendo.here
+
 def dendogram(i:data, region:rows=None, stop=None, before=None):
   region = region or i.rows
   stop = stop or 2*len(region)**the.N
-  node = o(this="dendogram",here=clone(i,region),left=None,right=None)
+  node = o(this="dendogram",here=clone(i,region),
+           reference=None, enough=0,
+           left=None,right=None)
   if len(region) > stop:
     lefts,rights,left,right  = half(i,region, True, before)
+    node.enough = dists(i,right,rights[0])
+    node.reference=right
     node.left=dendogram(i,lefts, stop, left)
     node.right=dendogram(i,rights,stop, right) 
   return node 
@@ -788,13 +800,17 @@ class eg:
     a,b,_,__ = half(data1,data1.rows)
     print(len(a), len(b))
     best,rest,n = branch(data1,stop=4)
+    print(mids(clone(data1,best)))
     print(n,d2h(data1,best[0]))
 
   def dendogram():
     "Genrate a tree"
     data1 = DATA(csv(the.train))
+    row =data1.rows[0]
+    print(row)
     d = dendogram(data1)
     showDendo(d)
+    print(mids(where(data1,d,row)))
 
   def smo():
     "Optimize something."
