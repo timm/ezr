@@ -50,6 +50,10 @@
 
 | what | notes| needs | who |
 |------|--|-----|-----|
+|discretization | there are a million papers on different ways to do discretization. try some of them?| | |
+|local learning | given big background knowledge (an LLM), can our methods patch that knowledge? build local knowledge that augments and improves that background knowledge | | |
+| defect prediction| that paper prem gave me | | |
+| tuning the tuners| can smo2 tune smo1? can smo3 tune smo2? is there are limite to how many smos we need before things improve? | | |
 |feature selection |---|--|--|
 |instance  selection |---|--|--|
 | business intelligence | see [Fig7](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/MSR-TR-2011-8.pdf). How of those can we do? | | |
