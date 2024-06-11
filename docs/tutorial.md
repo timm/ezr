@@ -173,6 +173,8 @@ examples from unlabeled data ( i.e. labels of some data points are
 more informative than others) while semi supervised learning prefer
 to use entire unlabeled dataset."
 
+
+
 ## COLS : managing sets of columns
 
 Our programmer looked at the data and say that there are different kinds

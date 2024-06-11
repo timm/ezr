@@ -1,5 +1,81 @@
 # Exercises
 
+
+
+## 0, Install the latest version of Python 3.12
+
+- mac: `brew upgrade python`
+- unix/linux: ??
+- widnows: download the installer from  https://www.python.org/downloads/
+
+Test the install:
+
+    % python3 --version
+    Python 3.12.3
+
+## 1. Get the EZR code
+
+    git clone http://github.com/timm/ezr
+    
+Make sure you select the right branch:
+
+     % git branch -r
+     origin/24feb28
+     origin/24feb6
+     origin/24may19
+     origin/25may12
+     origin/HEAD -> origin/main
+     origin/Stable-EMSE-paper
+     origin/main
+     origin/sneak
+
+You will told which branch to go to
+
+     git checkout new_branch
+
+Once you get there, make sure the code runs
+
+     python3 ezr.py
+
+This should print a whole lot of help information:
+
+      ezr.py : an experiment in easier explainable AI (less is more).
+      (C) 2024 Tim Menzies (timm@ieee.org) BSD-2 license.
+
+      OPTIONS:
+        -a --any     #todo's to explore             = 100
+        -c --cohen   size of the Cohen d            = 0.35
+        -d --decs    #decimals for showing floats   = 3
+        -e --enough  want cuts at least this good   = 0.1
+        -F --Far     how far to seek faraway        = 0.8
+        -h --help    show help                      = False
+        -H --Half    #rows for searching for poles  = 128
+        -k --k       bayes low frequency hack #1    = 1
+        -l --label   initial number for labelling    = 4
+        -L --Last    max allow #labelling            = 30
+        -m --m       bayes low frequency hack #2    = 2
+        -n --n       tinyN                          = 12
+        -N --N       smallN                         = 0.5
+        -p --p       distance function coefficient  = 2
+        -R --Run     start up action method         = help
+        -s --seed    random number seed             = 1234567891
+        -t --train   training data                  = data/misc/auto93.csv
+        -T --test    test data (defaults to train)  = None
+        -v --version show version                   = False
+        -x --xys     max #bins in discretization    = 16
+
+## 2. Practice running 
+## 1. Get specs on your data.
+
+> <b> Find all the `*.csv` files in the 
+[data](https://github.com/timm/ezr/tree/main/data) directory.
+For each of those files use the `csv()` function to read the first row in each file.
+Using the `COLS()` function, convert that first line into some NUMs and SYMs.
+For each file, print comma seperated a line with 
+<em>filename,numRows,numCols,numXcols,numXsyms, numYnums,numXsyms
+.</b>
+
+
 All the following are small extensions to the current `ezr` code base. So before anything,
 you have to get the code
 

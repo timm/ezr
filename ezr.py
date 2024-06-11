@@ -637,13 +637,13 @@ def normal(mu:number,sd:number) -> float:
 def show(x:any) -> any:
   "Some pretty-print tricks."
   it = type(x)
-  if it == o and x.this is XY: return showXY(x)
   if it == float: return round(x,the.decs)
   if it == list:  return [show(v) for v in x]
   if it == dict:  return "("+' '.join([f":{k} {show(v)}" for k,v in x.items()])+")"
   if it == o:     return show(x.__dict__)
   if it == str:   return '"'+str(x)+'"'
   if callable(x): return x.__name__
+  if it == o and x.this is XY: return showXY(x)
   return x
 
 def showXY(i:xy) -> str:
