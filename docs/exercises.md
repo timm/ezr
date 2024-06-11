@@ -64,25 +64,72 @@ This should print a whole lot of help information:
         -v --version show version                   = False
         -x --xys     max #bins in discretization    = 16
 
-## 2. Practice running 
-## 1. Get specs on your data.
+## 2. Practice running  the code
 
-> <b> Find all the `*.csv` files in the 
-[data](https://github.com/timm/ezr/tree/main/data) directory.
-For each of those files use the `csv()` function to read the first row in each file.
-Using the `COLS()` function, convert that first line into some NUMs and SYMs.
-For each file, print comma seperated a line with 
-<em>filename,numRows,numCols,numXcols,numXsyms, numYnums,numXsyms
-.</b>
+In the code repo, create a test directory under the root and 
+create a test file `the.py`
 
+        import sys; sys.path.append("..")
+        from ezr import show,the
+         
+        print(show(the))
+
+Now run that code
+
+        cd tests
+        python3 the.py
+
+This should generate something like:
+
+        (:any 100 :cohen 0.35 :decs 3 :enough 0.1 :Far 0.8 
+         :help False :Half 128 :k 1 :label 4 :Last 30 :m 2 
+         :n 12 :N 0.5 :p 2 :Run "help" :seed 1234567891 
+         :train "data/misc/auto93.csv" :test None :version False :xys 16)
+
+For all the other exercises, you can write one file `tests/xxx.py`
+
+Note that you may need to adjust path names. E.g. see `tests/csv.py`,
+which fiddles with `the.train`  pathname:
+
+       import sys; sys.path.append("..")
+       from ezr import csv,the
+                
+       for n,row in enumerate(csv("../" + the.train)) :
+         if n % 50 == 0: print(row)
+
+## 3. Using Nums
+
+Add in 1000 `random.random()**0.5` numbers to a NUMs instance.
+Report the `mid()` and `div()` of those NUMs.
+
+       import sys; sys.path.append("..")
+       from ezr import NUM,adds,mid,div
+       import random
+           
+       s = adds(NUM(),[random.random()**0.5 for _ in range(1000)])
+       print(round(mid(s),3), round(div(s),3))
+
+## 4. Using Syms
+
+Fin a page of text and paste it into a Python code file
+
+## 4. Get specs on your data.
+
+- Find all the `*.csv` files in the 
+  [data](https://github.com/timm/ezr/tree/main/data) directory.
+- For each of those files use the `csv()` function to read the first row in each file.
+- Using the `COLS()` function, convert that first line into some NUMs and SYMs.
+- For each file, print comma seperated a line with 
+         
+                               x cols             y cols
+                               -----------------  ------------------
+         filename,#rows,#cols, #symCols,#numCols, #sy,Cols, #numCols
 
 All the following are small extensions to the current `ezr` code base. So before anything,
 you have to get the code
 
-```
-pip install ezr
-ezr -R all; echo "errors= $?"
-```
+## 4. Get specs on your data.
+
 
 This should print a lot of output, then green "PASS" message followed by "errors= 0".
 
