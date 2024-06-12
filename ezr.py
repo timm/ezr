@@ -231,7 +231,7 @@ def div(i:col) -> float:
   return i.sd if i.this is NUM else entropy(i.has)
 
 def mids(i:data,what:cols=None):
-  return [mid(c) for c in what or i.cols.all]
+  return [show(mid(c)) for c in what or i.cols.all]
 
 def stats(i:data, fun=mid, what:cols=None) -> dict[str,atom]:
   "Stats of some columns (defaults to `fun=mid` of `data.cols.x`)."
@@ -406,7 +406,7 @@ def dendogram(i:data, region:rows=None, stop=None, before=None):
            reference=None, enough=0,
            left=None,right=None)
   if len(region) > stop:
-    lefts,rights,left,right  = half(i,region, True, before)
+    lefts,rights,left,right  = half(i,region, False, before)
     node.enough = dists(i,right,rights[0])
     node.reference=right
     node.left=dendogram(i,lefts, stop, left)
@@ -417,7 +417,6 @@ def showDendo(node,lvl=0):
     print(("|.. "*lvl) + str( len(node.here.rows)),end="")
     if node.left or node.right: print("")
     else: print("\t",show(mids(node.here,node.here.cols.y)))
-
     if node.left: showDendo(node.left,lvl+1)
     if node.right: showDendo(node.right,lvl+1)
 
@@ -425,6 +424,7 @@ def showDendo(node,lvl=0):
 def branch(i:data, region:rows=None, stop=None, rest=None, evals=1, before=None):
   "Recursively bi-cluster `region`, recurse only down the best half."
   region = region or i.rows
+  if not stop: random.shuffle(region)
   stop = stop or 2*len(region)**the.N
   rest = rest or []
   if len(region) > stop:
@@ -797,11 +797,12 @@ class eg:
   def branch():
     "Halve the data."
     data1 = DATA(csv(the.train))
-    a,b,_,__ = half(data1,data1.rows)
-    print(len(a), len(b))
+    print(*data1.cols.names,"evals","rx",sep=",")
+    print(mids(data1),len(data1.rows),"base",sep=",")
+    #a,b,_,__ = half(data1,data1.rows)
     best,rest,n = branch(data1,stop=4)
-    print(mids(clone(data1,best)))
-    print(n,d2h(data1,best[0]))
+    print(mids(clone(data1,best)),n,"mid of final leaf",sep=",")
+    print(best[0],n+len(best)-1,"best item in final leaf",sep=",")
 
   def dendogram():
     "Genrate a tree"

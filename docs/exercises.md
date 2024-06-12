@@ -97,7 +97,7 @@ which fiddles with `the.train`  pathname:
        for n,row in enumerate(csv("../" + the.train)) :
          if n % 50 == 0: print(row)
 
-## 3. Using Nums
+## 3. Using NUMs
 
 Add in 1000 `random.random()**0.5` numbers to a NUMs instance.
 Report the `mid()` and `div()` of those NUMs.
@@ -109,9 +109,16 @@ Report the `mid()` and `div()` of those NUMs.
        s = adds(NUM(),[random.random()**0.5 for _ in range(1000)])
        print(round(mid(s),3), round(div(s),3))
 
-## 4. Using Syms
+## 4. Using SYMs
 
-Fin a page of text and paste it into a Python code file
+Fin a page of text and paste it into a Python code file. Add all its
+characters into a SYM. Report the entropy of that string
+
+Hints:
+
+      from ezr import adds, SYM
+      sym = adds(SYM(),[c for c in string])
+      print(div(sym))
 
 ## 4. Get specs on your data.
 
@@ -119,7 +126,7 @@ Fin a page of text and paste it into a Python code file
   [data](https://github.com/timm/ezr/tree/main/data) directory.
 - For each of those files use the `csv()` function to read the first row in each file.
 - Using the `COLS()` function, convert that first line into some NUMs and SYMs.
-- For each file, print comma seperated a line with 
+- For each file, print comma separated a line with 
          
                                x cols             y cols
                                -----------------  ------------------
@@ -128,17 +135,39 @@ Fin a page of text and paste it into a Python code file
 All the following are small extensions to the current `ezr` code base. So before anything,
 you have to get the code
 
-## 4. Get specs on your data.
+## 5. Clustering with dendograms
+Without looking at the y values, we can cluster by finding two distant points, then divide
+the data according which of those two points are nearest.  THe we recurse on each half,
+stopping when we have (say) ony qrt(N) of the N rows in any division.
 
+(While this sounds simple (it is),
+it actually implements a non-parametric PCA-kike approach to 
+synthesizing some combination of all the attributes along the dimension of greatest variance.)
 
-This should print a lot of output, then green "PASS" message followed by "errors= 0".
+Cluster some data using e.g.
 
-Also, you'll need data: see https://github.com/timm/ezr/tree/main/data. Any of
-the csv files in that directory tree can be called using, e.g.
+     ./ezr.py -N 0.5 -t data/config/SS-A.csv -R dendogram
 
-```
-ezr -t fie.csv -R smo20
-```
+FYI: SS-A is a data set with the header
+
+       Spout_wait,Spliters,Counters,Throughput+,Latency-
+
+`N` is a parameter that can be varied 0.2 to 0.8. What is the effect of different `N` values?
+Why? Looking at the y-values shown at each leaf (by dendogram) , do different `N` s select for
+better goals?
+
+## 6. From clustering to optimization
+
+A slight extension to the above takes us to an optimization method.
+As before, we divide the data on two distant points. But now we look at those y-values and prune half
+the data associates with the worst half.
+
+     ./ezr.py -N 0.5 -t data/config/SS-A.csv -R branch  | head -20
+
+Please check: are the best results found by `branch` better or worse that those found by `dendogram`. Why?
+
+Compare the config/SS-A.csv results with config/auto93.csv results from `dendogram` and `branch` . Once again,
+are the best results found by `branch` better or worse that those found by `dendogram`?
 
 ## Exercise1
 
