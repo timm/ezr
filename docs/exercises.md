@@ -169,6 +169,15 @@ Please check: are the best results found by `branch` better or worse that those 
 Compare the config/SS-A.csv results with config/auto93.csv results from `dendogram` and `branch` . Once again,
 are the best results found by `branch` better or worse that those found by `dendogram`?
 
+## 6. From optimization to explanation
+The above optimizer selects a `best` set of rows (those in the final leaf cluster).
+This means that everything else is `rest`.  We can explain the delta between these
+by applying our decision tree to the results:
+
+
+      ./ezr.py -N 0.5 -t data/misc/auto93.csv -R branchTree
+
+
 ## Exercise1
 
 Make your own data. At least 50 lines. e.g. 

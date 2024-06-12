@@ -801,8 +801,20 @@ class eg:
     print(mids(data1),len(data1.rows),"base",sep=",")
     #a,b,_,__ = half(data1,data1.rows)
     best,rest,n = branch(data1,stop=4)
-    print(mids(clone(data1,best)),n,"mid of final leaf",sep=",")
+    print(mids(clone(data1,best)),n+len(best)-1,"mid of final leaf",sep=",")
     print(best[0],n+len(best)-1,"best item in final leaf",sep=",")
+    return best,rest,data1
+
+
+  def branchTree():
+    best,rest,data1 = eg.branch()
+
+    bests   = len(best)
+    rests   = len(rest)
+    klasses = dict(best=best,rest=rest)
+    want1   = WANT(best="best", bests=bests, rests=rests)
+    showTree(tree(data1,klasses,want1))
+
 
   def dendogram():
     "Genrate a tree"
