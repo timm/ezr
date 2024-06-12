@@ -1,5 +1,15 @@
 # Exercises
 
+## -1 isntall a edit/run environemtn
+
+includeing oythoin3.12
+
+wsl : wsl
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.10
+python3.10 --version #Python 3.10.4
+which python3.10 #/usr/bin/python3.10
 
 
 ## 0, Install the latest version of Python 3.12
