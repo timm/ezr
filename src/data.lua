@@ -28,7 +28,7 @@ function NUM:add(x,     d)
     self.n  = 1 + self.n
     self.lo = math.min(x, self.lo)
     self.hi = math.max(x, self.hi)
-    self.mu, self.m2, self.sd = maths.welford(self.n, self.mu, self.m2) end
+    self.mu, self.m2, self.sd = maths.welford(x, self.n, self.mu, self.m2) end
   return x end
 
 -----------------------------------------------------------------------------------------
@@ -42,6 +42,13 @@ function SYM:add(x)
     self.seen[x] = 1 + (self.seen[x] or 0)
     if self.seen[x] > self.most then
       self.most, self.mode = self.seen[x], x end end end
+
+-----------------------------------------------------------------------------------------
+function SYM:mid() return self.mode end
+function NUM:mid() return self.mu end
+
+function SYM:div() return maths.entropy(self.seen) end
+function NUM:div() return self.sd end
 
 -----------------------------------------------------------------------------------------
 function COLS.new(names,     self,col)
@@ -81,15 +88,9 @@ function DATA:sort(     fun)
   self.rows = l.sort(self.rows, function(a,b) return fun(a) < fun(b) end)
   return self end
 
------------------------------------------------------------------------------------------
-function SYM:mid() return self.mode end
-function NUM:mid() return self.mu end
-
-function SYM:div() return l.entropy(self.has) end
-function NUM:div() return self.sd end
-
 function DATA:mids(cols)
   return l.map(cols or self.cols.y, function(col) return l.rnd(col:mid()) end) end
 
+-------------------------------------------------------------------------------
 math.randomseed(the.seed)
 return {the=the, lib=l,DATA=DATA,SYM=SYM,NUM=NUM,COLS=COLS}
