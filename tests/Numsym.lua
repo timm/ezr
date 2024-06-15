@@ -72,8 +72,24 @@ function welford(x,n,mu,m2,     d)
 num3 = NUM.new()
 for i = 1,100 do 
    num3:add(math.random())
-   if i % 10 ==0 then  
+   if i % 5 ==0 then  
       print("inc", num3.n, f(num3:mid()), f(num3:div()))  end end
 -- 
 -- One thing that will be important is how early `mu` and `sd` can
--- stabilitize. For example in the above 
+-- stabilitize. For example in the above code, `mu` and `sd` converge
+-- to 0.55 and 0.288 pretty quickly. 
+-- 
+--              mu    sd
+--              ----- -----
+--      inc	10	0.416	0.231
+--      inc	20	0.555	0.283
+--      inc	30	0.59	0.281
+--      inc	40	0.589	0.286
+--      inc	50	0.575	0.284
+--      inc	60	0.54	0.297
+--      inc	70	0.54	0.284
+--      inc	80	0.545	0.288
+--      inc	90	0.552	0.289
+--      inc	100	0.556	0.288
+-- 
+-- 

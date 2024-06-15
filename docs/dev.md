@@ -14,14 +14,15 @@ codespaces.
 
 Note you are running an on-line version
 of VScode, you have split the screen in half, you can edit a source code file,
-you can see the file tree, you have enabled the Python extension and, in the terminal, you have fired up 
-a very recent version of Python (3.12). 
+you can see the file tree, you have enabled the Python extension and, in the terminal, you have install 
+a recent version of Python (3.12) and Lua (5.3). 
 
 You may need to run the following commands to get python3.12 to work:
 
     sudo add-apt-repository ppa:deadsnakes/ppa
-    sudo apt update
-    sudo apt install python3.12
+    sudo apt update -y
+    sudo apt install python3.12 
+    sudo apt install lua5.3
     python3.12
 
 ## Debugging

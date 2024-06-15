@@ -58,7 +58,7 @@ each item and the mean:
 
 $$\sqrt{\sum_i (x_i - \mu)^2/(n-1)}$$
 
-But why do it it two passes when you can do it in one. Welford's
+But why do it it two passes when you can do it in one? Welford's
 algorithm allows of the incremetanl updating of `sd`:
 
 ```lua
@@ -72,24 +72,23 @@ function welford(x,n,mu,m2,     d)
 num3 = NUM.new()
 for i = 1,100 do 
    num3:add(math.random())
-   if i % 10 ==0 then  
+   if i % 5 ==0 then  
       print("inc", num3.n, f(num3:mid()), f(num3:div()))  end end
 ```
 One thing that will be important is how early `mu` and `sd` can
 stabilitize. For example in the above code, `mu` and `sd` converge
-to 0.55 and 0.288 pretty quickly. 
-```
-        mu    sd
-        ----- -----
-inc	10	0.416	0.231
-inc	20	0.555	0.283
-inc	30	0.59	0.281
-inc	40	0.589	0.286
-inc	50	0.575	0.284
-inc	60	0.54	0.297
-inc	70	0.54	0.284
-inc	80	0.545	0.288
-inc	90	0.552	0.289
-inc	100	0.556	0.288
-```
+to 0.55 and 0.280 (ish) after just 15 samples.
 
+      inc	5	0.37	0.335
+      inc	10	0.416	0.231
+      inc	15	0.545	0.27
+      inc	20	0.555	0.283
+      inc	25	0.554	0.271
+      inc	30	0.59	0.281
+      inc	35	0.585	0.289
+      ...
+
+This stabilization means we can do a simple discretization trick. A "normal" Gaussian distribution is a symmetrical bell-shaped curve with a single peak
+at its mean value. For `mu=0` and `sd=1`. 
+
+XXX cdf pdf
