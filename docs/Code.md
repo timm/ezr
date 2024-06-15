@@ -2,13 +2,21 @@
 
 Get the code
 
-    git clone http://github.com/timm/lite
+    git clone http://github.com/timm/ezr
 
 Make sure you select the right branch:
 
-    % git branch -r
-    origin/HEAD -> origin/main
-    origin/main
+      % git branch -r
+      origin/24Jun14
+      origin/24feb28
+      origin/24feb6
+      origin/24may19
+      origin/25may12
+      origin/HEAD -> origin/main
+      origin/Stable-EMSE-paper
+      origin/main
+      origin/sneak
+
 
 You will told which branch to go to use in lectures
 

@@ -18,6 +18,10 @@ diversity measures are a measure of
 confusion and when we go learning,
 we prefer ranges where that dviersity is 
 minimized.
+XXX watching cars of freeeway.. 
+do much dofersiy, compare to care refuge wheen new aninak yu see is orobably going ot be  a cat
+(or, much rearely, of the human staff peole)
+
 
 ```lua
 l=require"lib" ; local o,oo=l.o,l.oo
