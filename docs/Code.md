@@ -42,7 +42,7 @@ has a command `test` that handles that for lua:
      -include ../Makefile
      one?=Code
      
-     lua: docs2tests $(one).lua
+     lua: docs2lua $(one).lua
      	LUA_PATH='../src/?.lua;;' lua $(one).lua
 
 With the code, the command
@@ -52,8 +52,11 @@ With the code, the command
 will update all the `tests/*.lua` files (from any `docs/[A-Z]*.md` files), then
 runs lua with `LUA_PATH`
 
-**TODO** What dies the equivalent rule in Python look like? So code in `/tests` can read
-source Python files from `/src` (hint: [read the manual](https://www.geeksforgeeks.org/sys-path-in-python/#)?
+**TODO** What does the equivalent rule for Python look like? So code in `/tests` can read
+source Python files from `/src`. Hints:
+
+-  [read the manual](https://www.geeksforgeeks.org/sys-path-in-python/#)
+- If you want don't worrying about the `docs/*.md` to `tests/*.lua` thing. That's a little tricky.
 
 **SUBMIT** `tests/Makefile`
 

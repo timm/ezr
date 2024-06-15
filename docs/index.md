@@ -1,4 +1,5 @@
-Contents:
+
+This site is organized around a set of hand-on coding tutorials:
 
 - Setting up
   - [Editing and Debugging](dev.md)
