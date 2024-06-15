@@ -23,6 +23,6 @@ doco: $(subst docs,tests,$(lua))
 
 $(Top)/tests/%.lua : $(Top)/docs/%.md
 	gawk 'BEGIN { code=0 } sub(/^```.*/,"")  \
-			  { code = 1 - code } \
-							{ print (code ? "" : "-- ") $$0 }'  $^ > $@
+			{ code = 1 - code } \
+			{ print (code ? "" : "-- ") $$0 }' $^ > $@
 	luac -p $@

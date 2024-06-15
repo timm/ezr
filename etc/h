@@ -1,0 +1,1 @@
+alias lua="LUA_PATH='../src/?.lua;;' lua "
