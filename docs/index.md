@@ -1,8 +1,8 @@
 Contents:
 
 - Setting up
-  - [Installing](install.md)
-  - [Running code](dev.md)
+  - [Editing and Debugging](dev.md)
+  - [Coding experiments](Code.md)
 - [Developing Code, 101](dev.md)
 - [Numbers and Symbols](Numsym.md)
 - Theory

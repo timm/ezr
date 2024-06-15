@@ -31,12 +31,12 @@ f=function(n) return l.rnd(n,3) end
 
 num1 = NUM.new()
 for i = 1,1000 do num1:add(i) end
-print("nums",f(num1:mid()), f(num1:div()))
+print("1. nums",f(num1:mid()), f(num1:div()))
 assert(500.5 == f(num1:mid()) and 288.819 == f(num1:div()),"bad nums")
 
 sym1 = SYM.new()
 for c in ("aaaabbc"):gmatch"." do sym1:add(c) end
-print("syms", sym1:mid(), f(sym1:div()))
+print("2. syms", sym1:mid(), f(sym1:div()))
 assert("a"  == f(sym1:mid()) and 1.379 == f(sym1:div()),"bad syms")
 ```
 
@@ -45,12 +45,12 @@ Similarly, entropy is also zero when all the symbols are the same.
 ```lua
 num2 = NUM.new()
 for i = 1,1000 do num2:add(1) end
-print("sames",f(num2:mid()), f(num2:div()))
+print("3. sames",f(num2:mid()), f(num2:div()))
 assert(1 == f(num2:mid()) and 0 == f(num2:div()),"non-zero ent")
 
 sym2 = SYM.new()
 for c in ("aaaaaaa"):gmatch"." do sym2:add(c) end
-print("syms", sym2:mid(), f(sym2:div()))
+print("4. syms", sym2:mid(), f(sym2:div()))
 assert("a"  == f(sym2:mid()) and 0 == f(sym2:div()),"bad syms")
 ```
 
@@ -77,10 +77,10 @@ num3 = NUM.new()
 for i = 1,100 do 
    num3:add(math.random())
    if i % 5 ==0 then  
-      print("inc", num3.n, f(num3:mid()), f(num3:div()))  end end
+      print("5. inc", num3.n, f(num3:mid()), f(num3:div()))  end end
 ```
 One thing that will be important is how early `mu` and `sd` can
-stabilitize. For example in the above code, `mu` and `sd` converge
+stabilize. For example in the above code, `mu` and `sd` converge
 to 0.55 and 0.280 (ish) after just 15 samples.
 
       inc	5	0.37	0.335

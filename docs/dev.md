@@ -1,10 +1,13 @@
-# Developing Code, 101
+# Editing and Debugging
+
+(There notes are for any apprentice programmers reading this material.)
 
 ## Editing
 
-Pragmatically, 
-Ideally, we'd like to support everyone using whatever tools they like.
-Pragmatically, that is not possible. So please, humour us, at least once
+Ideally,
+we'd like to support everyone using whatever tools they like.
+
+Pragmatically, when teaching dozens to 100s of students, that is not possible. So please, humor us, at least once
 set yourself up with the latest version of Python running on Github
 codespaces.
 
@@ -30,5 +33,5 @@ You may need to run the following commands to get python3.12 to work:
 Watch a video on how to use the 
 [debugger in VScode](https://www.youtube.com/watch?v=XmpIBsnc3xU).
 
-**SUBMIT** a screen shot of you entering in a conditional breakpoint 
+**SUBMIT** a screen shot of you entering in a conditional break point 
 (using the methods described in that video).

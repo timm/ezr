@@ -17,14 +17,14 @@
 --       origin/main
 --       origin/sneak
 -- 
+-- You will told which `branch` to go to use in lectures
 -- 
--- You will told which branch to go to use in lectures
--- 
---  git checkout new_branch
+--      git checkout branch
 -- 
 -- Once you get there, make sure the code runs
 -- 
---     cd lite/tests
+--     cd ezr/tests
+--     . ../etc/h
 --     lua code.lua # <== maybe python3.12 code.py
 -- 
 -- This should  print some help text.
@@ -36,8 +36,25 @@
 -- Edit that tile to do anything ant all with my code.
 -- 
 -- Run the code, add the output as a comment string at bottom of that code.
--- Note, you may have to do tricky things with pathnames (e.g. adding "../")
+-- Note, you may have to do tricky things with pathnames (e.g. adding "../"). The file `tests/Makefile` 
+-- has a command `test` that handles that for lua:
 -- 
--- **SUBMIT** `tests/myCode.whatever`.
+--      -include ../Makefile
+--      one?=Code
+--      
+--      lua: docs2tests $(one).lua
+--      	LUA_PATH='../src/?.lua;;' lua $(one).lua
+-- 
+-- With the code, the command
+-- 
+--     make one=Maths lua
+-- 
+-- will update all the `tests/*.lua` files (from any `docs/[A-Z]*.md` files), then
+-- runs lua with `LUA_PATH`
+-- 
+-- **TODO** What dies the equivalent rule in Python look like? So code in `/tests` can read
+-- source Python files from `/src` (hint: [read the manual](https://www.geeksforgeeks.org/sys-path-in-python/#)?
+-- 
+-- **SUBMIT** `tests/Makefile`
 -- 
 -- 

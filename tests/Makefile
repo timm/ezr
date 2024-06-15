@@ -1,8 +1,8 @@
 -include ../Makefile
 
-x?=Code
+f?=Code
 
-test: docs2tests $x.lua
-  lua="LUA_PATH='../src/?.lua;;" lua $x.lua
+lua: docs2tests $f.lua ## run a tests/*.lua file; e.g. make f="Numsym" lua
+	LUA_PATH='../src/?.lua;;' lua $f.lua
 
 
