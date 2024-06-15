@@ -4,16 +4,22 @@
 Some of us (many of us) work to  find valuable insights
 from small, localized datasets. Not everyone has the resources to
 develop models with over a trillion parameters. For those working
-with these large-scale models, a reference model is essential to
-test and evaluate the added value (if any) of these larger models.
+with these large-scale models, a locally-built reference model is essential for
+testing.
+E.g.
 
-The advantage of micro modeling is that with fewer data points, the
-learning process becomes faster, and the AI tools simpler and more
+- Poor results from the local  model can underline the value of the more general model.
+- When the general model fails, the local model can become a useful replacement.
+- When used in conjunction, the local model can be used to improve what
+  comes out of the larger model.
+
+The advantage of micro modeling is that since it is learned from fewer data points, the
+learning process becomes faster, and the AI tools can become simpler and more
 explainable. This efficiency allows for rapid iteration and easier
 interpretation, enabling us to unlock significant value from minimal
 data.
 
-To demonstrate this, this site is organized around a set of hand-on
+To demonstrate principles of micro modeling, this site is organized around a set of hand-on
 coding tutorials. All the code is written in Lua (cause that is
 such a simple language) and, using any number of auto-translate tools, you can
 translate  that code to anything else you want (\*).
