@@ -1,5 +1,5 @@
 local l=require"lib"
-local maths=require"maths"
+local calc=require"calc"
 local the,help=l.settings[[
 rulr2.lua : a small range learner
 (c) 2024, Tim Menzies, timm@ieee.org, BSD-2 license
@@ -28,7 +28,7 @@ function NUM:add(x,     d)
     self.n  = 1 + self.n
     self.lo = math.min(x, self.lo)
     self.hi = math.max(x, self.hi)
-    self.mu, self.m2, self.sd = maths.welford(x, self.n, self.mu, self.m2) end
+    self.mu, self.m2, self.sd = calc.welford(x, self.n, self.mu, self.m2) end
   return x end
 
 -----------------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ function SYM:add(x)
 function SYM:mid() return self.mode end
 function NUM:mid() return self.mu end
 
-function SYM:div() return maths.entropy(self.seen) end
+function SYM:div() return calc.entropy(self.seen) end
 function NUM:div() return self.sd end
 
 -----------------------------------------------------------------------------------------

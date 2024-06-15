@@ -19,7 +19,7 @@ push    : ## save
 md=$(wildcard $(Top)/docs/[A-Z]*.md)
 lua=$(md:.md=.lua)
 
-doco: $(subst docs,tests,$(lua))
+doc2test: $(subst docs,tests,$(lua))
 
 $(Top)/tests/%.lua : $(Top)/docs/%.md
 	gawk 'BEGIN { code=0 } sub(/^```.*/,"")  \
