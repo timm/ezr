@@ -32,7 +32,7 @@ function maths.norms(mu,sd)
 function maths.welford(n,mu,m2,     d)
   d  = x  - mu
   mu = mu + d/n
-  m2 = m2 + d(*x- mu)
+  m2 = m2 + d*(x- mu)
   sd = (m2/(n-1+1E-30))^0.5
   return mu,m2,sd end
 
