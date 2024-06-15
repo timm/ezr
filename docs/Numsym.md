@@ -60,7 +60,7 @@ from the wriggle around the mean; i.e.
 as the mean sum of the absolute value of the differences between
 each item and the mean:
 
-$$\sqrt{\sum_i (x_i - \mu)^2/(n-1)}$$
+$$\sqrt{(\sum_i (x_i - \mu)^2)/(n-1)}$$
 
 But why do it it two passes when you can do it in one? Welford's
 algorithm allows of the incremetanl updating of `sd`:
