@@ -13,7 +13,7 @@ pull    : ## download
 	git pull
 
 push    : ## save
-	echo -n "> Say, why are you saving? "; read x; git commit -am "$$x"; git push; git status
+	echo -n "> Why this push? "; read x; git commit -am "$$x"; git push; git status
 
 md=$(wildcard $(Top)/docs/[A-Z]*.md)
 lua=$(md:.md=.lua)
