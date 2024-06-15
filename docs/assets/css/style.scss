@@ -3,4 +3,12 @@
 
 @import "{{ site.theme }}";
 
-code, pre { line-height: 1.2em; font-size: x-small;}
+
+body {
+    font-size: 12px;
+    line-height: 1.1;
+    word-wrap: break-word;
+}
+
+code { font-size: 10px; }
+
