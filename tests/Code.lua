@@ -17,15 +17,14 @@
 --       origin/main
 --       origin/sneak
 -- 
--- You will told which `branch` to go to use in lectures
+-- You will told which `BRANCh` to go to use in lectures
 -- 
---      git checkout branch
+--      git checkout BRANCH
 -- 
 -- Once you get there, make sure the code runs
 -- 
 --     cd ezr/tests
---     . ../etc/h
---     lua code.lua # <== maybe python3.12 code.py
+--     make f=Numsym lua
 -- 
 -- This should  print some help text.
 -- 
@@ -47,17 +46,22 @@
 -- 
 -- With the code, the command
 -- 
---     make one=Maths lua
+--     cd /tests
+--     make f=Numsym lua
 -- 
 -- will update all the `tests/*.lua` files (from any `docs/[A-Z]*.md` files), then
--- runs lua with `LUA_PATH`
+-- runs lua on `tests/Numsym.lua` with a `LUA_PATH` that means lua can find `../src/*.lua` files.
 -- 
 -- **TODO** What does the equivalent rule for Python look like? So code in `/tests` can read
 -- source Python files from `/src`. Hints:
 -- 
--- -  [read the manual](https://www.geeksforgeeks.org/sys-path-in-python/#)
--- - If you want don't worrying about the `docs/*.md` to `tests/*.lua` thing. That's a little tricky.
+-- - [Read the  Python manual](https://www.geeksforgeeks.org/sys-path-in-python/#)
+-- - If you want, don't worrying about the `docs/*.md` to `tests/*.lua` thing. That's a little tricky.
 -- 
--- **SUBMIT** `tests/Makefile`
+-- **SUBMIT** 
+-- - `tests/Makefile`
+-- - a screenshot of your vscode-like environment where on the same
+--   screen is the code you are editing and a terminal showing the  output
+--   from `make f=Numsym lua`.
 -- 
 -- 

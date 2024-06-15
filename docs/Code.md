@@ -17,21 +17,20 @@ Make sure you select the right branch:
       origin/main
       origin/sneak
 
-You will told which `branch` to go to use in lectures
+You will told which `BRANCh` to go to use in lectures
 
-     git checkout branch
+     git checkout BRANCH
 
 Once you get there, make sure the code runs
 
     cd ezr/tests
-    . ../etc/h
-    lua code.lua # <== maybe python3.12 code.py
+    make f=Numsym lua
 
 This should  print some help text.
 
 ## Roll your own
 
-Copy `tests/Code.lua` to `tests/myCode.lua` (maybe `myCode.py`).
+Copy `tests/Code.lua` to `tests/myCode.lua`.
 
 Edit that tile to do anything ant all with my code.
 
@@ -47,7 +46,7 @@ has a command `test` that handles that for lua:
 
 With the code, the command
 
-    cd /tests
+    cd ezr/tests
     make f=Numsym lua
 
 will update all the `tests/*.lua` files (from any `docs/[A-Z]*.md` files), then
@@ -61,6 +60,8 @@ source Python files from `/src`. Hints:
 
 **SUBMIT** 
 - `tests/Makefile`
-- a screenshot of your vscode-like environment where on the same screen is the code you are editing and a terminal showing the  output from `make f=Numsym lua`.
+- a screenshot of your vscode-like environment where on the same
+  screen is the code you are editing and a terminal showing the  output
+  from `make f=Numsym lua`.
 
 
