@@ -45,13 +45,6 @@ function NUM:norm(x)
   if x=="?" then return x end
   return (x - self.lo) / (self.hi - self.lo + 1E-30) end
 
-function SYM:range(x,  _) return x end
-
-function NUM:range(x,  ranges,     area,tmp)
-  ranges = ranges or 7 -- just a default
-  area = calc.auc(x, self.mu, self/sd)
-  tmp = 1 + (area * ranges // 1) -- maps x to 0.. the.range+1
-  return  math.max(1, math.min(ranges, tmp)) end -- keep in bounds
 
 -----------------------------------------------------------------------------------------
 return {NUM=NUM, SYM=SYM, COL=COL}

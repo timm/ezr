@@ -41,12 +41,12 @@ function DATA:range(x,col,d       r)
     col.ranges[r] = all[r] or RANGE.new(col,r)
     col.ranges[r]:add(x,d) end end
 
-function DATA:ranges(     fun,out)
-  out = {}
-  fun = function(r) return r:score() end
-  for _,col in pairs(self.cols.x) do
-    for _,r in pairs(DATA:merge(col.ranges, #(self.rows)/the.ranges, the.dull)) do
-       l.push(out,r) end end
-  return out end
+function SYM:range(x,  _) return x end
 
-return {the=the, DATA=DATA}
+function NUM:range(x,  ranges,     area,tmp)
+  ranges = ranges or 7 -- just a default
+  area = calc.auc(x, self.mu, self.sd)
+  tmp = 1 + (area * ranges // 1) -- maps x to 0.. the.range+1
+  return  math.max(1, math.min(ranges, tmp)) end -- keep in bounds
+
+ return {the=the, NUM=NUM, SYM=SYM, DATA=DATA}

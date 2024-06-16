@@ -4,16 +4,16 @@
 -- ## calc
 local calc={}
 
--- ## Cumulative Distribution Function
+-- ## Cumulative Distribution Approximation
 -- Lin, J.T. (1989). Approximating the Normal Tail Probability and its 
 -- Inverse for use on a Pocket Calculator. Applied Statistics, 38, 69-70.
 function calc.auc(x,mu,sigma)
   cdf = function(z) return 1 - 0.5*2.718^(-0.717*z - 0.416*z*z) end
-  z = (x - self.mu) / self.sd
+  z = (x - .mu) / sd
   return z >= 0 and cdf(z) or 1 - cdf(-z) end
 
 -- ## Distance
--- distance =  maximum of the distances in each coordinate.
+-- Chebyshev =  maximum of the distances in each coordinate.
 function calc.chebyshev(row,cols,      c,tmp)
   c = 0
   for _,col in pairs(cols) do
@@ -35,7 +35,8 @@ function calc.norms(mu,sd)
 
 -- ## Diversity
 -- Standard deviation.
-function calc.welford(x,n,mu,m2,     d)
+function calc.welford(x,  n,mu,m2,     d)
+  n,mu,m2 = n or 1, mu or 0, m2 or 0
   d  = x  - mu
   mu = mu + d/n
   m2 = m2 + d*(x- mu)
