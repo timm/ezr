@@ -18,15 +18,11 @@ local RANGE= {} -- stores ranges
 
 -----------------------------------------------------------------------------------------
 function RANGE.new(col,r)
-  return l.is(RANGE, { _col=col, has=r,  _score=0}) end
+  return l.is(RANGE, { _col=col, has=r,  score=0}) end
 
 function RANGE:__tostring() return self._col.name .. l.o(self) end
 
-function RANGE:add(x,d)
-  self._score = self._score + d  end
-
-function RANGE:score(      s)
-  s= self._score/self._col.n; return s < 0 and 0 or s end
+function RANGE:add(x,d) self.score = self.score + d  end
 
 ----------------------------------------------------------------------------------------
 function DATA:sort(     fun)
@@ -34,16 +30,15 @@ function DATA:sort(     fun)
   self.rows = l.sort(self.rows, function(a,b) return fun(a) < fun(b) end)
   return self end
 
-function DATA:arranges(row,   d)
-  d = calc.chebyshev(row,self.cols.y)
+function DATA:ranges(row,d,  all) -- e.g. calc.chebyshev(row,self.cols.y)
   for _,col in pairs(self.cols.x) do 
     col.ranges = col.ranges or {}
-    self:arrange(row[col.pos],col,d) end end
+    self:range(row[col.pos],col,d) end end
     
-function DATA:arrange(x,col,d,       r)
+function DATA:range(x,col,d       r)
   if x ~= "?" then
     r = col:range(x,the.ranges)
-    col.ranges[r] = col.ranges[r] or RANGE.new(col,r)
+    col.ranges[r] = all[r] or RANGE.new(col,r)
     col.ranges[r]:add(x,d) end end
 
 function DATA:ranges(     fun,out)

@@ -1,11 +1,15 @@
 # Why AI Micro Modeling?
 
-Some of us (many of us) work to  find valuable insights from small,
-localized datasets. Not everyone has the resources to build models
+Some of us (many of us) 
+lack
+the resources to build models
 with over a trillion parameters
 trained from hundreds of gigabytes of data.
+So if we seek insights (that we can trust) from data,
+if we cannot build big, we must build small.
 
-Micro modeling from local data has many advantages:
+Micro modeling (to generate tiny AI models from local data),
+has many advantages:
 
 - Micro modeling is a fast way to talk to subject matter experts in order to
   build a tiny test suite containing highly information examples.
