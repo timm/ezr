@@ -30,7 +30,7 @@
 -- 
 -- ## Roll your own
 -- 
--- Copy `tests/Code.lua` to `tests/myCode.lua` (maybe `myCode.py`).
+-- Copy `tests/Code.lua` to `tests/myCode.lua`.
 -- 
 -- Edit that tile to do anything ant all with my code.
 -- 
@@ -46,7 +46,7 @@
 -- 
 -- With the code, the command
 -- 
---     cd /tests
+--     cd ezr/tests
 --     make f=Numsym lua
 -- 
 -- will update all the `tests/*.lua` files (from any `docs/[A-Z]*.md` files), then

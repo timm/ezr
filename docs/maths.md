@@ -37,8 +37,6 @@ computing sd
 - welford
 - nonparametric: median, (90=10)/2.58 (only keep some, resort when needed)
 
-explore versus explore (b or (b+r)/abs(b-r)
-
 - are they distinguishable? significance
   - quick and nasty; cohen's D
   - more considered: bootstrap (nonparametric)
@@ -50,6 +48,10 @@ that's for two distributions.
 
 ## Distance
 euclideam, manitbal, chekshev
+
+aha's algorthm
+
+curse of diensionality, synthesized dientions. PCA nystrom algorithms fastmap
 
 ### Manifold
 ### reduction

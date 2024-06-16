@@ -28,14 +28,6 @@ function RANGE:add(x,d)
 function RANGE:score(      s)
   s= self._score/self._col.n; return s < 0 and 0 or s end
 
------------------------------------------------------------------------------------------
-function SYM:range(x) return x end
-
-function NUM:range(x,     area,tmp)
-  area = calc.auc(x, self.mu, self/sd)
-  tmp = 1 + (area * the.ranges // 1) -- maps x to 0.. the.range+1
-  return  math.max(1, math.min(the.ranges, tmp)) end -- keep in bounds
-
 ----------------------------------------------------------------------------------------
 function DATA:sort(     fun)
   fun = function(row) return calc.chebyshev(row,self.cols.y) end
@@ -50,7 +42,7 @@ function DATA:arranges(row,   d)
     
 function DATA:arrange(x,col,d,       r)
   if x ~= "?" then
-    r = col:range(x)
+    r = col:range(x,the.ranges)
     col.ranges[r] = col.ranges[r] or RANGE.new(col,r)
     col.ranges[r]:add(x,d) end end
 
