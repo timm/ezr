@@ -228,7 +228,7 @@ def mid(i:col) -> atom:
 
 def div(i:col) -> float:
   "Diversity of a column."
-  return i.sd if i.this is NUM else entropy(i.has)
+  return i.sd if i.this is NUM else entropy(i._has)
 
 def mids(i:data,what:cols=None):
   return [show(mid(c)) for c in what or i.cols.all]
@@ -565,6 +565,8 @@ class Some:
        "Return the deviance from the middle." 
        l = i.has()
        n = len(l)//10
+       return (l[9*n] - l[n])/2.56
+
     def pooledSd(i,j:Some) -> number:
       "Return a measure of the combined standard deviation."
       sd1, sd2 = i.div(), j.div()
@@ -917,6 +919,7 @@ class eg:
     [print(x) for x in file2somes("data/stats.txt")]
 
   def someSame():
+    def it(x): return "T" if x else "."
     print("inc","\tcd","\tboot","\tcohen","==")
     x=1
     while x<1.75:
@@ -927,7 +930,7 @@ class eg:
       t1 = s1.cliffs(s2) 
       t2 = s1.bootstrap(s2) 
       t3 = s1.cohen(s2) 
-      print(round(x,3),t1, t2,  t3, s1==s2, sep="\t")
+      print(round(x,3),it(t1), it(t2),  it(t3), it(s1==s2), sep="\t")
       x *= 1.02
 
   def some2(n=5):
