@@ -20,8 +20,10 @@ function NUM.new(name,pos)
                    mu=0, m2=0, sd=0, lo=1E30, hi= -1E30,
                    best = (name or ""):find"-$" and 0 or 1}) end
 
-function NUM:norm(x)
-  return x=="?" and x or (x - self.lo) / (self.hi - self.lo + 1/the.big) end
+-----------------------------------------------------------------------------------------
+function SYM.new(name,pos)
+  return l.is(SYM, {name=name, pos=pos, n=0,
+                   seen={}, mode=nil, most=0}) end
 
 function NUM:add(x,     d)
   if x ~= "?" then
@@ -31,11 +33,6 @@ function NUM:add(x,     d)
     self.mu, self.m2, self.sd = calc.welford(x, self.n, self.mu, self.m2) end
   return x end
 
------------------------------------------------------------------------------------------
-function SYM.new(name,pos)
-  return l.is(SYM, {name=name, pos=pos, n=0,
-                   seen={}, mode=nil, most=0}) end
-
 function SYM:add(x)
   if x ~= "?" then
     self.n = 1 + self.n
@@ -44,6 +41,9 @@ function SYM:add(x)
       self.most, self.mode = self.seen[x], x end end end
 
 -----------------------------------------------------------------------------------------
+function NUM:norm(x)
+  return x=="?" and x or (x - self.lo) / (self.hi - self.lo + 1/the.big) end
+
 function SYM:mid() return self.mode end
 function NUM:mid() return self.mu end
 
