@@ -7,8 +7,12 @@ trained from hundreds of gigabytes of data.
 
 Micro modeling from local data has many advantages:
 
-- Good results from the local models mean we can avoid the complexity
-  of these big models (and those issues concern  CPU cost, model hullications,
+- Micro modeling is a fast way to talk to subject matter experts in order to
+  build a tiny test suite containing highly information examples.
+- Good results from the local models mean we can avoid the problems
+  of these big models (and those problems include validation, reproducability,
+  understandability,
+  CPU cost, hard to detect errors,
   privacy concerns, poor performance on specific problems, etc).
 - Poor results from the local  model can be used as the business case for 
   using the more general models;
