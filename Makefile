@@ -1,3 +1,9 @@
+# Default is show help; e.g.
+#
+#    make 
+#
+# prints the help text.
+
 SHELL     := bash
 MAKEFLAGS += --warn-undefined-variables
 .SILENT:

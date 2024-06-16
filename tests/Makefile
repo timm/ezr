@@ -1,3 +1,9 @@
+# Default is to run a test e.g
+#
+#    make 
+#    make f=Data
+#
+# will update and run tests/Code.lua (first call) or  tests/Data.lua (second call).
 
 f?=Code
 
