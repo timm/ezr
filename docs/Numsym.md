@@ -57,6 +57,7 @@ But why do it it two passes when you can do it in one? Welford's
 algorithm allows of the incremetanl updating of `sd`:
 
 ```lua
+-- from src/calc.lua
 function welford(x,n,mu,m2,     d)
   d  = x  - mu
   mu = mu + d/n

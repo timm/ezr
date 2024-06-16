@@ -78,12 +78,8 @@ function NUM:like(x,_,      nom,denom)
 -----------------------------------------------------------------------------------------
 -- Once we have rows, we can talk distance between rows or rows
 
-function DATA:dist(r1, r2,  cols)
-  d,n=0.0
-  for _,col in pairs(cols or i.cols.x) do
-    n = n + 1
-    d = d + col:dist(row1[col.pos], row2[col.pos])^the.p end
-  return (d / n) (1/the.p) end
+function DATA:dist(row1,row2,  cols)
+  return calc.minkowski(row1,row2,the.p, cols or i.cols.x) end
 
 function SYM:dist(x,y)
   return  (x=="?" and y=="?" and 1) or (x==y and 0 or 1) end
@@ -96,7 +92,7 @@ function NUM:dist(x,y)
   return math.abs(x-y) end
 
 function DATA:neighbors(row1,  rows, cols,     d)
-  d = function(rowx) return self:dist(row1,rowx,cols) end
+  d = function(row) return self:dist(row,rowx,cols) end
   return sort(rows or i.rows, function(row2,row3) return d(row2) < d(row3) end) end
 
 --------------------------------------------------------------------------------

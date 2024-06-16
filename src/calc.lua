@@ -23,7 +23,7 @@ function calc.chebyshev(row,cols,      c,tmp)
 
 -- Minkowski Distance = sum of column distance^p, all ^(1/p) at end.
 -- Euclidean distance is Minkowski with `p=2`.
-function calc.minkowski(row,cols,  p,     d,n)
+function calc.minkowski(row1,row2,p,cols,     d,n)
   d,n = 0,0
   for _,col in pairs(cols) do
     n=n+1
