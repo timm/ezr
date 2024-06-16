@@ -1,31 +1,22 @@
 # NUMbers and SYMbols
 
-Symbols and numbers differ
-by the operations they support.
-Both can be sorted and both
-have measures of (a) central
-tendancies and (b) diversity around
-tha central tendandcy. But only
-numbers can be added, divided,
-subtraced, multiplied, etc.
+Symbols and numbers differ by the operations they support.  Both
+can be sorted and both have measures of (a) central tendancies and
+(b) diversity around tha central tendandcy. But only numbers can
+be added, divided, subtraced, multiplied, etc.
 
-The central tendancy of NUM,SYMs
-is called the mean (`mu`) and
-`mode`, respectively. The diversity
-measures are `entropy` and `sd`
-(standard deviation). These
-diversity measures are a measure of
-confusion and when we go learning,
-we prefer ranges where that dviersity is 
-minimized.
-XXX watching cars of freeeway.. 
-do much dofersiy, compare to care refuge wheen new aninak yu see is orobably going ot be  a cat
-(or, much rearely, of the human staff peole)
+The central tendancy of NUM,SYMs is called the mean (`mu`) and
+`mode`, respectively. The diversity measures are `entropy` and `sd`
+(standard deviation). These diversity measures are a measure of
+confusion and when we go learning, we prefer ranges where that
+dviersity is minimized.  XXX watching cars of freeeway..  do much
+dofersiy, compare to care refuge wheen new aninak yu see is orobably
+going ot be  a cat (or, much rearely, of the human staff peole)
 
 
 ```lua
 l=require"lib" ; local o,oo=l.o,l.oo
-d=require"data"; local NUM=d.NUM; SYM=d.SYM
+d=require"numsym"; local NUM=d.NUM; SYM=d.SYM
 
 f=function(n) return l.rnd(n,3) end
 
@@ -92,7 +83,8 @@ to 0.55 and 0.280 (ish) after just 15 samples.
       inc	35	0.585	0.289
       ...
 
-This stabilization means we can do a simple discretization trick. A "normal" Gaussian distribution is a symmetrical bell-shaped curve with a single peak
-at its mean value. For `mu=0` and `sd=1`. 
+This stabilization means we can do a simple discretization trick.
+A "normal" Gaussian distribution is a symmetrical bell-shaped curve
+with a single peak at its mean value. For `mu=0` and `sd=1`.
 
 XXX cdf pdf

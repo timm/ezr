@@ -6,7 +6,7 @@ covered by the general models.
 
 When generality fails, you need to build local models. Local data
 can be scarce. Hence it is important to do as much as you can with
-whatever is available.  Hemce, local learning first focuses  on
+whatever is available.  Hence, local learning first focuses  on
 easily accessible features (independent variables) in order to
 quickly identify and select the most informative samples for labeling.
 This reduces the overall cost and time required to train the model

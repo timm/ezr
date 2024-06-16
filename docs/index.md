@@ -4,12 +4,12 @@ Some of us (many of us) work to  find valuable insights from small,
 localized datasets. Not everyone has the resources to build models
 with over a trillion parameters
 trained from hundreds of gigabytes of data.
-And consumers
-of those big models
-need a locally-built
-reference model:
 
-- Good results from the local models mean we may not need to general models.
+Micro modeling from local data has many advantages:
+
+- Good results from the local models mean we can avoid the complexity
+  of these big models (and those issues concern  CPU cost, model hullications,
+  privacy concerns, poor performance on specific problems, etc).
 - Poor results from the local  model can be used as the business case for 
   using the more general models;
 - When the general model fails, the local model can become a useful replacement;

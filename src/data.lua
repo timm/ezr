@@ -7,6 +7,7 @@ rulr2.lua : a small range learner
 
 Options:
   -b --big     a big number                    = 1E30
+  -F --far     how far to search for 'far'     = 0.9
   -k --k       low class frequency kludge      = 1
   -m --m       low attribute frequency kludge  = 2
   -s --seed    random number seed              = 1234567891
@@ -77,16 +78,12 @@ function NUM:like(x,_,      nom,denom)
 -----------------------------------------------------------------------------------------
 -- Once we have rows, we can talk distance between rows or rows
 
-function DATA:dist(r1, r2
+function DATA:dist(r1, r2,  cols)
   d,n=0.0
-  for _,col in pairs(i.cols.x) do
-  n = sum(dist(c, r1[c.at], r2[c.at])**the.p for c in i.cols.x)
-  return (n / len(i.cols.x))**(1/the.p)
-
-# Sort the `region` (default=`i.rows`),ascending,  by distance to `r1`.
-def neighbors(i:data, r1:row, region:rows=None) -> list[row]:
-  return sorted(region or i.rows, key=lambda r2: dists(i,r1,r2))
-
+  for _,col in pairs(cols or i.cols.x) do
+    n = n + 1
+    d = d + col:dist(row1[col.pos], row2[col.pos])^the.p end
+  return (d / n) (1/the.p)
 
 function SYM:dist(x,y)
   return  (x=="?" and y=="?" and 1) or (x==y and 0 or 1) end
@@ -97,6 +94,10 @@ function NUM:dist(x,y)
   if x=="?" then x=y<.5 and 1 or 0 end
   if y=="?" then y=x<.5 and 1 or 0 end
   return math.abs(x-y) end
+
+function DATA:neighbors(row1,  rows, cols,     d)
+  d = function(rowx) return self:dist(row1,rowx,cols) end
+  return sort(rows or i.rows, function(row2,row3) return d(row2) < d(row3) end) end
 
 --------------------------------------------------------------------------------
 math.randomseed(the.seed)
