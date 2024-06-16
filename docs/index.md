@@ -1,12 +1,11 @@
 
 # Why Micro Modeling?
 
-Some of us (many of us) work to  find valuable insights
-from small, localized datasets. Not everyone has the resources to
-develop models with over a trillion parameters. For those working
-with these large-scale models, a locally-built reference model is essential for
-testing.
-E.g.
+Some of us (many of us) work to  find valuable insights from small,
+localized datasets. Not everyone has the resources to build models
+with over a trillion parameters. For those working And those not
+building, but using these large-scale models, a locally-built
+reference model is essential for testing.  E.g.
 
 - Poor results from the local  model can underline the value of the more general model.
 - When the general model fails, the local model can become a useful replacement.
