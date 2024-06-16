@@ -42,7 +42,8 @@ function SYM:add(x)
 
 -----------------------------------------------------------------------------------------
 function NUM:norm(x)
-  return x=="?" and x or (x - self.lo) / (self.hi - self.lo + 1/the.big) end
+  if x=="?" then return x end
+  return (x - self.lo) / (self.hi - self.lo + 1/the.big) end
 
 function SYM:mid() return self.mode end
 function NUM:mid() return self.mu end

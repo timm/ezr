@@ -37,15 +37,12 @@ function NUM:range(x,     area,tmp)
   return  math.max(1, math.min(the.ranges, tmp)) end -- keep in bounds
 
 ----------------------------------------------------------------------------------------
-function DATA:a() return 1 end
-
 function DATA:sort(     fun)
   fun = function(row) return calc.chebyshev(row,self.cols.y) end
-  print(l.sort)
   self.rows = l.sort(self.rows, function(a,b) return fun(a) < fun(b) end)
   return self end
 
-function DATA:arrages(row,   d)
+function DATA:arranges(row,   d)
   d = calc.chebyshev(row,self.cols.y)
   for _,col in pairs(self.cols.x) do 
     col.ranges = col.ranges or {}
