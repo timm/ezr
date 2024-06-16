@@ -7,7 +7,7 @@ rulr2.lua : a small range learner
 Options:
   -b --big     a big number       = 1E30
   -s --seed    random number seed = 1234567891
-  -t --train   train data         = auto83.csv ]]
+  -t --train   train data         = ../data/misc/auto93.csv ]]
 
 local NUM  = {} -- info on numeric columns
 local SYM  = {} -- info on symbolic columns
@@ -81,11 +81,6 @@ function DATA:add(row)
   if   self.cols
   then l.push(self.rows, self.cols:add(row))
   else self.cols = COLS.new(row) end 
-  return self end
-
-function DATA:sort(     fun)
-  fun = function(row) return chebyshev(row,self.cols.y) end
-  self.rows = l.sort(self.rows, function(a,b) return fun(a) < fun(b) end)
   return self end
 
 function DATA:mids(cols)

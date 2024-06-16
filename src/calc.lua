@@ -19,7 +19,7 @@ function calc.chebyshev(row,cols,      c,tmp)
   for _,col in pairs(cols) do
     tmp = col:norm(row[col.pos]) -- normalize  0..1 
     c = math.max(c, math.abs(col.best - tmp)) end
-  return 1 - c end -- so LARGER values are better
+  return c end -- so LARGER values are better
 
 -- Minkowski Distance = sum of column distance^p, all ^(1/p) at end.
 -- Euclidean distance is Minkowski with `p=2`.
