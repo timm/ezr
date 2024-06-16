@@ -83,7 +83,7 @@ function DATA:dist(r1, r2,  cols)
   for _,col in pairs(cols or i.cols.x) do
     n = n + 1
     d = d + col:dist(row1[col.pos], row2[col.pos])^the.p end
-  return (d / n) (1/the.p)
+  return (d / n) (1/the.p) end
 
 function SYM:dist(x,y)
   return  (x=="?" and y=="?" and 1) or (x==y and 0 or 1) end

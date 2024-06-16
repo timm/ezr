@@ -65,12 +65,12 @@ clusters).
 
 ```lua
 l  = require"lib"   ; local o,oo = l.o,l.oo
-ns = require"numsym"; local NUM,SYM = =ns.NUM, ns.SYM
+ns = require"numsym"; local NUM,SYM = ns.NUM, ns.SYM
 d  = require"data"
 
 local function eg_csv()
   n=0
-  for row in l.csv("data/misc/auto93.csv") do
+  for row in l.csv("../data/misc/auto93.csv") do
     n = n + 1
     if n == 1 or n % 50 == 0 then print(n, l.o(row)) end end end
 
