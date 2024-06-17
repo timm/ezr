@@ -15,17 +15,17 @@ going ot be  a cat (or, much rearely, of the human staff peole)
 
 
 ```lua
-l=require"lib" ; local o,oo=l.o,l.oo
-d=require"numsym"; local NUM=d.NUM; SYM=d.SYM
+local l=require"lib" ; local o,oo=l.o,l.oo
+local d=require"numsym"; local NUM=d.NUM; SYM=d.SYM
 
-f=function(n) return l.rnd(n,3) end
+local f=function(n) return l.rnd(n,3) end
 
-num1 = NUM.new()
+local num1 = NUM.new()
 for i = 1,1000 do num1:add(i) end
 print("1. nums",f(num1:mid()), f(num1:div()))
 assert(500.5 == f(num1:mid()) and 288.819 == f(num1:div()),"bad nums")
 
-sym1 = SYM.new()
+local sym1 = SYM.new()
 for c in ("aaaabbc"):gmatch"." do sym1:add(c) end
 print("2. syms", sym1:mid(), f(sym1:div()))
 assert("a"  == f(sym1:mid()) and 1.379 == f(sym1:div()),"bad syms")
@@ -34,12 +34,12 @@ assert("a"  == f(sym1:mid()) and 1.379 == f(sym1:div()),"bad syms")
 The standard deviation is zero when the numbers are all the same.
 Similarly, entropy is also zero when all the symbols are the same.
 ```lua
-num2 = NUM.new()
+local num2 = NUM.new()
 for i = 1,1000 do num2:add(1) end
 print("3. sames",f(num2:mid()), f(num2:div()))
 assert(1 == f(num2:mid()) and 0 == f(num2:div()),"non-zero ent")
 
-sym2 = SYM.new()
+local sym2 = SYM.new()
 for c in ("aaaaaaa"):gmatch"." do sym2:add(c) end
 print("4. syms", sym2:mid(), f(sym2:div()))
 assert("a"  == f(sym2:mid()) and 0 == f(sym2:div()),"bad syms")
@@ -58,14 +58,14 @@ algorithm allows of the incremetanl updating of `sd`:
 
 ```lua
 -- from src/calc.lua
-function welford(x,n,mu,m2,     d)
+function welford(x,n,mu,m2,     sd,d)
   d  = x  - mu
   mu = mu + d/n
   m2 = m2 + d*(x- mu)
   sd = (m2/(n-1+1E-30))^0.5
   return mu,m2,sd end
 
-num3 = NUM.new()
+local num3 = NUM.new()
 for i = 1,100 do 
    num3:add(math.random())
    if i % 5 ==0 then  

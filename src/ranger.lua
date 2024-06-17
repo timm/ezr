@@ -18,11 +18,11 @@ local RANGE= {} -- stores ranges
 
 -----------------------------------------------------------------------------------------
 function RANGE.new(col,r)
-  return l.is(RANGE, { _col=col, has=r,  score=0}) end
+  return l.is(RANGE, { _col=col, has={r},  n=0, score=0}) end
 
 function RANGE:__tostring() return self._col.name .. l.o(self) end
 
-function RANGE:add(x,d) self.score = self.score + d  end
+function RANGE:add(x,d) self.n = self.n + 1; self.score = self.score + d  end
 
 ----------------------------------------------------------------------------------------
 function DATA:sort(     fun)
@@ -30,15 +30,15 @@ function DATA:sort(     fun)
   self.rows = l.sort(self.rows, function(a,b) return fun(a) < fun(b) end)
   return self end
 
-function DATA:ranges(row,d,  all) -- e.g. calc.chebyshev(row,self.cols.y)
+function DATA:ranges(row,d) -- e.g. calc.chebyshev(row,self.cols.y)
   for _,col in pairs(self.cols.x) do 
     col.ranges = col.ranges or {}
     self:range(row[col.pos],col,d) end end
     
-function DATA:range(x,col,d       r)
+function DATA:range(x,col,d,      r)
   if x ~= "?" then
     r = col:range(x,the.ranges)
-    col.ranges[r] = all[r] or RANGE.new(col,r)
+    col.ranges[r] = col.ranges[r] or RANGE.new(col,r)
     col.ranges[r]:add(x,d) end end
 
 function SYM:range(x,  _) return x end
@@ -49,4 +49,4 @@ function NUM:range(x,  ranges,     area,tmp)
   tmp = 1 + (area * ranges // 1) -- maps x to 0.. the.range+1
   return  math.max(1, math.min(ranges, tmp)) end -- keep in bounds
 
- return {the=the, NUM=NUM, SYM=SYM, DATA=DATA}
+return {the=the, NUM=NUM, SYM=SYM, DATA=DATA}

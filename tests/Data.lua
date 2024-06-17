@@ -8,11 +8,11 @@
 -- goals and our goal is to learn $f$ from the $X,Y$ examples.
 -- 
 
-l  = require"lib"   ; local o,oo    = l.o,l.oo
-ns = require"numsym"; local NUM,SYM = ns.NUM, ns.SYM
-d  = require"data"  ; local DATA    = d.DATA
+local l  = require"lib"   ; local o,oo    = l.o,l.oo
+local ns = require"numsym"; local NUM,SYM = ns.NUM, ns.SYM
+local d  = require"data"  ; local DATA    = d.DATA
 
-local function eg_csv()
+local function eg_csv(    n)
   print""
   n=0
   for row in l.csv("../data/misc/auto93.csv") do
@@ -51,7 +51,7 @@ local function eg_fromFiles(      data)
     if n%50==0 then print("fromFiles", l.o(row)) end end 
   eg_names(data.cols,"from") end
 
-local function eg_fromTables(       data)
+local function eg_fromTables(       data1,data2,col2)
   print""
   data1 = d.DATA.new():read("../data/misc/auto93.csv")
   data2 = d.DATA.new(data1.cols.names):load(data1.rows) 

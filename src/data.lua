@@ -58,8 +58,8 @@ function COLS:add(row,        x)
 -- Once we have rows, we can talk likelihood of rows
 
 function DATA:like(row,nall,nh,    prior,x,like,out)
-  out, prior = 0, (#i.rows + the.k) / (nall + the.k*nh)
-  for _,col in pairs(i.cols.x) do
+  out, prior = 0, (#self.rows + the.k) / (nall + the.k*nh)
+  for _,col in pairs(self.cols.x) do
     x = row[col.pos]
     if x ~= "?" then
       like = col:like(x,prior)
@@ -79,7 +79,7 @@ function NUM:like(x,_,      nom,denom)
 -- Once we have rows, we can talk distance between rows or rows
 
 function DATA:dist(row1,row2,  cols)
-  return calc.minkowski(row1,row2,the.p, cols or i.cols.x) end
+  return calc.minkowski(row1,row2,the.p, cols or self.cols.x) end
 
 function SYM:dist(x,y)
   return  (x=="?" and y=="?" and 1) or (x==y and 0 or 1) end
@@ -91,9 +91,9 @@ function NUM:dist(x,y)
   if y=="?" then y=x<.5 and 1 or 0 end
   return math.abs(x-y) end
 
-function DATA:neighbors(row1,  rows, cols,     d)
+function DATA:neighbors(rowx,  rows, cols,     d)
   d = function(row) return self:dist(row,rowx,cols) end
-  return sort(rows or i.rows, function(row2,row3) return d(row2) < d(row3) end) end
+  return l.sort(rows or self.rows, function(row2,row3) return d(row2) < d(row3) end) end
 
 --------------------------------------------------------------------------------
 math.randomseed(the.seed)

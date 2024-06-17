@@ -15,7 +15,7 @@
 -- 
 -- 
 
-l=require"lib" ; local o,oo=l.o,l.oo
+local l=require"lib" ; local o,oo=l.o,l.oo
 d=require"numsym"; local NUM=d.NUM; SYM=d.SYM
 
 f=function(n) return l.rnd(n,3) end
