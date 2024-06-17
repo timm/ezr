@@ -28,8 +28,8 @@ flash:
 
 usuals=../data
 usual:
-	$(MAKE) -j 8 -B ../out/auto93.out   ../out/healthCloseIsses12mths0001-hard.out     \
-					../out/china.out   ../out/healthCloseIsses12mths0011-easy.out \
+	$(MAKE) -j 8 -B ../out/auto93.out   ../out/healthClosedIssues12mths0001.out     \
+					../out/china.out   ../out/healthClosedIssues12mths0011.out \
 				../out/coc1000.out ../out/nasa93dem.out  ../out/pom.out
 
 

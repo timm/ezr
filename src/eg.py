@@ -166,7 +166,7 @@ class Eg:
         all += [SAMPLE(lst, txt=f"rrp,{evals1}")]
         return 
       
-      say(f"#SNEAK");all +=  [SAMPLE([d.d2h(d.SNEAK()) for _ in range(repeats)],txt=f"SNEAK,{(int(len(d.rows)**.5))}")] 
+      #say(f"#SNEAK");all +=  [SAMPLE([d.d2h(d.SNEAK()) for _ in range(repeats)],txt=f"SNEAK,{(int(len(d.rows)**.5))}")] 
 
       def _double(all):
         evals1,evals2 = 0,0
