@@ -19,7 +19,7 @@ local DATA = {} -- place to store all the columns
 local COLS = {} -- factory to make NUMs and SYMs
 
 -----------------------------------------------------------------------------------------
-function DATA.new(src,  names,      cols)
+function DATA.new(  names,      cols)
   cols = names and COLS.new(names) or nil
   return l.is(DATA,{rows={},  cols=cols}) end
 
@@ -38,14 +38,14 @@ function DATA:mids(cols)
 ----------------------------------------------------------------------------------------
 function COLS.new(names,     self,col)
   self = l.is(COLS, { all={}, x={}, y={}, names=names })
-  for n,s in pairs(names) do self:newColumn(n,s) end
+  for pos,name in pairs(names) do self:newColumn(name,pos) end
 return self end
 
-function COLS:newColumn(n,s,    col)
-  col = ns.COL(n,s)
+function COLS:newColumn(name,pos,    col)
+  col = ns.COL(name,pos)
   l.push(self.all,col)
-  if not s:find"X$" then
-    l.push(s:find"[-+!]$" and self.y or self.x, col) end end
+  if not name:find"X$" then
+    l.push(name:find"[-+!]$" and self.y or self.x, col) end end
 
 function COLS:add(row,        x)
   for _,cols in pairs{self.x, self.y} do

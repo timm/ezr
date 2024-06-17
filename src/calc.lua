@@ -9,7 +9,7 @@ local calc={}
 -- Inverse for use on a Pocket Calculator. Applied Statistics, 38, 69-70.
 function calc.auc(x,mu,sigma)
   cdf = function(z) return 1 - 0.5*2.718^(-0.717*z - 0.416*z*z) end
-  z = (x - .mu) / sd
+  z = (x - mu) / sd
   return z >= 0 and cdf(z) or 1 - cdf(-z) end
 
 -- ## Distance

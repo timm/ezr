@@ -6,7 +6,7 @@ local SYM  = {} -- info on symbolic columns
 -----------------------------------------------------------------------------------------
 local function COL(name,pos) 
   name, pos = name or "", pos or 0
-  return ((name or ""):find"^[a-z]" and NUM or SYM).new(name,pos) end
+  return ((name or ""):find"^[A-Z]" and NUM or SYM).new(name,pos) end
 
 function NUM.new(name,pos)
   return l.is(NUM, {name=name or "", pos=pos or 0, n=0,

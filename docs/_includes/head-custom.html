@@ -9,6 +9,20 @@
 <!-- MathJax -->
 <script type="text/javascript"
         src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.3/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+
+MathJax = {
+  tex: {
+    tags: 'all',  // should be 'ams', 'none', or 'all'
+    inlineMath: [ /* start/end delimiter pairs for in-line math */
+      ['$','$'],
+      ['\\(','\\)']
+    ],
+    displayMath: [ /* start/end delimiter pairs for display math */
+      ['$$', '$$'],
+      ['\\[', '\\]']
+    ]
+  }
+};
 </script>
 
 <!-- end custom head snippets -->

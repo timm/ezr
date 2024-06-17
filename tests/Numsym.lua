@@ -57,6 +57,7 @@ assert("a"  == f(sym2:mid()) and 0 == f(sym2:div()),"bad syms")
 -- algorithm allows of the incremetanl updating of `sd`:
 -- 
 
+-- from src/calc.lua
 function welford(x,n,mu,m2,     d)
   d  = x  - mu
   mu = mu + d/n
