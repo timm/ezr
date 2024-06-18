@@ -74,15 +74,16 @@ docs/%.html : %.py ## .py --> .html
 	ps2pdf $@.ps $@; rm $@.ps    
 	open $@
 
-OUTS= $(subst data/config,var/out,$(wildcard data/config/*.csv)) \
-      $(subst data/misc,var/out,$(wildcard data/misc/*.csv)) \
-      $(subst data/process,var/out,$(wildcard data/process/*.csv)) \
-      $(subst data/hpo,var/out,$(wildcard data/hpo/*.csv))
+SMOS= $(subst data/config,var/out/smos,$(wildcard data/config/*.csv)) \
+      $(subst data/misc,var/out/smos,$(wildcard data/misc/*.csv)) \
+      $(subst data/process,var/out/smos,$(wildcard data/process/*.csv)) \
+      $(subst data/hpo,var/out/smos,$(wildcard data/hpo/*.csv))
 
-var/out/%.csv : data/config/%.csv  ; ezr.py -f $< -R smo20 | tee $@
-var/out/%.csv : data/misc/%.csv    ; ezr.py -f $< -R smo20 | tee $@
-var/out/%.csv : data/process/%.csv ; ezr.py -f $< -R smo20 | tee $@
-var/out/%.csv : data/hpo/%.csv     ; ezr.py -f $< -R smo20 | tee $@
+var/out/smos/%.csv : data/config/%.csv  ; echo $<; ./ezr.py -t $< -R smos | tee $@
+var/out/smos/%.csv : data/misc/%.csv    ; echo $<; ./ezr.py -t $< -R smos | tee $@
+var/out/smos/%.csv : data/process/%.csv ; echo $<; ./ezr.py -t $< -R smos | tee $@
+var/out/smos/%.csv : data/hpo/%.csv     ; echo $<; ./ezr.py -t $< -R smos | tee $@
 
-eg1: 
-	$(MAKE) -j 8 $(OUTS)
+smos: 
+	mkdir -p var/out/smos
+	$(MAKE) -j $(SMOS)

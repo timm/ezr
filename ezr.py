@@ -502,9 +502,7 @@ def smo(i:data, score=lambda B,R: B-R, callBack=lambda x:x ):
                            loglikes(rest, r, len(done), 2))
     if the.GuessFaster:
       random.shuffle(todo) # optimization: only sort a random subset of todo 
-      todo = sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
-      top = max(10, len(todo)//2)
-      return todo[:top]
+      return sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
     else:
       return sorted(todo,key=key,reverse=True)
       
@@ -854,7 +852,7 @@ class eg:
   def smos():
     "try different sample sizes"
     policies = dict(exploit = lambda B,R: B-R,
-                    EXPLORE = lambda B,R: (e**B + e**R)/abs(e**B - e**R))
+                    EXPLORE = lambda B,R: (e**B + e**R)/abs(e**B - e**R + 1E-30))
     repeats=20
     d = DATA(csv(the.train))
     e = math.exp(1)
@@ -865,7 +863,7 @@ class eg:
       guess = lambda : clone(d,random.choices(d.rows, k=last+the.label),rank=True).rows[0]
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[d2h(d,guess()) for _ in range(repeats)])
-      for  guessFaster in [False,True]:
+      for  guessFaster in [True]:
         for what,how in  policies.items():
           the.GuessFaster = guessFaster
           rx=f"{what}/{the.GuessFaster},{the.Last}"
