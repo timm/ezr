@@ -518,7 +518,7 @@ def smo(i:data, score=lambda B,R: B-R, callBack=lambda x:x ):
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Stats
 
-class Some:
+class SOME:
     "Non-parametric statistics using reservoir sampling."
     def __init__(i, inits=[], txt="", max=512): 
       "Start stats. Maybe initialized with `inits`. Keep no more than `max` numbers."
@@ -529,14 +529,14 @@ class Some:
 
     def __repr__(i) -> str: 
       "Print the reservoir sampling."
-      return  'Some(' + str(dict(
+      return  'SOME(' + str(dict(
                 txt=i.txt,rank="i.rank",n=i.n, all=len(i._has), ok=i.ok)) + ")"
 
     def adds(i,a:any) -> None: 
       "Handle multiple nests samples."
       for b in a:
         if   isinstance(b,(list,tuple)): [i.adds(c) for c in b]  
-        elif isinstance(b,Some):         [i.add(c) for c in b._has]
+        elif isinstance(b,SOME):         [i.add(c) for c in b._has]
         else: i.add(b) 
 
     def add(i,x:number) -> None:  
@@ -547,7 +547,7 @@ class Some:
       if   now < i.max   : i.ok=False; i._has += [x]
       elif R() <= now/i.n: i.ok=False; i._has[ int(R() * now) ]
 
-    def __eq__(i,j:Some) -> bool:
+    def __eq__(i,j:SOME) -> bool:
       "True if all of cohen/cliffs/bootstrap say you are the same."
       return i.cohen(j) and i.cliffs(j) and i.bootstrap(j) ## ordered slowest to fastest
 
@@ -568,7 +568,7 @@ class Some:
        n = len(l)//10
        return (l[9*n] - l[n])/2.56
 
-    def pooledSd(i,j:Some) -> number:
+    def pooledSd(i,j:SOME) -> number:
       "Return a measure of the combined standard deviation."
       sd1, sd2 = i.div(), j.div()
       return (((i.n - 1)*sd1 * sd1 + (j.n-1)*sd2 * sd2) / (i.n + j.n-2))**.5
@@ -577,7 +577,7 @@ class Some:
       "Noramlize `n` to the range 0..1 for min..max"
       return (n-i.lo)/(i.hi - i.lo + 1E-30)
 
-    def bar(i, some:Some, fmt="%8.3f", word="%10s", width=50) -> str:
+    def bar(i, some:SOME, fmt="%8.3f", word="%10s", width=50) -> str:
       "Pretty print `some.has`."
       has = some.has() 
       out = [' '] * width
@@ -592,14 +592,14 @@ class Some:
       return ', '.join(["%2d" % some.rank, word % some.txt, fmt%c, fmt%(d-b),
                         ''.join(out),fmt%has[0],fmt%has[-1]])
 
-    def delta(i,j:Some) -> float:
-      "Report distance between two Somes, modulated in terms of the standard deviation."
+    def delta(i,j:SOME) -> float:
+      "Report distance between two SOMEs, modulated in terms of the standard deviation."
       return abs(i.mid() - j.mid()) / ((i.div()**2/i.n + j.div()**2/j.n)**.5 + 1E-30)
 
-    def cohen(i,j:Some):
+    def cohen(i,j:SOME):
       return abs( i.mid() - j.mid() ) < the.cohen * i.pooledSd(j)
 
-    def cliffs(i,j:Some, dull=0.147) -> bool:
+    def cliffs(i,j:SOME, dull=0.147) -> bool:
       """non-parametric effect size. threshold is border between small=.11 and medium=.28 
       from Table1 of  https://doi.org/10.3102/10769986025002101
       """
@@ -611,22 +611,22 @@ class Some:
           if x1 < y1: lt += 1
       return abs(lt - gt)/n  < dull # true if same
 
-    def  bootstrap(i,j:Some,confidence=.05,samples=512) -> bool:
+    def  bootstrap(i,j:SOME,confidence=.05,samples=512) -> bool:
       """non-parametric significance test From Introduction to Bootstrap, 
         Efron and Tibshirani, 1993, chapter 20. https://doi.org/10.1201/9780429246593"""
       y0,z0  = i.has(), j.has()
-      x,y,z  = Some(inits=y0+z0), Some(inits=y0), Some(inits=z0)
+      x,y,z  = SOME(inits=y0+z0), SOME(inits=y0), SOME(inits=z0)
       delta0 = y.delta(z)
       yhat   = [y1 - y.mid() + x.mid() for y1 in y0]
       zhat   = [z1 - z.mid() + x.mid() for z1 in z0] 
-      pull   = lambda l:Some(random.choices(l, k=len(l))) 
+      pull   = lambda l:SOME(random.choices(l, k=len(l))) 
       n      = sum(pull(yhat).delta(pull(zhat)) > delta0 for _ in range(samples)) 
       return n / samples >= confidence # true if different
 
 #--------- --------- --------- --------- --------- --------- --------- --------- ---------
 # ## Misc Functions:
 
-# Some general Python tricks
+# SOME general Python tricks
 
 def entropy(d:dict) -> float:
   "Entropy of a distribution."
@@ -638,7 +638,7 @@ def normal(mu:number,sd:number) -> float:
   return mu+sd*math.sqrt(-2*math.log(R())) * math.cos(2*math.pi*R())
 
 def show(x:any) -> any:
-  "Some pretty-print tricks."
+  "SOME pretty-print tricks."
   it = type(x)
   if it == float: return round(x,the.decs)
   if it == list:  return [show(v) for v in x]
@@ -660,17 +660,17 @@ def btw(*args, **kwargs) -> None:
   "Print to standard error, flush standard error, do not print newlines."
   print(*args, file=sys.stderr, end="", flush=True, **kwargs)
 
-def sk(somes:list[Some]) -> list[Some]:
+def sk(somes:list[SOME]) -> list[SOME]:
   "Sort nums on mid. give adjacent nums the same rank if they are statistically the same"
-  def sk1(somes: list[Some], rank:integer, cut:integer=None) -> interger:
-    most, b4 = -1, Some(somes)
+  def sk1(somes: list[SOME], rank:integer, cut:integer=None) -> interger:
+    most, b4 = -1, SOME(somes)
     for j in range(1,len(somes)):
-      lhs = Some(somes[:j])
-      rhs = Some(somes[j:])
+      lhs = SOME(somes[:j])
+      rhs = SOME(somes[j:])
       tmp = (lhs.n*abs(lhs.mid() - b4.mid()) + rhs.n*abs(rhs.mid() - b4.mid())) / b4.n
       if tmp > most:
          most,cut = tmp,j
-    if cut and Some(somes[:cut]) != Some(somes[cut:]): # != invokes the Some stats tests
+    if cut and SOME(somes[:cut]) != SOME(somes[cut:]): # != invokes the SOME stats tests
       rank = sk1(somes[:cut], rank) + 1
       rank = sk1(somes[cut:], rank)
     else:
@@ -681,8 +681,8 @@ def sk(somes:list[Some]) -> list[Some]:
   sk1(somes,0)
   return somes
 
-def file2somes(file:str) -> list[Some]:
-  "Reads text file into a list of `Somes`."
+def file2somes(file:str) -> list[SOME]:
+  "Reads text file into a list of `SOMEs`."
   def asNum(s):
     try: return float(s)
     except Exception: return s
@@ -690,13 +690,13 @@ def file2somes(file:str) -> list[Some]:
   somes=[]
   with open(file) as fp: 
     for word in [asNum(x) for s in fp.readlines() for x in s.split()]:
-      if isinstance(word,str): some = Some(txt=word); somes.append(some)
+      if isinstance(word,str): some = SOME(txt=word); somes.append(some)
       else                   : some.add(word)    
   return somes
 
-def bars(somes: list[Some], width:integer=40) ->  None:
+def bars(somes: list[SOME], width:integer=40) ->  None:
   "Prints multiple `somes` on the same scale."
-  all = Some(somes)
+  all = SOME(somes)
   last = None
   for some in sk(some):
     if some.rank != last: print("#")
@@ -841,6 +841,22 @@ class eg:
     want1   = WANT(best="best", bests=bests, rests=rests)
     showTree(tree(d,klasses,want1))
 
+  def smos():
+    "try different sample sizes"
+    repeats=20
+    d = DATA(csv(the.train))
+    rxs={}
+    rxs[0] = SOME(txt=0,inits=[d2h(d,row) for row in d.rows])
+    for last in [15,20,30,45]:
+      rxs[last] = SOME(txt=last)
+      for _ in range(repeats):
+         btw(".")
+         the.Last= last
+         row=smo(d)[0]
+         rxs[last].add(d2h(d,row))
+      print("")
+    eg0(rxs.values())
+
   def profileSmo():
     "Example of profiling."
     import cProfile
@@ -906,7 +922,7 @@ class eg:
 
   def some(): 
     "basic test of reservoir sampling"
-    s=Some([x for x in range(100)])
+    s=SOME([x for x in range(100)])
     print(s.mid(), s.div(), s)
 
   def someErrors():
@@ -914,7 +930,7 @@ class eg:
     for k in [32,64,128,256,512,1024, 2048]:
       print("")
       for n in [10,100,1_000,10_000,100_000]:
-        s=Some([normal(10,2) for x in range(n)],max=k)
+        s=SOME([normal(10,2) for x in range(n)],max=k)
         print([round(x,3) for x in [100*(s.mid()-10)/10, 100*(s.div()-2)/2]],k,n)
 
   def file2somes():
@@ -928,8 +944,8 @@ class eg:
     while x<1.75:
       a1 = [random.gauss(10,3) for x in range(20)]
       a2 = [y*x for y in a1]
-      s1 = Some(a1)
-      s2 = Some(a2)   
+      s1 = SOME(a1)
+      s2 = SOME(a2)   
       t1 = s1.cliffs(s2) 
       t2 = s1.bootstrap(s2) 
       t3 = s1.cohen(s2) 
@@ -937,24 +953,24 @@ class eg:
       x *= 1.02
 
   def some2(n=5):
-    eg0([ Some([0.34, 0.49 ,0.51, 0.6]*n,   txt="x1"),
-          Some([0.6  ,0.7 , 0.8 , 0.89]*n,  txt="x2"),
-          Some([0.09 ,0.22, 0.28 , 0.5]*n, txt="x3"),
-          Some([0.6  ,0.7,  0.8 , 0.9]*n,   txt="x4"),
-          Some([0.1  ,0.2,  0.3 , 0.4]*n,   txt="x5")])
+    eg0([ SOME([0.34, 0.49 ,0.51, 0.6]*n,   txt="x1"),
+          SOME([0.6  ,0.7 , 0.8 , 0.89]*n,  txt="x2"),
+          SOME([0.09 ,0.22, 0.28 , 0.5]*n, txt="x3"),
+          SOME([0.6  ,0.7,  0.8 , 0.9]*n,   txt="x4"),
+          SOME([0.1  ,0.2,  0.3 , 0.4]*n,   txt="x5")])
     
   def some3():
-    eg0([ Some([0.32,  0.45,  0.50,  0.5,  0.55],    "one"),
-          Some([ 0.76,  0.90,  0.95,  0.99,  0.995], "two")])
+    eg0([ SOME([0.32,  0.45,  0.50,  0.5,  0.55],    "one"),
+          SOME([ 0.76,  0.90,  0.95,  0.99,  0.995], "two")])
 
   def some4(n=20):
-    eg0([ Some([0.24, 0.25 ,0.26, 0.29]*n,   "x1"),
-          Some([0.35, 0.52 ,0.63, 0.8]*n,   "x2"),
-          Some([0.13 ,0.23, 0.38 , 0.48]*n, "x3"),
+    eg0([ SOME([0.24, 0.25 ,0.26, 0.29]*n,   "x1"),
+          SOME([0.35, 0.52 ,0.63, 0.8]*n,   "x2"),
+          SOME([0.13 ,0.23, 0.38 , 0.48]*n, "x3"),
           ])
     
 def eg0(somes):
-  all = Some(somes)
+  all = SOME(somes)
   last = None
   for some in sk(somes):
     if some.rank != last: print("#")
@@ -984,7 +1000,7 @@ if __name__ == "__main__": main()
 #   (such functions  should not be called by outside users).
 # - **Refactoring:**  Functions over 5 lines get a second look: can they be split in two?
 #   Also, line length,  try not to blow 90 characters.
-# - **Misc:**  Some functions "chain"; i.e. `f1()` calls `f2()` which calls `f3()`.
+# - **Misc:**  SOME functions "chain"; i.e. `f1()` calls `f2()` which calls `f3()`.
 #   And the sub-functions are never called from anywhere else. For such chained
 #   functions, add the comment (e.g.)  `Used by f1()`.
 #   Also,  if a function is about some data type, use `i` (not `self` and not `this`)
