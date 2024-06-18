@@ -30,19 +30,40 @@ function lib.csv(src)
 
 function push(t,x) t[1+#t]=x; return x end
 
-local DATA={}
-function DATA.new() return new(DATA, {names=nil, rows=rows, cols=cols}) end
+local NUM,SYM,DATA={}
 
+local function _col(name,pos) return {name=name,pos=pos,has={}} end
+function SYM.new(name,pos)    return isa(SYM, _col(name,pos)) end
+function NUM.new(name,pos)    return isa(NUM, _col(name,pos)) end
+function COL(name,pos)        return (name:find"^[A-Z]" and NUM or SYM)(name,pos) end 
+
+function NUM:stats(     n) a=self.has; n=#a//10; return a[5*n], (a[9*n] - a[n])/2.56 end
+function NUM:lo()          return self.has[1] end
+function NUM:hi()          return self.has[#self.has] end
+
+function NUM:sort()     table.sort(self.has) end
+function SUM:sort()     end
+
+function SYM:range(x,_,) return x end
+function NUM:ranges(x,ranges,   area,cdf,tmp,mu,sd,z)
+  cdf   = function(z) return 1 - 0.5*2.718^(-0.717*z - 0.416*z*z) end
+  mu,sd = self:stats()
+  z     = (x - mu) / sd
+  area  = z >= 0 and cdf(z) or 1 - cdf(-z) end
+  return  math.max(1, math.min(ranges, 1 + (area * ranges // 1))) end 
+
+function DATA.new()   return new(DATA, {rows={}, cols={names={},x={},y={}}}) end
 function DATA:read(f) for   row in csv(f)           do self:add(row) end; return self end
 function DATA:load(t) for _,row in pairs(t)         do self:add(row) end; return self end
-function DATA:sort()  for _,col in pairs(self.cols) do table.sort(col) end end
+function DATA:sort()  for _,col in pairs(self.cols) do col:sort() end;    return self end
 
 function DATA:add(row)
-  if   #self.names > 0 
-  then for i,x in pairs(push(self.rows,row)) do
-         if x ~= "?" then push(cols[i],x) end end 
-  else self.names = row
-       for i,_ in pairs(row) do self.cols[i] = {} end end end 
+  if   #self.cols.names > 0 
+  then for i,x in pairs(push(self.rows,row)) do if x ~= "?" then push(cols[i],x) end end 
+  else self.cols.names = row
+       for pos,name in pairs(names) do 
+         col = COL(name,pos)
+         push(name:find"[!+-]$" and self.cols.y or self.cols.x, col) end end end
         
 function RANGE.new(col,r) return new(RANGE, { _col=col, has={r},  n=0, score=0}) end
 function RANGE:add(x,d)  self.n = self.n + 1; self.score = self.score + d  end
