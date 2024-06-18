@@ -10,6 +10,7 @@
       -d --decs    #decimals for showing floats   = 3    
       -e --enough  want cuts at least this good   = 0.1   
       -F --Far     how far to seek faraway        = 0.8    
+      -g --GuessFaster use fast guessing tricks   = False
       -h --help    show help                      = False
       -H --Half    #rows for searching for poles  = 128    
       -k --k       bayes low frequency hack #1    = 1    
@@ -499,13 +500,19 @@ def smo(i:data, score=lambda B,R: B-R, callBack=lambda x:x ):
     rest = clone(i, done[cut:])
     key  = lambda r: score(loglikes(best, r, len(done), 2),
                            loglikes(rest, r, len(done), 2))
-    random.shuffle(todo) # optimization: only sort a random subset of todo 
-    return sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
+    if the.GuessFaster:
+      random.shuffle(todo) # optimization: only sort a random subset of todo 
+      todo = sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
+      top = max(10, len(todo)//2)
+      return todo[:top]
+    else:
+      return sorted(todo,key=key,reverse=True)
+      
     #return sorted(todo,key=key,reverse=True)
 
   def _smo1(todo:rows, done:rows) -> rows:
     "Guess the `top`  unlabeled row, add that to `done`, resort `done`, and repeat"
-    for _ in range(the.Last - the.label):
+    for k in range(the.Last - the.label):
       if len(todo) < 3: break
       top,*todo = _guess(todo, done)
       done += [top]
@@ -549,7 +556,7 @@ class SOME:
 
     def __eq__(i,j:SOME) -> bool:
       "True if all of cohen/cliffs/bootstrap say you are the same."
-      return i.cohen(j) and i.cliffs(j) and i.bootstrap(j) ## ordered slowest to fastest
+      return i.cliffs(j) and i.bootstrap(j) ## ordered slowest to fastest
 
     def has(i) -> list[number]:
       "Return the numbers, sorted."
@@ -670,13 +677,16 @@ def sk(somes:list[SOME]) -> list[SOME]:
       tmp = (lhs.n*abs(lhs.mid() - b4.mid()) + rhs.n*abs(rhs.mid() - b4.mid())) / b4.n
       if tmp > most:
          most,cut = tmp,j
-    if cut and SOME(somes[:cut]) != SOME(somes[cut:]): # != invokes the SOME stats tests
-      rank = sk1(somes[:cut], rank) + 1
-      rank = sk1(somes[cut:], rank)
-    else:
-      for some in somes: some.rank = rank
+    if cut:
+      some1,some2 = SOME(somes[:cut]), SOME(somes[cut:])
+      if not some1.cohen(some2):
+        if some1 != some2:
+          rank = sk1(somes[:cut], rank) + 1
+          rank = sk1(somes[cut:], rank)
+          return rank
+    for some in somes: some.rank = rank
     return rank
-   
+ 
   somes = sorted(somes, key=lambda some: some.mid()) #lambda some : some.mid())
   sk1(somes,0)
   return somes
@@ -843,19 +853,28 @@ class eg:
 
   def smos():
     "try different sample sizes"
+    policies = dict(exploit = lambda B,R: B-R,
+                    EXPLORE = lambda B,R: (e**B + e**R)/abs(e**B - e**R))
     repeats=20
     d = DATA(csv(the.train))
+    e = math.exp(1)
     rxs={}
-    rxs[0] = SOME(txt=0,inits=[d2h(d,row) for row in d.rows])
-    for last in [15,20,30,45]:
-      rxs[last] = SOME(txt=last)
-      for _ in range(repeats):
-         btw(".")
-         the.Last= last
-         row=smo(d)[0]
-         rxs[last].add(d2h(d,row))
-      print("")
-    eg0(rxs.values())
+    rxs["baseline"] = SOME(txt=f"baseline,{len(d.rows)}",inits=[d2h(d,row) for row in d.rows])
+    for last in [10,20,40,80]:
+      the.Last= last
+      guess = lambda : clone(d,random.choices(d.rows, k=last+the.label),rank=True).rows[0]
+      rx=f"random,{last}"
+      rxs[rx] = SOME(txt=rx, inits=[d2h(d,guess()) for _ in range(repeats)])
+      for  guessFaster in [False,True]:
+        for what,how in  policies.items():
+          the.GuessFaster = guessFaster
+          rx=f"{what}/{the.GuessFaster},{the.Last}"
+          rxs[rx] = SOME(txt=rx)
+          for _ in range(repeats):
+             btw(".")
+             rxs[rx].add(d2h(d,smo(d,how)[0]))
+          btw("\n")
+    report(rxs.values())
 
   def profileSmo():
     "Example of profiling."
@@ -953,23 +972,23 @@ class eg:
       x *= 1.02
 
   def some2(n=5):
-    eg0([ SOME([0.34, 0.49 ,0.51, 0.6]*n,   txt="x1"),
+    report([ SOME([0.34, 0.49 ,0.51, 0.6]*n,   txt="x1"),
           SOME([0.6  ,0.7 , 0.8 , 0.89]*n,  txt="x2"),
           SOME([0.09 ,0.22, 0.28 , 0.5]*n, txt="x3"),
           SOME([0.6  ,0.7,  0.8 , 0.9]*n,   txt="x4"),
           SOME([0.1  ,0.2,  0.3 , 0.4]*n,   txt="x5")])
     
   def some3():
-    eg0([ SOME([0.32,  0.45,  0.50,  0.5,  0.55],    "one"),
+    report([ SOME([0.32,  0.45,  0.50,  0.5,  0.55],    "one"),
           SOME([ 0.76,  0.90,  0.95,  0.99,  0.995], "two")])
 
   def some4(n=20):
-    eg0([ SOME([0.24, 0.25 ,0.26, 0.29]*n,   "x1"),
+    report([ SOME([0.24, 0.25 ,0.26, 0.29]*n,   "x1"),
           SOME([0.35, 0.52 ,0.63, 0.8]*n,   "x2"),
           SOME([0.13 ,0.23, 0.38 , 0.48]*n, "x3"),
           ])
     
-def eg0(somes):
+def report(somes):
   all = SOME(somes)
   last = None
   for some in sk(somes):
