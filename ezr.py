@@ -501,6 +501,7 @@ def smo(i:data, score=lambda B,R: B-R, callBack=lambda x:x ):
                            loglikes(rest, r, len(done), 2))
     random.shuffle(todo) # optimization: only sort a random subset of todo 
     return sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
+    #return sorted(todo,key=key,reverse=True)
 
   def _smo1(todo:rows, done:rows) -> rows:
     "Guess the `top`  unlabeled row, add that to `done`, resort `done`, and repeat"
@@ -799,12 +800,14 @@ class eg:
   def branch():
     "Halve the data."
     data1 = DATA(csv(the.train))
-    print(*data1.cols.names,"evals","rx",sep=",")
-    print(mids(data1),len(data1.rows),"base",sep=",")
+    print(*data1.cols.names,"evals","d2h", "rx",sep=",")
+    print(mids(data1),len(data1.rows),show(d2h(data1,mids(data1))), "base",sep=",")
     #a,b,_,__ = half(data1,data1.rows)
     best,rest,n = branch(data1,stop=4)
-    print(mids(clone(data1,best)),n+len(best)-1,"mid of final leaf",sep=",")
-    print(best[0],n+len(best)-1,"best item in final leaf",sep=",")
+    middle=mids(clone(data1,best))
+    top=best[0]
+    print(middle,n+len(best)-1,show(d2h(data1,middle)),"mid of final leaf",sep=",")
+    print(top,n+len(best)-1,show(d2h(data1,top)),"best item in final leaf",sep=",")
     return best,rest,data1
 
 
@@ -852,7 +855,7 @@ class eg:
     b4  = [d2h(d,row) for row in d.rows]
     _tile(b4)
     for n in [10,20,40,80,160,320]:
-      print("")
+      print("\n RX, samples,   b4,      now,   lowest")
       the.Label=n
       d   = DATA(src=csv(the.train))
       b4  = [d2h(d,row) for row in d.rows] 
