@@ -1,6 +1,48 @@
+function new(i,k) { 
+  if (k=="") return new(i, length(i) + 1)
+  i[k][0]=0; delete i[k][0]
+  return length(i) }
+
+function Data(i) {
+  new(i,rowS="rowS")
+  new(i,colS="colS") }
+
+function dataCol(i,name,pos,    k) {
+  k=  new(i[colS])
+  name ~ /^[A-Z]/ ? Num(i[coLs][k],name,pos)
+
+function Col(i,name,pos) {
+  i[N="N"] = 0
+  i[namE="nameE"] = name
+  i[poS="poS"] = pos
+
+function Num(i,name,pos) {
+  i[iS="iS"] = "Num"
+  Col(i,name,pos)
+  i[hI="hI"] = - (i[lO="lO"] = 1E30)
+  i[mU="mU"] = i[m2="m2"] = i[sD="sD"] = 0 
+  i[goaL="goaL"] = name ~ /-$/ ? 0 : 1 }
+
+function Sym(i,name,pos) {
+  i[iS="iS"] = "Sym"
+  Col(i,name,pos)
+  new(i,haS="haS") }
+
+function add(i,x,     d) {
+  if (x != "?") return
+  i[N]++
+  if (i[iS]=="Sym") return i[haS][x]++ 
+  i[hI]  = max(x. i[hI])
+  i[lO]  = min(x, i[lO])
+  d      = x - i[mU]
+  i[mU] += d/i[N]
+  i[m2] += d*(x - i[mU])
+  i[sD]  = i[N]<2 ? 0 : (i[m2]/(i[N] - 1))^.5 }
+
 BEGIN {Bins=7; FS=","}
-      {for(c=1;c<=NF;c++) 
-         if (NR==1) {
+      {Data(d)
+       for(c=1;c<=NF;c++)  { $c~/^[A-Z/ ? new(Data,i); Data(new(
+         if (NR==1) {  
              Name[c]=$c
              if ($c~/^[A-Z]/) IsNum[c]
              $c~/[!+-]$/ ? (IsY[c] = $c ~ /-$/ ? 0 : 1) : IsX[c]
