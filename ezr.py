@@ -539,7 +539,7 @@ class SOME:
       return  'SOME(' + str(dict(
                 txt=i.txt,rank="i.rank",n=i.n, all=len(i._has), ok=i.ok)) + ")"
 
-    def adds(i,a:any) -> None: 
+    def adds(i,a:any) -> None:  #comments
       "Handle multiple nests samples."
       for b in a:
         if   isinstance(b,(list,tuple)): [i.adds(c) for c in b]  
