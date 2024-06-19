@@ -82,20 +82,19 @@ function welford(x,n,mu,m2,    d,sd)
   return mu,m2,sd end
 
 function o(t,     list,keys)
-  list= function(t,u) u={}; for k,v in pairs(t) do push(u, o(v)) end; return u end
-  keys= function(t,u)
-         u={}; for k,v in pairs(t) do push(u,fmt(":%s %s",k,o(v))) end; return sort(u) end
+  list= function(t,u) u={}; for k,v in pairs(t) do push(u, o(v))                end; return u end
+  keys= function(t,u) u={}; for k,v in pairs(t) do push(u,fmt(":%s %s",k,o(v))) end; return u end
   if type(t)=="number" then
     return t == math.floor(t) and tostring(t) or fmt(the.fmt,t) end
   if type(t) ~= "table" then return tostring(t) end
-  return "(" .. table.concat(#t==0 and keys(t) or list(t)," ")  .. ")" end
+  return "(" .. table.concat(#t==0 and sort(keys(t)) or list(t)," ")  .. ")" end
 
 function as(s,    f)
   f=function(s) 
     if s=="nil" then return nil else return s=="true" or s ~="false" and s or false end end
   return math.tointeger(s) or tonumber(s) or f(s:match'^%s*(.*%S)') end
 
-function cells(s,    t)
+function _cells(s,    t)
   t={}; for s1 in s:gsub("%s+", ""):gmatch("([^,]+)") do t[1+#t]=as(s1) end; return t end
 
 function csv(src)
@@ -105,7 +104,7 @@ function csv(src)
     if s then return cells(s) else io.close(src) end end end
 ------------------------------------------------------------------------------------------
 local go={}
-function go.ver() print("sandox v0.1") end
+function go.ver() print("sandbox v0.1") end
 
 function go.the() oo(the) end
 
