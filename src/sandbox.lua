@@ -4,28 +4,32 @@ local new = function(kl,o) kl.__index=kl; setmetatable(o, kl); return o end
 
 local the = {fmt="%6.sf"}
 ------------------------------------------------------------------------------------------
-function DATA.new(it,  names) 
-  return new(DATA, {rows={}, cols=COLS.new(names or it())}) end
+function DATA.new(it,    self) 
+  for row in it do
+    if self then self:add(row) else 
+      self = new(DATA, {rows={}, cols=COLS.new(row)}) end end
+  return self end
 
-function SYM.new(pos,name) 
+function SYM.new(name,pos) 
   return new(SYM, {name=name, pos=pos, n=n, seen={}}) end
 
-function NUM.new(pos,name)
+function NUM.new(name,pos)
   return new(NUM, {name=name, pos=pos, n=n, mu=0, m2=0, sd=0, lo=1E30, hi=-1E30}) end
 
 function COLS.new(names,    all,x,y) 
   all,x,y = {},{},{}
   for i,s in pairs(names) do 
     push(all, 
-        push(s:find"[!+-$]" and y or x, 
-            (s:find"^[A-Z]" and NUM or SYM)(s,i))) end
+         push(s:find"[!+-$]" and y or x, 
+             (s:find"^[A-Z]" and NUM or SYM)(s,i))) end
   return new(COLS, {names=names, all=all, x=x, y=y}) end
 ------------------------------------------------------------------------------------------
-function DATA.add(t) 
-  push(self,rows, self.cols.add(t)) end
+function DATA:add(t) 
+  push(self.rows, self.cols:add(t)) end
 
 function COLS:add(t)
-  for cs in each{self.x,self.y} do for c in each(cs) do col:add(t[c.pos]) end end end
+  for cs in each{self.x,self.y} do for c in each(cs) do col:add(t[c.pos]) end end 
+  return t end
 
 function SYM:add(x)
   if x ~= "?" then
@@ -34,13 +38,13 @@ function SYM:add(x)
 
 function NUM:add(x,    d)
   if x ~= "?" then
-    if x > self.hi then self.hi=x end
-    if x < self.lo then self.lo=x end
     d       = x - self.mu
     self.n  = self.n + 1
     self.mu = self.mu + d/self.n
     self.m2 = self.m2 + d*(x - self.mu)
-    self.sd = self.n<2 and 0 or (self.m2/(self.n - 1))^.5  end end
+    self.sd = self.n<2 and 0 or (self.m2/(self.n - 1))^.5  
+    if x > self.hi then self.hi=x end
+    if x < self.lo then self.lo=x end end end
 ------------------------------------------------------------------------------------------
 fmt = string.format
 function adds(x,it)  for one in it do x:add(one) end; return x end
