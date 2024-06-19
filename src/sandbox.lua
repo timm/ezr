@@ -1,34 +1,42 @@
+#!/usr/bin/env lua
 local NUM,SYM,DATA,COLS = {},{},{},{}
-local adds, each, fmt, o, okeys, olist, push, sort
-local new = function(kl,o) kl.__index=kl; setmetatable(o, kl); return o end
+local adds, as, cdf, cells, csv, fmt, o, oo, push, sort
+local function new (kl,o) kl.__index=kl; setmetatable(o, kl); return o end
 
-local the = {fmt="%6.sf"}
+local the = { bins  = 7,
+              fmt   = "%6.sf", 
+              train = "../data/misc/auto93.csv"}
 ------------------------------------------------------------------------------------------
-function DATA.new(it,    self) 
-  for row in it do
-    if self then self:add(row) else 
-      self = new(DATA, {rows={}, cols=COLS.new(row)}) end end
-  return self end
-
 function SYM.new(name,pos) 
-  return new(SYM, {name=name, pos=pos, n=n, seen={}}) end
+  return new(SYM, {name=name, pos=pos, n=0, seen={}}) end
 
 function NUM.new(name,pos)
-  return new(NUM, {name=name, pos=pos, n=n, mu=0, m2=0, sd=0, lo=1E30, hi=-1E30}) end
+  return new(NUM, {name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=1E30, hi=-1E30,
+                   goal = (name or ""):find"-$" and 0 or 1}) end
 
 function COLS.new(names,    all,x,y) 
   all,x,y = {},{},{}
   for i,s in pairs(names) do 
     push(all, 
          push(s:find"[!+-$]" and y or x, 
-             (s:find"^[A-Z]" and NUM or SYM)(s,i))) end
+             (s:find"^[A-Z]" and NUM or SYM).new(s,i))) end
   return new(COLS, {names=names, all=all, x=x, y=y}) end
+
+function DATA.new(  names) 
+  return  new(DATA, {rows={}, cols=names and COLS.new(names) or nil}) end
+
+function DATA:read(file)
+  for row in csv(file) do self:add(row) end; return self end
+
+function DATA:load(t)
+  for _,row in pairs(t) do self:add(row) end; return self end
 ------------------------------------------------------------------------------------------
 function DATA:add(t) 
-  push(self.rows, self.cols:add(t)) end
+  if self.cols then push(self.rows, self.cols:add(t)) else 
+     self.cols = COLS.new(t) end end
 
 function COLS:add(t)
-  for cs in each{self.x,self.y} do for c in each(cs) do col:add(t[c.pos]) end end 
+  for _,cs in pairs{self.x,self.y} do for _,c in pairs(cs) do c:add(t[c.pos]) end end 
   return t end
 
 function SYM:add(x)
@@ -46,20 +54,62 @@ function NUM:add(x,    d)
     if x > self.hi then self.hi=x end
     if x < self.lo then self.lo=x end end end
 ------------------------------------------------------------------------------------------
+function NUM:norm(x)
+  return x=="?" and x or (x - self.lo)/(self.hi - self.lo) end
+------------------------------------------------------------------------------------------
+function DATA:chebyshev(row,     d)
+  d=0; for _,col in pairs(self.cols.y) do
+         d = math.max(d, math.abs(col:norm(row[col.at]) - col.goal)) end
+  return d end
+
+function SYM:bin(x) return x end
+
+function NUM:bin(x,    z,area) 
+  if x=="?" then return x end
+  z    = (x - i.mu) / i.sd
+  area = z >= 0 ? cdf(z) : 1 - cdf(-z) 
+  return math.max(1, math.min(the.bins, 1 + (area * the.bins // 1))) end 
+------------------------------------------------------------------------------------------
 fmt = string.format
 function adds(x,it)  for one in it do x:add(one) end; return x end
-function each(t)     return function(lst,i) return next(lst,i) end, t, nil end
+function cdf(z)      return 1 - 0.5*2.718^(-0.717*z - 0.416*z*z) end
+function oo(x)       print(o(x)); return x end
 function push(t,x)   t[1+#t] = x; return x end
 function sort(t,fun) table.sort(t,fun); return t end
 
-function o(t)
+function o(t,     list,keys)
+  list= function(t,u) u={}; for k,v in pairs(t) do push(u, o(v)) end; return u end
+  keys= function(t,u)
+         u={}; for k,v in pairs(t) do push(u,fmt(":%s %s",k,o(v))) end; return sort(u) end
   if type(n)=="number" then
     return n == math.floor(n) and tostring(n) or fmt(the.fmt,n) end
   if type(t) ~= "table" then return tostring(t) end
-  return "(" .. table.concat(#t==0 and okeys(t) or olist(t))  .. ")" end
+  return "(" .. table.concat(#t==0 and keys(t) or list(t)," ")  .. ")" end
 
-function olist(t,    u) 
-  u={}; for k,v in pairs(t) do push(u, o(v)) end; return u end
+function as(s,    f)
+  f=function(s) 
+    if s=="nil" then return nil else return s=="true" or s ~="false" and s or false end end
+  return math.tointeger(s) or tonumber(s) or f(s:match'^%s*(.*%S)') end
 
-function okeys(t,    u)
-  u={}; for k,v in pairs(t) do push(u, fmt(":%s %s",k,o(v))) end; return sort(u) end
+function cells(s,    t)
+  t={}; for s1 in s:gsub("%s+", ""):gmatch("([^,]+)") do t[1+#t]=as(s1) end; return t end
+
+function csv(src)
+  src = src=="-" and io.stdin or io.input(src)
+  return function(      s)
+    s = io.read()
+    if s then return cells(s) else io.close(src) end end end
+------------------------------------------------------------------------------------------
+local go={}
+function go.ver() print("sandox v0.1") end
+
+function go.the() oo(the) end
+
+function go.csv(    n) 
+  n=0; for row in csv(the.train) do n=n+1; if (n % 50)==0 then print(n,o(row)) end end end
+
+function go.data(     d) 
+  d = DATA.new():read(the.train)
+  for _,col in pairs(d.cols.all) do oo(col) end end
+  
+go[ arg[1] or "ver" ]()
