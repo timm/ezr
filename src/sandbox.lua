@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 local NUM,SYM,DATA,COLS = {},{},{},{}
-local adds, as, cdf, cells, csv, fmt, o, oo, push, sort
+local adds, as, cdf, cells, csv, fmt, o, oo, push, sort, welford
 local abs,max,min = math.abs, math.max, math.min
 
 local the = { bins  = 7,
@@ -48,10 +48,7 @@ function SYM:add(x)
 function NUM:add(x,    d)
   if x ~= "?" then
     self.n  = self.n + 1
-    d       = x - self.mu
-    self.mu = self.mu + d/self.n
-    self.m2 = self.m2 + d*(x - self.mu)
-    self.sd = self.n<2 and 0 or (self.m2/(self.n - 1))^.5  
+    self.mu, self.m2, self.sd = welford(x, self.n, self.mu, self.m2)
     if x > self.hi then self.hi=x end
     if x < self.lo then self.lo=x end end end
 ------------------------------------------------------------------------------------------
@@ -77,6 +74,12 @@ function cdf(z)      return 1 - 0.5*math.exp(1)^(-0.717*z - 0.416*z*z) end
 function oo(x)       print(o(x)); return x end
 function push(t,x)   t[1+#t] = x; return x end
 function sort(t,fun) table.sort(t,fun); return t end
+function welford(x,n,mu,m2,    d,sd)
+  d  = x - mu
+  mu = mu + d/n
+  m2 = m2 + d*(x - mu)
+  sd = n<2 and 0 or (m2/(n - 1))^.5  
+  return mu,m2,sd end
 
 function o(t,     list,keys)
   list= function(t,u) u={}; for k,v in pairs(t) do push(u, o(v)) end; return u end
