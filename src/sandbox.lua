@@ -1,12 +1,14 @@
 #!/usr/bin/env lua
 local NUM,SYM,DATA,COLS = {},{},{},{}
 local adds, as, cdf, cells, csv, fmt, o, oo, push, sort
-local function new (kl,o) kl.__index=kl; setmetatable(o, kl); return o end
+local abs,max,min = math.abs, math.max, math.min
 
 local the = { bins  = 7,
               fmt   = "%6.sf", 
               train = "../data/misc/auto93.csv"}
 ------------------------------------------------------------------------------------------
+local function new (kl,o) kl.__index=kl; setmetatable(o, kl); return o end
+
 function SYM.new(name,pos) 
   return new(SYM, {name=name, pos=pos, n=0, seen={}}) end
 
@@ -17,9 +19,9 @@ function NUM.new(name,pos)
 function COLS.new(names,    all,x,y) 
   all,x,y = {},{},{}
   for i,s in pairs(names) do 
-    push(all, 
-         push(s:find"[!+-$]" and y or x, 
-             (s:find"^[A-Z]" and NUM or SYM).new(s,i))) end
+    col = push(all, (s:find"^[A-Z]" and NUM or SYM).new(s,i))
+    if not name:find"X$" then
+       push(s:find"[!+-$]" and y or x,col) end end
   return new(COLS, {names=names, all=all, x=x, y=y}) end
 
 function DATA.new(  names) 
@@ -46,8 +48,8 @@ function SYM:add(x)
 
 function NUM:add(x,    d)
   if x ~= "?" then
-    d       = x - self.mu
     self.n  = self.n + 1
+    d       = x - self.mu
     self.mu = self.mu + d/self.n
     self.m2 = self.m2 + d*(x - self.mu)
     self.sd = self.n<2 and 0 or (self.m2/(self.n - 1))^.5  
@@ -59,7 +61,7 @@ function NUM:norm(x)
 ------------------------------------------------------------------------------------------
 function DATA:chebyshev(row,     d)
   d=0; for _,col in pairs(self.cols.y) do
-         d = math.max(d, math.abs(col:norm(row[col.at]) - col.goal)) end
+         d = max(d, abs(col:norm(row[col.at]) - col.goal)) end
   return d end
 
 function SYM:bin(x) return x end
@@ -68,7 +70,7 @@ function NUM:bin(x,    z,area)
   if x=="?" then return x end
   z    = (x - i.mu) / i.sd
   area = z >= 0 ? cdf(z) : 1 - cdf(-z) 
-  return math.max(1, math.min(the.bins, 1 + (area * the.bins // 1))) end 
+  return max(1, min(the.bins, 1 + (area * the.bins // 1))) end 
 ------------------------------------------------------------------------------------------
 fmt = string.format
 function adds(x,it)  for one in it do x:add(one) end; return x end
