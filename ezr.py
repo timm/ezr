@@ -10,7 +10,7 @@
       -d --decs    #decimals for showing floats   = 3    
       -e --enough  want cuts at least this good   = 0.1   
       -F --Far     how far to seek faraway        = 0.8    
-      -g --GuessFaster use fast guessing tricks   = False
+      -g --GuessFaster use fast guessing tricks   = True
       -h --help    show help                      = False
       -H --Half    #rows for searching for poles  = 128    
       -k --k       bayes low frequency hack #1    = 1    
@@ -858,12 +858,12 @@ class eg:
     e = math.exp(1)
     rxs={}
     rxs["baseline"] = SOME(txt=f"baseline,{len(d.rows)}",inits=[d2h(d,row) for row in d.rows])
-    for last in [10,20,40,80]:
+    for last in [10,20,30,40]:
       the.Last= last
       guess = lambda : clone(d,random.choices(d.rows, k=last+the.label),rank=True).rows[0]
       rx=f"random,{last}"
       rxs[rx] = SOME(txt=rx, inits=[d2h(d,guess()) for _ in range(repeats)])
-      for  guessFaster in [True]:
+      for  guessFaster in [False,True]:
         for what,how in  policies.items():
           the.GuessFaster = guessFaster
           rx=f"{what}/{the.GuessFaster},{the.Last}"
