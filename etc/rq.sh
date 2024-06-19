@@ -26,7 +26,7 @@ function sd(a,    n) {
   n = int(length(a)/10)
   return (a[9*n] - a[n])/2.56 }
 
-function per(x) {x= int(100*x/records) ; return x<1? "" : x}
+function per(x) {x= int(0.5+ 100*x/records) ; return x<1? "" : x}
 
 function evaluations(    rank,rx) {
    printf("\n#\n#EVALS\nRANK")
@@ -35,7 +35,7 @@ function evaluations(    rank,rx) {
    for(rx in evals) { 
      printf(rx)
      for(rank=0; rank<=maxRank;rank++) 
-       printf(" ,%3s (%3s)",   int(mu(evals[rx][rank])), int(sd(evals[rx][rank])) )
+       printf(" ,%3s (%3s)",   int(0.5 + mu(evals[rx][rank])), int(0.5+sd(evals[rx][rank])) )
      print("") }}
 
 function improvement(    rank,rx) {
@@ -45,7 +45,7 @@ function improvement(    rank,rx) {
    for(rx in evals) { 
      printf(rx)
      for(rank=0; rank<=maxRank;rank++) 
-       printf(" ,%3s (%3s)",   int(100*mu(delta[rx][rank])), int(100*sd(delta[rx][rank])) )
+       printf(" ,%3s (%3s)",   int(0.5+100*mu(delta[rx][rank])), int(0.5+100*sd(delta[rx][rank])) )
      print("") }}
 
 function ranks(   rank,rx) {
@@ -59,4 +59,4 @@ function ranks(   rank,rx) {
      print("") }}
 
 END { ranks() ; print("");  evaluations();  improvement()}
-'
+'  | column -s, -t
