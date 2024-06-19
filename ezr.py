@@ -6,6 +6,7 @@
         
     OPTIONS:    
       -a --any     #todo's to explore             = 100   
+      -b  --beam    print factor for examples     =  1
       -c --cohen   size of the Cohen d            = 0.35
       -d --decs    #decimals for showing floats   = 3    
       -e --enough  want cuts at least this good   = 0.1   
@@ -502,7 +503,8 @@ def smo(i:data, score=lambda B,R: B-R, callBack=lambda x:x ):
                            loglikes(rest, r, len(done), 2))
     if the.GuessFaster:
       random.shuffle(todo) # optimization: only sort a random subset of todo 
-      return sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
+      todo= sorted(todo[:the.any], key=key, reverse=True) + todo[the.any:]
+      return  todo[:int(len(todo) *the.beam)]
     else:
       return sorted(todo,key=key,reverse=True)
       
@@ -848,6 +850,32 @@ class eg:
     klasses = dict(best=done[:bests], rest=(done[bests:]))
     want1   = WANT(best="best", bests=bests, rests=rests)
     showTree(tree(d,klasses,want1))
+
+  def alls():
+    "try different sample sizes"
+    policies = dict(exploit = lambda B,R: B-R)
+    repeats=20
+    d = DATA(csv(the.train))
+    e = math.exp(1)
+    rxs={}
+    rxs["baseline"] = SOME(txt=f"baseline,{len(d.rows)}",inits=[d2h(d,row) for row in d.rows])
+    for last in [15,20,25,30,35,40]:
+      the.Last= last
+      guess = lambda : clone(d,random.choices(d.rows, k=last+the.label),rank=True).rows[0]
+      rx=f"random,{last}"
+      rxs[rx] = SOME(txt=rx, inits=[d2h(d,guess()) for _ in range(repeats)])
+      for beam in [1,0.9,0.8,0.7,0.6]:
+        the.beam = beam
+        for  guessFaster in [True]:
+          for what,how in  policies.items():
+            the.GuessFaster = guessFaster
+            rx=f"{what}/{the.GuessFaster}/{beam},{the.Last}"
+            rxs[rx] = SOME(txt=rx)
+            for _ in range(repeats):
+               btw(".")
+               rxs[rx].add(d2h(d,smo(d,how)[0]))
+            btw("\n")
+    report(rxs.values())
 
   def smos():
     "try different sample sizes"

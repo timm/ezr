@@ -74,6 +74,22 @@ docs/%.html : %.py ## .py --> .html
 	ps2pdf $@.ps $@; rm $@.ps    
 	open $@
 
+
+
+ALLS= $(subst data/config,var/out/alls,$(wildcard data/config/*.csv)) \
+      $(subst data/misc,var/out/alls,$(wildcard data/misc/*.csv)) \
+      $(subst data/process,var/out/alls,$(wildcard data/process/*.csv)) \
+      $(subst data/hpo,var/out/alls,$(wildcard data/hpo/*.csv))
+
+var/out/alls/%.csv : data/config/%.csv  ; echo $<; ./ezr.py -t $< -R smos | tee $@
+var/out/alls/%.csv : data/misc/%.csv    ; echo $<; ./ezr.py -t $< -R smos | tee $@
+var/out/alls/%.csv : data/process/%.csv ; echo $<; ./ezr.py -t $< -R smos | tee $@
+var/out/alls/%.csv : data/hpo/%.csv     ; echo $<; ./ezr.py -t $< -R smos | tee $@
+
+all: 
+	mkdir -p var/out/alls
+	$(MAKE) -j $(ALLS)
+
 SMOS= $(subst data/config,var/out/smos,$(wildcard data/config/*.csv)) \
       $(subst data/misc,var/out/smos,$(wildcard data/misc/*.csv)) \
       $(subst data/process,var/out/smos,$(wildcard data/process/*.csv)) \
