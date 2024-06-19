@@ -20,8 +20,7 @@ function COLS.new(names,    all,x,y)
   all,x,y = {},{},{}
   for i,s in pairs(names) do 
     col = push(all, (s:find"^[A-Z]" and NUM or SYM).new(s,i))
-    if not s:find"X$" then
-       push(s:find"[!+-$]" and y or x,col) end end
+    if not s:find"X$" then push(s:find"[!+-$]" and y or x,col) end end
   return new(COLS, {names=names, all=all, x=x, y=y}) end
 
 function DATA.new(  names) 
@@ -74,7 +73,7 @@ function NUM:bin(x,    z,area)
 ------------------------------------------------------------------------------------------
 fmt = string.format
 function adds(x,it)  for one in it do x:add(one) end; return x end
-function cdf(z)      return 1 - 0.5*2.718^(-0.717*z - 0.416*z*z) end
+function cdf(z)      return 1 - 0.5*math.exp(1)^(-0.717*z - 0.416*z*z) end
 function oo(x)       print(o(x)); return x end
 function push(t,x)   t[1+#t] = x; return x end
 function sort(t,fun) table.sort(t,fun); return t end
