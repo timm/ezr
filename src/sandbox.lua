@@ -4,7 +4,7 @@ local adds, as, cdf, cells, csv, fmt, o, oo, push, sort
 local abs,max,min = math.abs, math.max, math.min
 
 local the = { bins  = 7,
-              fmt   = "%6.sf", 
+              fmt   = "%6.3f", 
               train = "../data/misc/auto93.csv"}
 ------------------------------------------------------------------------------------------
 local function new (kl,o) kl.__index=kl; setmetatable(o, kl); return o end
@@ -20,7 +20,7 @@ function COLS.new(names,    all,x,y)
   all,x,y = {},{},{}
   for i,s in pairs(names) do 
     col = push(all, (s:find"^[A-Z]" and NUM or SYM).new(s,i))
-    if not name:find"X$" then
+    if not s:find"X$" then
        push(s:find"[!+-$]" and y or x,col) end end
   return new(COLS, {names=names, all=all, x=x, y=y}) end
 
@@ -69,7 +69,7 @@ function SYM:bin(x) return x end
 function NUM:bin(x,    z,area) 
   if x=="?" then return x end
   z    = (x - i.mu) / i.sd
-  area = z >= 0 ? cdf(z) : 1 - cdf(-z) 
+  area = z >= 0 and cdf(z) or 1 - cdf(-z) 
   return max(1, min(the.bins, 1 + (area * the.bins // 1))) end 
 ------------------------------------------------------------------------------------------
 fmt = string.format
@@ -83,8 +83,8 @@ function o(t,     list,keys)
   list= function(t,u) u={}; for k,v in pairs(t) do push(u, o(v)) end; return u end
   keys= function(t,u)
          u={}; for k,v in pairs(t) do push(u,fmt(":%s %s",k,o(v))) end; return sort(u) end
-  if type(n)=="number" then
-    return n == math.floor(n) and tostring(n) or fmt(the.fmt,n) end
+  if type(t)=="number" then
+    return t == math.floor(t) and tostring(t) or fmt(the.fmt,t) end
   if type(t) ~= "table" then return tostring(t) end
   return "(" .. table.concat(#t==0 and keys(t) or list(t)," ")  .. ")" end
 
