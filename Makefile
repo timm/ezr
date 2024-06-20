@@ -28,3 +28,24 @@ $(Top)/tests/%.lua : $(Top)/docs/%.md
 			{ code = 1 - code } \
 			{ print (code ? "" : "-- ") $$0 }' $^ > $@
 	luac -p $@
+
+
+~/tmp/%.pdf: %.lua  ## .lua ==> .pdf
+	mkdir -p ~/tmp
+	echo "pdf-ing $@ ... "
+	a2ps                 \
+		-Br                 \
+		-l 100                 \
+		--file-align=fill      \
+		--line-numbers=1        \
+		--borders=no             \
+		--pro=color               \
+		--left-title=""            \
+		--pretty-print="$(Top)/etc/lua.ssh" \
+		--columns 3                  \
+		-M letter                     \
+		--footer=""                    \
+		--right-footer=""               \
+	  -o	 $@.ps $<
+	ps2pdf $@.ps $@; rm $@.ps
+	open $@
