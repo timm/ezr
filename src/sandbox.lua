@@ -11,17 +11,59 @@
 --
 -- rulr.lua multi-objective rule generation
 -- (c) 2024 Tim Menzies <timm@ieee.org>, BSD-2 license.
-local NUM,SYM,DATA,COLS = {},{},{},{}
-local adds, as, cdf, cells, csv, fmt, o, oo, okeys, olist, push, sort, welford
-local abs,max,min = math.abs, math.max, math.min
 
 local the = { bins  = 7,
               fmt   = "%6.3f", 
               train = "../data/misc/auto93.csv"}
+
 -----------------------------------------------------------------------------------------
+--  |  o  |_  
+--  |  |  |_) 
+--
+local abs,max,min = math.abs, math.max, math.min
+local adds, as, cdf, cells, csv, fmt, o, oo, okeys, olist, push, sort, welford
+
+fmt = string.format
+function adds(x,it)  for one in it do x:add(one) end; return x end
+function by(k)       return function(a,b) return a[k] < b[k] end end
+function cdf(z)      return 1 - 0.5*math.exp(1)^(-0.717*z - 0.416*z*z) end
+function oo(x)       print(o(x)); return x end
+function push(t,x)   t[1+#t] = x; return x end
+function sort(t,fun) table.sort(t,fun); return t end
+function welford(x,n,mu,m2,    d,sd)
+  d  = x - mu
+  mu = mu + d/n
+  m2 = m2 + d*(x - mu)
+  sd = n<2 and 0 or (m2/(n - 1))^.5  
+  return mu,m2,sd end
+
+function o(t)
+  if type(t)=="number" then return t == math.floor(t) and tostring(t) or fmt(the.fmt,t) end
+  if type(t)~="table"  then return tostring(t) end
+  return "(" .. table.concat(#t==0 and sort(okeys(t)) or olist(t)," ")  .. ")" end
+
+function olist(t,u) u={}; for k,v in pairs(t) do push(u,o(v))                 end; return u end
+function okeys(t,u) u={}; for k,v in pairs(t) do push(u,fmt(":%s %s",k,o(v))) end; return u end
+
+function as(s,    f)
+  f=function(s) 
+    if s=="nil" then return nil else return s=="true" or s ~="false" and s or false end end
+  return math.tointeger(s) or tonumber(s) or f(s:match'^%s*(.*%S)') end
+
+function cells(s,    t)
+  t={}; for s1 in s:gsub("%s+", ""):gmatch("([^,]+)") do t[1+#t]=as(s1) end; return t end
+
+function csv(src)
+  src = src=="-" and io.stdin or io.input(src)
+  return function(      s)
+    s = io.read()
+    if s then return cells(s) else io.close(src) end end end
+-----------------------------------------------------------------------------------------
 --   _  ._   _    _.  _|_   _  
 --  (_  |   (/_  (_|   |_  (/_ 
                             
+local NUM,SYM,DATA,COLS = {},{},{},{}
+
 local function new (kl,o) kl.__index=kl; setmetatable(o, kl); return o end
 
 function SYM.new(name,pos) return new(SYM, {name=name, pos=pos, n=0, seen={}}) end
@@ -89,44 +131,21 @@ function NUM:bin(x,    z,area)
   area = z >= 0 and cdf(z) or 1 - cdf(-z) 
   return max(1, min(the.bins, 1 + (area * the.bins // 1))) end 
 
------------------------------------------------------------------------------------------
---  |  o  |_  
---  |  |  |_) 
-
-fmt = string.format
-function adds(x,it)  for one in it do x:add(one) end; return x end
-function cdf(z)      return 1 - 0.5*math.exp(1)^(-0.717*z - 0.416*z*z) end
-function oo(x)       print(o(x)); return x end
-function push(t,x)   t[1+#t] = x; return x end
-function sort(t,fun) table.sort(t,fun); return t end
-function welford(x,n,mu,m2,    d,sd)
-  d  = x - mu
-  mu = mu + d/n
-  m2 = m2 + d*(x - mu)
-  sd = n<2 and 0 or (m2/(n - 1))^.5  
-  return mu,m2,sd end
-
-function o(t)
-  if type(t)=="number" then return t == math.floor(t) and tostring(t) or fmt(the.fmt,t) end
-  if type(t)~="table"  then return tostring(t) end
-  return "(" .. table.concat(#t==0 and sort(okeys(t)) or olist(t)," ")  .. ")" end
-
-function olist(t,u) u={}; for k,v in pairs(t) do push(u,o(v))                 end; return u end
-function okeys(t,u) u={}; for k,v in pairs(t) do push(u,fmt(":%s %s",k,o(v))) end; return u end
-
-function as(s,    f)
-  f=function(s) 
-    if s=="nil" then return nil else return s=="true" or s ~="false" and s or false end end
-  return math.tointeger(s) or tonumber(s) or f(s:match'^%s*(.*%S)') end
-
-function cells(s,    t)
-  t={}; for s1 in s:gsub("%s+", ""):gmatch("([^,]+)") do t[1+#t]=as(s1) end; return t end
-
-function csv(src)
-  src = src=="-" and io.stdin or io.input(src)
-  return function(      s)
-    s = io.read()
-    if s then return cells(s) else io.close(src) end end end
+function DATA:bins(     bins,tmp,where,d)
+  bins,tmp = {},{}
+  exists = function(col,b,     c) 
+             c = col.pos
+             tmp[c] = tmp[c] or {}
+             if not tmp[c][b] then
+               tmp[c][b] = push(bins, {col=col,bin=b,n=0}) end
+             return tmp[c][b]
+           end
+  for _,row in pairs(self.rows) do
+    d = self:chebyshev(row)
+    for _,col in pairs(self.cols.x) do
+      bin = exists(col,col:bin(row[col.pos]))
+      bin.n = bin.n + 1 - d end end 
+  return sort(bins, by"value") end
 -----------------------------------------------------------------------------------------
 --  ._ _    _.  o  ._  
 --  | | |  (_|  |  | | 

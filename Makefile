@@ -38,9 +38,9 @@ $(Top)/tests/%.lua : $(Top)/docs/%.md
 		-l 100                 \
 		--file-align=fill      \
 		--line-numbers=1        \
-		--borders=no             \
 		--pro=color               \
 		--left-title=""            \
+		--borders=no             \
 		--pretty-print="$(Top)/etc/lua.ssh" \
 		--columns 3                  \
 		-M letter                     \
