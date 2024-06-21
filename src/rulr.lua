@@ -21,11 +21,11 @@ local the = { bins  = 7,
 --       |  |  |_) 
 
 local abs,log,max,min = math.abs, math.log, math.max, math.min
-local as,cdf,cells,copy,csv,o,okeys,olist,oo,push,sort,sortDown,welford
+local as,cdf,cells,copy,csv,fmt,o,okeys,olist,oo,push,sort,sortDown,welford
 
 -- lists
 function push(t,x)   t[1+#t] = x; return x end
-function copy(t) 
+function copy(t,    u) 
   if type(t) ~= "table" then return t end 
   u={}; for k,v in pairs(t) do u[copy(k)] = copy(v) end
   return setmetatable(u, getmetatable(t)) end
@@ -152,17 +152,20 @@ function NUM:bin(x,    z,area)
   area = z >= 0 and cdf(z) or 1 - cdf(-z) 
   return max(1, min(the.bins, 1 + (area * the.bins // 1))) end 
 
-function DATA:bins(     bins,tmp,d)
+function DATA:bins(     bins,tmp,x,b)
   bins,tmp = {},{}
   for _,row in pairs(self.rows) do
     d = self:chebyshev(row, self.cols.y)
     for _,col in pairs(self.cols.x) do
-      col.bins[b]   = col.bins[b] or push(bins, {col=col,bin=b,n=0}) 
-      col.bins[b].n = cols.bins[b].n + (1 - d)/#self.rows end end 
-  return bins
+      x = row[col.pos]
+      if x ~= "?" then
+        b = col:bin(x)
+        col.bins[b]   = col.bins[b] or push(bins, {col=col,bin=b,n=0}) 
+        col.bins[b].n = col.bins[b].n + (1 - d)/#self.rows end end end
+  return bins end
 
-function DATA:growRule(  rows,     _add2rule,_score)
-  function _add2rule(bin,rule,    pos) 
+function DATA:growRule(bins,rows,     _add2rule,_score)
+  function _add2rule(rule,bin,    pos) 
     pos = bin.col.pos
     rule[pos] = rule[pos] or {}
     push(rule[pos], bin) end
@@ -173,13 +176,13 @@ function DATA:growRule(  rows,     _add2rule,_score)
       if self:selects(rule, row) then
         n = n + 1 
         s = s + 1 - self:chebyshev(row, self.cols.y) end end 
-    return s/n  end
+    return s/n end
 
   local now,b4,last = {},{},0
   for _,bin in pairs(sort(bins, sortDown"n")) do
-    _add2rule(bin,now)
+    _add2rule(now, bin)
     local tmp = _score(now)
-    if tmp > last then _add2rule(b4,bin) else return b4 end 
+    if tmp > last then _add2rule(b4, bin) else return b4 end 
     last = tmp end end 
 
 function DATA:selects(rule,row,     _selects1,col,x) -- returns true if each bin is satisfied
