@@ -23,10 +23,10 @@ md=$(wildcard $(Top)/docs/[A-Z]*.md)
 
 docs2lua: $(subst docs,tests,$(md:.md=.lua)) ## run updates docs/[A-Z]*.md ==> tests/x.lua
 
-$(Top)/tests/%.lua : $(Top)/docs/%.md
-	gawk 'BEGIN { code=0 } sub(/^```.*/,"")  \
-			{ code = 1 - code } \
-			{ print (code ? "" : "-- ") $$0 }' $^ > $@
+%.lua : %.md
+	gawk 'BEGIN            { code=0 }  \
+		    sub(/^```.*/,"") { code = 1 - code } \
+			                   { print (code ? "" : "-- ") $$0 }' $^ > $@
 	luac -p $@
 
 

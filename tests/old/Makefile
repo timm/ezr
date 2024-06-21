@@ -10,7 +10,7 @@ eg?=data
 
 testLua: $(eg).lua  ## run a tests/*.lua file; e.g. make eg=data
 	LUA_PATH='../src/?.lua;;' lua $(eg).lua
-	#rm $(eg).lua
+	rm $(eg).lua
 
 clean:
 		rm *.lua
