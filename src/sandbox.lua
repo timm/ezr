@@ -1,6 +1,5 @@
 #!/usr/bin/env lua
 -- vim : set ts=4 sts=4 et :
-
 --                  ___                  ___                         
 --                 /\_ \                /\_ \                        
 --  _ __   __  __  \//\ \     _ __      \//\ \     __  __     __     
@@ -19,23 +18,36 @@ local the = { bins  = 7,
 -----------------------------------------------------------------------------------------
 --  |  o  |_  
 --  |  |  |_) 
---
-local abs,max,min = math.abs, math.max, math.min
-local adds, as, cdf, cells, csv, fmt, o, oo, okeys, olist, push, sort, welford
 
-fmt = string.format
-function adds(x,it)  for one in it do x:add(one) end; return x end
-function by(k)       return function(a,b) return a[k] < b[k] end end
-function cdf(z)      return 1 - 0.5*math.exp(1)^(-0.717*z - 0.416*z*z) end
-function oo(x)       print(o(x)); return x end
+local abs,max,min = math.abs, math.max, math.min
+local as, downOn, cdf, cells, csv, fmt, o, oo, okeys, olist, push, sort, welford
+
+-- lists
 function push(t,x)   t[1+#t] = x; return x end
+function copy(t) 
+  if type(t) ~= "table" then return t end 
+  u={}; for k,v in pairs(t) do u[copy(k)] = copy(v) end
+  return setmetatable(u, getmetatable(t)) end
+
+-- sorting
 function sort(t,fun) table.sort(t,fun); return t end
+
+function sortDown(k) return function(a,b) return a[k] > b[k] end end
+
+-- maths
+function cdf(z) return 1 - 0.5*math.exp(1)^(-0.717*z - 0.416*z*z) end
+
 function welford(x,n,mu,m2,    d,sd)
   d  = x - mu
   mu = mu + d/n
   m2 = m2 + d*(x - mu)
   sd = n<2 and 0 or (m2/(n - 1))^.5  
   return mu,m2,sd end
+
+-- things to strings
+fmt = string.format
+
+function oo(x) print(o(x)); return x end
 
 function o(t)
   if type(t)=="number" then return t == math.floor(t) and tostring(t) or fmt(the.fmt,t) end
@@ -45,6 +57,7 @@ function o(t)
 function olist(t,u) u={}; for k,v in pairs(t) do push(u,o(v))                 end; return u end
 function okeys(t,u) u={}; for k,v in pairs(t) do push(u,fmt(":%s %s",k,o(v))) end; return u end
 
+-- strings to things
 function as(s,    f)
   f=function(s) 
     if s=="nil" then return nil else return s=="true" or s ~="false" and s or false end end
@@ -61,15 +74,15 @@ function csv(src)
 -----------------------------------------------------------------------------------------
 --   _  ._   _    _.  _|_   _  
 --  (_  |   (/_  (_|   |_  (/_ 
-                            
+
 local NUM,SYM,DATA,COLS = {},{},{},{}
 
 local function new (kl,o) kl.__index=kl; setmetatable(o, kl); return o end
 
-function SYM.new(name,pos) return new(SYM, {name=name, pos=pos, n=0, seen={}}) end
+function SYM.new(name,pos) return new(SYM, {name=name, pos=pos, n=0, seen={}, bins={}}) end
 
 function NUM.new(name,pos)
-  return new(NUM, {name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=1E30, hi=-1E30,
+  return new(NUM, {name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=1E30, hi=-1E30, bins={},
                    goal = (name or ""):find"-$" and 0 or 1}) end
 
 function COLS.new(names,    all,x,y,col) 
@@ -118,10 +131,17 @@ function NUM:add(x,    d)
 
 function NUM:norm(x) return x=="?" and x or (x - self.lo)/(self.hi - self.lo) end
 
-function DATA:chebyshev(row,     d)
-  d=0
-  for _,col in pairs(self.cols.y) do d = max(d,abs(col:norm(row[col.pos]) - col.goal)) end
+function DATA:chebyshev(row,cols,     d)
+  d=0; for _,c in pairs(cols) do d = max(d,abs(c:norm(row[c.pos]) - c.goal)) end
   return d end
+
+function DATA:sort(      d)
+  d = function(row) return self:chebyshev(row, self.cols.y) end
+  table.sort(self.rows, function(a,b) return  d(a) < d(b) end) 
+  return self end
+-----------------------------------------------------------------------------------------
+--  ._       |   _  
+--  |   |_|  |  (/_  
 
 function SYM:bin(x) return x end
 
@@ -131,25 +151,45 @@ function NUM:bin(x,    z,area)
   area = z >= 0 and cdf(z) or 1 - cdf(-z) 
   return max(1, min(the.bins, 1 + (area * the.bins // 1))) end 
 
-function DATA:bins(     bins,tmp,where,d)
+function DATA:bins(     bins,tmp,d)
   bins,tmp = {},{}
-  exists = function(col,b,     c) 
-             c = col.pos
-             tmp[c] = tmp[c] or {}
-             if not tmp[c][b] then
-               tmp[c][b] = push(bins, {col=col,bin=b,n=0}) end
-             return tmp[c][b]
-           end
   for _,row in pairs(self.rows) do
-    d = self:chebyshev(row)
+    d = self:chebyshev(row, self.cols.y)
     for _,col in pairs(self.cols.x) do
-      bin = exists(col,col:bin(row[col.pos]))
-      bin.n = bin.n + 1 - d end end 
-  return sort(bins, by"value") end
+      col.bins[b]   = col.bins[b] or push(bins, {col=col,bin=b,n=0}) 
+      col.bins[b].n = cols.bins[b].n + (1 - d)/#self.rows end end 
+  return bins
+
+function DATA:rule(  rows,    add,now,b4.last)
+  function add(rule,bin,     i) i=bin.col.i; rule[i]=rule[i] or {}; push(rule[i],bin) end
+  now,b4,last = {},{},0
+  for _,bin in pairs(sort(bins, sortDown"n")) do
+    local n,s = 0,0
+    add(now,bin)
+    for _,row in pairs(rows or self.rows) do 
+      if   self:selects(now, row) 
+      then n = n + 1 
+           s = s + 1 - self:chebyshev(row, self.cols.y) end end 
+    if s/n > last then add(b4,bin) else return b4 end 
+    last = s/n end end 
+
+function DATA:selects(ands,row) -- returns true if each bin is satisfied
+  for pos,ors in pairs(ands) do
+    col = self.cols.all[pos]
+    x = row[pos] 
+    if x ~= "?" then
+      if not self:selects1(col.name,ors, col:bin(x)) then return false end end end
+  return true end
+
+function DATA:selects1(name,ors,want) -- returns true if any bin is satisfied
+  for _,bin in pairs(ors) do 
+    assert(name == bin.col.name,"sanity check fail")
+    if bin.bin==want then return true end end end
+
 -----------------------------------------------------------------------------------------
 --  ._ _    _.  o  ._  
 --  | | |  (_|  |  | | 
-                    
+
 local main={}
 function main.ver() print("sandbox v0.1") end
 
@@ -162,11 +202,16 @@ function main.cols(     d)
   d = DATA.new():read(the.train)
   for _,col in pairs(d.cols.y) do oo(col) end end
 
-function main.data(     d) 
-  d = DATA.new():read(the.train)
+function main.data(     d,want) 
+  d = DATA.new():read(the.train):sort()
+  m = 1
   for n,row in pairs(d.rows) do 
-    if n % 50 == 0 then print(n,o(d:chebyshev(row)),o(row)) end end end
+    if n==m then m=m*2; print(n,o(d:chebyshev(row,d.cols.y)),o(row)) end end end
+
+function main.bins()
+  d = DATA.new():read(the.train):sort()
+  for _,bin in pairs(d:bins()) do  print(o(bin.n), bin.bin, bin.col.name) end end
 
 if    pcall(debug.getlocal, 4, 1)
 then  return {DATA=DATA,NUM=NUM,SYM=SYM} 
-else main[ arg[1] or "ver" ]()  end
+else  main[ arg[1] or "ver" ]()  end
