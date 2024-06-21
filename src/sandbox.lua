@@ -20,8 +20,8 @@ local the = { bins  = 7,
 --       |  o  |_  
 --       |  |  |_) 
 
-local abs,max,min = math.abs, math.max, math.min
-local as, downOn, cdf, cells, csv, fmt, o, oo, okeys, olist, push, sort, welford
+local abs,log,max,min = math.abs, math.log, math.max, math.min
+local as,cdf,cells,copy,csv,o,okeys,olist,oo,push,sort,sortDown,welford
 
 -- lists
 function push(t,x)   t[1+#t] = x; return x end
@@ -59,13 +59,13 @@ function olist(t,u) u={}; for k,v in pairs(t) do push(u,o(v))                 en
 function okeys(t,u) u={}; for k,v in pairs(t) do push(u,fmt(":%s %s",k,o(v))) end; return u end
 
 -- strings to things
-function as(s,    f)
+function coerce(s,    f)
   f=function(s) 
     if s=="nil" then return nil else return s=="true" or s ~="false" and s or false end end
   return math.tointeger(s) or tonumber(s) or f(s:match'^%s*(.*%S)') end
 
 function cells(s,    t)
-  t={}; for s1 in s:gsub("%s+", ""):gmatch("([^,]+)") do t[1+#t]=as(s1) end; return t end
+  t={}; for s1 in s:gsub("%s+", ""):gmatch("([^,]+)") do t[1+#t]=coerce(s1) end; return t end
 
 function csv(src)
   src = src=="-" and io.stdin or io.input(src)
@@ -161,31 +161,37 @@ function DATA:bins(     bins,tmp,d)
       col.bins[b].n = cols.bins[b].n + (1 - d)/#self.rows end end 
   return bins
 
-function DATA:rule(  rows,    add,now,b4.last)
-  function add(rule,bin,     i) i=bin.col.i; rule[i]=rule[i] or {}; push(rule[i],bin) end
-  now,b4,last = {},{},0
-  for _,bin in pairs(sort(bins, sortDown"n")) do
-    local n,s = 0,0
-    add(now,bin)
-    for _,row in pairs(rows or self.rows) do 
-      if   self:selects(now, row) 
-      then n = n + 1 
-           s = s + 1 - self:chebyshev(row, self.cols.y) end end 
-    if s/n > last then add(b4,bin) else return b4 end 
-    last = s/n end end 
+function DATA:growRule(  rows,     _add2rule,_score)
+  function _add2rule(bin,rule,    pos) 
+    pos = bin.col.pos
+    rule[pos] = rule[pos] or {}
+    push(rule[pos], bin) end
 
-function DATA:selects(ands,row) -- returns true if each bin is satisfied
-  for pos,ors in pairs(ands) do
+  function _score(rule,    n,s) 
+    n,s = 0,0
+    for _,row in pairs(rows or self.rows) do 
+      if self:selects(rule, row) then
+        n = n + 1 
+        s = s + 1 - self:chebyshev(row, self.cols.y) end end 
+    return s/n  end
+
+  local now,b4,last = {},{},0
+  for _,bin in pairs(sort(bins, sortDown"n")) do
+    _add2rule(bin,now)
+    local tmp = _score(now)
+    if tmp > last then _add2rule(b4,bin) else return b4 end 
+    last = tmp end end 
+
+function DATA:selects(rule,row,     _selects1,col,x) -- returns true if each bin is satisfied
+  function _selects1(bins, want) -- returns true if any bin is satisfied
+    for _,bin in pairs(bins) do if bin.bin==want then return true end end  end
+
+  for pos,bins in pairs(rule) do
     col = self.cols.all[pos]
     x = row[pos] 
     if x ~= "?" then
-      if not self:selects1(col.name,ors, col:bin(x)) then return false end end end
+      if not _selects1(bins, col:bin(x)) then return false end end end
   return true end
-
-function DATA:selects1(name,ors,want) -- returns true if any bin is satisfied
-  for _,bin in pairs(ors) do 
-    assert(name == bin.col.name,"sanity check fail")
-    if bin.bin==want then return true end end end
 
 -----------------------------------------------------------------------------------------
 --       ._ _    _.  o  ._  
