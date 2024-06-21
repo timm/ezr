@@ -17,7 +17,7 @@ pull    : ## download
 	git pull
 
 push    : ## save
-	echo -en "\033[36m> Why this push? \033[0m"; read x; git commit -am "$$x"; git push; git status
+	echo -en "\033[31m> Why this push? \033[0m"; read x; git commit -am "$$x"; git push; git status
 
 md=$(wildcard $(Top)/docs/[A-Z]*.md)
 
