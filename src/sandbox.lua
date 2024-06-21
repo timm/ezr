@@ -1,14 +1,15 @@
 #!/usr/bin/env lua
--- vim : set ts=4 sts=4 et :
---                  ___                  ___                         
---                 /\_ \                /\_ \                        
---  _ __   __  __  \//\ \     _ __      \//\ \     __  __     __     
--- /\`'__\/\ \/\ \   \ \ \   /\`'__\      \ \ \   /\ \/\ \  /'__`\   
--- \ \ \/ \ \ \_\ \   \_\ \_ \ \ \/  __    \_\ \_ \ \ \_\ \/\ \L\.\_ 
---  \ \_\  \ \____/   /\____\ \ \_\ /\_\   /\____\ \ \____/\ \__/.\_\
---   \/_/   \/___/    \/____/  \/_/ \/_/   \/____/  \/___/  \/__/\/_/
+-- <!-- vim : set ts=4 sts=4 et : -->
 --
--- rulr.lua multi-objective rule generation
+--                       ___           
+--                      /\_ \           
+--       _ __   __  __  \//\ \     _ __  
+--      /\`'__\/\ \/\ \   \ \ \   /\`'__\ 
+--      \ \ \/ \ \ \_\ \   \_\ \_ \ \ \/ 
+--       \ \_\  \ \____/   /\____\ \ \_\ 
+--        \/_/   \/___/    \/____/  \/_/ 
+--     
+-- rulr.lua multi-objective rule generation   
 -- (c) 2024 Tim Menzies <timm@ieee.org>, BSD-2 license.
 
 local the = { bins  = 7,
@@ -16,8 +17,8 @@ local the = { bins  = 7,
               train = "../data/misc/auto93.csv"}
 
 -----------------------------------------------------------------------------------------
---  |  o  |_  
---  |  |  |_) 
+--       |  o  |_  
+--       |  |  |_) 
 
 local abs,max,min = math.abs, math.max, math.min
 local as, downOn, cdf, cells, csv, fmt, o, oo, okeys, olist, push, sort, welford
@@ -72,8 +73,8 @@ function csv(src)
     s = io.read()
     if s then return cells(s) else io.close(src) end end end
 -----------------------------------------------------------------------------------------
---   _  ._   _    _.  _|_   _  
---  (_  |   (/_  (_|   |_  (/_ 
+--        _  ._   _    _.  _|_   _  
+--       (_  |   (/_  (_|   |_  (/_ 
 
 local NUM,SYM,DATA,COLS = {},{},{},{}
 
@@ -95,15 +96,15 @@ function COLS.new(names,    all,x,y,col)
 function DATA.new(  names) 
   return  new(DATA, {rows={}, cols=names and COLS.new(names) or nil}) end
 -----------------------------------------------------------------------------------------
---  ._   _    _.   _| 
---  |   (/_  (_|  (_| 
+--       ._   _    _.   _| 
+--       |   (/_  (_|  (_| 
 
 function DATA:read(file) for   row in csv(file) do self:add(row) end; return self end
 function DATA:load(t)    for _,row in pairs(t)  do self:add(row) end; return self end
 -----------------------------------------------------------------------------------------
---       ._    _|   _.  _|_   _  
---  |_|  |_)  (_|  (_|   |_  (/_ 
---       |                       
+--            ._    _|   _.  _|_   _  
+--       |_|  |_)  (_|  (_|   |_  (/_ 
+--            |                       
 
 function DATA:add(t) 
   if self.cols then push(self.rows, self.cols:add(t)) else 
@@ -125,9 +126,9 @@ function NUM:add(x,    d)
     if x > self.hi then self.hi=x end
     if x < self.lo then self.lo=x end end end
 -----------------------------------------------------------------------------------------
---   _.        _   ._     
---  (_|  |_|  (/_  |   \/ 
---    |                /  
+--        _.        _   ._     
+--       (_|  |_|  (/_  |   \/ 
+--         |                /  
 
 function NUM:norm(x) return x=="?" and x or (x - self.lo)/(self.hi - self.lo) end
 
@@ -140,8 +141,8 @@ function DATA:sort(      d)
   table.sort(self.rows, function(a,b) return  d(a) < d(b) end) 
   return self end
 -----------------------------------------------------------------------------------------
---  ._       |   _  
---  |   |_|  |  (/_  
+--       ._       |   _  
+--       |   |_|  |  (/_  
 
 function SYM:bin(x) return x end
 
@@ -187,8 +188,8 @@ function DATA:selects1(name,ors,want) -- returns true if any bin is satisfied
     if bin.bin==want then return true end end end
 
 -----------------------------------------------------------------------------------------
---  ._ _    _.  o  ._  
---  | | |  (_|  |  | | 
+--       ._ _    _.  o  ._  
+--       | | |  (_|  |  | | 
 
 local main={}
 function main.ver() print("sandbox v0.1") end
