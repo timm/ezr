@@ -19,10 +19,6 @@ pull    : ## download
 push    : ## save
 	echo -en "\033[33mWhy this push? \033[0m"; read x; git commit -am "$$x"; git push; git status
 
-md=$(wildcard $(Top)/docs/[A-Z]*.md)
-
-docs2lua: $(subst docs,tests,$(md:.md=.lua)) ## run updates docs/[A-Z]*.md ==> tests/x.lua
-
 %.lua : %.md
 	gawk 'BEGIN            { code=0 }  \
 		    sub(/^```.*/,"") { code = 1 - code } \
