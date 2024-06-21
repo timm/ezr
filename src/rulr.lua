@@ -22,7 +22,7 @@ local coerce,    cdf,  csv,  fmt,  o,  oo,  push,  sort,  down =
       l.coerce,l.cdf,l.csv,l.fmt,l.o,l.oo,l.push,l.sort,l.dowm
 
 local d=require"data"
-local NUM,SYM,DATA = d.NUM,d.SYM.d.DATA
+local NUM, SYM, DATA = d.NUM, d.SYM, d.DATA
 -----------------------------------------------------------------------------------------
 
 function SYM:bin(x) return x end
@@ -84,24 +84,16 @@ function DATA:selects(rule,row,     _selects1,col,x) -- returns true if each bin
 local main={}
 function main.help() print("sandbox v0.1") end
 
-
-function main.csv(    n) 
-  n=0; for row in csv(the.train) do n=n+1; if n % 50==0 then print(n,o(row)) end end end
-
-function main.cols(     d) 
-  d = DATA.new():read(the.train)
-  for _,col in pairs(d.cols.y) do oo(col) end end
-
-function main.data(     d,want) 
-  d = DATA.new():read(the.train):sort()
+function main.data(train,     d,want) 
+  d = DATA.new():read(train):sort()
   m = 1
   for n,row in pairs(d.rows) do 
-    if n==m then m=m*2; print(n,o(d:chebyshev(row,d.cols.y)),o(row)) end end end
+    if n==m then m=m*2; print(n,o(l.chebyshev(row, d.cols.y)),o(row)) end end end
 
-function main.bins()
-  d = DATA.new():read(the.train):sort()
+function main.bins(train)
+  d = DATA.new():read(train):sort()
   for _,bin in pairs(d:bins()) do  print(o(bin.n), bin.bin, bin.col.name) end end
 
 if    pcall(debug.getlocal, 4, 1)
 then  return {DATA=DATA,NUM=NUM,SYM=SYM} 
-else  main[ arg[1] or "ver" ]()  end
+else  main[ arg[1] or "ver" ]( arg[2]  or "../data/misc/auto93.csv")  end
