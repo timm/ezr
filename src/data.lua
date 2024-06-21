@@ -1,85 +1,100 @@
+-- <!-- vim : set ts=2 sts=2 et : -->
+--       __                __                
+--      /\ \              /\ \__             
+--      \_\ \      __     \ \ ,_\     __     
+--      /'_` \   /'__`\    \ \ \/   /'__`\   
+--     /\ \L\ \ /\ \L\.\_   \ \ \_ /\ \L\.\_ 
+--     \ \___,_\\ \__/.\_\   \ \__\\ \__/.\_\
+--      \/__,_ / \/__/\/_/    \/__/ \/__/\/_/
+                                      
+local NUM,SYM,DATA,_COLS = {},{},{},{}
+
 local l=require"lib"
-local calc=require"calc"
-local ns=require"numsym"
-local the,help=l.settings[[
-rulr2.lua : a small range learner
-(c) 2024, Tim Menzies, timm@ieee.org, BSD-2 license
-
-Options:
-  -b --big     a big number                    = 1E30
-  -F --far     how far to search for 'far'     = 0.9
-  -k --k       low class frequency kludge      = 1
-  -m --m       low attribute frequency kludge  = 2
-  -s --seed    random number seed              = 1234567891
-  -t --train   train data                      = ../data/misc/auto93.csv ]]
-
-local NUM  = ns.NUM  -- info on numeric columns
-local SYM  = ns.SYM  -- info on symbolic columns
-local DATA = {} -- place to store all the columns 
-local COLS = {} -- factory to make NUMs and SYMs
+local   csv,   map,   new,   o,   oo,   push,   sort = 
+      l.csv, l.map, l.new, l.o, l.oo, l.push, l.sort
+local abs,log,max,min = math.abs, math.log, math.max, math.min
 
 -----------------------------------------------------------------------------------------
-function DATA.new(  names,      cols)
-  cols = names and COLS.new(names) or nil
-  return l.is(DATA,{rows={},  cols=cols}) end
+--       _  ._   _    _.  _|_   _  
+--      (_  |   (/_  (_|   |_  (/_ 
 
-function DATA:read(file) for   row in l.csv(file) do self:add(row) end; return self end
-function DATA:load(lst)  for _,row in pairs(lst)  do self:add(row) end; return self end
+function SYM.new(name,pos) return new(SYM, {name=name, pos=pos, n=0, seen={}, bins={}}) end
 
-function DATA:add(row)
-  if   self.cols
-  then l.push(self.rows, self.cols:add(row))
-  else self.cols = COLS.new(row) end 
-  return self end
+function NUM.new(name,pos)
+  return new(NUM, {name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=1E30, hi=-1E30, bins={},
+                   goal = (name or ""):find"-$" and 0 or 1}) end
 
-function DATA:mids(cols)
-  return l.map(cols or self.cols.y, function(col) return l.rnd(col:mid()) end) end
+function _COLS.new(names,    all,x,y,col) 
+  all,x,y = {},{},{}
+  for i,s in pairs(names) do 
+    col = push(all, (s:find"^[A-Z]" and NUM or SYM).new(s,i))
+    if not s:find"X$" then push(s:find"[!+-]$" and y or x,col) end end
+  return new(_COLS, {names=names, all=all, x=x, y=y}) end
 
-----------------------------------------------------------------------------------------
-function COLS.new(names,     self,col)
-  self = l.is(COLS, { all={}, x={}, y={}, names=names })
-  for pos,name in pairs(names) do self:newColumn(name,pos) end
-return self end
-
-function COLS:newColumn(name,pos,    col)
-  col = ns.COL(name,pos)
-  l.push(self.all,col)
-  if not name:find"X$" then
-    l.push(name:find"[-+!]$" and self.y or self.x, col) end end
-
-function COLS:add(row,        x)
-  for _,cols in pairs{self.x, self.y} do
-    for _,col in pairs(cols) do
-       x = row[col.pos]
-       if x ~= "?" then col:add(row[col.pos]) end end end
-  return row end
-
+function DATA.new(  names) 
+  return  new(DATA, {rows={}, cols=names and _COLS.new(names) or nil}) end
 -----------------------------------------------------------------------------------------
--- Once we have rows, we can talk likelihood of rows
+--       ._   _    _.   _| 
+--       |   (/_  (_|  (_| 
 
-function DATA:like(row,nall,nh,    prior,x,like,out)
-  out, prior = 0, (#self.rows + the.k) / (nall + the.k*nh)
+function DATA:read(file) for   row in csv(file) do self:add(row) end; return self end
+function DATA:load(t)    for _,row in pairs(t)  do self:add(row) end; return self end
+-----------------------------------------------------------------------------------------
+--            ._    _|   _.  _|_   _  
+--       |_|  |_)  (_|  (_|   |_  (/_ 
+--            |                       
+
+function DATA:add(t) 
+  if self.cols then push(self.rows, self.cols:add(t)) else 
+     self.cols = _COLS.new(t) end end
+
+function _COLS:add(t)
+  for _,cs in pairs{self.x,self.y} do for _,c in pairs(cs) do c:add(t[c.pos]) end end 
+  return t end
+
+function SYM:add(x)
+  if x ~= "?" then
+    self.n  = self.n+1
+    self.seen[x] = 1 + (self.seen[x] or 0) end end 
+
+function NUM:add(x,    d)
+  if x ~= "?" then
+    self.n  = self.n + 1
+    self.mu, self.m2, self.sd = l.welford(x, self.n, self.mu, self.m2)
+    if x > self.hi then self.hi=x end
+    if x < self.lo then self.lo=x end end end
+-----------------------------------------------------------------------------------------
+--        _.        _   ._     
+--       (_|  |_|  (/_  |   \/ 
+--         |                /  
+
+function NUM:norm(x) return x=="?" and x or (x - self.lo)/(self.hi - self.lo) end
+               
+-----------------------------------------------------------------------------------------
+--      |  o  |    _  
+--      |  |  |<  (/_ 
+
+function DATA:like(row,nall,nh,  k,m,    prior,x,like,out)
+  out, prior = 0, (#self.rows + (k or 1)) / (nall + (k or 1)*nh)
   for _,col in pairs(self.cols.x) do
     x = row[col.pos]
     if x ~= "?" then
-      like = col:like(x,prior)
+      like = col:like(x,prior,m)
       if like > 0 then out = out + math.log(like) end end end
   return out + math.log(prior) end 
 
-function SYM:like(x, prior)
-  return ((self.has[x] or 0) + the.m*prior)/(self.n +the.m) end
+function SYM:like(x, prior,  m)
+  return ((self.has[x] or 0) + (m or 2)*prior)/(self.n + (m or 2)) end
 
 function NUM:like(x,_,      nom,denom)
   local mu, sd =  self:mid(), (self:div() + 1E-30)
-  nom   = 2.718^(-.5*(x - mu)^2/(sd^2))
+  nom   = math.exp(1)^(-.5*(x - mu)^2/(sd^2))
   denom = (sd*2.5 + 1E-30)
-  return  nom/denom end
-
+  return nom/denom end
+                 
 -----------------------------------------------------------------------------------------
--- Once we have rows, we can talk distance between rows or rows
-
-function DATA:dist(row1,row2,  cols)
-  return calc.minkowski(row1,row2,the.p, cols or self.cols.x) end
+--       _|  o   _  _|_ 
+--      (_|  |  _>   |_ 
 
 function SYM:dist(x,y)
   return  (x=="?" and y=="?" and 1) or (x==y and 0 or 1) end
@@ -91,10 +106,39 @@ function NUM:dist(x,y)
   if y=="?" then y=x<.5 and 1 or 0 end
   return math.abs(x-y) end
 
-function DATA:neighbors(rowx,  rows, cols,     d)
-  d = function(row) return self:dist(row,rowx,cols) end
-  return l.sort(rows or self.rows, function(row2,row3) return d(row2) < d(row3) end) end
+function DATA:sort(      d)
+  d = function(row) return  l.chebyshev(row,self.cols.y) end
+  self.rows = sort(self.rows, function(a,b) return  d(a) < d(b) end) 
+  return self end
 
---------------------------------------------------------------------------------
-math.randomseed(the.seed)
-return {the=the, lib=l,DATA=DATA,SYM=SYM,NUM=NUM,COLS=COLS}
+function DATA:dist(row1,row2,  p,cols)
+  return l.minkowski(row1,row2,(p or 2), cols or self.cols.x) end
+
+function DATA:around(row,  rows,p,cols)
+  d = function(row) return self:dist(row,other,p,cols) end
+  return sort(rows or i.rows,function(a,b) return d(a) < d(b) end) end
+
+-----------------------------------------------------------------------------------------
+--       ._ _    _.  o  ._  
+--       | | |  (_|  |  | | 
+
+local main={}
+
+function main.help(_) print("lua data.lua [csv|cols|data] [train.csv]") end
+
+function main.csv(train,    n) 
+  n=0; for row in csv(train) do n=n+1; if n % 50==0 then print(n,o(row)) end end end
+
+function main.cols(train,     d) 
+  d = DATA.new():read(train)
+  for _,col in pairs(d.cols.y) do oo(col) end end
+
+function main.data(train,     d,want) 
+  d = DATA.new():read(train):sort()
+  m = 1
+  for n,row in pairs(d.rows) do 
+    if n==m then m=m*2; print(n,o(l.chebyshev(row,d.cols.y)),o(row)) end end end
+
+if pcall(debug.getlocal, 4, 1) 
+then return {DATA=DATA, NUM=NUM, SYM=SYM,main=main} 
+else main[ arg[1] or "help" ](arg[2] or "../data/misc/auto93.csv")  end

@@ -17,7 +17,7 @@ pull    : ## download
 	git pull
 
 push    : ## save
-	echo -en "\033[31mWhy this push? \033[0m"; read x; git commit -am "$$x"; git push; git status
+	echo -en "\033[33mWhy this push? \033[0m"; read x; git commit -am "$$x"; git push; git status
 
 md=$(wildcard $(Top)/docs/[A-Z]*.md)
 
@@ -34,7 +34,7 @@ $(Top)/tests/%.lua : $(Top)/docs/%.md
 	mkdir -p ~/tmp
 	echo "pdf-ing $@ ... "
 	a2ps                 \
-		-Br                 \
+		-BR                 \
 		-l 100                 \
 		--file-align=fill      \
 		--line-numbers=1        \
@@ -42,7 +42,7 @@ $(Top)/tests/%.lua : $(Top)/docs/%.md
 		--left-title=""            \
 		--borders=no             \
 		--pretty-print="$(Top)/etc/lua.ssh" \
-		--columns 3                  \
+		--columns 2                  \
 		-M letter                     \
 		--footer=""                    \
 		--right-footer=""               \
