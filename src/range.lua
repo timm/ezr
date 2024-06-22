@@ -165,5 +165,5 @@ function main.grow(train,      rule)
 
 if   pcall(debug.getlocal, 4, 1)
 then return {rulr=rulr}
-else main[ arg[1] or "help" ]( arg[2] or "../data/misc/auto93.csv")  
+else main[ arg[1] or "help" ]( arg[2] or the.train )
 end
