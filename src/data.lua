@@ -115,9 +115,9 @@ function DATA:sort(      d)
 function DATA:dist(row1,row2,  p,cols)
   return l.minkowski(row1,row2,(p or 2), cols or self.cols.x) end
 
-function DATA:around(row,  rows,p,cols)
-  d = function(row) return self:dist(row,other,p,cols) end
-  return sort(rows or i.rows,function(a,b) return d(a) < d(b) end) end
+function DATA:around(row,  rows,p,cols,d)
+  d = function(other) return self:dist(row,other,p,cols) end
+  return sort(rows or self.rows,function(a,b) return d(a) < d(b) end) end
 
 -----------------------------------------------------------------------------------------
 --        _    _  

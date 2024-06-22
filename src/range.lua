@@ -23,15 +23,17 @@ local d=require"data"
 local NUM, SYM, DATA = d.NUM, d.SYM, d.DATA
 local RANGE={}
 
-function RANGE(name,pos,lo)
-  return new(RANGE, {name=name,pos=pos,lo=lo,hi=lo, n=0, ys=0}) end
+local id=0
+function RANGE.new(name,pos,lo)
+  id=id+1
+  return new(RANGE, {name=name,pos=pos,lo=lo,hi=lo, n=0, id=id, ys=0}) end
 
 function RANGE:add(x,y)
   if x == "?" then return end
   self.n  = self.n + 1
   self.lo = min(x,self.lo)
-  self.hi = max(x,self.hi)
-  self.ys = self.ys + n end
+  self.hi = max(x,self.hi) 
+  self.ys = self.ys + y end
 
 function RANGE:show(     lo,hi,s)
   lo,hi,s = self.lo, self.hi,self.name
@@ -48,27 +50,11 @@ function RANGE.merge(i,j,    k)
   return k end
 
 function RANGE:merged(other,tiny,pedantry,trivial)
+  print("....")
   if self.n < tiny   and other.n < tiny    or
-    self.ys < trival and other.ys < trival or
+     self.ys < trivial and other.ys < trivial or
      abs(self.ys - other.ys) < pedantry 
   then return self:merge(other) end end
-
-function _mergeds(ranges,tiny,pedantry,trivial,  i,a,tmp,both)
-  i,tmp = 1,{}
-  while i <= #ranges do
-    a = ranges[i]
-    if i < #ranges then
-      both = a:merged(ranges[i+1],tiny,pedantry,trivial)
-      if both then 
-        a = both
-        i = i+1 end end
-    tmp[1+#t] = a
-    i = i+1 end
-  if #tmp < #ranges then return _mergeds(tmp,tiny,pedantry,trivial) end
-  for i = 2,#t do tmp[i].x.lo = tmp[i-1].x.hi end
-  tmp[1].x.lo  = -math.huge
-  tmp[#t].x.hi =  math.huge
-  return tmp end
 
 -----------------------------------------------------------------------------------------
 function SYM:bin(x) return x end
@@ -81,34 +67,38 @@ function NUM:bin(x,    z,area)
   return max(1, min(the.bins, 1 + (area * the.bins // 1))) end 
 
 function NUM:mergeds(ranges,  tiny,pedantry,trivial,    i,a,tmp,both)
+  print(100,o(ranges))
   i,tmp = 1,{}
   while i <= #ranges do
     a = ranges[i]
+    print(i, o(a))
     if i < #ranges then
       both = a:merged(ranges[i+1],tiny,pedantry,trivial)
       if both then 
         a = both
         i = i+1 end end
-    tmp[1+#t] = a
+    tmp[1+#tmp] = a
     i = i+1 end
   if #tmp < #ranges then return self:mergeds(tmp,tiny,pedantry,trivial) end
-  for i = 2,#t do tmp[i].x.lo = tmp[i-1].x.hi end
-  tmp[1].x.lo  = -math.huge
-  tmp[#t].x.hi =  math.huge
+  for i = 2,#tmp do tmp[i].lo = tmp[i-1].hi end
+  print(111,o(tmp[1]))
+  tmp[1].lo  = -math.huge
+  tmp[#tmp].hi =  math.huge
   return tmp end
 
-function DATA:bins(     out,d,x,b)
+function DATA:bins(     out,d,x,b, bins)
   for _,row in pairs(self.rows) do
     d = l.chebyshev(row, self.cols.y)
     for _,col in pairs(self.cols.x) do
       x = row[col.pos]
       if x ~= "?" then
         b = col:bin(x)
-        col.bins[b]  = col.bins[b] or RANGE(col.name,col.pos,x)
+        col.bins[b]  = col.bins[b] or RANGE.new(col.name,col.pos,x)
         col.bins[b]:add(x, (1 - d)/#self.rows) end end end
   out = {}
   for _,col in pairs(self.cols.x) do
-    for _,bin in pairs(col:mergeds(col.bins, 1/the.bins*#self.rows, 0.025, 0.025)) do
+    bins = l.map(col.bins, function(x) return x end)
+    for _,bin in pairs(col:mergeds(bins, 1/the.bins*#self.rows, 0.025, 0.025)) do
       push(out,bin) end end
   return l.sort(out,l.down"ys") end
 -----------------------------------------------------------------------------------------
@@ -124,7 +114,7 @@ function rulr(data,  rows)
     last = tmp end end 
 
 function _add2rule(rule,bin,    pos) 
-  pos = bin._col.pos
+  pos = bin.pos
   rule[pos] = rule[pos] or {}
   push(rule[pos], bin) end
 
@@ -157,7 +147,7 @@ local main={}
 function main.help(_) 
   print("./range.lua [help|data|bins|grow] [csv]") end
 
-function main.data(train,     d,want) 
+function main.data(train,     d,m) 
   d = DATA.new():read(train):sort()
   m = 1
   for n,row in pairs(d.rows) do 
@@ -166,12 +156,12 @@ function main.data(train,     d,want)
 function main.bins(train)
   d = DATA.new():read(train):sort()
   for _,bin in pairs(d:bins()) do  
-    print(o(bin.n), bin.bin, bin._col.name) end end
+    print(o(bin.n), bin.bin, bin.name) end end
 
 function main.grow(train,      rule)
   d = DATA.new():read(train):sort()
   rule = oo(rulr(d)) 
-  print(rule[1]._cols.name, o(rule)) end
+  print(rule[1].name, o(rule)) end
 
 if   pcall(debug.getlocal, 4, 1)
 then return {rulr=rulr}

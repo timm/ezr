@@ -46,7 +46,7 @@ function lib.welford(x,n,mu,m2,    d,sd)
   sd = n<2 and 0 or (m2/(n - 1))^.5  
   return mu,m2,sd end
 
-function lib.minkowski(t1,t2,p,cols)
+function lib.minkowski(t1,t2,p,cols,           n,d)
   n,d = 0,0
   for _,col in pairs(cols) do
     n = n + 1
