@@ -1,3 +1,4 @@
+#!/usr/bin/env lua
 -- <!-- vim : set ts=2 sts=2 et : -->
 --       __                __                
 --      /\ \              /\ \__             
@@ -119,23 +120,24 @@ function DATA:around(row,  rows,p,cols)
   return sort(rows or i.rows,function(a,b) return d(a) < d(b) end) end
 
 -----------------------------------------------------------------------------------------
---       ._ _    _.  o  ._  
---       | | |  (_|  |  | | 
+--        _    _  
+--       (/_  (_| 
+--             _| 
 
-local main={}
+local eg={}
 
-main["--help"] = function(_) 
-  print("lua data.lua --[help|csv|cols|data] [csv]") end
+function eg.help(_) 
+  print("lua data.lua [help|csv|cols|data] [csv]") end
 
-main["--csv"] = function(train,    n) 
+function eg.csv(train,    n) 
   n=0; for row in csv(train) do 
          n=n+1; if n % 50==0 then print(n,o(row)) end end end
 
-main["--cols"] = function(train,     d) 
+function eg.cols(train,     d) 
   d = DATA.new():read(train)
   for _,col in pairs(d.cols.y) do oo(col) end end
 
-main["--data"] = function(train,     d,m) 
+function eg.data(train,     d,m) 
   d = DATA.new():read(train):sort()
   m = 1
   for n,row in pairs(d.rows) do 
@@ -144,7 +146,7 @@ main["--data"] = function(train,     d,m)
       print(n,o(l.chebyshev(row,d.cols.y)),o(row)) end end end
 
 if   pcall(debug.getlocal, 4, 1) 
-then return {DATA=DATA, NUM=NUM, SYM=SYM,main=main} 
-else main[ arg[1] or "--help" ](arg[2] or "../data/misc/auto93.csv")
+then return {DATA=DATA, NUM=NUM, SYM=SYM,eg=eg} 
+else eg[ arg[1]  or "help" ](arg[2] or "../data/misc/auto93.csv")
      l.rogues()
 end
