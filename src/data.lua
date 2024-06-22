@@ -124,21 +124,27 @@ function DATA:around(row,  rows,p,cols)
 
 local main={}
 
-function main.help(_) print("lua data.lua [csv|cols|data] [train.csv]") end
+main["--help"] = function(_) 
+  print("lua data.lua --[help|csv|cols|data] [csv]") end
 
-function main.csv(train,    n) 
-  n=0; for row in csv(train) do n=n+1; if n % 50==0 then print(n,o(row)) end end end
+main["--csv"] = function(train,    n) 
+  n=0; for row in csv(train) do 
+         n=n+1; if n % 50==0 then print(n,o(row)) end end end
 
-function main.cols(train,     d) 
+main["--cols"] = function(train,     d) 
   d = DATA.new():read(train)
   for _,col in pairs(d.cols.y) do oo(col) end end
 
-function main.data(train,     d,want) 
+main["--data"] = function(train,     d,m) 
   d = DATA.new():read(train):sort()
   m = 1
   for n,row in pairs(d.rows) do 
-    if n==m then m=m*2; print(n,o(l.chebyshev(row,d.cols.y)),o(row)) end end end
+    if n==m then 
+      m=m*2
+      print(n,o(l.chebyshev(row,d.cols.y)),o(row)) end end end
 
-if pcall(debug.getlocal, 4, 1) 
+if   pcall(debug.getlocal, 4, 1) 
 then return {DATA=DATA, NUM=NUM, SYM=SYM,main=main} 
-else main[ arg[1] or "help" ](arg[2] or "../data/misc/auto93.csv")  end
+else main[ arg[1] or "--help" ](arg[2] or "../data/misc/auto93.csv")
+     l.rogues()
+end
