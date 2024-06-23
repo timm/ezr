@@ -1,103 +1,122 @@
-# Makefiles in Software Engineering
+# Shell and Makefile Programming Tutorial Notes
+
+XXX add ida. graph of rules
 
 ## Introduction
-In software engineering, Makefiles are crucial for automating the build and test processes. Using multiple Makefiles can help in organizing and modularizing these processes. Here, we will explore two interconnected Makefiles, highlighting their key principles and functionalities.
 
-## Key Concepts
+Makefiles are essential tools in software engineering, primarily used for managing build automation. They help in compiling code, linking programs, and managing dependencies automatically. This tutorial will introduce shell programming and Makefile concepts used in the provided Makefile.
 
-### Makefile 1: Primary Makefile
+## Makefile Structure
 
-#### Variables
+A Makefile consists of a series of rules. Each rule defines how to convert files from one format to another or how to update files when dependencies change.
+
+### Basic Syntax
+
+A rule in a Makefile typically looks like this:
 ```makefile
-eg?=data
-
-RED := \033[31m
-GREEN := \033[32m
-NC := \033[0m # No Color
+target: dependencies
+    command
 ```
-- `eg?=data`: Sets the default value for `eg` to `data` if not provided.
-- `RED`, `GREEN`, and `NC` are used for colored output in the terminal.
 
-#### Targets and Rules
+- **target**: The file to be generated.
+- **dependencies**: Files that the target depends on.
+- **command**: The shell command to generate the target.
+
+## Shell Programming in Makefiles
+
+### Setting the Shell
+
+The shell used to interpret commands in a Makefile can be specified using the `SHELL` variable:
 ```makefile
-testLua: $(eg).lua
-	LUA_PATH="../src/?.lua;;" lua $(eg).lua; \
-	if [ $$? -eq 0 ]; then  echo -e "$(GREEN)!! PASS$(NC) : $(subst .lua,,$<)"; \
-	else  echo -e "$(RED)!! FAIL$(NC) : $(subst .lua,,$<)"; fi
-	rm $(eg).lua
+SHELL := bash
 ```
-- **Target**: `testLua`
-- **Dependency**: `$(eg).lua`
-- **Commands**: Runs the Lua script, importing code from ../src, then and outputs whether the test passed or failed, then removes the Lua script file.
 
-#### Wildcards and Pattern Rules
-```makefile
-all: 
-	$(foreach f,$(subst .md,,$(wildcard [A-Z]*.md)),$(MAKE) eg=$f;)
-```
-- **Wildcard**: `$(wildcard [A-Z]*.md)` finds all Markdown files starting with an uppercase letter.
-- **Substitution**: `$(subst .md,,$(wildcard [A-Z]*.md))` removes the `.md` extension.
-- **Foreach Loop**: Iterates over each found file and runs `make` with `eg` set to the file name.
+### Shell Commands
 
-#### Including Another Makefile
-```makefile
--include ../Makefile
-```
-- This line includes another Makefile from the parent directory, allowing code reuse and organization.
-
-### Makefile 2: Secondary Makefile
-
-#### Basic Settings and Silent Mode
-```makefile
-SHELL     := bash
-MAKEFLAGS += --warn-undefined-variables
-.SILENT:
-```
-- **SHELL**: Specifies the shell to be used.
-- **MAKEFLAGS**: Adds a flag to warn about undefined variables.
-- **.SILENT**: Suppresses command output for cleaner logs.
-
-#### Variables and Help Target
-```makefile
-Top=$(shell git rev-parse --show-toplevel)
-
-help:  ## show help
-	gawk -f $(Top)/etc/help.awk $(MAKEFILE_LIST)
-```
-- **Top**: Retrieves the top-level directory of the git repository.
-- **help**: Uses `gawk` to generate help text from the Makefile comments.
-
-#### Git Commands
+Shell commands are used extensively in Makefiles. For example, the `git` commands:
 ```makefile
 pull: ## download
-	git pull
+    git pull
 
 push: ## save
-	echo -en "\033[33mWhy this push? \033[0m"; read x; git commit -am "$$x"; git push; git status
+    echo -en "\033[33mWhy this push? \033[0m"; read x; git commit -am "$$x"; git push; git status
 ```
-- **pull**: Runs `git pull` to update the local repository.
-- **push**: Prompts for a commit message, commits changes, and pushes to the remote repository.
 
-#### Pattern Rules and File Conversion
+- **git pull**: Updates the local repository with changes from the remote repository.
+- **echo**: Prints a message to the terminal.
+- **read**: Reads user input.
+- **git commit -am "$$x"**: Commits changes with a message.
+- **git push**: Pushes commits to the remote repository.
+- **git status**: Shows the status of the working directory.
+
+### Variable Assignment
+
+Variables can be assigned using the `:=` operator:
+```makefile
+Top=$(shell git rev-parse --show-toplevel)
+```
+- **Top**: Assigns the top-level directory of the git repository to the variable `Top`.
+
+## Makefile Targets and Recipes
+
+### Help Target
+
+A common target in Makefiles is `help`, which provides information on how to use the Makefile:
+```makefile
+help: ## show help
+    gawk -f $(Top)/etc/help.awk $(MAKEFILE_LIST)
+```
+- **gawk**: A pattern scanning and processing language.
+- **$(Top)/etc/help.awk**: The awk script used to generate the help message.
+
+### Pattern Rules
+
+Pattern rules specify how to build targets that match a certain pattern:
 ```makefile
 %.lua : %.md
-	gawk 'BEGIN { code=0 }  \
-		sub(/^```.*/,"") { code = 1 - code } \
-		{ print (code ? "" : "-- ") $$0 }' $^ > $@
-	luac -p $@
+    gawk 'BEGIN { code=0 } \
+        sub(/^```.*/,"") { code = 1 - code } \
+                           { print (code ? "" : "-- ") $$0 }' $^ > $@
+    luac -p $@
 ```
-- Converts Markdown files to Lua files by removing code blocks.
+- **%.lua : %.md**: Converts `.md` files to `.lua` files.
+- **$^**: All dependencies.
+- **$@**: The target.
+- **luac -p**: Syntax checks Lua programs.
 
-#### Lua to PDF Conversion
+### Directory and File Operations
+
+Creating directories and manipulating files:
 ```makefile
-~/tmp/%.pdf: %.lua  ## .lua ==> .pdf
-	mkdir -p ~/tmp
-	echo "pdf-ing $@ ... "
-	a2ps -BR -l 100 --file-align=fill --line-numbers=1 --pro=color --left-title="" --borders=no --pretty-print="$(Top)/etc/lua.ssh" --columns 2 -M letter --footer="" --right-footer="" -o $@.ps $<
-	ps2pdf $@.ps $@; rm $@.ps
-	open $@
+~/tmp/%.pdf: %.lua ## .lua ==> .pdf
+    mkdir -p ~/tmp
+    echo "pdf-ing $@ ... "
+    a2ps \
+        -BR \
+        -l 100 \
+        --file-align=fill \
+        --line-numbers=1 \
+        --pro=color \
+        --left-title="" \
+        --borders=no \
+        --pretty-print="$(Top)/etc/lua.ssh" \
+        --columns 2 \
+        -M letter \
+        --footer="" \
+        --right-footer="" \
+      -o $@.ps $<
+    ps2pdf $@.ps $@; rm $@.ps
+    open $@
 ```
-- Converts Lua files to PDF using `a2ps` and `ps2pdf`, and opens the PDF.
+- **mkdir -p ~/tmp**: Creates the directory `~/tmp` if it doesn't exist.
+- **a2ps**: Converts the Lua file to PostScript with specific formatting options.
+- **ps2pdf**: Converts PostScript to PDF.
+- **open $@**: Opens the generated PDF.
 
-## Conclusion
-These Makefiles illustrate how to automate and organize build processes efficiently. By understanding the interaction between multiple Makefiles, software engineers can maintain modular, reusable, and clean build systems.
+
+## References
+
+- [GNU Make Manual](https://www.gnu.org/software/make/manual/make.html)
+- [Bash Reference Manual](https://www.gnu.org/software/bash/manual/bash.html)
+- [Gawk User's Guide](https://www.gnu.org/software/gawk/manual/gawk.html)
+
