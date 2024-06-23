@@ -19,10 +19,10 @@ local abs,log,max,min = math.abs, math.log, math.max, math.min
 --       _  ._   _    _.  _|_   _  
 --      (_  |   (/_  (_|   |_  (/_ 
 
-function SYM.new(name,pos) return new(SYM, {name=name, pos=pos, n=0, seen={}, bins={}}) end
+function SYM.new(name,pos) return new(SYM, {name=name, pos=pos, n=0, seen={}}) end
 
 function NUM.new(name,pos)
-  return new(NUM, {name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=1E30, hi=-1E30, bins={},
+  return new(NUM, {name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=1E30, hi=-1E30,
                    goal = (name or ""):find"-$" and 0 or 1}) end
 
 function _COLS.new(names,    all,x,y,col) 

@@ -60,6 +60,11 @@ function lib.chebyshev(row,cols,     d)
 -- ## Lists
 function lib.push(t,x) t[1+#t]=x; return x end
 
+function lib.shuffle(t,    u,j)
+  u={}; for _,x in pairs(t) do u[1+#u]=x; end;
+  for i = #u,2,-1 do j=math.random(i); u[i],u[j] = u[j],u[i] end
+  return u end
+
 -- ### Sorting
 function lib.sort(t,fun,     u) -- return a copy of `t`, sorted using `fun`,
   u={}; for _,v in pairs(t) do u[1+#u]=v end; table.sort(u,fun); return u end
@@ -114,9 +119,9 @@ local function _okeys(t,fmt,    u)
   return u end
 
 function lib.o(t,  fmt) 
-  if type(t)=="number" then return t == floor(t) and tostring(t) or lib.fmt(fmt or "%6.3f",t) end
+  if type(t)=="number" then return t == floor(t) and tostring(t) or lib.fmt(fmt or "%6.3g",t) end
   if type(t)~="table"  then return tostring(t) end 
-  return "(" .. table.concat(#t==0 and lib.sort(_okeys(t,fmt)) or _olist(t,fmt)," ")  .. ")" end
+  return "(" .. table.concat(#t==0 and lib.sort(_okeys(t,fmt)) or _olist(t,fmt),", ")  .. ")" end
 
 -- Simplify a number
 function lib.rnd(n, ndecs)
