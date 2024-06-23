@@ -1,12 +1,44 @@
-# The Big Picture
+# The Big Picture (contaoms many small pictures)
 
 Much current work focuses on on the use of large general models.  That
-works fine, except if your problems are so specific that they are not
+works fine, unless you are dealing with some specific
+program that is they not
 covered by the general models.
+So 
+when generality fails, you need to build local models.
 
-When generality fails, you need to build local models. Local data
-can be scarce. Hence it is important to do as much as you can with
-whatever is available.  Hence, local learning first focuses  on
+Another reason to build a local model is that, when using a global model,
+you need to be able to test its effectiveness. Local modeling is how
+we build the oracle that 
+can judge model output. 
+
+Local data
+can be hard to find and building local models can be a tedious process.
+So we need shortcuts that lets us build model with minimal data/effort.
+Decades of work with AI analytics  had found many such short cuts.
+
+## Near enoguh (is good enough)
+
+Many models learned by AI exhibit
+  an inherent variability  when (say)  built N$ times, each time using 90% of 
+  the available data. 
+
+<img width=400 src="img/train_test_split.png"><br>
+<img width=400 scr="img/crossval.png">
+
+This means that any promise that a model achieves
+  some level of performance has be statistical in nature. Modeling
+  can stop early when once we find methods that
+  are statistically indistinguishable  
+  from the top score.
+
+This can have a profound impact on the modeling process. Cohen tells us that
+two values are stusticallt the same if they differen by less than 0.35 of the standard deviation
+[^cohen1]
+
+[^cohen1:] Actually, cohen
+
+Hence, local learning first focuses  on
 easily accessible features (independent variables) in order to
 quickly identify and select the most informative samples for labeling.
 This reduces the overall cost and time required to train the model

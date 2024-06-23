@@ -26,13 +26,6 @@ local DATA,NUM,SYM = data.DATA, data.NUM, data.SYM
 local BIN = {}
 
 -------------------------------------------------------------------------------
-local function is(name,x,       pat) 
-  pat = {num    = "^[A-Z]", 
-         goal   = "[!+-]$", 
-         min    = "-$", 
-         ignore = "X$"}
-  return (name or ""):find(pat[x]) end
--------------------------------------------------------------------------------
 local _id,_new_id = 0,function() _id=_id+1; return _id end
 
 function BIN.new(pos,name,lo,hi) 
@@ -66,6 +59,14 @@ function SYM:bins(rows,yfun,bins,    tmp,x)
       tmp[x]:add(row,yfun(row)) end end end
 
 -------------------------------------------------------------------------------
+-- (a) Sort rows on this column, with all the "?" at the start of the sort.
+-- (b) Run down the rows till you clear the ">" values then divide the rest into #rest/bins.
+--  Don't divide if (c) the current bin has less than 1/bins of the rows; 
+--  if (d) the current value is the same as the last value;
+-- if (e)  the current bin's (hi-lo) is not just noise, is more than a 
+--   small fraction of the standard deviation,
+-- When done, then (f) fill in any gaps between the bins and (f) stretch the first/last bin
+-- to negative/positive infinity.
 function NUM:bins(rows,yfun,bins,    _numLast,_order,bin,x,want)
   _numLast = function(x) return x=="?" and -math.huge or x end
   _order   = function(a,b) return _numLast(a[self.pos]) < _numLast(b[self.pos]) end
