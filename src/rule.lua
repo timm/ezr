@@ -64,7 +64,12 @@ function NUM:norm(x)
 -------------------------------------------------------------------------------
 function DATA.new() return new(DATA,{rows={}, cols=nil}) end 
 
-function DATA:read(file) for row in l.csv(file) do self:add(row) end; return self end
+local _rowid=0
+function DATA:read(file) 
+  for row in l.csv(file) do 
+    _rowid = 1 + _rowid
+    push(row, _rowid)
+    self:add(row) end; return self end
 
 function DATA:add(row)
   if self.cols then self:_body(row) else self.cols=self:_header(row) end end
@@ -82,10 +87,7 @@ function DATA:_header(row,      all,x,y)
       push(is(name,"goal") and y or x, col) end end 
   return {all=all, x=x, y=y} end 
 
-local _rowid=0
-function DATA:_body(row)
-  _rowid = _rowid + 1
-  push(row, _rowid)
+function DATA:_add(row)
   push(self.rows, row)  
   for _,col in pairs(self.cols.all) do col:add(row[col.pos]) end end
   
@@ -98,12 +100,12 @@ function DATA:bins(      bins)
   bins={}; for _,col in pairs(self.cols.x) do col:bins(self.rows,bins) end
   return l.sort(bins, l.down"ds") end
 
-function NUM:bins(rows,bins)
-  _numLast  = function(x)   return x=="?" and -math.huge or x end
-  _order    = function(a,b) return _numLast(a[self.pos]) < _numLast(b[self.pos]) end
-  bin       = push(bins, BIN.new(self.pos,self.name, -math.huge))
+function NUM:bins(rows,bins,    _numLast,_order,bin,x,want)
+  _numLast = function(x) return x=="?" and -math.huge or x end
+  _order   = function(a,b) return _numLast(a[self.pos]) < _numLast(b[self.pos]) end
+  bin      = push(bins, BIN.new(self.pos,self.name, -math.huge))
   for m,row in pairs(sort(self.rows, _order)) do
-    x = row[c] 
+    x = row[self.pos] 
     if x ~= "?" then
       want = want or (#self.rows - m) / the.bins
       if bin.n > want then
@@ -119,7 +121,6 @@ function SYM:bins(rows,bins,    tmp,x)
     if x ~= "?" then
       tmp[x] = tmp[x] or push(bins, BIN.new(self.pos,self.name,x,x))
       tmp[x]:add(row,self) end end end
-
 -----------------------------------------------------------------------------------------
 ---       _    _  
 --      (/_  (_| 
