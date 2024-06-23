@@ -11,7 +11,8 @@
 
 -- rulr.lua multi-objective rule generation   
 -- (c) 2024 Tim Menzies <timm@ieee.org>, BSD-2 license.
-local the = { bins  = 7,
+local the = { bins  = 10,
+              cohen = .35,
               beam  = 7,
               seed  = 1234567891,
               train = "../data/misc/auto93.csv"}
@@ -50,10 +51,10 @@ function BIN:add(row,y,     d,x)
 
 function BIN:__tostring(     lo,hi,s)
   lo,hi,s = self.lo, self.hi,self.name
-  if lo == -math.huge then return fmt("%s < %s", s,hi) end
-  if hi ==  math.huge then return fmt("%s >= %s",s,lo) end
+  if lo == -math.huge then return fmt("%s <= %s", s,hi) end
+  if hi ==  math.huge then return fmt("%s > %s",s,lo) end
   if lo ==  hi        then return fmt("%s == %s",s,lo) end
-  return fmt("%s <= %s < %s", lo, s, hi) end
+  return fmt("%s < %s <= %s", lo, s, hi) end
 
 -------------------------------------------------------------------------------
 function SYM:bins(rows,yfun,bins,    tmp,x)
@@ -68,17 +69,21 @@ function SYM:bins(rows,yfun,bins,    tmp,x)
 function NUM:bins(rows,yfun,bins,    _numLast,_order,bin,x,want)
   _numLast = function(x) return x=="?" and -math.huge or x end
   _order   = function(a,b) return _numLast(a[self.pos]) < _numLast(b[self.pos]) end
-  bin      = push(bins, BIN.new(self.pos,self.name, -math.huge))
   rows     = l.sort(rows, _order)
+  here     = {} 
+  bin      = push(here, push(bins, BIN.new(self.pos,self.name)))
   for i,row in pairs(rows) do
     x = row[self.pos] 
     if x ~= "?" then
       want = want or (#rows - i) / the.bins;
-      if bin.n > want then
+      if bin.n > want and #rows - i > want then
         if x ~= rows[i-1][self.pos] then
-          bin = push(bins, BIN.new(self.pos,self.name,bin.hi)) end  end
-      bin:add(row,yfun(row)) end end 
-  bin.hi = math.huge end
+          if bin.hi - bin.lo > the.cohen*self.sd then
+            bin = push(here, push(bins, BIN.new(self.pos,self.name))) end  end end
+      bin:add(row,yfun(row)) end end
+  for i = 2,#here do here[i].lo = here[i-1].hi end 
+  here[1].lo  = -math.huge 
+  here[#here].hi =  math.huge end
 
 -------------------------------------------------------------------------------
 function DATA:bins(      bins,indx,yfun)
@@ -86,7 +91,7 @@ function DATA:bins(      bins,indx,yfun)
   for n,row in pairs(self.rows) do row._id = n; indx[row._id] = row end
   yfun = function(row) return 1 - l.chebyshev(row,self.cols.y) end
   for _,col in pairs(self.cols.x) do col:bins(self.rows,yfun,bins) end
-  return bins end 
+  return bins,indx end 
 
 -----------------------------------------------------------------------------------------
 ---       _    _  

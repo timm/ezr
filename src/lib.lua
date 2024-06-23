@@ -65,6 +65,13 @@ function lib.shuffle(t,    u,j)
   for i = #u,2,-1 do j=math.random(i); u[i],u[j] = u[j],u[i] end
   return u end
 
+function lib.powerset(s,       t)
+  t = {{}}
+  for i = 1, #s do
+    for j = 1, #t do
+      t[#t+1] = {s[i],table.unpack(t[j])} end end
+   return t end
+
 -- ### Sorting
 function lib.sort(t,fun,     u) -- return a copy of `t`, sorted using `fun`,
   u={}; for _,v in pairs(t) do u[1+#u]=v end; table.sort(u,fun); return u end
