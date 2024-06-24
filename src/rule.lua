@@ -28,9 +28,12 @@ local BIN = {}
 -------------------------------------------------------------------------------
 local _id,_new_id = 0,function() _id=_id+1; return _id end
 
+--Incremetnall update  the (a) `lo` and `hi` value;
+--  the (b) observed rule._id values; (c) the mean `y` value.
+
 function BIN.new(pos,name,lo,hi) 
-  return new(BIN, {pos=pos,name=name,n=0,mu=0,_rowids={},
-                   lo=lo or math.huge, hi= hi or -math.huge}) end
+  return new(BIN, {pos=pos,name=name,n=0,mu=0, _rowids={},
+                   lo=lo or math.huge, hi= -math.huge}) end
 
 function BIN:add(row,y,     d,x)
   x = row[self.pos]
@@ -50,6 +53,7 @@ function BIN:__tostring(     lo,hi,s)
   return fmt("%s < %s <= %s", lo, s, hi) end
 
 -------------------------------------------------------------------------------
+-- Make one bin for every unique value in this column.
 function SYM:bins(rows,yfun,bins,    tmp,x)
   tmp={}
   for m,row in pairs(rows) do
@@ -94,6 +98,31 @@ function DATA:bins(      bins,indx,yfun)
   for _,col in pairs(self.cols.x) do col:bins(self.rows,yfun,bins) end
   return bins,indx end 
 
+function AND(t,u,     v)
+  v={}; for k,row in pairs(t) do if u[k] then v[k]=row end end
+  return v end
+
+function OR(ts,u,     v)
+  v={}; for _,tmp in pairs(t,u) do
+          for k,row in pairs(tmp) do v[k] = row end end 
+  return v end
+
+local function DATA:_combine(bins,      rule,tmp)
+  rule,tmp={},{}
+  for _,bin in pairs(bins) do tmp[bin.pos] = OR(tmp[bin.pos] or {}, bin._rowids) end
+  for _,v in pairs(tmp) do rule = AND(rule,v) end
+  s=0; for _,row in pairs(rule) do s = s + 1 - l.chebyshev(row, self.cols.y) end
+  return s/#bins,rule end
+         
+function DATA:rules(      good,bins,indx)
+  good={}
+  bins,indx = self:bins()
+  bins = l.sort(bins,l.down"mu")
+  for i = 1, min(the.beam, #bins) do push(good, bins[i]) end
+  for _,set in pairs(l.powerset(good)) do
+    s,rule = self:_combine(set) end end
+
+--  see
 -----------------------------------------------------------------------------------------
 ---       _    _  
 --      (/_  (_| 
@@ -116,6 +145,11 @@ function eg.bins(train,     d,last)
     if bin.name ~= last then print"" end
     print(o{n=bin.n,mu=bin.mu},bin) 
     last = bin.name end end
+
+function eg.rule(train,     d,last) 
+  d = DATA.new():read(the.train):sort()  
+  d:rules()
+end
 
 if pcall(debug.getlocal, 4, 1)
 then return {DATA=DATA}
