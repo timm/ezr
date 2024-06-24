@@ -43,7 +43,7 @@ function BIN:add(row,y,     d,x)
     self.mu = self.mu + d/self.n
     if x < self.lo then self.lo=x end
     if x > self.hi then self.hi=x end
-    self._rowids[row._id] =  row._id end end
+    self._rowids[row._id] =  y end end
 
 function BIN:__tostring(     lo,hi,s)
   lo,hi,s = self.lo, self.hi,self.name
@@ -91,36 +91,37 @@ function NUM:bins(rows,yfun,bins,    _numLast,_order,bin,x,want)
   here[#here].hi =  math.huge end
 
 -------------------------------------------------------------------------------
-function DATA:bins(      bins,indx,yfun)
-  bins,indx = {},{}
-  for n,row in pairs(self.rows) do row._id = n; indx[row._id] = row end
+function DATA:bins(      bins,yfun)
+  bins = {}
   yfun = function(row) return 1 - l.chebyshev(row,self.cols.y) end
   for _,col in pairs(self.cols.x) do col:bins(self.rows,yfun,bins) end
-  return bins,indx end 
+  return bins end 
 
-function AND(t,u,     v)
-  v={}; for k,row in pairs(t) do if u[k] then v[k]=row end end
+function AND(t,u,     v,yes)
+  v={}; for id,y in pairs(t) do if u[id] then yes=true; v[id]=y end end
+  if yes then return v end end
+
+function OR(t,u,     v)
+  v={}; for _,tu in pairs(t,u) do for id,y in pairs(tu) do  v[id]=y end end
   return v end
 
-function OR(ts,u,     v)
-  v={}; for _,tmp in pairs(t,u) do
-          for k,row in pairs(tmp) do v[k] = row end end 
-  return v end
+-- (rules:ids .... pos)
 
-local function DATA:_combine(bins,      rule,tmp)
-  rule,tmp={},{}
+local function DATA:_combine(bins,indx,      tmp,all,selected,s,n)
+  tmp,all,selected={},{},{}
   for _,bin in pairs(bins) do tmp[bin.pos] = OR(tmp[bin.pos] or {}, bin._rowids) end
-  for _,v in pairs(tmp) do rule = AND(rule,v) end
-  s=0; for _,row in pairs(rule) do s = s + 1 - l.chebyshev(row, self.cols.y) end
-  return s/#bins,rule end
+  for _,t in pairs(tmp) do all = AND(all,t); if rule==nil then return end end
+  s,n=0,0; for id,y in pairs(all) do n=n+1; s=s+y; push(selected, indx[id]) end
+  return s/n,selected end
          
-function DATA:rules(      good,bins,indx)
+function DATA:rules(  rows,       good,bins,indx)
+  for id,row in pairs(rows or self.rows)  do row._id =id; indx[id] = rule end
   good={}
   bins,indx = self:bins()
   bins = l.sort(bins,l.down"mu")
   for i = 1, min(the.beam, #bins) do push(good, bins[i]) end
   for _,set in pairs(l.powerset(good)) do
-    s,rule = self:_combine(set) end end
+    s,rule = self:_combine(set,indx) end end
 
 --  see
 -----------------------------------------------------------------------------------------
