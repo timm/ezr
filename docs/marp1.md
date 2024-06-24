@@ -3,10 +3,13 @@ marp: true
 paginate: true
 ---
 
+<small>
 
-# Your slide deck
+# EZR AI
 
-Start writing!asdasdasadadaadadsdsa
+Principles of lightweight micro modeling.      
+Tim Menzies <timm@ieee.org>      
+June 10, 2024
 
 
 -------------------------

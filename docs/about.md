@@ -20,21 +20,24 @@ Decades of work with AI analytics  had found many such short cuts.
 ## Near enoguh (is good enough)
 
 Many models learned by AI exhibit
-  an inherent variability  when (say)  built N$ times, each time using 90% of 
+  an inherent variability  when (say)  built $N$ times, each time using 90% of 
   the available data. 
 
-<img width=400 src="img/train_test_split.png"><br>
-<img width=400 scr="img/crossval.png">
+<img width=400 src="img/train_test_split.png">
+
+<img width=400 src="img/crossval.png">
+ 
 
 This means that any promise that a model achieves
   some level of performance has be statistical in nature. Modeling
   can stop early when once we find methods that
-  are statistically indistinguishable  
-  from the top score.
+  are statistically indistinguishable    from the top score.
 
 This can have a profound impact on the modeling process. Cohen tells us that
-two values are stusticallt the same if they differen by less than 0.35 of the standard deviation
-[^cohen1]
+two values are statistically indistinguishable if they differ by less than 0.35 of the standard deviation
+
+(To be premcise, Cohen's thresholds are 0.2 and 0.5 for small and medium. O.35 is hence the boundary between medium and small.)
+ 
 
 [^cohen1:] Actually, cohen
 
