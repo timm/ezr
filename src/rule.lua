@@ -26,8 +26,6 @@ local DATA,NUM,SYM = data.DATA, data.NUM, data.SYM
 local BIN = {}
 
 -------------------------------------------------------------------------------
-local _id,_new_id = 0,function() _id=_id+1; return _id end
-
 --Incremetnall update  the (a) `lo` and `hi` value;
 --  the (b) observed rule._id values; (c) the mean `y` value.
 
@@ -71,7 +69,7 @@ function SYM:bins(rows,yfun,bins,    tmp,x)
 --   small fraction of the standard deviation,
 -- When done, then (f) fill in any gaps between the bins and (f) stretch the first/last bin
 -- to negative/positive infinity.
-function NUM:bins(rows,yfun,bins,    _numLast,_order,bin,x,want)
+function NUM:bins(rows,yfun,bins,    _numLast,_order,bin,x,want,here)
   _numLast = function(x) return x=="?" and -math.huge or x end
   _order   = function(a,b) return _numLast(a[self.pos]) < _numLast(b[self.pos]) end
   rows     = l.sort(rows, _order)
@@ -98,30 +96,38 @@ function DATA:bins(      bins,yfun)
   return bins end 
 
 function AND(t,u,     v,yes)
-  v={}; for id,y in pairs(t) do if u[id] then yes=true; v[id]=y end end
-  if yes then return v end end
-
-function OR(t,u,     v)
-  v={}; for _,tu in pairs(t,u) do for id,y in pairs(tu) do  v[id]=y end end
+  v={}; for id,y in pairs(t) do if u[id] then v[id]=y end end
   return v end
 
--- (rules:ids .... pos)
+function OR(t,u,     v)
+  v={}; for _,tu in pairs{t,u} do for id,y in pairs(tu) do  v[id]=y end end
+  return v end
 
-local function DATA:_combine(bins,indx,      tmp,all,selected,s,n)
+function DATA:_combine(bins,indx,      tmp,all,selected,s,n,rule)
   tmp,all,selected={},{},{}
   for _,bin in pairs(bins) do tmp[bin.pos] = OR(tmp[bin.pos] or {}, bin._rowids) end
-  for _,t in pairs(tmp) do all = AND(all,t); if rule==nil then return end end
-  s,n=0,0; for id,y in pairs(all) do n=n+1; s=s+y; push(selected, indx[id]) end
-  return s/n,selected end
+  print("")
+  for k,v in pairs(tmp) do 
+    io.write("\n==>",k)
+    for k1,v1 in pairs(v) do
+       io.write(":",k1,":",v1)
+       end end
+  for _,t in pairs(tmp) do all = AND(all,t) end 
+  s,n=0,0; for id,y in pairs(all) do print(2); n=n+1; s=s+y; push(selected, indx[id]) end
+  return s/(n+1E-30),selected end
          
-function DATA:rules(  rows,       good,bins,indx)
-  for id,row in pairs(rows or self.rows)  do row._id =id; indx[id] = rule end
-  good={}
-  bins,indx = self:bins()
+function DATA:rules(  rows,       good,bins,indx,s,rule)
+  indx={}
+  for id,row in pairs(rows or self.rows)  do row._id =id; indx[id] = row end
+  good,bins = {},{}
+  bins = self:bins(bins)
   bins = l.sort(bins,l.down"mu")
   for i = 1, min(the.beam, #bins) do push(good, bins[i]) end
   for _,set in pairs(l.powerset(good)) do
-    s,rule = self:_combine(set,indx) end end
+    if #set > 0 then
+      s,rule = self:_combine(set,indx) 
+      if s then print(s) end end end end
+
 
 --  see
 -----------------------------------------------------------------------------------------
