@@ -1,5 +1,4 @@
 title: A little lite AI
 description: Principles of lightweight micro modeling.
-#remote_theme: pages-themes/minimal@v0.2.0
-remote_theme: kwhaler/brutalist-jekyll
+remote_theme: pages-themes/minimal@v0.2.0 
 logo: /img/banner.png
