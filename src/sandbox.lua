@@ -87,9 +87,9 @@ function o(x)
 function new (klass,object) 
   klass.__index=klass; klass.__tostring=o; setmetatable(object, klass); return object end
 
-function bins(data,rows,      bins,qval,fun)
+function DATA:bins(rows,      bins,qval,fun)
   bins = {}
-  for _,col in pairs(data.cols.x) do
+  for _,col in pairs(self.cols.x) do
     val = function(a) return a[col.pos]=="?" and -big or a[col.pos] end
     col:bins(bins, sort(rows, function(a,b) return val(a) < val(b) end)) end
   return bins end 
