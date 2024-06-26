@@ -1,30 +1,47 @@
 local the={bins=17, cohen=0.35}
+local big=1E30
 
-function train(file)
-  cols={y={}, x{}, nump={}, names=nil}
-  for row in csv(file) do
-    if not head then 
-      head=row  
-      for c,x in pairs(head) do
-        if x:find"^[A-Z]" then col.nump[c] = true end
-        if x:find"[!+-]$" then col.y[c] = x:find"-$" and 0 or 1 
-                             else col.x[c] = true end end
-    else 
-       for c,x in pairs(row) do
-         rows[1+#rows]= row
+function train(it,    data)
+  data = {rows={}, cols=nil}
+  for row in it do
+    if data.cols then body(data,row) else data.cols=head(row) end end 
+  return data end
 
-function head(cols,row)
-  i = {xs=row, x={}, y={}, nump={}, has={}}
+function head(row,    cols)
+  cols = {x={}, y={}, num={}, has={}}
   for k,v in pairs(row) do
-    i.has[k] = {}
-    if v:find"^[A-Z]" then i.nump[k] = true end
-    if v:find"[!+-]$" then i.y[k] = v:find"-$" and 0 or 1 
-                      else i.x[k] = true end end
-  return i end 
+    cols.has[k] = {}
+    if v:find"^[A-Z]" then cols.num[k] = true end
+    if v:find"[!+-]$" then cols.y[k] = v:find"-$" and 0 or 1 
+                      else cols.x[k] = true end end
+  return cols end 
 
 function body(data,row)
-  for c,x in pairs(row) do
-    if x ~= "!" then data.cols.has[c]
-end
+  push(data.rows,row)
+  for k,v in pairs(row) do
+    if x ~= "!" then push(data.cols.has[k], v) end end end
 
-function push
+function bin(name,pos) return {name=name,pos=pos,lo=big,hi= -big,n=0} end
+
+function bins(data)
+  bins={}
+  for k,t in pairs(data.cols.has) do
+    table.sort(t)
+    (cols.num[k] and numBins or symBins)(data,k,t,tmp) end end 
+
+function numBins(data,k,t,bins,     big,dull,b,out) 
+  big  = #t/the.bins
+  dull = (t[#t] - t[1])/2.58 * the.cohen
+  tmp  = {}
+  b    = push(bins, push(tmp, bin(data.cols.names[k], k)))
+  for k,v in pairs(t) do
+    if b.n > big and b.hi - b.lo > dull and #t - k > big then
+      b = push(bins, push(tmp, bin(data.cols.names[k],k))) end
+    b.n  = b.n + 1
+    b.lo = min(b.lo,v)
+    b.hi = max(b.hi,v) end
+  tmp[1].lo = - big
+  tmp[#tmp].hi = big
+  for k = 2,#t do tmp[k].lo = tmp[k-1].hi end
+
+function push(t,x) t[1+#t]=x; return x end 
