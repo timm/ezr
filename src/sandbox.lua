@@ -3,33 +3,33 @@ local big=1E30
 
 local train,head,bin,bins,numBins
 -- move to "?"sort
-function NUM(name,pos)
-  return {name=name, pos=pos, n=0, mu=0, m2=0, sd=0} end
+function NUM.new(name,pos)
+  return new(NUM,{name=name, pos=pos, n=0, mu=0, m2=0, sd=0}) end
 
-function add2num(num,x,     d)
+function NUM:add(x,     d)
   if x ~= "?" then
-    num.n  = num.n + 1
-    d      = x - num.mu
-    num.mu = num.mu + d/num.n
-    num.m2 = num.m2 + d*(x - num.mu)
-    num.sd = n<2 and 0 or (num.m2/(num.n - 1))^.5 
-    return num end end 
+    self.n  = self.n + 1
+    d       = x - self.mu
+    self.mu = self.mu + d/self.n
+    self.m2 = self.m2 + d*(x - self.mu)
+    self.sd = n<2 and 0 or (self.m2/(self.n - 1))^.5 
+    return self end end 
 
-function XY(name,pos)
-  return {x={lo=big, hi=-big}, y=BIN(name,pos)} end
+function XY.new(name,pos)
+  return new(XY,{x={lo=big, hi=-big}, y=BIN(name,pos)}) end
 
-function add2xy(xy,x,y)
-  if add2num(xy.y,y) then
-    xy.x.lo = math.min(x, xy.x.lo)
-    xy.x.hi = math.max(x, xy.x.hi) end end
+function XY:add(x,y)
+  if add2num(self.y,y) then
+    self.x.lo = math.min(x, self.x.lo)
+    self.x.hi = math.max(x, self.x.hi) end end
 
-function DATA(    data) 
-  data = {rows={}, cols=nil}
+function DATA.new(    data) 
+  data = new(DATA, {rows={}, cols=nil}) 
   for r in csv(file) do  add2data(data,r) end
   return data end
 
-function add2data(data, row)
-  if data.cols then push(data.rows, row) else data.cols = COLS(row) end end
+function DATA:add(row)
+  if self.cols then push(self.rows, row) else self.cols = COLS(row) end end
 
 function COLS(row,    cols)
   cols = {x={}, y={}, num={}, has={}}
@@ -40,11 +40,14 @@ function COLS(row,    cols)
                       else cols.x[k]   = v end end
   return cols end 
 
+function new (klass,object) 
+  klass.__index=klass; setmetatable(object, klass); return object end
+
 function bins(data,rows,      bins,qval,fun)
   bins = {}
   for k,name in pairs(data.cols.x) do
     qval= function(a)   return a=="?" and -big or a end
-    fun = function(a,b) return qval(a[k]) < qval(b[k]) end
+    fun = fuAnction(a,b) return qval(a[k]) < qval(b[k]) end
     (cols.num[k] and numBins or symBins)(sort(rows,fun),k,name,bins) end 
   return bins end 
 
