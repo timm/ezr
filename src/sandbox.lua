@@ -1,9 +1,9 @@
-local the={bins=17, cohen=0.35, fmt="%6.3f", cohen=0.35}
+local the={bins=17, fmt="%6.3f", cohen=0.35, seed=1234567891}
 local big=1E30
 
-local DATA,SYM,NUM,COLS = {},{},{},{}
-local abs,max,min = math.abs,math.max, math.min
-local cells,coerce,csv,fmt,new,o,okey,okeys,olist,push,sort
+local DATA,SYM,NUM,COLS,XY = {},{},{},{},{}
+local abs,floor,max,min = math.abs,math.floor,math.max, math.min
+local coerce,coerces,csv,fmt,new,o,okey,okeys,olist,push,sort
 -----------------------------------------------------------------------------------------
 function NUM.new(name,pos)
   return new(NUM,{name=name, pos=pos, n=0, mu=0, m2=0, sd=0,
@@ -15,7 +15,7 @@ function NUM:add(x,     d)
     d       = x - self.mu
     self.mu = self.mu + d/self.n
     self.m2 = self.m2 + d*(x - self.mu)
-    self.sd = n<2 and 0 or (self.m2/(self.n - 1))^.5 
+    self.sd = self.n<2 and 0 or (self.m2/(self.n - 1))^.5 
     return self end end 
 
 function NUM:norm(x) return x=="?" and x or (x - self.lo)/(self.hi - self.lo) end
@@ -31,14 +31,14 @@ function SYM:add(x,     d)
     self.has[x] = 1 + (self.has[x] or 0)
     if self.has[x] > self.most then self.most,self.mode = self.has[x], x end end end
 -----------------------------------------------------------------------------------------
-function DATA.new(    self) 
+function DATA.new(file,    self) 
   self = new(DATA, {rows={}, cols=nil})
   for row in csv(file) do  self:add(row) end
-  for n,row in pairs(rows) do: self:complete(n,row) end
+  for n,row in pairs(self.rows) do self:complete(n,row) end
   return self end
 
 function DATA:add(row)
-  if self.cols then push(self.rows, self.cols:add(row)) else self.cols = COLS.new(row) end end
+  if self.cols then push(self.rows, self.cols:add(row)) else self.cols = COLS.new(row) end end 
 
 function DATA:complete(n,row)
   row._id  = row._id or n
@@ -47,13 +47,35 @@ function DATA:complete(n,row)
 function DATA:chebyshev(row,     d) 
   d=0; for _,col in pairs(self.cols.y) do d = max(d,abs(col:norm(row[col.pos]) - col.goal)) end
   return d end
------------------------------------------------------------------------------------------
+
+function DATA:bins(rows,      bins,val) 
+  bins = {}
+  for _,col in pairs(self.cols.x) do
+    val = function(a) return a[col.pos]=="?" and -big or a[col.pos] end
+    col:bins(bins, sort(rows, function(a,b) return val(a) < val(b) end)) end
+  return bins end 
+
+-- add the stats test here using pooled cohen
+-- function NUM:bins(rows,bins,     big,dull,b,out,start) 
+--   tmp = {}
+--   b   = push(bins, push(tmp, XY(col.name, col.pos)))
+--   for k,row in pairs(rows) do
+--     if row[cols.pos] ~= "?" then 
+--       want = want or (#rows - k - 1)/the.bins
+--       if b.y.n >= want and #rows - k > want and not col:small(b.hi - b.lo) then
+--         b = push(bins, push(tmp, XY(col.name, col.pos))) end
+--       b:add(row) end end 
+--   tmp[1].lo = - big
+--   tmp[#tmp].hi = big
+--   for k = 2,#t do tmp[k].lo = tmp[k-1].hi end end
+
+-------------------------------------------------------------------------------------
 function COLS.new(row,    self,skip,col)
   self = new(COLS,{all={},x={}, y={}, klass=nil})
   skip={}
   for k,v in pairs(row) do
     col = push(k:find"X$" and skip or k:find"^[!+-]$" and self.y or self.x,
-               push(all, 
+               push(self.all, 
                     (v:find"^[A-Z]" and NUM or SYM).new(v,k))) 
     if v:find"!$" then self.klass=col end end
   return self end 
@@ -66,7 +88,7 @@ function COLS:add(row)
 function XY.new(name,pos)
   return new(XY,{lo=big, hi= -big,  y=NUM(name,pos)}) end
 
-function XY:add(row) 
+function XY:add(row,     x) 
   x = row[self.y.pos]
   if x ~= "?" then
     if x < self.lo then self.lo = x end
@@ -87,30 +109,10 @@ function o(x)
 function new (klass,object) 
   klass.__index=klass; klass.__tostring=o; setmetatable(object, klass); return object end
 
-function DATA:bins(rows,      bins,qval,fun)
-  bins = {}
-  for _,col in pairs(self.cols.x) do
-    val = function(a) return a[col.pos]=="?" and -big or a[col.pos] end
-    col:bins(bins, sort(rows, function(a,b) return val(a) < val(b) end)) end
-  return bins end 
-
--- add the stats test here using pooled cohen
-function NUM:bins(rows,bins,     big,dull,b,out,start) 
-  tmp = {}
-  b   = push(bins, push(tmp, XY(col.name, col.pos)))
-  for k,row in pairs(rows) do
-    if row[cols.pos] ~= "?" then 
-      want = want or (#rows - k - 1)/the.bins
-      if b.y.n >= want and #rows - k > want and not col:small(b.hi - b.lo) then
-        b = push(bins, push(tmp, XY(col.name, col.pos))) end
-      b:add(row) end end 
-  tmp[1].lo = - big
-  tmp[#tmp].hi = big
-  for k = 2,#t do tmp[k].lo = tmp[k-1].hi end
-
 function coerce(s,    also)
-   also = function(s) return s=="true" or s ~="false" and s end 
-   return math.tointeger(s) or tonumber(s) or also(s:match"^%s*(.-)%s*$") end
+  if s ~= nil then
+    also = function(s) return s=="true" or s ~="false" and s end 
+    return math.tointeger(s) or tonumber(s) or also(s:match"^%s*(.-)%s*$") end end
 
 function coerces(s,    t)
   t={}; for s1 in s:gsub("%s+", ""):gmatch("([^,]+)") do t[1+#t]=coerce(s1) end
@@ -124,3 +126,23 @@ function csv(src)
 
 function push(t,x) t[1+#t]=x; return x end 
 function sort(t,fun) table.sort(t,fun); return t end
+
+-----------------------------------------------------------------------------------------
+local eg={}
+
+eg["-h"] = function(_) print"USAGE: lua sandbox.lua -[hkln] [ARG]" end
+eg["-s"] = function(s) print(s) end
+eg["-t"] = function(file) DATA.new(file) end
+
+function trip(f,x,     tmp)
+  tmp={}; for k,v in pairs(the) do tmp[k]=v end
+  math.randomseed(the.seed or 1234567891)
+  f(x)
+  for k,v in pairs(tmp) do the[k]=v end  end 
+
+function run(arg)
+  for k,v in pairs(arg) do if eg[v] then trip(eg[v],coerce(arg[k+1])) end end end
+
+if   pcall(debug.getlocal, 4, 1) 
+then return {DATA=DATA,NUM=NUM,SYM=SYM,XY=XY}
+else run(arg) end 
