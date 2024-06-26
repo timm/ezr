@@ -71,8 +71,8 @@ function XY:add(row)
   if x ~= "?" then
     if x < self.lo then self.lo = x end
     if x > self.hi then self.hi = x end
-    self.y:add(row._val) end end
------------------------------------------------------------------------------------------
+    self.y:add(row._y) end end
+-----------------------------------------------------------------------------------------
 fmt = string.format
 
 function okey(k,v) if not tostring(k):find"^_" then return tostring(v) end end
