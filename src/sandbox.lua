@@ -1,6 +1,7 @@
 #!/usr/bin/env lua
 -- sandbox.lua : multi-objective rule generation
 -- (c) Tim Menzies <timm@ieee.org> MIT license
+
 local the={bins=17, fmt="%.3g", cohen=0.35, seed=1234567891,
            train="../data/misc/auto93.csv"}
 
@@ -43,7 +44,7 @@ function SYM:add(x,     d)
     return x end end
 -----------------------------------------------------------------------------------------
 function ROW.new(t) return new(ROW,{cells=t,y=0,id=id()}) end
-
+-----------------------------------------------------------------------------------------
 function DATA.new(file,    self) 
   self = new(DATA, {rows={}, cols=nil})
   for row in csv(file) do  self:add(ROW.new(row)) end
@@ -175,7 +176,8 @@ function copy(t,     u)
 -----------------------------------------------------------------------------------------
 local eg={}
 
-eg["-h"] = function(_) print"USAGE: lua sandbox.lua -[hkln] [ARG]" end
+eg["-h"] = function(_) 
+  print"USAGE: lua sandbox.lua -[hkln] [ARG]" end
 
 eg["--copy"] = function(_,     n1,n2,n3) 
   n1,n2 = NUM.new(),NUM.new()
