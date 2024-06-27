@@ -1,11 +1,13 @@
 #!/usr/bin/env lua
+-- sandbox.lua : multi-objective rule generation
+-- (c) Tim Menzies <timm@ieee.org> MIT license
 local the={bins=17, fmt="%.3g", cohen=0.35, seed=1234567891,
            train="../data/misc/auto93.csv"}
-local big=1E30
 
+local big=1E30
 local DATA,SYM,NUM,COLS,XY,ROW = {},{},{},{},{},{}
 local abs, max, min = math.abs, math.max, math.min
-local coerce,coerces,copy,csv,fmt,new,o,okey,okeys,olist,push,sort
+local coerce,coerces,copy,csv,fmt,id,new,o,okey,okeys,olist,push,sort
 -----------------------------------------------------------------------------------------
 function NUM.new(name,pos)
   return new(NUM,{name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=big, hi= -big,
@@ -40,9 +42,6 @@ function SYM:add(x,     d)
     if self.has[x] > self.most then self.most,self.mode = self.has[x], x end 
     return x end end
 -----------------------------------------------------------------------------------------
-local _id=0
-local function id() _id=_id+1; return _id end
-
 function ROW.new(t) return new(ROW,{cells=t,y=0,id=id()}) end
 
 function DATA.new(file,    self) 
@@ -65,8 +64,8 @@ function COLS.new(row,    self,skip,col)
   skip={}
   for k,v in pairs(row.cells) do
     col = push(v:find"X$" and skip or v:find"[!+-]$" and self.y or self.x,
-               push(self.all, 
-                    (v:find"^[A-Z]" and NUM or SYM).new(v,k))) 
+            push(self.all, 
+              (v:find"^[A-Z]" and NUM or SYM).new(v,k))) 
     if v:find"!$" then self.klass=col end end
   return self end 
 
@@ -80,17 +79,16 @@ function DATA:xys(rows,      xys,val,down)
   for _,col in pairs(self.cols.x) do
     val  = function(a)   return a.cells[col.pos]=="?" and -big or a.cells[col.pos] end
     down = function(a,b) return val(a) < val(b) end
-    for _,bin in pairs(col:xys(sort(rows, down))) do 
-      if not (bin.lo == -big and bin.hi == big) then 
-          push(xys,bin) end  end end
-  return xys end --sort(xys,function(xy1,xy2) return xy1.y.mu > xy2.y.mu end) end
+    for _,xy in pairs(col:xys(sort(rows, down))) do 
+      if not (xy.lo == -big and xy.hi == big) then push(xys,xy) end  end end
+  return xys end 
 
 function SYM:xys(rows,     t,x) 
   t={}
   for k,row in pairs(rows) do
     x= row.cells[self.pos] 
     if x ~= "?" then
-      t[x] = t[x] or XY.new(self.name,self.pos)
+      t[x] = t[x] or XY.new(self.name,self.pos,x)
       t[x]:add(row) end end
   return t end
 
@@ -104,18 +102,19 @@ function NUM:xys(rows,     t,a,b,ab,x,want)
       want = want or (#rows - k - 1)/the.bins
       if b.y.n >= want and #rows - k > want and not self:small(b.hi - b.lo) then
         a = t[#t]; if a and a.y:same(b.y) then t[#t]=ab else push(t,b) end
-        ab=copy(t[#t])
-        b = XY.new(self.name,self.pos) end
+        ab= copy(t[#t])
+        b = XY.new(self.name,self.pos,x) end
       b:add(row) 
-      ab:add(row) end end 
+      ab:add(row) 
+  end end 
   a = t[#t]; if a and a.y:same(b.y) then t[#t]=ab else push(t,b) end
   t[1].lo  = -big
   t[#t].hi =  big
   for k = 2,#t do t[k].lo = t[k-1].hi end 
   return t end
 -----------------------------------------------------------------------------------------
-function XY.new(name,pos)
-  return new(XY,{lo=big, hi= -big,  _rules={}, y=NUM.new(name,pos)}) end
+function XY.new(name,pos,lo,hi)
+  return new(XY,{lo=lo or big, hi= hi or lo or -big,  _rules={}, y=NUM.new(name,pos)}) end
 
 function XY:add(row,     x) 
   x = row.cells[self.y.pos]
@@ -126,12 +125,15 @@ function XY:add(row,     x)
     self.y:add(row.y) end end
 
 function XY:__tostring(     lo,hi,s)
-  lo,hi,s = self.lo, self.hi,self.y,name
-  if lo == -math.huge then return fmt("%s < %s", s,hi) end
-  if hi ==  math.huge then return fmt("%s >= %s",s,lo) end
+  lo,hi,s = self.lo, self.hi,self.y.name
+  if lo == -math.huge then return fmt("%s < %g", s,hi) end
+  if hi ==  math.huge then return fmt("%s >= %g",s,lo) end
   if lo ==  hi        then return fmt("%s == %s",s,lo) end
-  return fmt("%s <= %s < %s", lo, s, hi) end
+  return fmt("%g <= %s < %g", lo, s, hi) end
 -----------------------------------------------------------------------------------------
+local _id=0
+function id() _id=_id+1; return _id end
+
 fmt = string.format
 
 function olist(t)  local u={}; for k,v in pairs(t) do push(u, fmt("%s", o(v))) end; return u end
@@ -145,10 +147,8 @@ function o(x)
   if type(x)~="table"  then return tostring(x) end 
   return "{" .. table.concat(#x==0 and okeys(x) or olist(x),", ")  .. "}" end
 
-
-
 function new (klass,object) 
-  klass.__index=klass; klass.__tostring=o; setmetatable(object, klass); return object end
+  klass.__index=klass; setmetatable(object, klass); return object end
 
 function coerce(s,    also)
   if s ~= nil then
@@ -202,10 +202,38 @@ eg["--xys"] = function(file,     d,last)
   d= DATA.new(file or the.train) 
   for _,xy in pairs(d:xys(d.rows)) do
     if xy.y.name ~= last then print""; last=xy.y.name end
-     print(xy) end
+     print(fmt("%5.3g\t %s", xy.y.mu, xy)) end
   end 
 -----------------------------------------------------------------------------------------
 if   pcall(debug.getlocal, 4, 1) 
 then return {DATA=DATA,NUM=NUM,SYM=SYM,XY=XY}
 else math.randomseed(the.seed or 1234567891)
      for k,v in pairs(arg) do if eg[v] then eg[v](coerce(arg[k+1])) end end end
+-----------------------------------------------------------------------------------------
+-- ## Details
+--
+-- - Download:     github.com/timm/ezr/blob/main/src/sandbox.lua
+-- - Sample Data:  github.com/timm/ezr/tree/main/data/*/*.csv (ignore the "old" directory)
+-- - Sample Usage: lua sandox.lua --xys data/misc/auto93.csv
+
+-- ## MIT License
+--
+-- Copyright (c) 2024, Tim Menzies
+--
+-- Permission is hereby granted, free of charge, to any person obtaining a copy
+-- of this software and associated documentation files (the "Software"), to deal
+-- in the Software without restriction, including without limitation the rights
+-- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-- copies of the Software, and to permit persons to whom the Software is
+-- furnished to do so, subject to the following conditions:
+--
+-- The above copyright notice and this permission notice shall be included in all
+-- copies or substantial portions of the Software.
+--
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+-- SOFTWARE. 
