@@ -77,7 +77,7 @@ function SYM:bins(rows,     t)
       t[x]:add(row) end end
   return t end
 
-function NUM:bins(rows,     t,b,ab,x,want)
+function NUM:bins(rows,     t,a,b,ab,x,want)
   t = {}
   b = XY(self.name, self.pos)
   ab= XY(self.name, self.pos)
@@ -86,11 +86,11 @@ function NUM:bins(rows,     t,b,ab,x,want)
     if x ~= "?" then 
       want = want or (#rows - k - 1)/the.bins
       if b.y.n >= want and #rows - k > want and not col:small(b.hi - b.lo) then
-        if t[#t] and t[#t].y:same(b.y) then t[#t]=ab else ab = copy(push(t,b)) end
+        a = t[#t]; if a and a.y:same(b.y) then t[#t]=ab else ab = copy(push(t,b)) end
         b = XY(col.name,cols.pos) end
       b:add(row) 
       ab:add(row) end end 
-  if t[#t] and t[#t].y:same(b.y) then t[#t]=ab else push(t,b) end
+  a = t[#t]; if a and a.y:same(b.y) then t[#t]=ab else push(t,b) end
   t[1].lo  = -big
   t[#my].h =  big
   for k = 2,#t do t[k].lo = t[k-1].hi end 
@@ -159,23 +159,33 @@ function sort(t,fun) table.sort(t,fun); return t end
 function copy(t,     u)
   if type(t) ~= "table" then return t end 
   u={}; for k,v in pairs(t) do u[copy(k)] = copy(v) end 
-  return setmetable(u, getmetatable(t)) end
+  return setmetatable(u, getmetatable(t)) end
 -----------------------------------------------------------------------------------------
 local eg={}
 
 eg["-h"] = function(_) print"USAGE: lua sandbox.lua -[hkln] [ARG]" end
-eg["--cohen"] = function(_) 
+
+eg["--copy"] = function(_,     n1,n2) 
+  n1,n2 = NUM.new(),NUM.new()
+  for i=1,100 do n2:add(n1:add(math.random()^2)) end
+  n3 = copy(n2)
+  for i=1,100 do n3:add(n2:add(n1:add(math.random()^2))) end
+  for k,v in pairs(n3) do assert(v == n2[k] and v == n1[k]) end 
+  n3:add(0.5)
+  assert(n2.mu ~= n3.mu) end
+
+eg["--cohen"] = function(_,    u,t) 
     for _,inc in pairs{1,1.05,1.1,1.15,1.2,1.25} do
       u,t = NUM.new(), NUM.new()
       for i=1,20 do u:add( inc * t:add(math.random()^.5))  end
       print(inc, u:same(t)) end end 
 
-eg["--train"] = function(file,     d) 
+eg["--train"] = function(file,     d,want) 
   d= DATA.new(file or the.train) 
   want=1
   for i,row in pairs(sort(d.rows,function(a,b) return a.y > b.y end)) do
     if i == want then want=2*want; print(i, o{y=row.y,row=row.cells}) end end end
-
+-----------------------------------------------------------------------------------------
 if   pcall(debug.getlocal, 4, 1) 
 then return {DATA=DATA,NUM=NUM,SYM=SYM,XY=XY}
 else math.randomseed(the.seed or 1234567891)
