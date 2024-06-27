@@ -1,5 +1,5 @@
 #!/usr/bin/env lua
-local the={bins=17, fmt="%6.3f", cohen=0.35, seed=1234567891,
+local the={bins=17, fmt="%.3g", cohen=0.35, seed=1234567891,
            train="../data/misc/auto93.csv"}
 local big=1E30
 
@@ -9,7 +9,7 @@ local coerce,coerces,csv,fmt,new,o,okey,okeys,olist,push,sort
 -----------------------------------------------------------------------------------------
 function NUM.new(name,pos)
   return new(NUM,{name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=big, hi= -big,
-                  goal= name:find"-$" and 0 or 1}) end
+                  goal= (name or ""):find"-$" and 0 or 1}) end
 
 function NUM:add(x,     d)
   if x ~= "?" then
@@ -20,7 +20,7 @@ function NUM:add(x,     d)
     self.sd = self.n<2 and 0 or (self.m2/(self.n - 1))^.5 
     self.lo = min(x, self.lo)
     self.hi = max(x, self.hi)
-    return self end end 
+    return x end end 
 
 function NUM:norm(x) return x=="?" and x or (x - self.lo)/(self.hi - self.lo) end
 
@@ -28,7 +28,7 @@ function NUM:small(x) return x < the.cohen * self.sd end
 
 function NUM.same(i,j,    pooled)
   pooled = (((i.n-1)*i.sd^2 + (j.n-1)*j.sd^2)/ (i.n+j.n-2))^0.5
-  return abs(i.mu - j.mu) / pooled >= (the.cohen or .35) end
+  return abs(i.mu - j.mu) / pooled <= (the.cohen or .35) end
 -----------------------------------------------------------------------------------------
 function SYM.new(name,pos)
   return new(SYM,{name=name, pos=pos, n=0, has={}, most=0, mode=nil}) end
@@ -37,7 +37,8 @@ function SYM:add(x,     d)
   if x ~= "?" then
     self.n  = self.n + 1
     self.has[x] = 1 + (self.has[x] or 0)
-    if self.has[x] > self.most then self.most,self.mode = self.has[x], x end end end
+    if self.has[x] > self.most then self.most,self.mode = self.has[x], x end 
+    return x end end
 -----------------------------------------------------------------------------------------
 local _id=0
 local function id() _id=_id+1; return _id end
@@ -61,50 +62,39 @@ function DATA:chebyshev(row,     d)
 
 function DATA:bins(rows,      bins,val) 
   bins = {}
-  for _,col in pairs(self.cols.x) do
-    val = function(a) return a.cells[col.pos]=="?" and -big or a.cells[col.pos] end
-    col:bins(bins, sort(rows, function(a,b) return val(a) < val(b) end)) end
+  for _,c in pairs(self.cs.x) do
+    val = function(a) return a.cells[c.pos]=="?" and -big or a.cells[c.pos] end
+    for _,bin in pairs(c:bins(sort(rows, function(a,b) return val(a) < val(b) end))) do
+       push(bins,bin) end end
   return bins end 
 
-for row in rows
-  one:add(row)
-  two:add(row)
-  onetwo:add(row)
-  if enough(one)
-    push(tmp,two)
-    two.same(one)
-    all[#all]=onetwo
-    two=new(thing)
-    one=two 
-
-a,b,ab
-andd to b and ab
-if a:same b, switch a for ab, make new b
-of a different make a new 
--- add the stats test here using pooled cohen
-function NUM:bins(rows,bins,     big,dull,b,out,start) 
-  tmp = {}
-  b1 = XY(col.name, col.pos)
-  b2 = XY(col.name, col.pos)
-  b12 = XY(col.name,cols.pos)
-  twin = XY(col.name, col.pos)
+function SYM:bins(rows,     t)
+  t={}
   for k,row in pairs(rows) do
-    if row[cols.pos] ~= "?" then 
+    x= row.cells[self.pos] 
+    if x ~= "?" then
+      t[x] = t[x] or XY(self.name,self.pos)
+      t[x]:add(row) end end
+  return t end
+
+function NUM:bins(rows,     t,b,ab,x,want)
+  t = {}
+  b = XY(self.name, self.pos)
+  ab= XY(self.name, self.pos)
+  for k,row in pairs(rows) do
+    x = row.cells[self.pos] 
+    if x ~= "?" then 
       want = want or (#rows - k - 1)/the.bins
       if b.y.n >= want and #rows - k > want and not col:small(b.hi - b.lo) then
-        if b2:same(b1) then
-           tmp[#tmp] = b12
-           b1 = b2
-           b12 =
-        if b1 same as b12
-          
-        
-        b = push(bins, push(tmp, XY(col.name, col.pos))) end
-      c:add(row) 
-      b:add(row) end end 
-  tmp[1].lo = - big
-  tmp[#tmp].hi = big
-  for k = 2,#t do tmp[k].lo = tmp[k-1].hi end end
+        if t[#t] and t[#t].y:same(b.y) then t[#t]=ab else ab = copy(push(t,b)) end
+        b = XY(col.name,cols.pos) end
+      b:add(row) 
+      ab:add(row) end end 
+  if t[#t] and t[#t].y:same(b.y) then t[#t]=ab else push(t,b) end
+  t[1].lo  = -big
+  t[#my].h =  big
+  for k = 2,#t do t[k].lo = t[k-1].hi end 
+  return t end
 -------------------------------------------------------------------------------------
 function COLS.new(row,    self,skip,col)
   self = new(COLS,{all={},x={}, y={}, klass=nil})
@@ -134,12 +124,14 @@ function XY:add(row,     x)
 -----------------------------------------------------------------------------------------
 fmt = string.format
 
-function pub(k)  return not tostring(k):find"^_" end
-function okeys(t)  local u={}; for k,v in pairs(t) do if pub(k) then push(u, fmt(":%s %s", k,o(v))) end end; return sort(u) end
 function olist(t)  local u={}; for k,v in pairs(t) do push(u, fmt("%s", o(v))) end; return u end
+function okeys(t)  
+  local u={}; for k,v in pairs(t) do 
+               if not tostring(k):find"^_" then push(u, fmt(":%s %s", k,o(v))) end end; 
+  return sort(u) end
 
 function o(x)
-  if type(x)=="number" then return x == floor(x) and tostring(x) or fmt(the.fmt,x) end
+  if type(x)=="number" then fmt(the.fmt or "%g",x) end
   if type(x)~="table"  then return tostring(x) end 
   return "{" .. table.concat(#x==0 and okeys(x) or olist(x),", ")  .. "}" end
 
@@ -172,8 +164,13 @@ function copy(t,     u)
 local eg={}
 
 eg["-h"] = function(_) print"USAGE: lua sandbox.lua -[hkln] [ARG]" end
-eg["-s"] = function(s) print(s) end
-eg["-t"] = function(file,     d) 
+eg["--cohen"] = function(_) 
+    for _,inc in pairs{1,1.05,1.1,1.15,1.2,1.25} do
+      u,t = NUM.new(), NUM.new()
+      for i=1,20 do u:add( inc * t:add(math.random()^.5))  end
+      print(inc, u:same(t)) end end 
+
+eg["--train"] = function(file,     d) 
   d= DATA.new(file or the.train) 
   want=1
   for i,row in pairs(sort(d.rows,function(a,b) return a.y > b.y end)) do
