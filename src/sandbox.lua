@@ -80,7 +80,9 @@ function DATA:xys(rows,      xys,val,down)
   for _,col in pairs(self.cols.x) do
     val  = function(a)   return a.cells[col.pos]=="?" and -big or a.cells[col.pos] end
     down = function(a,b) return val(a) < val(b) end
-    for _,bin in pairs(col:xys(sort(rows, down))) do push(xys,bin) end  end
+    for _,bin in pairs(col:xys(sort(rows, down))) do 
+      if not (bin.lo == -big and bin.hi == big) then 
+          push(xys,bin) end  end end
   return xys end --sort(xys,function(xy1,xy2) return xy1.y.mu > xy2.y.mu end) end
 
 function SYM:xys(rows,     t,x) 
@@ -101,15 +103,15 @@ function NUM:xys(rows,     t,a,b,ab,x,want)
     if x ~= "?" then 
       want = want or (#rows - k - 1)/the.bins
       if b.y.n >= want and #rows - k > want and not self:small(b.hi - b.lo) then
-        --a = t[#t]; if a and a.y:same(b.y) then  t[#t]=ab else ab = copy(push(t,b)) end
-        ab = copy(push(t,b))
+        a = t[#t]; if a and a.y:same(b.y) then t[#t]=ab else push(t,b) end
+        ab=copy(t[#t])
         b = XY.new(self.name,self.pos) end
       b:add(row) 
       ab:add(row) end end 
-  --a = t[#t]; if a and a.y:same(b.y) then t[#t]=ab else push(t,b) end
+  a = t[#t]; if a and a.y:same(b.y) then t[#t]=ab else push(t,b) end
   t[1].lo  = -big
   t[#t].hi =  big
-  --for k = 2,#t do t[k].lo = t[k-1].hi end 
+  for k = 2,#t do t[k].lo = t[k-1].hi end 
   return t end
 -----------------------------------------------------------------------------------------
 function XY.new(name,pos)
@@ -122,6 +124,13 @@ function XY:add(row,     x)
     if x > self.hi then self.hi = x end
     self._rules[row.id] = row.id
     self.y:add(row.y) end end
+
+function XY:__tostring(     lo,hi,s)
+  lo,hi,s = self.lo, self.hi,self.y,name
+  if lo == -math.huge then return fmt("%s < %s", s,hi) end
+  if hi ==  math.huge then return fmt("%s >= %s",s,lo) end
+  if lo ==  hi        then return fmt("%s == %s",s,lo) end
+  return fmt("%s <= %s < %s", lo, s, hi) end
 -----------------------------------------------------------------------------------------
 fmt = string.format
 
