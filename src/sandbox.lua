@@ -4,8 +4,8 @@ local the={bins=17, fmt="%.3g", cohen=0.35, seed=1234567891,
 local big=1E30
 
 local DATA,SYM,NUM,COLS,XY,ROW = {},{},{},{},{},{}
-local abs,floor,max,min = math.abs,math.floor,math.max, math.min
-local coerce,coerces,csv,fmt,new,o,okey,okeys,olist,push,sort
+local abs, max, min = math.abs, math.max, math.min
+local coerce,coerces,copy,csv,fmt,new,o,okey,okeys,olist,push,sort
 -----------------------------------------------------------------------------------------
 function NUM.new(name,pos)
   return new(NUM,{name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=big, hi= -big,
@@ -59,42 +59,6 @@ function DATA:chebyshev(row,     d)
   d=0; for _,col in pairs(self.cols.y) do 
          d = max(d,abs(col:norm(row.cells[col.pos]) - col.goal)) end
   return d end
-
-function DATA:bins(rows,      bins,val) 
-  bins = {}
-  for _,c in pairs(self.cs.x) do
-    val = function(a) return a.cells[c.pos]=="?" and -big or a.cells[c.pos] end
-    for _,bin in pairs(c:bins(sort(rows, function(a,b) return val(a) < val(b) end))) do
-       push(bins,bin) end end
-  return bins end 
-
-function SYM:bins(rows,     t)
-  t={}
-  for k,row in pairs(rows) do
-    x= row.cells[self.pos] 
-    if x ~= "?" then
-      t[x] = t[x] or XY(self.name,self.pos)
-      t[x]:add(row) end end
-  return t end
-
-function NUM:bins(rows,     t,a,b,ab,x,want)
-  t = {}
-  b = XY(self.name, self.pos)
-  ab= XY(self.name, self.pos)
-  for k,row in pairs(rows) do
-    x = row.cells[self.pos] 
-    if x ~= "?" then 
-      want = want or (#rows - k - 1)/the.bins
-      if b.y.n >= want and #rows - k > want and not col:small(b.hi - b.lo) then
-        a = t[#t]; if a and a.y:same(b.y) then t[#t]=ab else ab = copy(push(t,b)) end
-        b = XY(col.name,cols.pos) end
-      b:add(row) 
-      ab:add(row) end end 
-  a = t[#t]; if a and a.y:same(b.y) then t[#t]=ab else push(t,b) end
-  t[1].lo  = -big
-  t[#my].h =  big
-  for k = 2,#t do t[k].lo = t[k-1].hi end 
-  return t end
 -------------------------------------------------------------------------------------
 function COLS.new(row,    self,skip,col)
   self = new(COLS,{all={},x={}, y={}, klass=nil})
@@ -111,15 +75,52 @@ function COLS:add(row)
     for _,col in pairs(cols) do  col:add(row.cells[col.pos]) end end 
   return row end
 -----------------------------------------------------------------------------------------
+function DATA:xys(rows,      xys,val,down) 
+  xys = {}
+  for _,col in pairs(self.cols.x) do
+    val  = function(a)   return a.cells[col.pos]=="?" and -big or a.cells[col.pos] end
+    down = function(a,b) return val(a) < val(b) end
+    for _,bin in pairs(col:xys(sort(rows, down))) do push(xys,bin) end  end
+  return xys end --sort(xys,function(xy1,xy2) return xy1.y.mu > xy2.y.mu end) end
+
+function SYM:xys(rows,     t,x) 
+  t={}
+  for k,row in pairs(rows) do
+    x= row.cells[self.pos] 
+    if x ~= "?" then
+      t[x] = t[x] or XY.new(self.name,self.pos)
+      t[x]:add(row) end end
+  return t end
+
+function NUM:xys(rows,     t,a,b,ab,x,want)
+  t = {} 
+  b = XY.new(self.name, self.pos)
+  ab= XY.new(self.name, self.pos)
+  for k,row in pairs(rows) do
+    x = row.cells[self.pos] 
+    if x ~= "?" then 
+      want = want or (#rows - k - 1)/the.bins
+      if b.y.n >= want and #rows - k > want and not self:small(b.hi - b.lo) then
+        --a = t[#t]; if a and a.y:same(b.y) then  t[#t]=ab else ab = copy(push(t,b)) end
+        ab = copy(push(t,b))
+        b = XY.new(self.name,self.pos) end
+      b:add(row) 
+      ab:add(row) end end 
+  --a = t[#t]; if a and a.y:same(b.y) then t[#t]=ab else push(t,b) end
+  t[1].lo  = -big
+  t[#t].hi =  big
+  --for k = 2,#t do t[k].lo = t[k-1].hi end 
+  return t end
+-----------------------------------------------------------------------------------------
 function XY.new(name,pos)
-  return new(XY,{lo=big, hi= -big,  rules={}, y=NUM(name,pos)}) end
+  return new(XY,{lo=big, hi= -big,  _rules={}, y=NUM.new(name,pos)}) end
 
 function XY:add(row,     x) 
-  x = row[self.y.pos]
+  x = row.cells[self.y.pos]
   if x ~= "?" then
     if x < self.lo then self.lo = x end
     if x > self.hi then self.hi = x end
-    self.rules[row.id] = row.id
+    self._rules[row.id] = row.id
     self.y:add(row.y) end end
 -----------------------------------------------------------------------------------------
 fmt = string.format
@@ -131,9 +132,11 @@ function okeys(t)
   return sort(u) end
 
 function o(x)
-  if type(x)=="number" then fmt(the.fmt or "%g",x) end
+  if type(x)=="number" then return fmt(the.fmt or "%g",x) end
   if type(x)~="table"  then return tostring(x) end 
   return "{" .. table.concat(#x==0 and okeys(x) or olist(x),", ")  .. "}" end
+
+
 
 function new (klass,object) 
   klass.__index=klass; klass.__tostring=o; setmetatable(object, klass); return object end
@@ -165,7 +168,7 @@ local eg={}
 
 eg["-h"] = function(_) print"USAGE: lua sandbox.lua -[hkln] [ARG]" end
 
-eg["--copy"] = function(_,     n1,n2) 
+eg["--copy"] = function(_,     n1,n2,n3) 
   n1,n2 = NUM.new(),NUM.new()
   for i=1,100 do n2:add(n1:add(math.random()^2)) end
   n3 = copy(n2)
@@ -185,6 +188,13 @@ eg["--train"] = function(file,     d,want)
   want=1
   for i,row in pairs(sort(d.rows,function(a,b) return a.y > b.y end)) do
     if i == want then want=2*want; print(i, o{y=row.y,row=row.cells}) end end end
+
+eg["--xys"] = function(file,     d,last) 
+  d= DATA.new(file or the.train) 
+  for _,xy in pairs(d:xys(d.rows)) do
+    if xy.y.name ~= last then print""; last=xy.y.name end
+     print(xy) end
+  end 
 -----------------------------------------------------------------------------------------
 if   pcall(debug.getlocal, 4, 1) 
 then return {DATA=DATA,NUM=NUM,SYM=SYM,XY=XY}
