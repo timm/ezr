@@ -158,7 +158,7 @@ function DATA:rules(rows,     tmp,ys)
   for _,row in pairs(rows) do ys[row.id] = 1 - self:chebyshev(row) end 
   for _,bins in pairs(powerset(self:topScoredBins(rows,ys))) do 
     if #bins > 1 -- ignore empty set
-    then push(tmp, RULE.new(bins,ys,#rows)) end end
+    then push(tmp, RULE.new(bins,ys,#rows));os.exit() end end
   return self:topScoredRules(tmp) end
 
 -- Return just the.top number of bins. 
@@ -186,6 +186,8 @@ function RULE.new(bins,ys,tooMuch,    mu,n,nbins,tmp)
   for _,bin in pairs(bins) do 
     nbins = nbins + 1
     tmp[bin.y.pos] = OR(tmp[bin.y.pos] or {}, bin._rules) end -- (a)
+  for _,t in pairs(tmp) do
+    print(o(t)) end
   for k,_ in pairs( ANDS(tmp)) do n=n+1; mu = mu + (ys[k]  - mu)/n end  -- (b),(c)
   if n < tooMuch then -- (d)
      return new(RULE,{rank= ((0 - nbins/the.top)^2 + (1 - mu)^2)^0.5, -- (e)
