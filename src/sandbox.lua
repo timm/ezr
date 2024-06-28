@@ -87,7 +87,7 @@ function COLS:add(row)
   for _,cols in pairs{self.x, self.y} do
     for _,col in pairs(cols) do  col:add(row.cells[col.pos]) end end 
   return row end
------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
 -- ## BIN
 -- Track x.lo to x.hi values for some y values.
 function BIN.new(name,pos,lo,hi)

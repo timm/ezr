@@ -30,7 +30,7 @@ push    : ## save
 	mkdir -p ~/tmp
 	echo "pdf-ing $@ ... "
 	a2ps                 \
-		-BR                 \
+		-Br                 \
 		-l 100                 \
 		--file-align=fill      \
 		--line-numbers=1        \
@@ -38,7 +38,7 @@ push    : ## save
 		--left-title=""            \
 		--borders=no             \
 		--pretty-print="$(Top)/etc/lua.ssh" \
-		--columns 2                  \
+		--columns 3                  \
 		-M letter                     \
 		--footer=""                    \
 		--right-footer=""               \
