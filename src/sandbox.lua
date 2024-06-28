@@ -103,10 +103,14 @@ function BIN:add(row,ys,     x)
 
 function BIN:__tostring(     lo,hi,s)
   lo,hi,s = self.lo, self.hi,self.y.name
-  if lo == -math.huge then return fmt("%s < %g", s,hi) end
-  if hi ==  math.huge then return fmt("%s >= %g",s,lo) end
-  if lo ==  hi        then return fmt("%s == %s",s,lo) end
+  if lo == -big then return fmt("%s < %g", s,hi) end
+  if hi ==  big then return fmt("%s >= %g",s,lo) end
+  if lo ==  hi  then return fmt("%s == %s",s,lo) end
   return fmt("%g <= %s < %g", lo, s, hi) end
+
+function BIN:select(row,     x)
+  x=row.cells[self.y.pos]
+  return (x=="?") or (self.lo==self.hi and self.lo==x) or (self.lo <= x and x < self.hi) end
 
 -- Generate the bins from all x columns.
 function DATA:bins(rows,ys,      bins,val,down) 
@@ -158,7 +162,7 @@ function DATA:rules(rows,     tmp,ys)
   for _,row in pairs(rows) do ys[row.id] = 1 - self:chebyshev(row) end 
   for _,bins in pairs(powerset(self:topScoredBins(rows,ys))) do 
     if #bins > 1 -- ignore empty set
-    then push(tmp, RULE.new(bins,ys,#rows));os.exit() end end
+    then push(tmp, RULE.new(bins,ys,#rows)) end end
   return self:topScoredRules(tmp) end
 
 -- Return just the.top number of bins. 
@@ -186,19 +190,28 @@ function RULE.new(bins,ys,tooMuch,    mu,n,nbins,tmp)
   for _,bin in pairs(bins) do 
     nbins = nbins + 1
     tmp[bin.y.pos] = OR(tmp[bin.y.pos] or {}, bin._rules) end -- (a)
-  for _,t in pairs(tmp) do
-    print(o(t)) end
   for k,_ in pairs( ANDS(tmp)) do n=n+1; mu = mu + (ys[k]  - mu)/n end  -- (b),(c)
+  order=function(a,b) return a.y.pos==b.y.pos and (a.lo<b.lo) or (a.y.pos<b.y.pos) end
   if n < tooMuch then -- (d)
      return new(RULE,{rank= ((0 - nbins/the.top)^2 + (1 - mu)^2)^0.5, -- (e)
-                      bins=bins, score=mu, }) end end
+                      bins=sort(bins,order), score=mu, }) end end
 
 -- To print a RULE, group its bins by position number, then sorted by `lo`.
 function RULE:__tostring(     order,tmp)
-  order = function(a,b) return a.y.pos == b.y.pos and  (a.lo < b.lo) or (a.y.pos < b.y.pos)  end
-  self.bins = sort(self.bins, order)
   tmp ={}; for k,bin in pairs(self.bins) do tmp[k] = tostring(bin) end
   return "("..table.concat(tmp,"), (")..")" end
+
+function RULE:selects(rows,     out)
+  out={}; for _,row in pairs(rows) do if self:select(row) then push(out,row) end end
+  return out end
+
+function RULE:select(row,     tmp)
+  tmp={}
+  for _,bin in pairs(self.bins) do 
+    tmp[bin.y.pos] = (tmp[bin.y.pos] or 0) + (bin:select(row) and 1 or 0)  end
+  for _,n in pairs(tmp) do if n==0 then return false end end
+  return true end
+
 -----------------------------------------------------------------------------------------
 -- ## Lib
 
@@ -301,7 +314,8 @@ eg["--bins"] = function(file,     d,last,ys)
 eg["--rules"] = function(file,     d,last,ys) 
   d= DATA.new(file or the.train) 
   for _,rule in pairs(d:rules(d.rows)) do
-    print(rule.rank, rule) end end
+    print(rule.rank, rule, #rule:selects(d.rows))
+end end
 -----------------------------------------------------------------------------------------
 -- ## Start-up
 if   pcall(debug.getlocal, 4, 1) 
