@@ -1,15 +1,18 @@
 #!/usr/bin/env lua
--- sandbox.lua : multi-objective rule generation
--- (c) Tim Menzies <timm@ieee.org> MIT license
+-- <img src=sandbox.png align=left width=150>
+-- sandbox.lua : multi-objective rule generation   
+-- (c)2024 Tim Menzies <timm@ieee.org> MIT license
 
-local the={bins=17, fmt="%.3g", cohen=0.35, seed=1234567891,
+local the={bins=17, beam=7, fmt="%.3g", cohen=0.35, seed=1234567891,
            train="../data/misc/auto93.csv"}
 
 local big=1E30
-local DATA,SYM,NUM,COLS,XY,ROW = {},{},{},{},{},{}
+local DATA,SYM,NUM,COLS,BIN,ROW = {},{},{},{},{},{}
 local abs, max, min = math.abs, math.max, math.min
 local coerce,coerces,copy,csv,fmt,id,new,o,okey,okeys,olist,push,sort
 -----------------------------------------------------------------------------------------
+-- ## NUM
+-- incremental update of summary of numbers
 function NUM.new(name,pos)
   return new(NUM,{name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=big, hi= -big,
                   goal= (name or ""):find"-$" and 0 or 1}) end
@@ -33,6 +36,8 @@ function NUM.same(i,j,    pooled)
   pooled = (((i.n-1)*i.sd^2 + (j.n-1)*j.sd^2)/ (i.n+j.n-2))^0.5
   return abs(i.mu - j.mu) / pooled <= (the.cohen or .35) end
 -----------------------------------------------------------------------------------------
+-- ## SYM
+-- incremental update of summary of symbols
 function SYM.new(name,pos)
   return new(SYM,{name=name, pos=pos, n=0, has={}, most=0, mode=nil}) end
 
@@ -43,8 +48,12 @@ function SYM:add(x,     d)
     if self.has[x] > self.most then self.most,self.mode = self.has[x], x end 
     return x end end
 -----------------------------------------------------------------------------------------
+-- ## ROW
+-- Stores one record, with an unique id.
 function ROW.new(t) return new(ROW,{cells=t,y=0,id=id()}) end
 -----------------------------------------------------------------------------------------
+-- ## DATA
+-- manage rows, and their summaries in columns
 function DATA.new(file,    self) 
   self = new(DATA, {rows={}, cols=nil})
   for row in csv(file) do  self:add(ROW.new(row)) end
@@ -60,6 +69,8 @@ function DATA:chebyshev(row,     d)
          d = max(d,abs(col:norm(row.cells[col.pos]) - col.goal)) end
   return d end
 -------------------------------------------------------------------------------------
+-- ## COLS
+-- Manage column creation and column updates.
 function COLS.new(row,    self,skip,col)
   self = new(COLS,{all={},x={}, y={}, klass=nil})
   skip={}
@@ -75,28 +86,51 @@ function COLS:add(row)
     for _,col in pairs(cols) do  col:add(row.cells[col.pos]) end end 
   return row end
 -----------------------------------------------------------------------------------------
-function DATA:xys(rows,      xys,val,down) 
-  xys = {}
+-- ## BIN
+-- Track x.lo to x.hi values for some y values.
+function BIN.new(name,pos,lo,hi)
+  return new(BIN,{lo=lo or big, hi= hi or lo or -big,  _rules={}, y=NUM.new(name,pos)}) end
+
+function BIN:add(row,     x) 
+  x = row.cells[self.y.pos]
+  if x ~= "?" then
+    if x < self.lo then self.lo = x end
+    if x > self.hi then self.hi = x end
+    self._rules[row.id] = row.id
+    self.y:add(row.y) end end
+
+function BIN:__tostring(     lo,hi,s)
+  lo,hi,s = self.lo, self.hi,self.y.name
+  if lo == -math.huge then return fmt("%s < %g", s,hi) end
+  if hi ==  math.huge then return fmt("%s >= %g",s,lo) end
+  if lo ==  hi        then return fmt("%s == %s",s,lo) end
+  return fmt("%g <= %s < %g", lo, s, hi) end
+
+-- Generate the bins from all x columns.
+function DATA:bins(rows,      bins,val,down) 
+  bins = {}
   for _,col in pairs(self.cols.x) do
     val  = function(a)   return a.cells[col.pos]=="?" and -big or a.cells[col.pos] end
     down = function(a,b) return val(a) < val(b) end
-    for _,xy in pairs(col:xys(sort(rows, down))) do 
-      if not (xy.lo == -big and xy.hi == big) then push(xys,xy) end  end end
-  return xys end 
+    for _,bin in pairs(col:bins(sort(rows, down))) do 
+      if not (bin.lo == -big and bin.hi == big) then push(bins,bin) end  end end
+  return bins end 
 
-function SYM:xys(rows,     t,x) 
+-- Generate bins from SYM columns
+function SYM:bins(rows,     t,x) 
   t={}
   for k,row in pairs(rows) do
     x= row.cells[self.pos] 
     if x ~= "?" then
-      t[x] = t[x] or XY.new(self.name,self.pos,x)
+      t[x] = t[x] or BIN.new(self.name,self.pos,x)
       t[x]:add(row) end end
   return t end
 
-function NUM:xys(rows,     t,a,b,ab,x,want)
+-- Generate bins from NUM columns
+function NUM:bins(rows,     t,a,b,ab,x,want)
   t = {} 
-  b = XY.new(self.name, self.pos)
-  ab= XY.new(self.name, self.pos)
+  b = BIN.new(self.name, self.pos)
+  ab= BIN.new(self.name, self.pos)
   for k,row in pairs(rows) do
     x = row.cells[self.pos] 
     if x ~= "?" then 
@@ -104,7 +138,7 @@ function NUM:xys(rows,     t,a,b,ab,x,want)
       if b.y.n >= want and #rows - k > want and not self:small(b.hi - b.lo) then
         a = t[#t]; if a and a.y:same(b.y) then t[#t]=ab else push(t,b) end
         ab= copy(t[#t])
-        b = XY.new(self.name,self.pos,x) end
+        b = BIN.new(self.name,self.pos,x) end
       b:add(row) 
       ab:add(row) 
   end end 
@@ -113,28 +147,44 @@ function NUM:xys(rows,     t,a,b,ab,x,want)
   t[#t].hi =  big
   for k = 2,#t do t[k].lo = t[k-1].hi end 
   return t end
------------------------------------------------------------------------------------------
-function XY.new(name,pos,lo,hi)
-  return new(XY,{lo=lo or big, hi= hi or lo or -big,  _rules={}, y=NUM.new(name,pos)}) end
+----------------------------------------------------------------------------------------
+local function _combine(bins)
+  u,all = {},P{
+  for _,bin in pairs(bins) do
+    c    = bin.y.pos
+    if not all[c] then u[c] = push(all,{}) end
+    u[c] = OR(u[c], bin._rules) end
+  v={}
+  for i=2,#t in pairs(u) do
+       
 
-function XY:add(row,     x) 
-  x = row.cells[self.y.pos]
-  if x ~= "?" then
-    if x < self.lo then self.lo = x end
-    if x > self.hi then self.hi = x end
-    self._rules[row.id] = row.id
-    self.y:add(row.y) end end
+function DATA:rules(rows,     top)
+  top  = {}
+  bins = sort(self:bins(rows or self.rows), function(a,b) return a.y.mu > b.y.mu end)
+  for i=1,the.beams do push(top, bins[i]) end
+  for set in powerset(top) end
+     OR(set[1],
 
-function XY:__tostring(     lo,hi,s)
-  lo,hi,s = self.lo, self.hi,self.y.name
-  if lo == -math.huge then return fmt("%s < %g", s,hi) end
-  if hi ==  math.huge then return fmt("%s >= %g",s,lo) end
-  if lo ==  hi        then return fmt("%s == %s",s,lo) end
-  return fmt("%g <= %s < %g", lo, s, hi) end
 -----------------------------------------------------------------------------------------
+-- ## Lib
+-- object creation
 local _id=0
 function id() _id=_id+1; return _id end
 
+function new (klass,object) 
+  klass.__index=klass; setmetatable(object, klass); return object end
+
+-- lists
+function push(t,x) t[1+#t]=x; return x end 
+
+function sort(t,fun) table.sort(t,fun); return t end
+
+function copy(t,     u)
+  if type(t) ~= "table" then return t end 
+  u={}; for k,v in pairs(t) do u[copy(k)] = copy(v) end 
+  return setmetatable(u, getmetatable(t)) end
+
+-- thing to string
 fmt = string.format
 
 function olist(t)  local u={}; for k,v in pairs(t) do push(u, fmt("%s", o(v))) end; return u end
@@ -148,9 +198,7 @@ function o(x)
   if type(x)~="table"  then return tostring(x) end 
   return "{" .. table.concat(#x==0 and okeys(x) or olist(x),", ")  .. "}" end
 
-function new (klass,object) 
-  klass.__index=klass; setmetatable(object, klass); return object end
-
+-- strings to things
 function coerce(s,    also)
   if s ~= nil then
     also = function(s) return s=="true" or s ~="false" and s end 
@@ -166,14 +214,26 @@ function csv(src)
     s = io.read()
     if s then return coerces(s) else io.close(src) end end end
 
-function push(t,x) t[1+#t]=x; return x end 
-function sort(t,fun) table.sort(t,fun); return t end
+-- Sets
+function ANDS(ts,      out)
+  out = ts[1]._rules
+  for i=2,#ts do out = AND(out,t[i]._rules) u,    v,n) 
 
-function copy(t,     u)
-  if type(t) ~= "table" then return t end 
-  u={}; for k,v in pairs(t) do u[copy(k)] = copy(v) end 
-  return setmetatable(u, getmetatable(t)) end
+t[1]=
+function AND(t,u,    v,n) 
+  n=0; for k,_ in pairs(t) do if u[k] then n=n+1; v[k]=k end end; return v,n end 
+
+function OR(t,u,     v) 
+  for _,w in pairs{t,u} do for k,_ in pairs(w) do v[k] = k end end; return v end
+
+function powerset(s,       t)
+  t = {{}}
+  for i = 1, #s do
+    for j = 1, #t do
+      t[#t+1] = {s[i],table.unpack(t[j])} end end
+   return t end
 -----------------------------------------------------------------------------------------
+-- ## Start-up Actions
 local eg={}
 
 eg["-h"] = function(_) 
@@ -200,26 +260,24 @@ eg["--train"] = function(file,     d,want)
   for i,row in pairs(sort(d.rows,function(a,b) return a.y > b.y end)) do
     if i == want then want=2*want; print(i, o{y=row.y,row=row.cells}) end end end
 
-eg["--xys"] = function(file,     d,last) 
+eg["--bins"] = function(file,     d,last) 
   d= DATA.new(file or the.train) 
-  for _,xy in pairs(d:xys(d.rows)) do
-    if xy.y.name ~= last then print""; last=xy.y.name end
-     print(fmt("%5.3g\t %s", xy.y.mu, xy)) end
-  end 
+  for _,bin in pairs(d:bins(d.rows)) do
+    if bin.y.name ~= last then print""; last=bin.y.name end
+     print(fmt("%5.3g\t %s", bin.y.mu, bin)) end end 
 -----------------------------------------------------------------------------------------
+-- ## Start-up
 if   pcall(debug.getlocal, 4, 1) 
-then return {DATA=DATA,NUM=NUM,SYM=SYM,XY=XY}
+then return {DATA=DATA,NUM=NUM,SYM=SYM,BIN=BIN}
 else math.randomseed(the.seed or 1234567891)
      for k,v in pairs(arg) do if eg[v] then eg[v](coerce(arg[k+1])) end end end
 -----------------------------------------------------------------------------------------
--- ## Details
---
+-- ## Notes
 -- - Download:     github.com/timm/ezr/blob/main/src/sandbox.lua
--- - Sample Data:  github.com/timm/ezr/tree/main/data/*/*.csv (ignore the "old" directory)
--- - Sample Usage: lua sandox.lua --xys data/misc/auto93.csv
+-- - Sample Data:  github.com/timm/ezr/tree/main/data/\*/\*.csv (ignore the "old" directory)
+-- - Sample Usage: lua sandox.lua --bins data/misc/auto93.csv
 
--- ## MIT License
---
+-- ### MIT License
 -- Copyright (c) 2024, Tim Menzies
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
