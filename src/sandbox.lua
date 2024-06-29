@@ -193,7 +193,7 @@ function RULE.new(bins,ys,tooMuch,    mu,n,nbins,tmp)
   for k,_ in pairs( ANDS(tmp)) do n=n+1; mu = mu + (ys[k]  - mu)/n end  -- (b),(c)
   order=function(a,b) return a.y.pos==b.y.pos and (a.lo<b.lo) or (a.y.pos<b.y.pos) end
   if n < tooMuch then -- (d)
-     return new(RULE,{rank= ((0 - nbins/the.top)^2 + (1 - mu)^2)^0.5, -- (e)
+     return new(RULE,{rank= ((1 - n/tooMuch)^2 + (0 - nbins/the.top)^2 + (1 - mu)^2)^0.5, -- (e)
                       bins=sort(bins,order), score=mu, }) end end
 
 -- To print a RULE, group its bins by position number, then sorted by `lo`.
@@ -314,7 +314,7 @@ eg["--bins"] = function(file,     d,last,ys)
 eg["--rules"] = function(file,     d,last,ys) 
   d= DATA.new(file or the.train) 
   for _,rule in pairs(d:rules(d.rows)) do
-    print(rule.rank, rule, #rule:selects(d.rows))
+    print(rule.score, rule, #rule:selects(d.rows))
 end end
 -----------------------------------------------------------------------------------------
 -- ## Start-up
