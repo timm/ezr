@@ -108,6 +108,9 @@ function BIN:__tostring(     lo,hi,s)
   if lo ==  hi  then return fmt("%s == %s",s,lo) end
   return fmt("%g <= %s < %g", lo, s, hi) end
 
+function BIN:selects(rows,     u)
+  u={}; for _,r in pairs(rows) do if self:select(r) then push(u,r) end end; return u end
+
 function BIN:select(row,     x)
   x=row.cells[self.y.pos]
   return (x=="?") or (self.lo==self.hi and self.lo==x) or (self.lo <= x and x < self.hi) end
