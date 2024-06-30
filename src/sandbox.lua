@@ -9,7 +9,8 @@ local the={bins=17, top=7, fmt="%g", cohen=0.35, seed=1234567891,
 local big=1E30
 local DATA,SYM,NUM,COLS,BIN,ROW,RULE = {},{},{},{},{},{},{}
 local abs, max, min = math.abs, math.max, math.min
-local coerce,coerces,copy,csv,fmt,id,new,o,okey,okeys,olist,powerset,push,sort
+local coerce,coerces,copy,csv,fmt,id,list
+local new,o,okey,okeys,olist,powerset,push,sort
 -----------------------------------------------------------------------------------------
 -- ## NUM
 -- incremental update of summary of numbers
@@ -116,14 +117,15 @@ function BIN:select(row,     x)
   return (x=="?") or (self.lo==self.hi and self.lo==x) or (self.lo <= x and x < self.hi) end
 
 -- Generate the bins from all x columns.
-function DATA:bins(rows,ys,      bins,val,down) 
-  bins = {}
+function DATA:bins(rows,ys,      tbins,val,down) 
+  tbins = {}
   for _,col in pairs(self.cols.x) do
     val  = function(a)   return a.cells[col.pos]=="?" and -big or a.cells[col.pos] end
     down = function(a,b) return val(a) < val(b) end
     for _,bin in pairs(col:bins(sort(rows, down),ys)) do 
-      if not (bin.lo == -big and bin.hi == big) then push(bins,bin) end  end end
-  return bins end 
+      tbins[col.pos] = {}
+      if not (bin.lo== -big and bin.hi==big) then push(tbins[col.pos],bin) end end end
+  return tbins end 
 
 -- Generate bins from SYM columns
 function SYM:bins(rows,ys,     t,x) 
@@ -156,6 +158,54 @@ function NUM:bins(rows,ys,     t,a,b,ab,x,want)
   t[#t].hi =  big
   for k = 2,#t do t[k].lo = t[k-1].hi end 
   return t end
+----------------------------------------------------------------------------------------
+-- XXX need a clone and a data per child
+function DATA:tree(rows,tbins,  stop,       node,splitter)
+	node = {kids={}, leaf=false}
+	stop = stop or 4
+	if #rows > stop then 
+    splitter = self:minXpected(rows,tbins) 
+	  for _,bin in pairs(tbins[splitter]) do
+		  sub= bin:selects(rows)
+			if #sub < #rows and #rows > stop then
+	      node.kids[bin.y.pos] = self:tree(sub, tbins) end end
+	return node end
+
+function DATA:minXpected(rows,tbins,    lo,n,w)
+  lo = big
+  for pos,bins in pairs(tbins) do
+	  tmp = self:xpected(rows,bins)
+    if tmp < lo then lo,out = tmp,pos end end
+	return out end
+
+function DATA:xpected(rows,bins,    w,num)
+  w = 0
+  for _,bin in pairs(bins) do
+    num = NUM.new()
+    for _,r in pairs(rows) do if bin:select(r) then num:add(1 - self:chebyshev(r)) end end
+    w = w + num.n*num.sd end
+	return w/#rows end
+
+
+ 
+    for _,bin in pairs(bins) do
+      if bin:select(row) then tmp[bin._id][bin.y.pos]:add(s) end end end
+	for k,nums in pairs(sort(list(tmp),self:xplect)) do 
+	  for _,num in pairs(nums) do e=xpect(nums); io.write(fmt(" %4.3g %s",num.sd , num.n)) end;print(" ",e) end
+  return sort(list(tmp), xpectUp) end
+
+function DATA:leastSd(nums4bins,      xpect)
+  xpect = function(nums,     n,w)
+            n,w=0,0; for _,x in pairs(nums) do w=w+x.n*x.sd; n=n+x.n end; return w/n end 
+  nums = sort(list(nums4bins), function(a,b) return xpect(a) < xpect(b) end)
+	return nums[1].pos end
+ 
+function DATA:numis4bins(bins,    id,pos,t)
+  t={}; for _,bin in pairs(bins) do
+          id, pos    = bin._id, bin.y.pos
+          t[pos]     = t[pos] or {}
+          t[pos][id] = t[pos][id] or NUM.new(bin.y.name,bin.y.pos) end 
+	return t end
 ----------------------------------------------------------------------------------------
 -- ## RULE
 
@@ -219,10 +269,18 @@ function RULE:select(row,     tmp)
 -- ## Lib
 
 -- object creation
-function new (klass,object) 
-  klass.__index=klass; setmetatable(object, klass); return object end
+
+local _id = 0
+local function id() _id = _id + 1; return _id end
+
+function new (klass,t) 
+  t._id=id(); klass.__index=klass; setmetatable(t,klass); return t end
+
 
 -- lists
+function list(t,    u)
+  u={}; for _,v in pairs(t) do push(u,v) end; return u end
+
 function push(t,x) t[1+#t]=x; return x end 
 
 function sort(t,fun) table.sort(t,fun); return t end
@@ -238,6 +296,7 @@ function powerset(s,       t)
     for j = 1, #t do
       t[#t+1] = {s[i],table.unpack(t[j])} end end
    return t end
+
 -- thing to string
 fmt = string.format
 
@@ -319,6 +378,13 @@ eg["--rules"] = function(file,     d,last,ys)
   for _,rule in pairs(d:rules(d.rows)) do
     print(rule.score, rule, #rule:selects(d.rows))
 end end
+
+eg["--tree"] = function(file,     d,ys) 
+  d= DATA.new(file or the.train) 
+  ys={}; for _,row in pairs(d.rows) do ys[row.id] = 1 - d:chebyshev(row) end 
+  d:tree(d.rows, d:bins(d.rows,ys)) 
+end 
+
 -----------------------------------------------------------------------------------------
 -- ## Start-up
 if   pcall(debug.getlocal, 4, 1) 
