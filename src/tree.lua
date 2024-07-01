@@ -1,26 +1,30 @@
 #!/usr/bin/env lua
 -- <!-- vim : set ts=4 sts=4 et : -->
--- <img src=sandbox.png align=left width=150>
+-- <img src=tree.png align=left width=500>
 local help=[[
-sandbox.lua : multi-objective rule generation   
+tree.lua : multi-objective tree generation   
 (c)2024 Tim Menzies <timm@ieee.org> MIT license
 
-USAGE: lua sandbox.lua [OPTIONS] [--ACTIONS]
+USAGE: lua sandbox.lua [OPTIONS] [ACTIONS]
 
 OPTIONS:
  -b --bins   number of bins (before merging) = 17
  -c --cohen  less than cohen*sd means "same" = 0.35
  -f --fmt    format string for number        = %g
- -h --help   show help
+ -h --help   show help                       = false
  -s --seed   random number seed              = 1234567891
  -t --train  training data                   = ../data/misc/auto93.csv
  actions     list available start up actions
 
-DATA FORMAT: This code reads csv files with the "-t" flag where the
-names in row1 define numeric columns as this starting in upper case
-(and other columns are symbolic) and goal columns are numerics
-ending in "+,-" for "maximize,minize".  Other rows are floats or
-integers or booleans ("true,false") or "?" (for don't know). e.g
+DATA FORMAT: This code reads csv files with the "-t" flag. In those
+files, where the names in row1 define
+
+- numeric columns as this starting in upper case (and other columns 
+  are symbolic)
+- goal columns are numerics ending in "+,-" for "maximize,minize".  
+
+After row1, the other rows are floats or integers or 
+booleans ("true,false") or "?" (for don't know). e.g
 
      Clndrs, Volume,  HpX,  Model, origin,  Lbs-,   Acc+,  Mpg+
      4,      90,       48,   80,   2,       2335,   23.7,   40
@@ -40,58 +44,66 @@ rows, the top rows are best (minimal Lbs, max Acc, max Mpg). This
 code reports a how to select for rows of different value and the
 left-most branch of that tree points to the best ros.
 
-DOWNLOAD:    github.com/timm/ezr/blob/main/src/sandbox.lua
+DOWNLOAD:    github.com/timm/ezr/blob/main/src/tree.lua
 SAMPLE DATA: github.com/timm/ezr/tree/main/data/\*/\*.csv 
              (ignore the "old" directory) ]]
 
+-- ## Types in this code.
+-- - UPPPER CASE words are classes; 
+-- - Type `table`s are either of type `list` (numberic indexes) or 
+--   `dict` (symbolic indexes). 
+-- - Type `num` (not to be confused with class NUM) are floats or ints. 
+-- - Type `atom` are bools, strs, or nums.
+-- - Type `thing` are atoms or "?", for "don't know".
+-- - Type `rows` are lists of things; i.e. `row  =  list[thing]`.
 local the,big={},1E30
 local DATA,SYM,NUM,COLS,BIN,TREE = {},{},{},{},{},{}
 local abs, max, min = math.abs, math.max, math.min
 local coerce,coerces,copy,csv,fmt,list
 local new,o,oo,okey,okeys,olist,powerset,push,sort
 -----------------------------------------------------------------------------------------
--- ## Data Base
--- ### NUM
+-- ## Data layer
+-- ### class NUM
 -- Incremental update of summary of numbers.
 
--- `NUM.new(name:str, pos:int) : NUM`  
+-- `NUM.new(name:str, pos:int) -> NUM`  
 function NUM.new(name,pos)
   return new(NUM,{name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=big, hi= -big,
                   goal= (name or ""):find"-$" and 0 or 1}) end
 
--- `NUM:add(x:num) : x`
+-- `NUM:add(x:num) -> x`
 function NUM:add(x,     d)
   if x ~= "?" then
     self.n  = self.n + 1
     d       = x - self.mu
     self.mu = self.mu + d/self.n
     self.m2 = self.m2 + d*(x - self.mu)
-    elf.sd = self.n<2 and 0 or (self.m2/(self.n - 1))^.5 
+    self.sd = self.n<2 and 0 or (self.m2/(self.n - 1))^.5 
     self.lo = min(x, self.lo)
     self.hi = max(x, self.hi)
     return x end end 
 
--- `NUM:norm(x:num) : 0..1`
+-- `NUM:norm(x:num) -> 0..1`
 function NUM:norm(x) return x=="?" and x or (x - self.lo)/(self.hi - self.lo) end
 
--- `NUM:small(x:num) : bool`
+-- `NUM:small(x:num) -> bool`
 function NUM:small(x) return x < the.cohen * self.sd end
 
--- `NUM:same(i:NUM, j:NUM) : bool`   
+-- `NUM:same(i:NUM, j:NUM) -> bool`   
 -- True if statistically insignificantly different (using Cohen's rule).
 -- Used to decide if two BINs should be merged.
 function NUM.same(i,j,    pooled)
   pooled = (((i.n-1)*i.sd^2 + (j.n-1)*j.sd^2)/ (i.n+j.n-2))^0.5
   return abs(i.mu - j.mu) / pooled <= (the.cohen or .35) end
 
--- ### SYM
+-- ### class SYM
 -- Incremental update of summary of symbols.
 
--- `SYM.new(name:str, pos:int) : SYM`  
+-- `SYM.new(name:str, pos:int) -> SYM`  
 function SYM.new(name,pos)
   return new(SYM,{name=name, pos=pos, n=0, has={}, most=0, mode=nil}) end
 
--- `SYM:add(x:any) : x`
+-- `SYM:add(x:any) -> x`
 function SYM:add(x,     d)
   if x ~= "?" then
     self.n  = self.n + 1
@@ -99,37 +111,37 @@ function SYM:add(x,     d)
     if self.has[x] > self.most then self.most,self.mode = self.has[x], x end 
     return x end end
 
--- ### DATA
+-- ### class DATA
 -- Manage rows, and their summaries in columns
 
--- `DATA.new() : DATA`
+-- `DATA.new() -> DATA`
 function DATA.new() return new(DATA, {rows={}, cols=nil}) end
 
--- `DATA:read(file:str) : DATA`   
+-- `DATA:read(file:str) -> DATA`   
 -- Imports the rows from `file` contents into `self`.
-function DATA:imports(file) 
+function DATA:import(file) 
   for row in csv(file) do self:add(row) end; return self end
 
--- `DATA:load(t:table) : DATA`   
+-- `DATA:load(t:list) -> DATA`   
 -- Loads the rows from `t` `self`.
 function DATA:load(t)    
   for _,row in pairs(t)  do self:add(row) end; return self end
 
--- `DATA:clone(?init:table) : DATA`     
--- Create a table with same column roles as `self`. Loads any rows any from `init`.
+-- `DATA:clone(?init:list) -> DATA`     
+-- Create a DATA with same column roles as `self`. Loads any rows any from `init`.
 function DATA:clone(  init) return DATA:new():load({self.cols.names}):load(init or {}) end
 
--- `DATA:add(row:table) : nil`    
+-- `DATA:add(row:list) -> nil`    
 -- Create or update  the summaries in `self.cols`.
 -- If not the first row, push this `row` onto `self.rows`.
 function DATA:add(row)
   if self.cols then push(self.rows, self.cols:add(row)) else 
      self.cols = COLS.new(row) end end 
 
--- ### COLS
+-- ### class COLS
 -- Column creation and column updates.
 
--- `COLS.new(row: list[str]) : COLS`
+-- `COLS.new(row: list[str]) -> COLS`
 function COLS.new(row,    self,skip,col)
   self = new(COLS,{names=row, all={},x={}, y={}, klass=nil})
   skip={}
@@ -140,30 +152,23 @@ function COLS.new(row,    self,skip,col)
     if v:find"!$" then self.klass=col end end
   return self end 
 
--- `COLS:add(row:list[atom]) : row`
+-- `COLS:add(row:list[thing]) -> row`
 function COLS:add(row)
   for _,cols in pairs{self.x, self.y} do
     for _,col in pairs(cols) do  col:add(row[col.pos]) end end 
   return row end
--- ## Inference
--- ### BIN
+------------------------------------------------------------------------------
+-- ## Inference Layer
+-- ### class BIN: discretization
+-- Stores data on two columns: the `lo` to `hi` range of one colum and the
+-- associated `y` values seen in the rows whose `pos` calles from `lo` to `hi`.
 
--- `DATA:chebyshev(row:table) : 0..1`    
--- Report distance to best solution (and _lower_ numbers are _better_).    
-function DATA:chebyshev(row,     d) 
-  d=0; for _,c in pairs(self.cols.y) do d = max(d,abs(c:norm(row[c.pos]) - c.goal)) end
-  return d end
-  
--- `DATA:sort() : DATA`   
--- Sort rows by `chebyshev` (so best rows appear first). 
-function DATA:sort()
-  table.sort(d.rows, function(a,b) return d:chebyshev(a) <  d:chebyshev(b) end)
-  return self end 
-
--- Track x.lo to x.hi values for some y values.
+-- `BIN.new(name:str, pos:int) -> BIN`
 function BIN.new(name,pos,lo,hi)
   return new(BIN,{lo=lo or big, hi= hi or lo or -big,   y=NUM.new(name,pos)}) end
 
+
+-- `BIN.new(name:str, pos:int) -> BIN`
 function BIN:add(row,y,     x) 
   x = row[self.y.pos]
   if x ~= "?" then
@@ -185,16 +190,18 @@ function BIN:select(row,     x)
   x=row[self.y.pos]
   return (x=="?") or (self.lo==self.hi and self.lo==x) or (self.lo <= x and x < self.hi) end
 
--- Generate the bins from all x columns.
-function DATA:bins(rows,data,      tbins,val,down,yfun) 
+-- Generate the bins from all x columns. &#9321; ①
+
+function DATA:bins(rows,      tbins,val,down,yfun) 
+  yfun = function(row) return self:chebyshev(row) end
   tbins = {}
   for _,col in pairs(self.cols.x) do
-    tbins[col.pos] = {}
+    tbins[col.pos] = {} -- ①
     val  = function(a)   return a[col.pos]=="?" and -big or a[col.pos] end
     down = function(a,b) return val(a) < val(b) end
-    yfun = function(row) return 1 - data:chebyshev(row) end
     for _,bin in pairs(col:bins(sort(rows, down),yfun)) do 
-      if not (bin.lo== -big and bin.hi==big) then push(tbins[col.pos],bin) end end end
+      if not (bin.lo== -big and bin.hi==big) then 
+         push(tbins[col.pos],bin) end end end
   return tbins end 
 
 -- Generate bins from SYM columns
@@ -232,6 +239,17 @@ function NUM:bins(rows,yfun,     t,a,b,ab,x,want,y)
   return t end
 
 -- ### Tree
+-- `DATA:chebyshev(row:list) -> 0..1`    
+-- Report distance to best solution (and _lower_ numbers are _better_).    
+function DATA:chebyshev(row,     d) 
+  d=0; for _,c in pairs(self.cols.y) do d = max(d,abs(c:norm(row[c.pos]) - c.goal)) end
+  return d end
+  
+-- `DATA:sort() -> DATA`   
+-- Sort rows by `chebyshev` (so best rows appear first). 
+function DATA:sort()
+  table.sort(self.rows, function(a,b) return self:chebyshev(a) < self:chebyshev(b) end)
+  return self end 
 
 function DATA:tree(rows,tbins,  stop,       node,splitter,sub)
   node = {_kids={}, here = self:clone(rows), leaf=true}
@@ -261,7 +279,7 @@ function DATA:xpected(rows,bins,    w,num)
     w = w + num.n*num.sd end
   return w/#rows end
 
-function TREE:visit(fun,lvl)
+function TREE:visitor(fun,lvl)
   lvl = lvl or 0
   fun(self,lvl)
   for _,sub in pairs(self._kids) do if sub.kids then self:visit(lvl+1) end end end
@@ -291,40 +309,54 @@ function copy(t,     u)
 -- thing to string
 fmt = string.format
 
-function olist(t)  
-  local u={}; for k,v in pairs(t) do push(u, fmt("%s", o(v))) end; return u end
+-- `oo(x:any) : x`   
+-- Show `x`, then return it.
+function oo(x) print(o(x)); return x end
 
-function okeys(t)  
-  local u={}; for k,v in pairs(t) do 
-               if not tostring(k):find"^_" then push(u, fmt(":%s %s", k,o(v))) end end; 
-  return sort(u) end
-
+-- `o(x:any) : str`   
+-- Generate a show string for `x`.
 function o(x)
   if type(x)=="number" then return fmt(the.fmt or "%g",x) end
   if type(x)~="table"  then return tostring(x) end 
   return "{" .. table.concat(#x==0 and okeys(x) or olist(x),", ")  .. "}" end
 
-function oo(x) print(o(x)); return x end
+-- `olist(t:list) : str`   
+-- Generate a show string for tables with numeric indexes.
+function olist(t)  
+  local u={}; for k,v in pairs(t) do push(u, fmt("%s", o(v))) end; return u end
 
--- strings to things
+-- `okeys(t:dict) : str`   
+-- Generate a show string for tables with symboloc indexes.
+function okeys(t)  
+  local u={}; for k,v in pairs(t) do 
+               if not tostring(k):find"^_" then push(u, fmt(":%s %s", k,o(v))) end end; 
+  return sort(u) end
+
+-- #### strings to things
+
+-- `coerce(s:str) : thing`
 function coerce(s,    also)
   if type(s) ~= "string" then return s end
   also = function(s) return s=="true" or s ~="false" and s end 
   return math.tointeger(s) or tonumber(s) or also(s:match"^%s*(.-)%s*$") end 
 
+-- `coerces(s:str) : list[thing]`
 function coerces(s,    t)
   t={}; for s1 in s:gsub("%s+", ""):gmatch("([^,]+)") do t[1+#t]=coerce(s1) end
   return t end
 
-function csv(src)
-  src = src=="-" and io.stdin or io.input(src)
+-- Iterator `csv(file:str) : list[thing]`
+function csv(file)
+  file = file=="-" and io.stdin or io.input(file)
   return function(      s)
     s = io.read()
-    if s then return coerces(s) else io.close(src) end end end
+    if s then return coerces(s) else io.close(file) end end end
 
+-- `settings(s:tr) : table`
 function settings(s,     t)
-  t={}; for k,s1 in s:gmatch("[-][-]([%S]+)[^=]+=[%s]*([%S]+)") do t[k] = coerce(s1) end
-  return t,s end
+  t={}
+  for k,s1 in s:gmatch("[-][-]([%S]+)[^=]+=[%s]*([%S]+)[.]*\n") do t[k] = coerce(s1) end
+  return t end
 
 -- ## Start-up Actions
 local eg={}
@@ -340,12 +372,14 @@ eg["-f"] = function(x) the.fmt=   x end
 eg["-s"] = function(x) the.seed=  x end
 eg["-t"] = function(x) the.train= x end
 
-eg["--all"] = function(_,    reset)
-  reset = copy(the)
+eg["--all"] = function(_,    reset,fails)
+  fails,reset = 0,copy(the)
   for _,x in pairs{"--copy","--cohen","--train","--bins"} do 
     math.randomseed(the.seed) -- setup
-    eg[oo(x)]()
-    the = copy(reset) end end -- tear down
+    if eg[oo(x)]()==false then fails=fails+1 end
+    the = copy(reset) -- tear down
+  end 
+  os.exit(fails) end 
 
 eg["--copy"] = function(_,     n1,n2,n3) 
   n1,n2 = NUM.new(),NUM.new()
@@ -363,30 +397,31 @@ eg["--cohen"] = function(_,    u,t)
       print(inc, u:same(t)) end end 
 
 eg["--train"] = function(file,     d) 
-  d= DATA.new():read(file or the.train):sort() 
+  d= DATA.new():import(file or the.train):sort() 
   for i,row in pairs(d.rows) do
     if i==1 or i %40 ==0 then print(i, o(row)) end end end
 
 eg["--clone"] = function(file,     d0,d1) 
-  d0= DATA.new():read(file or the.train) 
+  d0= DATA.new():import(file or the.train) 
   d1 = d0:clone(d0.rows)
   for k,col1 in pairs(d1.cols.x) do print""
      print(o(col1))
      print(o(d0.cols.x[k])) end end
 
 eg["--bins"] = function(file,     d,last,ys) 
-  d= DATA.new():read(file or the.train) 
+  d= DATA.new():import(file or the.train) 
   for col,bins in pairs(d:bins(d.rows, d)) do
     print""
     for _,bin in pairs(bins) do
       print(fmt("%5.3g\t %s", bin.y.mu, bin)) end end  end
 
 eg["--tree"] = function(file,     d,ys) 
-  d= DATA.new():read(file or the.train) 
+  d= DATA.new():import(file or the.train) 
   d:tree(d.rows, d:bins(d.rows,ys)) end 
 -----------------------------------------------------------------------------------------
 -- ## Start-up
 if   pcall(debug.getlocal, 4, 1) 
 then return {DATA=DATA,NUM=NUM,SYM=SYM,BIN=BIN}
-else math.randomseed(the.seed or 1234567891)
+else the = settings(help)
+     math.randomseed(the.seed or 1234567891)
      for k,v in pairs(arg) do if eg[v] then eg[v](coerce(arg[k+1])) end end end

@@ -32,7 +32,7 @@
         {4       85      70       78     3       2070  18.6  40}
 
 
-### Codied Conventions
+### Code Conventions
 
 As to our coding conventions:
 

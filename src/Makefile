@@ -23,7 +23,7 @@ bins:
 
 ~/tmp/%.html : %.lua
 	mkdir -p ~/tmp
-	cp ../docs/img/sandbox.png ~/tmp/sandbox.png
+	cp ../docs/img/tree.png ~/tmp/tree.png
 	pycco -d ~/tmp $<
 	echo "p { text-align: right }" >> ~/tmp/pycco.css
 	open $@
