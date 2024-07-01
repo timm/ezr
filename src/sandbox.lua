@@ -1,4 +1,5 @@
 #!/usr/bin/env lua
+-- <!-- vim : set ts=4 sts=4 et : -->
 -- <img src=sandbox.png align=left width=150>
 local help=[[
 sandbox.lua : multi-objective rule generation   
@@ -7,44 +8,41 @@ sandbox.lua : multi-objective rule generation
 USAGE: lua sandbox.lua [OPTIONS] [--ACTIONS]
 
 OPTIONS:
-  --actions   list available start up actions
-	-c --cohen  less than cohen*sd means "same" = 0.35
-	-s --seed   random number seed              = 1234567891
-	-t --train  training data                   = ../data/misc/auto93.csv
-  -b --bins   max number of bins              = 17
-  -f --fmt    format string for number        = %g
+ -b --bins   number of bins (before merging) = 17
+ -c --cohen  less than cohen*sd means "same" = 0.35
+ -f --fmt    format string for number        = %g
+ -h --help   show help
+ -s --seed   random number seed              = 1234567891
+ -t --train  training data                   = ../data/misc/auto93.csv
+ actions     list available start up actions
 
-DATA FORMAT:
-This code reads csv files with the "-t" flag where the names
-in row1 define numeric columns as this starting in upper
-case (and other columns are symbolic) and goal columns are
-numerics ending in "+,-" for "maximize,minize".  Other rows
-are floats or integers or booleans ("true,false") or "?"
-(for don't know). e.g
+DATA FORMAT: This code reads csv files with the "-t" flag where the
+names in row1 define numeric columns as this starting in upper case
+(and other columns are symbolic) and goal columns are numerics
+ending in "+,-" for "maximize,minize".  Other rows are floats or
+integers or booleans ("true,false") or "?" (for don't know). e.g
 
-     Clndrs,	Volume,	HpX,	Model,	origin,	Lbs-,	Acc+,	Mpg+
-     4,	    90,	     48,	 80,	 2,	 2335,	 23.7,	 40
-     4,	    98,	     68,	 78,	 3,	 2135,	 16.6,	 30
-     4,	    86,	     65,	 80,	 3,	 2019,	 16.4,	 40
-     4,	    105,	   63,	 81,	 1,	 2215,	 14.9,	 30
-     4,	    151,	   90,	 79,	 1,	 2556,	 13.2,	 30
-     6,	    225,	  105,	 73,	 1,	 3121,	 16.5,	 20
-     6,	    250,	   72,	 75,	 1,	 3432,	 21,	 20
-     4,	    121,	   76,	 72,	 2,	 2511,	 18,	 20
-     8,	    302,	 130,	   77,	 1,	 4295,	 14.9,	 20
-     8,	    318,	 210,	   70,	 1,	 4382,	 13.5,	 10
+     Clndrs, Volume,  HpX,  Model, origin,  Lbs-,   Acc+,  Mpg+
+     4,      90,       48,   80,   2,       2335,   23.7,   40
+     4,      98,       68,   78,   3,       2135,   16.6,   30
+     4,      86,       65,   80,   3,       2019,   16.4,   40
+     4,      105,      63,   81,   1,       2215,   14.9,   30
+     4,      151,      90,   79,   1,       2556,   13.2,   30
+     6,      225,     105,   73,   1,       3121,   16.5,   20
+     6,      250,      72,   75,   1,       3432,   21,     20
+     4,      121,      76,   72,   2,       2511,   18,     20
+     8,      302,     130,   77,   1,       4295,   14.9,   20
+     8,      318,     210,   70,   1,       4382,   13.5,   10
 
-Internally, rows are sorted by the the goal columns (maximum
-distance of any goal to to the best value in that column).
-A tree are generated that reports how to select for rows of
-different value and the left-most branch of that tree points
-to the best ros.
+Internally, rows are sorted by the the goal columns (maximum distance
+of any goal to to the best value in that column). e.g.  in the above
+rows, the top rows are best (minimal Lbs, max Acc, max Mpg). This
+code reports a how to select for rows of different value and the
+left-most branch of that tree points to the best ros.
 
-- Download:     `github.com/timm/ezr/blob/main/src/sandbox.lua`
-- Sample Data:  `github.com/timm/ezr/tree/main/data/\*/\*.csv` 
-                 (ignore the "old" directory)
-- Sample Usage: `lua sandox.lua --bins data/misc/auto93.csv`
-]]
+DOWNLOAD:    github.com/timm/ezr/blob/main/src/sandbox.lua
+SAMPLE DATA: github.com/timm/ezr/tree/main/data/\*/\*.csv 
+             (ignore the "old" directory) ]]
 
 local the,big={},1E30
 local DATA,SYM,NUM,COLS,BIN,TREE = {},{},{},{},{},{}
@@ -52,66 +50,86 @@ local abs, max, min = math.abs, math.max, math.min
 local coerce,coerces,copy,csv,fmt,list
 local new,o,oo,okey,okeys,olist,powerset,push,sort
 -----------------------------------------------------------------------------------------
--- ## NUM
--- incremental update of summary of numbers
+-- ## Data Base
+-- ### NUM
+-- Incremental update of summary of numbers.
+
+-- `NUM.new(name:str, pos:int) : NUM`  
 function NUM.new(name,pos)
   return new(NUM,{name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=big, hi= -big,
                   goal= (name or ""):find"-$" and 0 or 1}) end
 
+-- `NUM:add(x:num) : x`
 function NUM:add(x,     d)
   if x ~= "?" then
     self.n  = self.n + 1
     d       = x - self.mu
     self.mu = self.mu + d/self.n
     self.m2 = self.m2 + d*(x - self.mu)
-    self.sd = self.n<2 and 0 or (self.m2/(self.n - 1))^.5 
+    elf.sd = self.n<2 and 0 or (self.m2/(self.n - 1))^.5 
     self.lo = min(x, self.lo)
     self.hi = max(x, self.hi)
     return x end end 
 
+-- `NUM:norm(x:num) : 0..1`
 function NUM:norm(x) return x=="?" and x or (x - self.lo)/(self.hi - self.lo) end
 
+-- `NUM:small(x:num) : bool`
 function NUM:small(x) return x < the.cohen * self.sd end
 
+-- `NUM:same(i:NUM, j:NUM) : bool`   
+-- True if statistically insignificantly different (using Cohen's rule).
+-- Used to decide if two BINs should be merged.
 function NUM.same(i,j,    pooled)
   pooled = (((i.n-1)*i.sd^2 + (j.n-1)*j.sd^2)/ (i.n+j.n-2))^0.5
   return abs(i.mu - j.mu) / pooled <= (the.cohen or .35) end
------------------------------------------------------------------------------------------
--- ## SYM
--- incremental update of summary of symbols
+
+-- ### SYM
+-- Incremental update of summary of symbols.
+
+-- `SYM.new(name:str, pos:int) : SYM`  
 function SYM.new(name,pos)
   return new(SYM,{name=name, pos=pos, n=0, has={}, most=0, mode=nil}) end
 
+-- `SYM:add(x:any) : x`
 function SYM:add(x,     d)
   if x ~= "?" then
     self.n  = self.n + 1
     self.has[x] = 1 + (self.has[x] or 0)
     if self.has[x] > self.most then self.most,self.mode = self.has[x], x end 
     return x end end
------------------------------------------------------------------------------------------
--- ## DATA
--- manage rows, and their summaries in columns
+
+-- ### DATA
+-- Manage rows, and their summaries in columns
+
+-- `DATA.new() : DATA`
 function DATA.new() return new(DATA, {rows={}, cols=nil}) end
 
-function DATA:read(file) for   row in csv(file) do self:add(row) end; return self end
-function DATA:load(t)    for _,row in pairs(t)  do self:add(row) end; return self end
+-- `DATA:read(file:str) : DATA`   
+-- Imports the rows from `file` contents into `self`.
+function DATA:imports(file) 
+  for row in csv(file) do self:add(row) end; return self end
 
+-- `DATA:load(t:table) : DATA`   
+-- Loads the rows from `t` `self`.
+function DATA:load(t)    
+  for _,row in pairs(t)  do self:add(row) end; return self end
+
+-- `DATA:clone(?init:table) : DATA`     
+-- Create a table with same column roles as `self`. Loads any rows any from `init`.
 function DATA:clone(  init) return DATA:new():load({self.cols.names}):load(init or {}) end
 
+-- `DATA:add(row:table) : nil`    
+-- Create or update  the summaries in `self.cols`.
+-- If not the first row, push this `row` onto `self.rows`.
 function DATA:add(row)
   if self.cols then push(self.rows, self.cols:add(row)) else 
      self.cols = COLS.new(row) end end 
 
-function DATA:chebyshev(row,     d) 
-  d=0; for _,c in pairs(self.cols.y) do d = max(d,abs(c:norm(row[c.pos]) - c.goal)) end
-  return d end
-  
-function DATA:sort()
-  table.sort(d.rows, function(a,b) return d:chebyshev(a) <  d:chebyshev(b) end)
-	return self end 
--------------------------------------------------------------------------------------
--- ## COLS
--- Manage column creation and column updates.
+-- ### COLS
+-- Column creation and column updates.
+
+-- `COLS.new(row: list[str]) : COLS`
 function COLS.new(row,    self,skip,col)
   self = new(COLS,{names=row, all={},x={}, y={}, klass=nil})
   skip={}
@@ -122,11 +140,26 @@ function COLS.new(row,    self,skip,col)
     if v:find"!$" then self.klass=col end end
   return self end 
 
+-- `COLS:add(row:list[atom]) : row`
 function COLS:add(row)
   for _,cols in pairs{self.x, self.y} do
     for _,col in pairs(cols) do  col:add(row[col.pos]) end end 
   return row end
--- ## BIN
+-- ## Inference
+-- ### BIN
+
+-- `DATA:chebyshev(row:table) : 0..1`    
+-- Report distance to best solution (and _lower_ numbers are _better_).    
+function DATA:chebyshev(row,     d) 
+  d=0; for _,c in pairs(self.cols.y) do d = max(d,abs(c:norm(row[c.pos]) - c.goal)) end
+  return d end
+  
+-- `DATA:sort() : DATA`   
+-- Sort rows by `chebyshev` (so best rows appear first). 
+function DATA:sort()
+  table.sort(d.rows, function(a,b) return d:chebyshev(a) <  d:chebyshev(b) end)
+  return self end 
+
 -- Track x.lo to x.hi values for some y values.
 function BIN.new(name,pos,lo,hi)
   return new(BIN,{lo=lo or big, hi= hi or lo or -big,   y=NUM.new(name,pos)}) end
@@ -197,8 +230,9 @@ function NUM:bins(rows,yfun,     t,a,b,ab,x,want,y)
   t[#t].hi =  big
   for k = 2,#t do t[k].lo = t[k-1].hi end 
   return t end
-----------------------------------------------------------------------------------------
--- XXX need a clone and a data per child
+
+-- ### Tree
+
 function DATA:tree(rows,tbins,  stop,       node,splitter,sub)
   node = {_kids={}, here = self:clone(rows), leaf=true}
   stop = stop or 4
@@ -295,8 +329,16 @@ function settings(s,     t)
 -- ## Start-up Actions
 local eg={}
 
-eg["-h"] = function(_) 
-  print"USAGE: lua sandbox.lua -[hkln] [ARG]" end
+eg["actions"] = function(_) 
+  print"lua sandbox.lua --[all,copy,cohen,train,bins] [ARG]" end
+
+eg["-h"] = function(x) print(help) end
+
+eg["-b"] = function(x) the.bins=  x end
+eg["-c"] = function(x) the.cohen= x end
+eg["-f"] = function(x) the.fmt=   x end
+eg["-s"] = function(x) the.seed=  x end
+eg["-t"] = function(x) the.train= x end
 
 eg["--all"] = function(_,    reset)
   reset = copy(the)
@@ -327,10 +369,10 @@ eg["--train"] = function(file,     d)
 
 eg["--clone"] = function(file,     d0,d1) 
   d0= DATA.new():read(file or the.train) 
-	d1 = d0:clone(d0.rows)
-	for k,col1 in pairs(d1.cols.x) do print""
-	   print(o(col1))
-		 print(o(d0.cols.x[k])) end end
+  d1 = d0:clone(d0.rows)
+  for k,col1 in pairs(d1.cols.x) do print""
+     print(o(col1))
+     print(o(d0.cols.x[k])) end end
 
 eg["--bins"] = function(file,     d,last,ys) 
   d= DATA.new():read(file or the.train) 
