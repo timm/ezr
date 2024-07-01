@@ -14,7 +14,7 @@ local big=1E30
 local DATA,SYM,NUM,COLS,BIN,TREE = {},{},{},{},{},{}
 local abs, max, min = math.abs, math.max, math.min
 local coerce,coerces,copy,csv,fmt,list
-local new,o,okey,okeys,olist,powerset,push,sort
+local new,o,oo,okey,okeys,olist,powerset,push,sort
 -----------------------------------------------------------------------------------------
 -- ## NUM
 -- incremental update of summary of numbers
@@ -55,24 +55,29 @@ function SYM:add(x,     d)
 -----------------------------------------------------------------------------------------
 -- ## DATA
 -- manage rows, and their summaries in columns
-function DATA.new(file,    self) 
-  self = new(DATA, {rows={}, cols=nil})
-  for row in csv(file) do  self:add(row) end
-  return self end
+function DATA.new() return new(DATA, {rows={}, cols=nil}) end
+
+function DATA:read(file) for   row in csv(file) do self:add(row) end; return self end
+function DATA:load(t)    for _,row in pairs(t)  do self:add(row) end; return self end
+
+function DATA:clone(  init) return DATA:new():load({self.cols.names}):load(init or {}) end
 
 function DATA:add(row)
   if self.cols then push(self.rows, self.cols:add(row)) else 
      self.cols = COLS.new(row) end end 
 
 function DATA:chebyshev(row,     d) 
-  d=0; for _,col in pairs(self.cols.y) do 
-         d = max(d,abs(col:norm(row[col.pos]) - col.goal)) end
+  d=0; for _,c in pairs(self.cols.y) do d = max(d,abs(c:norm(row[c.pos]) - c.goal)) end
   return d end
+  
+function DATA:sort()
+  table.sort(d.rows, function(a,b) return d:chebyshev(a) <  d:chebyshev(b) end)
+	return self end 
 -------------------------------------------------------------------------------------
 -- ## COLS
 -- Manage column creation and column updates.
 function COLS.new(row,    self,skip,col)
-  self = new(COLS,{all={},x={}, y={}, klass=nil})
+  self = new(COLS,{names=row, all={},x={}, y={}, klass=nil})
   skip={}
   for k,v in pairs(row) do
     col = push(v:find"X$" and skip or v:find"[!+-]$" and self.y or self.x,
@@ -115,11 +120,11 @@ function BIN:select(row,     x)
 function DATA:bins(rows,data,      tbins,val,down,yfun) 
   tbins = {}
   for _,col in pairs(self.cols.x) do
+    tbins[col.pos] = {}
     val  = function(a)   return a[col.pos]=="?" and -big or a[col.pos] end
     down = function(a,b) return val(a) < val(b) end
-		yfun = function(row) return data:chebyshev(row) end
+    yfun = function(row) return 1 - data:chebyshev(row) end
     for _,bin in pairs(col:bins(sort(rows, down),yfun)) do 
-      tbins[col.pos] = {}
       if not (bin.lo== -big and bin.hi==big) then push(tbins[col.pos],bin) end end end
   return tbins end 
 
@@ -128,7 +133,7 @@ function SYM:bins(rows,yfun,     t,x,y)
   t={}
   for k,row in pairs(rows) do
     x= row[self.pos] 
-	  y= yfun(row)
+    y= yfun(row)
     if x ~= "?" then
       t[x] = t[x] or BIN.new(self.name,self.pos,x)
       t[x]:add(row,y) end end
@@ -141,7 +146,7 @@ function NUM:bins(rows,yfun,     t,a,b,ab,x,want,y)
   ab= BIN.new(self.name, self.pos)
   for k,row in pairs(rows) do
     x = row[self.pos] 
-	  y = yfun(row)
+    y = yfun(row)
     if x ~= "?" then 
       want = want or (#rows - k - 1)/the.bins
       if b.y.n >= want and #rows - k > want and not self:small(b.hi - b.lo) then
@@ -159,24 +164,24 @@ function NUM:bins(rows,yfun,     t,a,b,ab,x,want,y)
 ----------------------------------------------------------------------------------------
 -- XXX need a clone and a data per child
 function DATA:tree(rows,tbins,  stop,       node,splitter,sub)
-	node = {_kids={}, here = self:clone(rows), leaf=true}
-	stop = stop or 4
-	if #rows > stop then 
+  node = {_kids={}, here = self:clone(rows), leaf=true}
+  stop = stop or 4
+  if #rows > stop then 
     splitter = self:minXpected(rows,tbins) 
-	  for _,bin in pairs(tbins[splitter]) do
-		  sub= bin:selects(rows)
-			if #sub < #rows and #rows > stop then
-			  node.leaf=false
-	      node.kids[bin.y.pos] = {pos=bin.y.pos, lo=bin.lo, hi=bin.hi, name=bin.name,
-				                        _tree = self:tree(sub, tbins)}  end end
-	return node end end 
+    for _,bin in pairs(tbins[splitter]) do
+      sub= bin:selects(rows)
+      if #sub < #rows and #rows > stop then
+        node.leaf=false
+        node.kids[bin.y.pos] = {pos=bin.y.pos, lo=bin.lo, hi=bin.hi, name=bin.name,
+                                _tree = self:tree(sub, tbins)}  end end
+  return node end end 
 
 function DATA:minXpected(rows,tbins,    lo,n,w,tmp,out)
   lo = big
   for pos,bins in pairs(tbins) do
-	  tmp = self:xpected(rows,bins)
+    tmp = self:xpected(rows,bins)
     if tmp < lo then lo,out = tmp,pos end end
-	return out end
+  return out end
 
 function DATA:xpected(rows,bins,    w,num)
   w = 0
@@ -184,11 +189,11 @@ function DATA:xpected(rows,bins,    w,num)
     num = NUM.new()
     for _,r in pairs(rows) do if bin:select(r) then num:add(self:chebyshev(r)) end end
     w = w + num.n*num.sd end
-	return w/#rows end
+  return w/#rows end
 
 function TREE:visit(fun,lvl)
   lvl = lvl or 0
-	fun(self,lvl)
+  fun(self,lvl)
   for _,sub in pairs(self._kids) do if sub.kids then self:visit(lvl+1) end end end
   
 -- ## Lib
@@ -229,9 +234,11 @@ function o(x)
   if type(x)~="table"  then return tostring(x) end 
   return "{" .. table.concat(#x==0 and okeys(x) or olist(x),", ")  .. "}" end
 
+function oo(x) print(o(x)); return x end
+
 -- strings to things
 function coerce(s,    also)
-	if type(s) ~= "string" then return s end
+  if type(s) ~= "string" then return s end
   also = function(s) return s=="true" or s ~="false" and s end 
   return math.tointeger(s) or tonumber(s) or also(s:match"^%s*(.-)%s*$") end 
 
@@ -250,10 +257,12 @@ local eg={}
 eg["-h"] = function(_) 
   print"USAGE: lua sandbox.lua -[hkln] [ARG]" end
 
-eg["--all"] = function(_)
+eg["--all"] = function(_,    reset)
+  reset = copy(the)
   for _,x in pairs{"--copy","--cohen","--train","--bins"} do 
-	  math.randomseed(the.seed)
-	  print(x);eg[x]() end end 
+    math.randomseed(the.seed) -- setup
+    eg[oo(x)]()
+    the = copy(reset) end end -- tear down
 
 eg["--copy"] = function(_,     n1,n2,n3) 
   n1,n2 = NUM.new(),NUM.new()
@@ -271,22 +280,27 @@ eg["--cohen"] = function(_,    u,t)
       print(inc, u:same(t)) end end 
 
 eg["--train"] = function(file,     d) 
-  d= DATA.new(file or the.train) 
-  for i,row in pairs(sort(d.rows,function(a,b) return d:chebyshev(a) <  d:chebyshev(b) end)) do
-    if i==1 or i %25 ==0 then print(i, o{y=row.y,row=row}) end end end
+  d= DATA.new():read(file or the.train):sort() 
+  for i,row in pairs(d.rows) do
+    if i==1 or i %40 ==0 then print(i, o(row)) end end end
+
+eg["--clone"] = function(file,     d0,d1) 
+  d0= DATA.new():read(file or the.train) 
+	d1 = d0:clone(d0.rows)
+	for k,col1 in pairs(d1.cols.x) do print""
+	   print(o(col1))
+		 print(o(d0.cols.x[k])) end end
 
 eg["--bins"] = function(file,     d,last,ys) 
-  d= DATA.new(file or the.train) 
+  d= DATA.new():read(file or the.train) 
   for col,bins in pairs(d:bins(d.rows, d)) do
-     print""
-		 for _,bin in pairs(bins) do
-     	 print(fmt("%5.3g\t %s", bin.y.mu, bin)) end end  end
+    print""
+    for _,bin in pairs(bins) do
+      print(fmt("%5.3g\t %s", bin.y.mu, bin)) end end  end
 
 eg["--tree"] = function(file,     d,ys) 
-  d= DATA.new(file or the.train) 
-  ys={}; for _,row in pairs(d.rows) do ys[row.id] = 1 - d:chebyshev(row) end 
-  d:tree(d.rows, d:bins(d.rows,ys)) 
-end 
+  d= DATA.new():read(file or the.train) 
+  d:tree(d.rows, d:bins(d.rows,ys)) end 
 -----------------------------------------------------------------------------------------
 -- ## Start-up
 if   pcall(debug.getlocal, 4, 1) 
