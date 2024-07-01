@@ -1,5 +1,7 @@
 coding101
 - how to use the code . knn (simplest)
+  - Githib, readme, license, .gitignore
+  - docs/index.md (from README.md)
 
 coal-face scripting
 - edit and run at the same time
