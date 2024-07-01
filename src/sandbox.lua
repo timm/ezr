@@ -1,16 +1,52 @@
 #!/usr/bin/env lua
 -- <img src=sandbox.png align=left width=150>
--- sandbox.lua : multi-objective rule generation   
--- (c)2024 Tim Menzies <timm@ieee.org> MIT license
-  
--- - Download:     `github.com/timm/ezr/blob/main/src/sandbox.lua`
--- - Sample Data:  `github.com/timm/ezr/tree/main/data/\*/\*.csv` (ignore the "old" directory)
--- - Sample Usage: `lua sandox.lua --bins data/misc/auto93.csv`
+local help=[[
+sandbox.lua : multi-objective rule generation   
+(c)2024 Tim Menzies <timm@ieee.org> MIT license
 
-local the={bins=17, top=7, fmt="%g", cohen=0.35, seed=1234567891,
-           train="../data/misc/auto93.csv"}
+USAGE: lua sandbox.lua [OPTIONS] [--ACTIONS]
 
-local big=1E30
+OPTIONS:
+  --actions   list available start up actions
+	-c --cohen  less than cohen*sd means "same" = 0.35
+	-s --seed   random number seed              = 1234567891
+	-t --train  training data                   = ../data/misc/auto93.csv
+  -b --bins   max number of bins              = 17
+  -f --fmt    format string for number        = %g
+
+DATA FORMAT:
+This code reads csv files with the "-t" flag where the names
+in row1 define numeric columns as this starting in upper
+case (and other columns are symbolic) and goal columns are
+numerics ending in "+,-" for "maximize,minize".  Other rows
+are floats or integers or booleans ("true,false") or "?"
+(for don't know). e.g
+
+     Clndrs,	Volume,	HpX,	Model,	origin,	Lbs-,	Acc+,	Mpg+
+     4,	    90,	     48,	 80,	 2,	 2335,	 23.7,	 40
+     4,	    98,	     68,	 78,	 3,	 2135,	 16.6,	 30
+     4,	    86,	     65,	 80,	 3,	 2019,	 16.4,	 40
+     4,	    105,	   63,	 81,	 1,	 2215,	 14.9,	 30
+     4,	    151,	   90,	 79,	 1,	 2556,	 13.2,	 30
+     6,	    225,	  105,	 73,	 1,	 3121,	 16.5,	 20
+     6,	    250,	   72,	 75,	 1,	 3432,	 21,	 20
+     4,	    121,	   76,	 72,	 2,	 2511,	 18,	 20
+     8,	    302,	 130,	   77,	 1,	 4295,	 14.9,	 20
+     8,	    318,	 210,	   70,	 1,	 4382,	 13.5,	 10
+
+Internally, rows are sorted by the the goal columns (maximum
+distance of any goal to to the best value in that column).
+A tree are generated that reports how to select for rows of
+different value and the left-most branch of that tree points
+to the best ros.
+
+- Download:     `github.com/timm/ezr/blob/main/src/sandbox.lua`
+- Sample Data:  `github.com/timm/ezr/tree/main/data/\*/\*.csv` 
+                 (ignore the "old" directory)
+- Sample Usage: `lua sandox.lua --bins data/misc/auto93.csv`
+]]
+
+local the,big={},1E30
 local DATA,SYM,NUM,COLS,BIN,TREE = {},{},{},{},{},{}
 local abs, max, min = math.abs, math.max, math.min
 local coerce,coerces,copy,csv,fmt,list
@@ -251,6 +287,11 @@ function csv(src)
   return function(      s)
     s = io.read()
     if s then return coerces(s) else io.close(src) end end end
+
+function settings(s,     t)
+  t={}; for k,s1 in s:gmatch("[-][-]([%S]+)[^=]+=[%s]*([%S]+)") do t[k] = coerce(s1) end
+  return t,s end
+
 -- ## Start-up Actions
 local eg={}
 
