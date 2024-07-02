@@ -192,10 +192,10 @@ function BIN:add(row,y,     x)
 -- `BIN:__tostring() -> str`
 function BIN:__tostring(     lo,hi,s)
   lo,hi,s = self.lo, self.hi,self.name
-  if lo == -l.inf then return l.fmt("%s < %g", s,hi) end
-  if hi ==  l.inf then return l.fmt("%s >= %g",s,lo) end
+  if lo == -l.inf then return l.fmt("%s <= %g", s,hi) end
+  if hi ==  l.inf then return l.fmt("%s > %g",s,lo) end
   if lo ==  hi  then return l.fmt("%s == %s",s,lo) end
-  return l.fmt("%g <= %s < %g", lo, s, hi) end
+  return l.fmt("%g < %s <= %g", lo, s, hi) end
 
 -- `BIN:selects(rows: list[row]) : list[row]`   
 -- Return the subset of `rows` selected by `self`.
@@ -205,7 +205,7 @@ function BIN:selects(rows,     u)
 -- `BIN:select(row: row) : bool`
 function BIN:select(row,     x)
   x=row[self.pos]
-  return (x=="?") or (self.lo==self.hi and self.lo==x) or (self.lo <= x and x < self.hi) end
+  return (x=="?") or (self.lo==self.hi and self.lo==x) or (self.lo < x and x <= self.hi) end
 
 -- `DATA:bins(rows: list[rows]) : dict[int, list[bins]] `   
 -- ①  For each x-columns,    
@@ -240,6 +240,22 @@ function SYM:bins(rows,y,     out,x)
       out[x]:add(row,y(row)) end end
   return out end
 
+-- helper NUM:bins. Handles the action when a new bin
+-- is being consodered.
+local  function _newBin(b,ab,x,out,      a)
+  a = out[#out]
+  if   a and a.y:same(b.y)  
+  then out[#out] = ab     -- replace the last bin with last plus `b`
+  else l.push(out,b) end  -- add `b` to the out
+  return BIN.new(b.name,b.pos,x), l.copy(out[#out]) end -- return the new b,ab
+
+-- helper NUM:bins. Fill in any gaps in the bins
+local function _fillGaps(out)
+  out[1].lo    = -l.inf  -- expand out to cover -infinity to...
+  out[#out].hi =  l.inf  -- ... plus infinity
+  for k = 2,#out do out[k].lo = out[k-1].hi end  -- fill in any gaps with the bins
+  return out end
+
 -- `NUM:bins(rows:list[row], y:callable) -> list[BIN]`   
 -- Generate one bins for the numeric ranges in this column. Assumes
 -- rows are sorted with all the "?" values pushed to the front. Run
@@ -248,13 +264,7 @@ function SYM:bins(rows,y,     out,x)
 -- values for each remaining row, saving them in `b` (the new bin)
 -- and `ab` the combination of the new bin and the last thing we
 -- added to `out`.
-function NUM:bins(rows,y,     out,b,ab,want,b4,newBin,x)
-  function newBin(b,ab,       a)
-    a = out[#out]; if a and a.y:same(b.y)  
-                      then out[#out] = ab  -- replace the last bin with last plus `b`
-                      else l.push(out,b) end  -- add `b` to the out
-    return BIN.new(self.name,self.pos,x), l.copy(out[#out]) -- return the new b,ab
-  end
+function NUM:bins(rows,y,     out,b,ab,want,b4,x)
   out = {} 
   b = BIN.new(self.name, self.pos) 
   ab= BIN.new(self.name, self.pos)
@@ -262,20 +272,18 @@ function NUM:bins(rows,y,     out,b,ab,want,b4,newBin,x)
     x = row[self.pos] 
     if x ~= "?" then 
       want = want or (#rows - k - 1)/the.bins
-      if   x ~= b4 and                 -- if there is a break between values
-           b.y.n >= want and           -- and the current bin is big enough
-           #rows - k > want and        -- and there is space for 1 more bin after here
-           not self:small(b.hi - b.lo) -- the span of this bin is not trivially small
-      then b,ab = newBin(b,ab) end     -- ensure the `b` info is added to end of `out`
+      if x ~= b4 and                 -- if there is a break between values
+         b.y.n >= want and           -- and the current bin is big enough
+         #rows - k > want and        -- and there is space for 1 more bin after here
+         not self:small(b.hi - b.lo) -- the span of this bin is not trivially small
+      then 
+         b,ab = _newBin(b,ab,x,out) end -- ensure the `b` info is added to end of `out`
       b:add(row,y(row))    -- update the current new bin
       ab:add(row,y(row))   -- update the combination of current new bin and end of `out`
       b4 = x end 
   end
-  newBin(b,ab) -- handle end of list
-  out[1].lo    = -l.inf  -- expand out to cover -infinity to...
-  out[#out].hi =  l.inf  -- ... plus infinity
-  for k = 2,#out do out[k].lo = out[k-1].hi end  -- fill in any gaps with the bins
-  return out end
+  _newBin(b,ab,x,out) -- handle end of list
+  return _fillGaps(out) end
 
 -- ### Tree
 -- `DATA:chebyshev(row:list) -> 0..1`    
@@ -459,7 +467,7 @@ eg["--bins"] = function(file,     d,last,ys)
   for col,bins in pairs(d:bins(d.rows)) do
     print""
     for _,bin in pairs(bins) do
-      print(l.fmt("%5.3g\t %s", bin.y.mu, bin)) end end  end
+      print(l.fmt("%5.3g\t%3s\t%s", bin.y.mu, bin.y.n, bin)) end end  end
 
 eg["--tree"] = function(file,     d,ys) 
   d= DATA.new():import(file or the.train) 
