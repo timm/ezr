@@ -62,10 +62,11 @@ better rows.
 - Type `thing` are atoms or "?" (for "don't know").
 - Type `rows` are lists of things; i.e. `row  =  list[thing]`. ]]
 
+-- ## Name Space
 local DATA,SYM,NUM,COLS,BIN,TREE = {},{},{},{},{},{}
 local abs, max, min, rand = math.abs, math.max, math.min, math.random
 l.inf=1E30
------------------------------------------------------------------------------------------
+^-- ---------------------------------------------------------------------------------------
 -- ## Data layer
 -- ### class NUM
 -- Incremental update of summary of numbers.
@@ -473,7 +474,7 @@ eg["--bins"] = function(file,     d,last,ys)
 eg["--tree"] = function(file,     d,ys) 
   d= DATA.new():import(file or the.train) 
   d:tree(d.rows, d:bins(d.rows)) end
------------------------------------------------------------------------------------------
+^-- ---------------------------------------------------------------------------------------
 -- ## Start-up
 if   pcall(debug.getlocal, 4, 1) 
 then return {DATA=DATA,NUM=NUM,SYM=SYM,BIN=BIN,TREE=TREE,the=the,lib=l,eg=eg}
