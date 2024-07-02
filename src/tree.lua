@@ -7,7 +7,7 @@ Multi-objective tree generation
 (c)2024 Tim Menzies <timm@ieee.org> MIT license
 
 ## INSTALL
-wget http://https://raw.githubusercontent.com/timm/ezr/main/src/tree.lua
+wget https://raw.githubusercontent.com/timm/ezr/main/src/tree.lua
 
 ## USAGE 
 lua sandbox.lua [OPTIONS] [ACTIONS]
@@ -40,10 +40,7 @@ booleans ("true,false") or "?" (for don't know). e.g
      4,      90,       48,   80,   2,       2335,   23.7,   40
      4,      98,       68,   78,   3,       2135,   16.6,   30
      4,      86,       65,   80,   3,       2019,   16.4,   40
-     4,      105,      63,   81,   1,       2215,   14.9,   30
-     4,      151,      90,   79,   1,       2556,   13.2,   30
-     6,      225,     105,   73,   1,       3121,   16.5,   20
-     6,      250,      72,   75,   1,       3432,   21,     20
+     ...     ...      ...   ...    ...      ...     ...    ...
      4,      121,      76,   72,   2,       2511,   18,     20
      8,      302,     130,   77,   1,       4295,   14.9,   20
      8,      318,     210,   70,   1,       4382,   13.5,   10
@@ -63,8 +60,9 @@ better rows.
   `dict` (symbolic indexes). 
 - Type `num` (not to be confused with class NUM) are floats or ints. 
 - Type `atom` are bools, strs, or nums.
-- Type `thing` are atoms or "?", for "don't know".
+- Type `thing` are atoms or "?" (for "don't know").
 - Type `rows` are lists of things; i.e. `row  =  list[thing]`. ]]
+
 local the,big={},1E30
 local DATA,SYM,NUM,COLS,BIN,TREE = {},{},{},{},{},{}
 local abs, max, min = math.abs, math.max, math.min
@@ -159,8 +157,7 @@ function COLS.new(row,    self,skip,col)
   skip={}
   for k,v in pairs(row) do
     col = push(v:find"X$" and skip or v:find"[!+-]$" and self.y or self.x,
-            push(self.all, 
-              (v:find"^[A-Z]" and NUM or SYM).new(v,k))) 
+                push(self.all, (v:find"^[A-Z]" and NUM or SYM).new(v,k))) 
     if v:find"!$" then self.klass=col end end
   return self end 
 
@@ -219,7 +216,7 @@ function DATA:bins(rows,      tbins)
     for _,bin in pairs(col:bins(self:xsort(col.pos,rows), -- ②  
                                function(row) return self:chebyshev(row) end)) do -- ③  
       if not (bin.lo== -big and bin.hi==big) then --  ④   
-         push(tbins[col.pos],bin) end end 
+         push(tbins[col.pos],bin) end end  end
   return tbins end 
 
 -- `DATA:xsort(pos:int, rows: list[row]) : list[row]`    
@@ -242,12 +239,19 @@ function SYM:bins(rows,y,     out,x,y)
   return out end
 
 -- `NUM:bins(rows:list[row], y:callable) -> list[BIN]`   
--- Generate one bin for each symbol seen in a  NUM column. Assumes
--- rows are sorted with all the "?" values pushed to the front.
-function NUM:bins(rows,y,     out,b,ab,want,b4,bins1)
-  function bins1(b,ab,       a)
-    a = out[#out]; if a and a.y:same(b.y) then out[#out]=ab else push(out,b) end
-    return BIN.new(self.name,self.pos,x), copy(out[#out]) end
+-- Generate one bins for the numeric ranges in this column. Assumes
+-- rows are sorted with all the "?" values pushed to the front. Run
+-- over rows till we clear the "?" values, then set `want` the
+-- remaining rows divided by `the.bins`.  Collect `x` and `y(row)`
+-- values for each remaining row, saving them in `b` (the new bin)
+-- and `ab` the combination of the new bin and the last thing we
+-- added to `out`.
+function NUM:bins(rows,y,     out,b,ab,want,b4,newBin)
+  function newBin(b,ab,       a)
+    a = out[#out]; if a and a.y:same(b.y)  
+                      then out[#out]=ab  -- replace the last bin with last plus `b`
+                      else push(out,b) end  -- add `b` to the out
+    return BIN.new(self.name,self.pos,x), copy(out[#out]) end -- return the new b,ab
   out = {} 
   b = BIN.new(self.name, self.pos) 
   ab= BIN.new(self.name, self.pos)
@@ -255,16 +259,19 @@ function NUM:bins(rows,y,     out,b,ab,want,b4,bins1)
     x = row[self.pos] 
     if x ~= "?" then 
       want = want or (#rows - k - 1)/the.bins
-      if   x ~= b4 and b.y.n >= want and #rows - k > want and not self:small(b.hi - b.lo) 
-      then b,ab = bins1(b,ab) end
-      b:add(row,y(row)) 
-      ab:add(row,y(row)) 
+      if   x ~= b4 and                 -- if there is a break between values
+           b.y.n >= want and           -- and the current bin is big enough
+           #rows - k > want and        -- and there is space for 1 more bin after here
+           not self:small(b.hi - b.lo) -- the span of this bin is not trivially small
+      then b,ab = newBin(b,ab) end     -- enure the `b` info is added to end of `out`
+      b:add(row,y(row))    -- update the current new bin
+      ab:add(row,y(row))   -- update the combination of current new bin and end of `out`
       b4 = x
   end end 
-  bins1(b,ab)
-  out[1].lo  = -big
-  out[#out].hi =  big
-  for k = 2,#out do out[k].lo = out[k-1].hi end 
+  newBin(b,ab) -- handle end of list
+  out[1].lo    = -big  -- expand out to cover -infinity to...
+  out[#out].hi =  big  -- ... plus infinity
+  for k = 2,#out do out[k].lo = out[k-1].hi end  -- fill in any gaps with the bins
   return out end
 
 -- ### Tree
@@ -319,17 +326,23 @@ function TREE:visitor(fun,lvl)
 local _id = 0
 local function id() _id = _id + 1; return _id end
 
+-- `new(klass: klass, t: dict) -> dict`      
+-- Add a unique `id`; connection `t` to its `klass`; ensure `klass` knows to call itself.
 function new (klass,t) 
   t._id=id(); klass.__index=klass; setmetatable(t,klass); return t end
 
 -- lists
+-- `list(t: dict|list) -> list`
 function list(t,    u)
   u={}; for _,v in pairs(t) do push(u,v) end; return u end
 
+-- `push(t: list, x:any) -> x`
 function push(t,x) t[1+#t]=x; return x end 
 
+-- `sort(t: list, fun:callable) -> list`
 function sort(t,fun) table.sort(t,fun); return t end
 
+-- `sort(t: any) -> any`
 function copy(t,     u)
   if type(t) ~= "table" then return t end 
   u={}; for k,v in pairs(t) do u[copy(k)] = copy(v) end 
