@@ -1,7 +1,12 @@
 coding101
 - how to use the code . knn (simplest)
+  - shebang, vim settings
   - Githib, readme, license, .gitignore
   - docs/index.md (from README.md)
+    - proj1: folrk issues. milestones. doc
+  - uncle bob's rule (5 lines)
+  - uncle tim's rule (use less globals)
+  - aunt barby's rule (use abstraction, functional programming)
 
 coal-face scripting
 - edit and run at the same time
@@ -31,6 +36,10 @@ coal-face scripting
   - self-documenting code (my scripts, make with help file)
   - type hints
   - big example: rust
+- abtraction
+  - seperate mechanism from policy (my data little langauge)
+  - interactors, try catch
+  - functional programming
 
 SE theory
 - decomposition: parnas. interface, polymorphism
