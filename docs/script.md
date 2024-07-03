@@ -6,6 +6,9 @@ coding101
     - proj1: folrk issues. milestones. doc
   - uncle bob's rule (5 lines)
   - uncle tim's rule (use less globals)
+  - "Any code of your own that you haven't looked at for six or more months might as well have been written by someone else." — Eagleson's law
+    - thou shalt document
+    - thou shalt add a regresson/demo suite
   - aunt barby's rule (use abstraction, functional programming)
 
 coal-face scripting
