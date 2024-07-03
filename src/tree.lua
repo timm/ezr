@@ -221,13 +221,13 @@ function BIN:select(row,     x)
   return (x=="?") or (self.lo==self.hi and self.lo==x) or (self.lo < x and x <= self.hi) end
 
 -- ### Bin generation
--- `DATA:bins(rows: list[rows]) : dict[int, list[bins]] `   
+-- `DATA:bins(?rows: list[rows]) : dict[int, list[bins]] `   
 -- ①  For each x-columns,    
 -- ②  Return  a list of  bins ...    
--- ③  ... that seperate  the Chebyshev distances ...   
--- ④  ... rejecting any that span from minus to plus infinity.
-function DATA:bins(rows,      tbins) 
-  tbins = {}
+-- ③  ... that separate  the Chebyshev distances ...   
+-- ④  ... rejecting any bin that span from minus to plus infinity.
+function DATA:bins(  rows,      tbins) 
+  tbins, rows = {}, rows or self.rows
   for _,col in pairs(self.cols.x) do -- ①
     tbins[col.pos] = {}
     for _,bin in pairs(col:bins(self:dontKnowSort(col.pos,rows), -- ②  
@@ -303,13 +303,14 @@ function _fillGaps(out)
   return out end
 
 -- ### Tree
-function TREE.new(tbins,data, stop,name,pos,lo,hi,mu,     self) 
+function TREE.new(data,  tbins,stop,name,pos,lo,hi,mu,     self,sub) 
   self = l.new(TREE,{name=name, pos=pos, lo=lo, hi=hi, mu=mu, here=data, kids={}}) 
+  tbins = tbins or data:bins(data)
   stop = stop or 4
-  for _,bin in sort(tbins[ self:argMin(data.rows,tbins) ], on"mu") do
-    sub = bin:selects(rows)
-    if #sub < #rows and #rows > stop then
-      node.kinds[bin.pos] = Tree.new(tbins, data:clone(sub), stop,
+  for _,bin in l.sort(tbins[ self:argMin(data.rows,tbins) ], l.by"mu") do
+    sub = bin:selects(data.rows)
+    if #sub < #data.rows and #sub > stop then
+      self.kinds[bin.pos] = TREE.new(data:clone(sub), tbins, stop,
                                      bin.name, bin.pos, bin.lo, bin.hi, bin.mu) end end
   return self end 
 
@@ -325,6 +326,7 @@ function DATA:arg(rows,bins,    w,num)
   for _,bin in pairs(bins) do
     num = NUM.new()
     for _,r in pairs(rows) do if bin:select(r) then num:add(self:chebyshev(r)) end end
+    bin.mu = num.mu
     w = w + num.n*num.sd end
   return w/#rows end
 
@@ -352,8 +354,8 @@ function l.push(t,x) t[1+#t]=x; return x end
 -- `sort(t: list, ?fun:callable) -> list`
 function l.sort(t,  fun) table.sort(t,fun); return t end
 
-function l.down(x,...) 
-  return type(x)=="function" and function(a,b) return x(a,...) < x(b,...) end 
+function l.by(x) 
+  return type(x)=="function" and function(a,b) return x(a) < x(b) end 
                              or  function(a,b) return a[x] < b[x] end end 
 
 -- `copy(t: any) -> any`
@@ -471,7 +473,7 @@ eg["--clone"] = function(file,     d0,d1)
      print(o(col1))
      print(o(d0.cols.x[k])) end end
 
-eg["--bins"] = function(file,     d,last,ys) 
+eg["--bins"] = function(file,     d,s,n) 
   d= DATA.new():import(file or the.train):sort()
   s,n=0,0;for _,row in pairs(d.rows) do n=n+1; s = s+d:chebyshev(row) end
   print(s/n)
