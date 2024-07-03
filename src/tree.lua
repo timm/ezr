@@ -303,30 +303,24 @@ function _fillGaps(out)
   return out end
 
 -- ### Tree
-function TREE.new( here,name,pos,lo,hi,mu,below) 
-  return l.new(TREE,{root=False,name=name,pos=pos,lo=lo,hi=hi,mu=mu,here=here,below=below}) end
-
-function DATA:tree(rows,tbins,  stop,       node,what2do,sub)
-  node = TREE.new(self:clone(rows)) 
+function TREE.new(tbins,data, stop,name,pos,lo,hi,mu,     self) 
+  self = l.new(TREE,{ name=name, pos=pos, lo=lo, hi=hi, mu=mu, here=data, kids={} }) 
   stop = stop or 4
-  if #rows > stop then 
-    what2do = self:minXpected(rows,tbins) 
-    for _,bin in pairs(tbins[what2do]) do
-      sub= bin:selects(rows)
-      if #sub < #rows and #rows > stop then
-        node.leaf=false
-        node.kids[bin.pos] = {pos=bin.pos, lo=bin.lo, hi=bin.hi, name=bin.name,
-                                _tree = self:tree(sub, tbins)}  end end
-  return node end end 
+  for _,bin in sort(tbins[ self:argMin(data.rows,tbins) ], on"mu") do
+    sub = bin:selects(rows)
+    if #sub < #rows and #rows > stop then
+      node.kinds[bin.pos] = Tree.new(tbins, data:clone(sub), stop,
+                                     bin.name, bin.pos, bin.lo, bin.hi, bin.mu) end end
+  return self end 
 
-function DATA:minXpected(rows,tbins,    lo,n,w,tmp,out)
+function DATA:argMin(rows,tbins,    lo,tmp,out)
   lo = l.inf
   for pos,bins in pairs(tbins) do
-    tmp = self:xpected(rows,bins)
+    tmp = self:arg(rows,bins)
     if tmp < lo then lo,out = tmp,pos end end
   return out end
 
-function DATA:xpected(rows,bins,    w,num)
+function DATA:arg(rows,bins,    w,num)
   w = 0
   for _,bin in pairs(bins) do
     num = NUM.new()
@@ -357,6 +351,10 @@ function l.push(t,x) t[1+#t]=x; return x end
 
 -- `sort(t: list, ?fun:callable) -> list`
 function l.sort(t,  fun) table.sort(t,fun); return t end
+
+function l.down(x,...) 
+  return type(x)=="function" and function(a,b) return x(a,...) < x(b,...) end 
+                             or  function(a,b) return a[x] < b[x] end end 
 
 -- `copy(t: any) -> any`
 function l.copy(t,     u)

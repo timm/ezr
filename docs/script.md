@@ -53,6 +53,7 @@ Maths
 
 Stats:
 - mean, standard devation, pooled variance
+- expected value, cull if
 - effect size, significance tests
 - cohen, cliffs, bootstraop
 - Hamlet's probablity theory. maths of sampling
