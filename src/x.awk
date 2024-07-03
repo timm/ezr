@@ -18,7 +18,7 @@ function z2k(z,   k,lo,hi,out) {
   for(k in breaks[BINS]) {
     hi = breaks[BINS][k]
     if (z >= lo && z < hi) {break} else {lo = hi}}
-  return BREAKS[BINS][min(k,BINS-1)] }
+  return min(k,BINS-1) }
 
 function x2z(c,x) { return z2k((x - mu[c])/sd[c]) }
 function k2x(c,z) { z=breaks[BINS][z2k(z)]; return sd[c]*z + mu[c] }
