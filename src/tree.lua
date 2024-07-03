@@ -304,7 +304,7 @@ function _fillGaps(out)
 
 -- ### Tree
 function TREE.new(tbins,data, stop,name,pos,lo,hi,mu,     self) 
-  self = l.new(TREE,{ name=name, pos=pos, lo=lo, hi=hi, mu=mu, here=data, kids={} }) 
+  self = l.new(TREE,{name=name, pos=pos, lo=lo, hi=hi, mu=mu, here=data, kids={}}) 
   stop = stop or 4
   for _,bin in sort(tbins[ self:argMin(data.rows,tbins) ], on"mu") do
     sub = bin:selects(rows)
