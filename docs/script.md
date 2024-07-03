@@ -27,7 +27,7 @@ coal-face scripting
   - big example: GH workflows
 - decomposition / composition
   - pipes
-  - regualr expressions
+  - regular expressions
   - patterns (e.g. DATA's services defined by recursive call to NUM or SYM)
     - others factory (e.g. COLS), visitor (tree printing)
     - LSP
@@ -75,3 +75,6 @@ micro modeling
 - ranges ==> trees ==> regression (or classification)
 - dendograpms ==> optimization
 
+exercses
+- code sharing (Github)
+- scripting environents (Makefile, shell)
