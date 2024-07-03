@@ -26,4 +26,5 @@ bins:
 	cp ../docs/img/tree.png ~/tmp/tree.png
 	pycco -d ~/tmp $<
 	echo "p { text-align: right }" >> ~/tmp/pycco.css
+	echo "info p { text-align: left }" >> ~/tmp/pycco.css
 	open $@

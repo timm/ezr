@@ -53,6 +53,7 @@ better rows.
 
 ## IN THIS CODE...
 - Function args prefixed by two spaces are optional inputs.
+  In the typehints, these arguments are marked with a "?".
 - Function args prefixed by four spaces are local to that function.
 - UPPPER CASE words are classes; 
 - Type `table`s are either of type `list` (numberic indexes) or 
@@ -62,17 +63,16 @@ better rows.
 - Type `thing` are atoms or "?" (for "don't know").
 - Type `rows` are lists of things; i.e. `row  =  list[thing]`. ]]
 
--- ## Name Space
 local DATA,SYM,NUM,COLS,BIN,TREE = {},{},{},{},{},{}
 local abs, max, min, rand = math.abs, math.max, math.min, math.random
 l.inf=1E30
-^-- ---------------------------------------------------------------------------------------
+-- ---------------------------------------------------------------------------------------
 -- ## Data layer
 -- ### class NUM
 -- Incremental update of summary of numbers.
 
--- `NUM.new(name:str, pos:int) -> NUM`  
-function NUM.new(name,pos)
+-- `NUM.new(?name:str, ?pos:int) -> NUM`  
+function NUM.new(  name,pos)
   return l.new(NUM,{name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=l.inf, hi= -l.inf,
                   goal= (name or ""):find"-$" and 0 or 1}) end
 
@@ -104,8 +104,8 @@ function NUM.same(i,j,    pooled)
 -- ### class SYM
 -- Incremental update of summary of symbols.
 
--- `SYM.new(name:str, pos:int) -> SYM`  
-function SYM.new(name,pos)
+-- `SYM.new(?name:str, ?pos:int) -> SYM`  
+function SYM.new(  name,pos)
   return l.new(SYM,{name=name, pos=pos, n=0, has={}, most=0, mode=nil}) end
 
 -- `SYM:add(x:any) -> x`
@@ -169,12 +169,25 @@ function COLS:add(row)
   return row end
 ------------------------------------------------------------------------------
 -- ## Inference Layer
+
+-- `DATA:chebyshev(row:list) -> 0..1`    
+-- Report distance to best solution (and _lower_ numbers are _better_).    
+function DATA:chebyshev(row,     d) 
+  d=0; for _,c in pairs(self.cols.y) do d = max(d,abs(c:norm(row[c.pos]) - c.goal)) end
+  return d end
+  
+-- `DATA:sort() -> DATA`   
+-- Sort rows by `chebyshev` (so best rows appear first). 
+function DATA:sort()
+  table.sort(self.rows, function(a,b) return self:chebyshev(a) < self:chebyshev(b) end)
+  return self end 
+
 -- ### class BIN: discretization
 -- BINs hold information on what happens to some `y` variable as we move from
 -- `lo` to `hi` in another column. TREEs will be built by searching through the bins.
 
--- `BIN.new(name:str, pos:int) -> BIN`
-function BIN.new(name,pos,lo,hi)
+-- `BIN.new(name:str, pos:int, ?lo:atom, ?hi:atom) -> BIN`
+function BIN.new(name,pos,  lo,hi)
   hi = hi or lo or -l.inf
   lo = lo or l.inf
   return l.new(BIN,{name=name, pos=pos, lo=lo, hi= hi, y=NUM.new()}) end
@@ -207,6 +220,7 @@ function BIN:select(row,     x)
   x=row[self.pos]
   return (x=="?") or (self.lo==self.hi and self.lo==x) or (self.lo < x and x <= self.hi) end
 
+-- ### Bin generation
 -- `DATA:bins(rows: list[rows]) : dict[int, list[bins]] `   
 -- ①  For each x-columns,    
 -- ②  Return  a list of  bins ...    
@@ -218,7 +232,7 @@ function DATA:bins(rows,      tbins)
     tbins[col.pos] = {}
     for _,bin in pairs(col:bins(self:dontKnowSort(col.pos,rows), -- ②  
                                function(row) return self:chebyshev(row) end)) do -- ③  
-      if not (bin.lo== -l.inf and bin.hi==l.inf) then --  ④   
+      if not (bin.lo== -l.inf and bin.hi==l.inf) then --  ④     
          l.push(tbins[col.pos],bin) end end  end
   return tbins end 
 
@@ -240,22 +254,6 @@ function SYM:bins(rows,y,     out,x)
       out[x]:add(row,y(row)) end end
   return out end
 
--- helper NUM:bins. Handles the action when a new bin
--- is being consodered.
-local  function _newBin(b,ab,x,out,      a)
-  a = out[#out]
-  if   a and a.y:same(b.y)  
-  then out[#out] = ab     -- replace the last bin with last plus `b`
-  else l.push(out,b) end  -- add `b` to the out
-  return BIN.new(b.name,b.pos,x), l.copy(out[#out]) end -- return the new b,ab
-
--- helper NUM:bins. Fill in any gaps in the bins
-local function _fillGaps(out)
-  out[1].lo    = -l.inf  -- expand out to cover -infinity to...
-  out[#out].hi =  l.inf  -- ... plus infinity
-  for k = 2,#out do out[k].lo = out[k-1].hi end  -- fill in any gaps with the bins
-  return out end
-
 -- `NUM:bins(rows:list[row], y:callable) -> list[BIN]`   
 -- Generate one bins for the numeric ranges in this column. Assumes
 -- rows are sorted with all the "?" values pushed to the front. Run
@@ -264,6 +262,7 @@ local function _fillGaps(out)
 -- values for each remaining row, saving them in `b` (the new bin)
 -- and `ab` the combination of the new bin and the last thing we
 -- added to `out`.
+local _newBin, _fillGaps
 function NUM:bins(rows,y,     out,b,ab,want,b4,x)
   out = {} 
   b = BIN.new(self.name, self.pos) 
@@ -274,36 +273,45 @@ function NUM:bins(rows,y,     out,b,ab,want,b4,x)
       want = want or (#rows - k - 1)/the.bins
       if x ~= b4 and                 -- if there is a break between values
          b.y.n >= want and           -- and the current bin is big enough
-         #rows - k > want and        -- and there is space for 1 more bin after here
+         #rows - k > want and        -- and after, there is space for 1 more bin 
          not self:small(b.hi - b.lo) -- the span of this bin is not trivially small
       then 
-         b,ab = _newBin(b,ab,x,out) end -- ensure the `b` info is added to end of `out`
+         b,ab = _newBin(b,ab,x,out)  -- ensure the `b` info is added to end of `out`
+      end
       b:add(row,y(row))    -- update the current new bin
       ab:add(row,y(row))   -- update the combination of current new bin and end of `out`
       b4 = x end 
   end
   _newBin(b,ab,x,out) -- handle end of list
-  return _fillGaps(out) end
+  return _fillGaps(out) end 
+
+-- helper function for NUM:bins. If the new bin is the same as the last bin,
+-- then replace the last bin with `ab` (which is the new bin plus the last bin).
+-- Else push the new bin onto `out`.
+function _newBin(b,ab,x,out,      a)
+  a = out[#out]
+  if   a and a.y:same(b.y)  
+  then out[#out] = ab     -- replace the last bin with last plus `b`
+  else l.push(out,b) end  -- add `b` to the out
+  return BIN.new(b.name,b.pos,x), l.copy(out[#out]) end -- return the new b,ab
+
+-- helper function for NUM:bins. Fill in any gaps in the bins
+function _fillGaps(out)
+  out[1].lo    = -l.inf  -- expand out to cover -infinity to...
+  out[#out].hi =  l.inf  -- ... plus infinity
+  for k = 2,#out do out[k].lo = out[k-1].hi end  -- fill in any gaps with the bins
+  return out end
 
 -- ### Tree
--- `DATA:chebyshev(row:list) -> 0..1`    
--- Report distance to best solution (and _lower_ numbers are _better_).    
-function DATA:chebyshev(row,     d) 
-  d=0; for _,c in pairs(self.cols.y) do d = max(d,abs(c:norm(row[c.pos]) - c.goal)) end
-  return d end
-  
--- `DATA:sort() -> DATA`   
--- Sort rows by `chebyshev` (so best rows appear first). 
-function DATA:sort()
-  table.sort(self.rows, function(a,b) return self:chebyshev(a) < self:chebyshev(b) end)
-  return self end 
+function TREE.new( here,name,pos,lo,hi,mu,below) 
+  return l.new(TREE,{root=False,name=name,pos=pos,lo=lo,hi=hi,mu=mu,here=here,below=below}) end
 
-function DATA:tree(rows,tbins,  stop,       node,splitter,sub)
-  node = {_kids={}, here = self:clone(rows), leaf=true}
+function DATA:tree(rows,tbins,  stop,       node,what2do,sub)
+  node = TREE.new(self:clone(rows)) 
   stop = stop or 4
   if #rows > stop then 
-    splitter = self:minXpected(rows,tbins) 
-    for _,bin in pairs(tbins[splitter]) do
+    what2do = self:minXpected(rows,tbins) 
+    for _,bin in pairs(tbins[what2do]) do
       sub= bin:selects(rows)
       if #sub < #rows and #rows > stop then
         node.leaf=false
@@ -347,8 +355,8 @@ function l.new (klass,t)
 -- `push(t: list, x:any) -> x`
 function l.push(t,x) t[1+#t]=x; return x end 
 
--- `sort(t: list, fun:callable) -> list`
-function l.sort(t,fun) table.sort(t,fun); return t end
+-- `sort(t: list, ?fun:callable) -> list`
+function l.sort(t,  fun) table.sort(t,fun); return t end
 
 -- `copy(t: any) -> any`
 function l.copy(t,     u)
@@ -455,7 +463,8 @@ eg["--cohen"] = function(_,    u,t)
 eg["--train"] = function(file,     d) 
   d= DATA.new():import(file or the.train):sort() 
   for i,row in pairs(d.rows) do
-    if i==1 or i %40 ==0 then print(i, o(row)) end end end
+    if i==1 or i %25 ==0 then 
+      print(l.fmt("%3s\t%.2f\t%s",i, d:chebyshev(row), o(row))) end end end
 
 eg["--clone"] = function(file,     d0,d1) 
   d0= DATA.new():import(file or the.train) 
@@ -465,7 +474,9 @@ eg["--clone"] = function(file,     d0,d1)
      print(o(d0.cols.x[k])) end end
 
 eg["--bins"] = function(file,     d,last,ys) 
-  d= DATA.new():import(file or the.train) 
+  d= DATA.new():import(file or the.train):sort()
+  s,n=0,0;for _,row in pairs(d.rows) do n=n+1; s = s+d:chebyshev(row) end
+  print(s/n)
   for col,bins in pairs(d:bins(d.rows)) do
     print""
     for _,bin in pairs(bins) do
@@ -474,7 +485,7 @@ eg["--bins"] = function(file,     d,last,ys)
 eg["--tree"] = function(file,     d,ys) 
   d= DATA.new():import(file or the.train) 
   d:tree(d.rows, d:bins(d.rows)) end
-^-- ---------------------------------------------------------------------------------------
+-- ---------------------------------------------------------------------------------------
 -- ## Start-up
 if   pcall(debug.getlocal, 4, 1) 
 then return {DATA=DATA,NUM=NUM,SYM=SYM,BIN=BIN,TREE=TREE,the=the,lib=l,eg=eg}
