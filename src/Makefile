@@ -28,3 +28,8 @@ bins:
 	echo "p { text-align: right }" >> ~/tmp/pycco.css
 	echo "info p { text-align: left }" >> ~/tmp/pycco.css
 	open $@
+
+csv=$(wildcard ../data/*/*.csv)
+
+xx:
+		$(foreach f,$(csv), echo "# $f"; lua tree.lua --tree $f;)

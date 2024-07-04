@@ -180,6 +180,7 @@ function DATA:chebyshevs(  rows,       num)
   num = NUM.new()
   for _,r in pairs(rows or self.rows) do num:add(self:chebyshev(r)) end 
   return num end
+
  -- `DATA:sort() -> DATA`   
 -- Sort rows by `chebyshev` (so best rows appear first). 
 function DATA:sort()
@@ -313,7 +314,7 @@ function TREE.new(here,lvl,name,pos,lo,hi,mu)
                      mu=mu or 0 , here=here, _kids={}})  end
 
 function TREE:__tostring() 
-  return l.fmt("%.3f\t%s\t%s%s", self.mu, #self.here.rows, ("|.. "):rep(self.lvl-1), self.lvl==0 and #self.here.rows or self.bin) end
+  return l.fmt("%.3f\t%s\t%s%s", self.mu, #self.here.rows, ("|.. "):rep(self.lvl-1), self.lvl==0 and "" or self.bin) end
 
 function TREE:visit(fun) 
   fun = fun or print
@@ -322,24 +323,29 @@ function TREE:visit(fun)
 
 -- Make tree
 function DATA:tree(  stop,_grow)
-  function _grow(rows,stop,lvl,  name,pos,lo,hi,mu,    tree,tbins,sub)
-    tree = TREE.new(self:clone(rows), lvl,name,pos,lo,hi,mu)
+  function _grow(rows,stop,lvl,  name,pos,lo,hi,    tree,tbins,sub,c)
+    tree = TREE.new(self:clone(rows), lvl,name,pos,lo,hi,self:chebyshevs(rows).mu)
 	  tbins = self:bins(rows)
-	  for pos,bin in pairs(l.sort(tbins[ self:argMin(tbins) ], 
-                              function(a,b) return a.y.mu < b.y.mu end)) do
+    c={}
+	  for pos,bin in pairs(l.sort(tbins[ self:argMin(tbins,rows,c) ],
+                                function(a,b) return c[a._id] < c[b._id] end)) do 
 	    sub = bin:selects(rows)
 	    if #sub < #rows and #sub > stop then
 	      l.push(tree._kids, _grow(sub,stop,lvl+1,
-	                                 bin.name, bin.pos, bin.lo, bin.hi, bin.y.mu)) end end
+	                                 bin.name, bin.pos, bin.lo, bin.hi)) end end
 	  return tree 
   end 
   return _grow(self.rows, (#self.rows)^.5, 0) end 
 
-function DATA:argMin(tbins,    lo,ns,sds,tmp,n,out)
+function DATA:argMin(tbins,rows, c,   lo,ns,sds,tmp,n,out)
   lo = l.inf
   for pos,bins in pairs(tbins) do
+    out = out or pos
     ns,sds = 0,0
-    for _,bin in pairs(bins) do n=bin.y.n; ns = ns + n; sds = n*bin.y.sd end
+    for _,bin in pairs(bins) do 
+       n=bin.y.n; ns = ns + n; sds = n*bin.y.sd 
+       c[bin._id] = self:chebyshevs(bin:selects(rows)).mu
+    end
     tmp = sds/ns 
     if tmp < lo then lo,out = tmp,pos end end
   return out end
@@ -483,17 +489,20 @@ eg["--clone"] = function(file,     d0,d1)
      print(o(col1))
      print(o(d0.cols.x[k])) end end
 
-eg["--bins"] = function(file,     d,s,n) 
+eg["--bins"] = function(file,     d) 
   d= DATA.new():import(file or the.train):sort()
-  s,n=0,0;for _,row in pairs(d.rows) do n=n+1; s = s+d:chebyshev(row) end
-  print(s/n)
+  print(l.fmt("%.3f", d:chebyshevs().mu))
   for col,bins in pairs(d:bins(d.rows)) do
     print""
     for _,bin in pairs(bins) do
       print(l.fmt("%5.3g\t%3s\t%s", bin.y.mu, bin.y.n, bin)) end end  end
 
 eg["--tree"] = function(file,     d,ys) 
+  print(("-"):rep(40))
+  eg["--bins"](file)
+  print(("-"):rep(5))
   d= DATA.new():import(file or the.train) 
+  print(l.fmt("%.3f",d:chebyshevs().mu))
   d:tree():visit() end
 -- ---------------------------------------------------------------------------------------
 -- ## Start-up
