@@ -176,7 +176,11 @@ function DATA:chebyshev(row,     d)
   d=0; for _,c in pairs(self.cols.y) do d = max(d,abs(c:norm(row[c.pos]) - c.goal)) end
   return d end
   
--- `DATA:sort() -> DATA`   
+function DATA:chebyshevs(       num)
+  num = NUM.new()
+  for _,r in pairs(self.rows) do num:add(self:chebyshev(r)) end 
+  return num end
+ -- `DATA:sort() -> DATA`   
 -- Sort rows by `chebyshev` (so best rows appear first). 
 function DATA:sort()
   table.sort(self.rows, function(a,b) return self:chebyshev(a) < self:chebyshev(b) end)
@@ -303,21 +307,24 @@ function _fillGaps(out)
   return out end
 
 -- ### Tree
-function TREE.new(data,  tbins,stop,name,pos,lo,hi,mu,     self,sub) 
-  self = l.new(TREE,{name=name, pos=pos, lo=lo, hi=hi, mu=mu, here=data, kids={}}) 
-  tbins = tbins or data:bins(data)
-  stop = stop or 4
-  for _,bin in l.sort(tbins[ self:argMin(data.rows,tbins) ], l.by"mu") do
+-- -- rebin at each lelvel. keep in the same data.
+function TREE.new(data,  data0, tbins,stop,lvl,name,pos,lo,hi,mu,     self,sub) 
+  lvl = lvl or 0
+  data0 = data0 or data
+  self = l.new(TREE,{lvl=lvl, bin=BIN.new(name,pos,lo,hi), mu=data:chebyshevs().mu, here=data, _kids={}}) 
+  tbins = data:bins(data.rows)
+  stop = stop or 4 --(#data.rows)^.5
+  for _,bin in pairs(l.sort(tbins[ data0:argMin(tbins) ], l.by"mu")) do
     sub = bin:selects(data.rows)
     if #sub < #data.rows and #sub > stop then
-      self.kinds[bin.pos] = TREE.new(data:clone(sub), tbins, stop,
-                                     bin.name, bin.pos, bin.lo, bin.hi, bin.mu) end end
+      l.push(self._kids,  TREE.new(data:clone(sub), data0, tbins, stop,lvl+1,
+                                 bin.name, bin.pos, bin.lo, bin.hi, bin.mu)) end end
   return self end 
 
-function DATA:argMin(rows,tbins,    lo,tmp,out)
+function DATA:argMin(tbins,    lo,tmp,out)
   lo = l.inf
   for pos,bins in pairs(tbins) do
-    tmp = self:arg(rows,bins)
+    tmp = self:arg(self.rows, bins)
     if tmp < lo then lo,out = tmp,pos end end
   return out end
 
@@ -330,10 +337,13 @@ function DATA:arg(rows,bins,    w,num)
     w = w + num.n*num.sd end
   return w/#rows end
 
-function TREE:visitor(fun,lvl)
+function TREE:__tostring() 
+  return l.fmt("%.3f\t%s%s", self.mu, ("|.. "):rep(self.lvl), self.lvl==0 and #self.here.rows or self.bin) end
+
+function TREE:visit(fun)
   lvl = lvl or 0
-  fun(self,lvl)
-  for _,sub in pairs(self._kids) do if sub.kids then self:visitor(lvl+1) end end end
+  fun(self)
+  for _,kid in pairs(self._kids) do kid:visit(fun) end end 
   
 ------------------------------------------------------------------------------
 -- ## Lib
@@ -424,6 +434,14 @@ function l.settings(s,     t)
 -- ## Start-up Actions
 local eg={}
 local copy,o,oo,push=l.copy,l.o,l.oo,l.oush
+local function all(t,     reset,fails)
+  fails,reset = 0,copy(the)
+  for _,x in pairs(t) do
+    math.randomseed(the.seed) -- setup
+    if eg[oo(x)]()==false then fails=fails+1 end
+    the = copy(reset) -- tear down
+  end 
+  os.exit(fails) end 
 
 eg["actions"] = function(_) 
   print"lua sandbox.lua --[all,copy,cohen,train,bins] [ARG]" end
@@ -436,14 +454,7 @@ eg["-f"] = function(x) the.fmt=   x end
 eg["-s"] = function(x) the.seed=  x end
 eg["-t"] = function(x) the.train= x end
 
-eg["--all"] = function(_,    reset,fails)
-  fails,reset = 0,copy(the)
-  for _,x in pairs{"--copy","--cohen","--train","--bins"} do 
-    math.randomseed(the.seed) -- setup
-    if eg[oo(x)]()==false then fails=fails+1 end
-    the = copy(reset) -- tear down
-  end 
-  os.exit(fails) end 
+eg["--all"] = function(_) all{"--copy","--cohen","--train","--bins"} end
 
 eg["--copy"] = function(_,     n1,n2,n3) 
   n1,n2 = NUM.new(),NUM.new()
@@ -484,7 +495,7 @@ eg["--bins"] = function(file,     d,s,n)
 
 eg["--tree"] = function(file,     d,ys) 
   d= DATA.new():import(file or the.train) 
-  d:tree(d.rows, d:bins(d.rows)) end
+  TREE.new(d):visit(print) end
 -- ---------------------------------------------------------------------------------------
 -- ## Start-up
 if   pcall(debug.getlocal, 4, 1) 
