@@ -1,152 +1,167 @@
 #!/usr/bin/env lua
--- <!-- vim : set ts=2 sts=2 et : -->
---       __                __                
---      /\ \              /\ \__             
---      \_\ \      __     \ \ ,_\     __     
---      /'_` \   /'__`\    \ \ \/   /'__`\   
---     /\ \L\ \ /\ \L\.\_   \ \ \_ /\ \L\.\_ 
---     \ \___,_\\ \__/.\_\   \ \__\\ \__/.\_\
---      \/__,_ / \/__/\/_/    \/__/ \/__/\/_/
-                                      
-local NUM,SYM,DATA,_COLS = {},{},{},{}
+-- <!-- vim : set ts=4 sts=4 et : -->
+-- ---------------------------------------------------------------------------------------
+-- ## Data layer
+local DATA,SYM,NUM,COLS = {},{},{},{}
+local abs, max, min, rand = math.abs, math.max, math.min, math.random
+local l = require"lib"
+local the =require"config"
 
-local l=require"lib"
-local   csv,   map,   new,   o,   oo,   push,   sort = 
-      l.csv, l.map, l.new, l.o, l.oo, l.push, l.sort
-local abs,log,max,min = math.abs, math.log, math.max, math.min
+-- ### class NUM
+-- Incremental update of summary of numbers.
 
------------------------------------------------------------------------------------------
---       _  ._   _    _.  _|_   _  
---      (_  |   (/_  (_|   |_  (/_ 
+-- `NUM.new(?name:str, ?pos:int) -> NUM`  
+function NUM.new(  name,pos)
+  return l.new(NUM,{name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=l.inf, hi= -l.inf,
+                  goal= (name or ""):find"-$" and 0 or 1}) end
 
-function SYM.new(name,pos) return new(SYM, {name=name, pos=pos, n=0, seen={}}) end
-
-function NUM.new(name,pos)
-  return new(NUM, {name=name, pos=pos, n=0, mu=0, m2=0, sd=0, lo=1E30, hi=-1E30,
-                   goal = (name or ""):find"-$" and 0 or 1}) end
-
-function _COLS.new(names,    all,x,y,col) 
-  all,x,y = {},{},{}
-  for i,s in pairs(names) do 
-    col = push(all, (s:find"^[A-Z]" and NUM or SYM).new(s,i))
-    if not s:find"X$" then push(s:find"[!+-]$" and y or x,col) end end
-  return new(_COLS, {names=names, all=all, x=x, y=y}) end
-
-function DATA.new(  names) 
-  return  new(DATA, {rows={}, cols=names and _COLS.new(names) or nil}) end
------------------------------------------------------------------------------------------
---       ._   _    _.   _| 
---       |   (/_  (_|  (_| 
-
-function DATA:read(file) for   row in csv(file) do self:add(row) end; return self end
-function DATA:load(t)    for _,row in pairs(t)  do self:add(row) end; return self end
------------------------------------------------------------------------------------------
---            ._    _|   _.  _|_   _  
---       |_|  |_)  (_|  (_|   |_  (/_ 
---            |                       
-
-function DATA:add(t) 
-  if self.cols then push(self.rows, self.cols:add(t)) else 
-     self.cols = _COLS.new(t) end end
-
-function _COLS:add(t)
-  for _,cs in pairs{self.x,self.y} do for _,c in pairs(cs) do c:add(t[c.pos]) end end 
-  return t end
-
-function SYM:add(x)
-  if x ~= "?" then
-    self.n  = self.n+1
-    self.seen[x] = 1 + (self.seen[x] or 0) end end 
-
-function NUM:add(x,    d)
+-- `NUM:add(x:num) -> x`
+function NUM:add(x,     d)
   if x ~= "?" then
     self.n  = self.n + 1
-    self.mu, self.m2, self.sd = l.welford(x, self.n, self.mu, self.m2)
-    if x > self.hi then self.hi=x end
-    if x < self.lo then self.lo=x end end end
------------------------------------------------------------------------------------------
---        _.        _   ._     
---       (_|  |_|  (/_  |   \/ 
---         |                /  
+    d       = x - self.mu
+    self.mu = self.mu + d/self.n
+    self.m2 = self.m2 + d*(x - self.mu)
+    self.sd = self.n<2 and 0 or (self.m2/(self.n - 1))^.5 
+    self.lo = min(x, self.lo)
+    self.hi = max(x, self.hi)
+    return x end end 
 
+-- `NUM:norm(x:num) -> 0..1`
 function NUM:norm(x) return x=="?" and x or (x - self.lo)/(self.hi - self.lo) end
-               
------------------------------------------------------------------------------------------
---      |  o  |    _  
---      |  |  |<  (/_ 
 
-function DATA:like(row,nall,nh,  k,m,    prior,x,like,out)
-  out, prior = 0, (#self.rows + (k or 1)) / (nall + (k or 1)*nh)
-  for _,col in pairs(self.cols.x) do
-    x = row[col.pos]
-    if x ~= "?" then
-      like = col:like(x,prior,m)
-      if like > 0 then out = out + math.log(like) end end end
-  return out + math.log(prior) end 
+-- `NUM:small(x:num) -> bool`
+function NUM:small(x) return x < the.cohen * self.sd end
 
-function SYM:like(x, prior,  m)
-  return ((self.has[x] or 0) + (m or 2)*prior)/(self.n + (m or 2)) end
+-- `NUM:same(i:NUM, j:NUM) -> bool`   
+-- True if statistically insignificantly different (using Cohen's rule).
+-- Used to decide if two BINs should be merged.
+function NUM.same(i,j,    pooled)
+  pooled = (((i.n-1)*i.sd^2 + (j.n-1)*j.sd^2)/ (i.n+j.n-2))^0.5
+  return abs(i.mu - j.mu) / pooled <= (the.cohen or .35) end
 
-function NUM:like(x,_,      nom,denom)
-  local mu, sd =  self:mid(), (self:div() + 1E-30)
-  nom   = math.exp(1)^(-.5*(x - mu)^2/(sd^2))
-  denom = (sd*2.5 + 1E-30)
-  return nom/denom end
-                 
------------------------------------------------------------------------------------------
---       _|  o   _  _|_ 
---      (_|  |  _>   |_ 
+-- ### class SYM
+-- Incremental update of summary of symbols.
 
-function SYM:dist(x,y)
-  return  (x=="?" and y=="?" and 1) or (x==y and 0 or 1) end
+-- `SYM.new(?name:str, ?pos:int) -> SYM`  
+function SYM.new(  name,pos)
+  return l.new(SYM,{name=name, pos=pos, n=0, has={}, most=0, mode=nil}) end
 
-function NUM:dist(x,y)
-  if x=="?" and y=="?" then return 1 end
-  x,y = self:norm(x), self:norm(y)
-  if x=="?" then x=y<.5 and 1 or 0 end
-  if y=="?" then y=x<.5 and 1 or 0 end
-  return math.abs(x-y) end
+-- `SYM:add(x:any) -> x`
+function SYM:add(x,     d)
+  if x ~= "?" then
+    self.n  = self.n + 1
+    self.has[x] = 1 + (self.has[x] or 0)
+    if self.has[x] > self.most then self.most,self.mode = self.has[x], x end 
+    return x end end
 
-function DATA:sort(      d)
-  d = function(row) return  l.chebyshev(row,self.cols.y) end
-  self.rows = sort(self.rows, function(a,b) return  d(a) < d(b) end) 
-  return self end
+-- ### class DATA
+-- Manage rows, and their summaries in columns
 
-function DATA:dist(row1,row2,  p,cols)
-  return l.minkowski(row1,row2,(p or 2), cols or self.cols.x) end
+-- `DATA.new() -> DATA`
+function DATA.new() return l.new(DATA, {rows={}, cols=nil}) end
 
-function DATA:around(row,  rows,p,cols,d)
-  d = function(other) return self:dist(row,other,p,cols) end
-  return sort(rows or self.rows,function(a,b) return d(a) < d(b) end) end
+-- `DATA:read(file:str) -> DATA`   
+-- Imports the rows from `file` contents into `self`.
+function DATA:import(file) 
+  for row in l.csv(file) do self:add(row) end; return self end
 
------------------------------------------------------------------------------------------
---        _    _  
---       (/_  (_| 
---             _| 
+-- `DATA:load(t:list) -> DATA`   
+-- Loads the rows from `t` `self`.
+function DATA:load(t)    
+  for _,row in pairs(t)  do self:add(row) end; return self end
 
+-- `DATA:clone(?init:list) -> DATA`     
+-- ①  Create a DATA with same column roles as `self`.   
+-- ②  Loads rows (if any) from `init`.
+function DATA:clone(  init) 
+   return DATA:new():load({self.cols.names}) -- ①  
+                    :load(init or {}) end    -- ② 
+
+-- `DATA:add(row:list) -> nil`    
+-- Create or update  the summaries in `self.cols`.
+-- If not the first row, push this `row` onto `self.rows`.
+function DATA:add(row)
+  if self.cols then l.push(self.rows, self.cols:add(row)) else 
+     self.cols = COLS.new(row) end end 
+
+-- ### class COLS
+-- Column creation and column updates.
+
+-- `COLS.new(row: list[str]) -> COLS`
+-- Upper case prefix means number (else you are a symbol). 
+-- Suffix `X` means "ignore". Suffix "+,-,!" means maximize, minimize, or klass.
+function COLS.new(row,    self,skip,col)
+  self = l.new(COLS,{names=row, all={},x={}, y={}, klass=nil})
+  skip={}
+  for k,v in pairs(row) do
+    col = l.push(v:find"X$" and skip or v:find"[!+-]$" and self.y or self.x,
+                 l.push(self.all, 
+                        (v:find"^[A-Z]" and NUM or SYM).new(v,k))) 
+    if v:find"!$" then self.klass=col end end
+  return self end 
+
+-- `COLS:add(row:list[thing]) -> row`
+function COLS:add(row)
+  for _,cols in pairs{self.x, self.y} do
+    for _,col in pairs(cols) do  col:add(row[col.pos]) end end 
+  return row end
+------------------------------------------------------------------------------
+-- ## Start-up Actions
 local eg={}
+local copy,o,oo,push=l.copy,l.o,l.oo,l.push
 
-function eg.help(_) 
-  print("lua data.lua [help|csv|cols|data] [csv]") end
+local function all(eg,t,     reset,fails)
+  fails,reset = 0,copy(the)
+  for _,x in pairs(t) do
+    math.randomseed(the.seed) -- setup
+    if eg[oo(x)]()==false then fails=fails+1 end
+    the = copy(reset) -- tear down
+  end 
+  os.exit(fails) end 
 
-function eg.csv(train,    n) 
-  n=0; for row in csv(train) do 
-         n=n+1; if n % 50==0 then print(n,o(row)) end end end
+eg["actions"] = function(_) 
+  print"lua sandbox.lua --[all,copy,cohen,train,bins] [ARG]" end
 
-function eg.cols(train,     d) 
-  d = DATA.new():read(train)
-  for _,col in pairs(d.cols.y) do oo(col) end end
+eg["-s"] = function(x) the.seed=  x end
+eg["-t"] = function(x) the.train= x end
 
-function eg.data(train,     d,m) 
-  d = DATA.new():read(train):sort()
-  m = 1
-  for n,row in pairs(d.rows) do 
-    if n==m then 
-      m=m*2
-      print(n,o(l.chebyshev(row,d.cols.y)),o(row)) end end end
+eg["--all"] = function(_) all{"--copy","--cohen","--train","--bins"} end
 
+eg["--copy"] = function(_,     n1,n2,n3) 
+  n1,n2 = NUM.new(),NUM.new()
+  for i=1,100 do n2:add(n1:add(rand()^2)) end
+  n3 = copy(n2)
+  for i=1,100 do n3:add(n2:add(n1:add(rand()^2))) end
+  for k,v in pairs(n3) do if k ~="_id" then ; assert(v == n2[k] and v == n1[k]) end  end
+  n3:add(0.5)
+  assert(n2.mu ~= n3.mu) end
+
+eg["--cohen"] = function(_,    u,t) 
+    for inc = 1,1.25,0.03 do 
+      u,t = NUM.new(), NUM.new()
+      for i=1,20 do u:add( inc * t:add(rand()^.5))  end
+      print(inc, u:same(t)) end end 
+
+eg["--train"] = function(file,     d) 
+  d= DATA.new():import(file or the.train):sort() 
+  for i,row in pairs(d.rows) do
+    if i==1 or i %25 ==0 then 
+      print(l.fmt("%3s\t%.2f\t%s",i, d:chebyshev(row), o(row))) end end end
+
+eg["--clone"] = function(file,     d0,d1) 
+  d0= DATA.new():import(file or the.train) 
+  d1 = d0:clone(d0.rows)
+  for k,col1 in pairs(d1.cols.x) do print""
+     print(o(col1))
+     print(o(d0.cols.x[k])) end end
+
+-- ---------------------------------------------------------------------------------------
+-- ## Start-up
 if   pcall(debug.getlocal, 4, 1) 
-then return {DATA=DATA, NUM=NUM, SYM=SYM,eg=eg} 
-else eg[ arg[1]  or "help" ](arg[2] or "../data/misc/auto93.csv")
-     l.rogues()
-end
+then return {DATA=DATA,NUM=NUM,SYM=SYM,the=the,lib=l,eg=eg}
+else the = l.settings(l.help)
+     math.randomseed(the.seed or 1234567891)
+     for k,v in pairs(arg) do if eg[v] then eg[v](l.coerce(arg[k+1])) end end end
+
+

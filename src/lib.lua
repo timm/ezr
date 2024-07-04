@@ -1,141 +1,122 @@
--- <!-- vim : set ts=2 sts=2 et : -->
---      ___              __        
---     /\_ \      __    /\ \       
---     \//\ \    /\_\   \ \ \____  
---       \ \ \   \/\ \   \ \ '__`\ 
---        \_\ \_  \ \ \   \ \ \L\ \
---        /\____\  \ \_\   \ \_,__/
---        \/____/   \/_/    \/___/ 
---
--- lib.lua: some standard Lua tricks
--- (c) 2024 Tim Menzies <timm@ieee.org>, BSD-2 license.
+#!/usr/bin/env lua
+-- <!-- vim : set ts=4 sts=4 et : -->
+local help=[[
+lib.lua : misc Lua functions
+(c)2024 Tim Menzies <timm@ieee.org> MIT license
 
-local lib ={}
-local abs,exp,floor,log,max,min = math.abs,math.exp,math.floor, math.log, math.max, math.min
+## INSTALL
+## INSTALL
+wget https://raw.githubusercontent.com/timm/ezr/main/src/lib.lua
 
--- Cache the stuff needed  by rogue() to find var name typos
-local b4={}; for k,_ in pairs(_ENV) do b4[k]=k end 
+## USAGE 
+Usually this code is `required` by other code. But if you want to test the demos:
 
--- ### Objects
-function lib.new (klass,object) 
-  klass.__index=klass; setmetatable(object, klass); return object end
+    lua lib.lua --[XXX]
 
--- ### Meta
-function lib.rogues()
-  for k,v in pairs(_ENV) do if not b4[k] then print("Typo in var name? ",k,type(v)) end end end
+For a list of start up actions:
 
-function lib.map(t,f,     u) u={}; for k,v in pairs(t) do u[1+#u]= f(v)   end; return u end
+    lua lib.lua actions
 
-function lib.kap(t,f,     u) u={}; for k,v in pairs(t) do u[1+#u]= f(k,v) end; return u end
+To test all the demos
 
---  # Shortcuts
-lib.cat = table.concat
+    lua lib.lua --all]]
+
+-- ## Lib
+
+local lib= {}
+local abs, max, min, rand = math.abs, math.max, math.min, math.random
+local the=require"config"
+
+-- ### Object creation
+local _id = 0
+local function id() _id = _id + 1; return _id end
+
+-- `new(klass: klass, t: dict) -> dict`      
+-- Add a unique `id`; connection `t` to its `klass`; ensure `klass` knows to call itself.
+function lib.new (klass,t) 
+  t._id=id(); klass.__index=klass; setmetatable(t,klass); return t end
+
+-- ### Lists
+-- `push(t: list, x:any) -> x`
+function lib.push(t,x) t[1+#t]=x; return x end 
+
+-- `sort(t: list, ?fun:callable) -> list`
+function lib.sort(t,  fun) table.sort(t,fun); return t end
+
+function lib.xby(x) 
+  return type(x)=="function" and function(a,b) return x(a) < x(b) end 
+                             or  function(a,b) print(4,x,lib.o(a)); return a[x] < b[x] end end 
+
+-- `copy(t: any) -> any`
+function lib.copy(t,     u)
+  if type(t) ~= "table" then return t end 
+  u={}; for k,v in pairs(t) do u[lib.copy(k)] = lib.copy(v) end 
+  return setmetatable(u, getmetatable(t)) end
+
+-- ### Thing to string
 lib.fmt = string.format
 
--- ## Objects
-function lib.is(class, object)  -- how we create instances
-  class.__index=class; setmetatable(object, class); return object end
+-- `oo(x:any, ?fmt:str) -> x`   
+-- Show `x`, then return it. Format numbers using `fmt` (defaults to "%g").
+function lib.oo(x) print(lib.o(x,fmt)); return x end
 
--- ## Maths
-function lib.cdf(z) return 1 - 0.5*exp(1)^(-0.717*z - 0.416*z*z) end
+-- `o(x:any,?fmt:str) -> str`   
+-- Generate a show string for `x`. Format numbers using `fmt` (defaults to "%g").
+function lib.o(x,   fmt)
+  if type(x)=="number" then return lib.fmt(fmt or the.fmt or "%g",x) end
+  if type(x)~="table"  then return tostring(x) end 
+  return "{" .. table.concat(#x==0 and lib.okeys(x,fmt) or lib.olist(x,fmt),", ")  .. "}" end
 
-function lib.welford(x,n,mu,m2,    d,sd)
-  d  = x - mu
-  mu = mu + d/n
-  m2 = m2 + d*(x - mu)
-  sd = n<2 and 0 or (m2/(n - 1))^.5  
-  return mu,m2,sd end
+-- `olist(t:list, ?fmt:str) -> str`   
+-- Generate a show string for tables with numeric indexes. Format numbers using `fmt` (defaults to "%g").
+function lib.olist(t,  fmt)  
+  local u={}; for k,v in pairs(t) do lib.push(u, lib.fmt("%s", lib.o(v,fmt))) end; return u end
 
-function lib.minkowski(t1,t2,p,cols,           n,d)
-  n,d = 0,0
-  for _,col in pairs(cols) do
-    n = n + 1
-    d = d + col:dist(t1[col.pos],t2[col.pos]) ^ p end
-  return (d/n)^(1/p) end
+-- `okeys(t:dict,?fmt: str) -> str`   
+-- Generate a show string for tables with symboloc indexes. Skip private keys; i.e.
+-- those starting with "_". Format numbers using `fmt` (defaults to "%g").
+function lib.okeys(t,  fmt)  
+  local u={} 
+  for k,v in pairs(t) do 
+    if not tostring(k):find"^_" then lib.push(u, lib.fmt(":%s %s", k,lib.o(v,fmt))) end end; 
+  return lib.sort(u) end
 
-function lib.chebyshev(row,cols,     d)
-  d=0; for _,col in pairs(cols) do d = max(d,abs(col:norm(row[col.pos]) - col.goal)) end
-  return d end
+-- ### Strings to things
 
--- ## Lists
-function lib.push(t,x) t[1+#t]=x; return x end
-
-function lib.shuffle(t,    u,j)
-  u={}; for _,x in pairs(t) do u[1+#u]=x; end;
-  for i = #u,2,-1 do j=math.random(i); u[i],u[j] = u[j],u[i] end
-  return u end
-
-function lib.powerset(s,       t)
-  t = {{}}
-  for i = 1, #s do
-    for j = 1, #t do
-      t[#t+1] = {s[i],table.unpack(t[j])} end end
-   return t end
-
--- ### Sorting
-function lib.sort(t,fun,     u) -- return a copy of `t`, sorted using `fun`,
-  u={}; for _,v in pairs(t) do u[1+#u]=v end; table.sort(u,fun); return u end
-
--- Sort by a slot name in ascending, descending oder
-function lib.up(x) return function(a,b) return a[x] < b[x] end end
-function lib.down(x) return function(a,b) return a[x] > b[x] end end
-
--- Sort by a function applied to a table
-function lib.on(fun) return function(a,b) return fun(a) < fun(b) end end
-
--- ## Strings to Things
-
--- Parse help strings
-function lib.settings(s,     t)
-  t={}
-  for k,s1 in s:gmatch("[-][-]([%S]+)[^=]+=[%s]*([%S]+)") do t[k] = lib.coerce(s1) end
-  return t,s end
-
--- Strings to atoms
-
-local function _also(s)
-  if s=="nil" then return nil else return s=="true" or s ~="false" and s or false end end
-
+-- `coerce(s:str) -> thing`    
 function lib.coerce(s,    also)
-   return math.tointeger(s) or tonumber(s) or _also(s:match'^%s*(.*%S)') end
+  if type(s) ~= "string" then return s end
+  also = function(s) return s=="true" or s ~="false" and s end 
+  return math.tointeger(s) or tonumber(s) or also(s:match"^%s*(.-)%s*$") end 
 
--- Iterate over rows in a table.
-function lib.csv(src)
-  src = src=="-" and io.stdin or io.input(src)
-  return function(      s)
-    s = io.read()
-    if s then return lib.cells(s) else io.close(src) end end end
-
--- Turn a string into a list of atoms
-function lib.cells(s,    t)
+-- `coerces(s:str) -> list[thing]`
+-- Coerce everything inside a comma-seperated string.
+function lib.coerces(s,    t)
   t={}; for s1 in s:gsub("%s+", ""):gmatch("([^,]+)") do t[1+#t]=lib.coerce(s1) end
   return t end
 
--- ## Things to Strings (Pretty Print)
+-- Iterator `csv(file:str) -> list[thing]`
+function lib.csv(file)
+  file = file=="-" and io.stdin or io.input(file)
+  return function(      s)
+    s = io.read()
+    if s then return lib.coerces(s) else io.close(file) end end end
 
--- Print a pretty string
-function lib.oo(t) print(lib.o(t)); return t end
+-- `settings(s:tr) -> dict`  
+-- For any line containing `--(key) ... = value`, generate `key=coerce(value)` .
+function lib.settings(s,     t)
+  t={}
+  for k,s1 in s:gmatch("[-][-]([%S]+)[^=]+=[%s]*([%S]+)[.]*\n") do t[k] = lib.coerce(s1) end
+  return t end
 
--- Generate a pretty string
-local function _olist(t,fmt,    u) 
-  u={}; for k,v in pairs(t) do lib.push(u,lib.o(v,fmt))                 end; return u end
-
-local function _okeys(t,fmt,    u) 
-  u={}; for k,v in pairs(t) do 
-          if not tostring(k):find"^_" then lib.push(u,lib.fmt(":%s %s",k,lib.o(v,fmt))) end end
-  return u end
-
-function lib.o(t,  fmt) 
-  if type(t)=="number" then return t == floor(t) and tostring(t) or lib.fmt(fmt or "%6.3g",t) end
-  if type(t)~="table"  then return tostring(t) end 
-  return "(" .. table.concat(#t==0 and lib.sort(_okeys(t,fmt)) or _olist(t,fmt),", ")  .. ")" end
-
--- Simplify a number
-function lib.rnd(n, ndecs)
-  if type(n) ~= "number" then return n end
-  if floor(n) == n  then return floor(n) end
-  local mult = 10^(ndecs or 2)
-  return floor(n * mult + 0.5) / mult end
+function lib.all(eg,t,     reset,fails)
+  fails,reset = 0,lib.copy(the)
+  for _,x in pairs(t) do
+    math.randomseed(the.seed) -- setup
+    if eg[lib.oo(x)]()==false then fails=fails+1 end
+    the = lib.copy(reset) -- tear down
+  end 
+  os.exit(fails) end 
 
 return lib
 
