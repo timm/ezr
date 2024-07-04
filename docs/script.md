@@ -9,6 +9,7 @@ coding101
   - "Any code of your own that you haven't looked at for six or more months might as well have been written by someone else." — Eagleson's law
     - thou shalt document
     - thou shalt add a regresson/demo suite
+  - indent with spaces, not tabs. or indent with tabs. just dont do both
   - aunt barby's rule (use abstraction, functional programming)
 
 coal-face scripting
@@ -29,6 +30,7 @@ coal-face scripting
   - autobuild
   - big example: GH workflows
 - decomposition / composition
+  - DRY, or you will be WET
   - pipes
   - regular expressions
   - patterns (e.g. DATA's services defined by recursive call to NUM or SYM)
@@ -39,14 +41,16 @@ coal-face scripting
   - self-documenting code (my scripts, make with help file)
   - type hints
   - big example: rust
-- abtraction
-  - seperate mechanism from policy (my data little langauge)
-  - interactors, try catch
+- abstraction
+  - separate mechanism from policy (my data little language)
+  - iterators, try catch
   - functional programming
 
 SE theory
 - decomposition: parnas. interface, polymorphism
 - testing (black box. white box, format) static analysis
+    - "If debugging is the process of removing bugs, then programming must be the process of putting them in."
+    "Writing code without tests is like driving a car with your eyes closed."
 - types.strongly typed languages. haskell. rust.
 
 Maths
