@@ -314,7 +314,8 @@ function TREE.new(here,lvl,name,pos,lo,hi,mu)
                      mu=mu or 0 , here=here, _kids={}})  end
 
 function TREE:__tostring() 
-  return l.fmt("%.3f\t%s\t%s%s", self.mu, #self.here.rows, ("|.. "):rep(self.lvl-1), self.lvl==0 and "" or self.bin) end
+  return l.fmt("%.2f\t%5s\t%s%s", self.mu, #self.here.rows, 
+                                  ("|.. "):rep(self.lvl-1), self.lvl==0 and "" or self.bin) end
 
 function TREE:visit(fun) 
   fun = fun or print
