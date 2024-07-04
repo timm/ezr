@@ -1,5 +1,8 @@
+# X,Y for independent and depedndent columns
+# Lo,Hi,Mu,N  for numerics
+# B for bins
 BEGIN { BINS=5 }
-NR==1 { NR==1 ? head() : body() }
+      { NR==1 ? head() : body() }
 
 func head(     c)  {
   for(c=1;c<=NF;c++)  {
@@ -22,7 +25,7 @@ func cdf(x,a,b,c) {
   return 0 }
 
 func num0(c) {
-  Lo[c]=1E32; Hi[c]=-1E32; N[c]=0}
+  N[c]=0; Lo[c]=1E32; Hi[c]=-1E32 }
 
 func num(c,x,     d) {
   if (x > Hi[c]) Hi[c]=x
