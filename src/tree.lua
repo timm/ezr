@@ -176,9 +176,9 @@ function DATA:chebyshev(row,     d)
   d=0; for _,c in pairs(self.cols.y) do d = max(d,abs(c:norm(row[c.pos]) - c.goal)) end
   return d end
   
-function DATA:chebyshevs(       num)
+function DATA:chebyshevs(  rows,       num)
   num = NUM.new()
-  for _,r in pairs(self.rows) do num:add(self:chebyshev(r)) end 
+  for _,r in pairs(rows or self.rows) do num:add(self:chebyshev(r)) end 
   return num end
  -- `DATA:sort() -> DATA`   
 -- Sort rows by `chebyshev` (so best rows appear first). 
@@ -307,44 +307,43 @@ function _fillGaps(out)
   return out end
 
 -- ### Tree
--- -- rebin at each lelvel. keep in the same data.
-function TREE.new(data,  data0, tbins,stop,lvl,name,pos,lo,hi,mu,     self,sub) 
-  lvl = lvl or 0
-  data0 = data0 or data
-  self = l.new(TREE,{lvl=lvl, bin=BIN.new(name,pos,lo,hi), mu=data:chebyshevs().mu, here=data, _kids={}}) 
-  tbins = data:bins(data.rows)
-  stop = stop or 4 --(#data.rows)^.5
-  for _,bin in pairs(l.sort(tbins[ data0:argMin(tbins) ], l.by"mu")) do
-    sub = bin:selects(data.rows)
-    if #sub < #data.rows and #sub > stop then
-      l.push(self._kids,  TREE.new(data:clone(sub), data0, tbins, stop,lvl+1,
-                                 bin.name, bin.pos, bin.lo, bin.hi, bin.mu)) end end
-  return self end 
+-- -- rebin at each lelvel. keep in the same data. pass arund rows. gen a new data in each row.
+function TREE.new(here,lvl,name,pos,lo,hi,mu)
+  return l.new(TREE,{lvl=lvl or 0, bin=BIN.new(name,pos,lo,hi), 
+                     mu=mu or 0 , here=here, _kids={}})  end
 
-function DATA:argMin(tbins,    lo,tmp,out)
+function TREE:__tostring() 
+  return l.fmt("%.3f\t%s\t%s%s", self.mu, #self.here.rows, ("|.. "):rep(self.lvl-1), self.lvl==0 and #self.here.rows or self.bin) end
+
+function TREE:visit(fun) 
+  fun = fun or print
+  fun(self)
+  for _,kid in pairs(self._kids) do kid:visit(fun) end end 
+
+-- Make tree
+function DATA:tree(  stop,_grow)
+  function _grow(rows,stop,lvl,  name,pos,lo,hi,mu,    tree,tbins,sub)
+    tree = TREE.new(self:clone(rows), lvl,name,pos,lo,hi,mu)
+	  tbins = self:bins(rows)
+	  for pos,bin in pairs(l.sort(tbins[ self:argMin(tbins) ], 
+                              function(a,b) return a.y.mu < b.y.mu end)) do
+	    sub = bin:selects(rows)
+	    if #sub < #rows and #sub > stop then
+	      l.push(tree._kids, _grow(sub,stop,lvl+1,
+	                                 bin.name, bin.pos, bin.lo, bin.hi, bin.y.mu)) end end
+	  return tree 
+  end 
+  return _grow(self.rows, (#self.rows)^.5, 0) end 
+
+function DATA:argMin(tbins,    lo,ns,sds,tmp,n,out)
   lo = l.inf
   for pos,bins in pairs(tbins) do
-    tmp = self:arg(self.rows, bins)
+    ns,sds = 0,0
+    for _,bin in pairs(bins) do n=bin.y.n; ns = ns + n; sds = n*bin.y.sd end
+    tmp = sds/ns 
     if tmp < lo then lo,out = tmp,pos end end
   return out end
 
-function DATA:arg(rows,bins,    w,num)
-  w = 0
-  for _,bin in pairs(bins) do
-    num = NUM.new()
-    for _,r in pairs(rows) do if bin:select(r) then num:add(self:chebyshev(r)) end end
-    bin.mu = num.mu
-    w = w + num.n*num.sd end
-  return w/#rows end
-
-function TREE:__tostring() 
-  return l.fmt("%.3f\t%s%s", self.mu, ("|.. "):rep(self.lvl), self.lvl==0 and #self.here.rows or self.bin) end
-
-function TREE:visit(fun)
-  lvl = lvl or 0
-  fun(self)
-  for _,kid in pairs(self._kids) do kid:visit(fun) end end 
-  
 ------------------------------------------------------------------------------
 -- ## Lib
 
@@ -364,9 +363,9 @@ function l.push(t,x) t[1+#t]=x; return x end
 -- `sort(t: list, ?fun:callable) -> list`
 function l.sort(t,  fun) table.sort(t,fun); return t end
 
-function l.by(x) 
+function l.xby(x) 
   return type(x)=="function" and function(a,b) return x(a) < x(b) end 
-                             or  function(a,b) return a[x] < b[x] end end 
+                             or  function(a,b) print(4,x,l.o(a)); return a[x] < b[x] end end 
 
 -- `copy(t: any) -> any`
 function l.copy(t,     u)
@@ -495,7 +494,7 @@ eg["--bins"] = function(file,     d,s,n)
 
 eg["--tree"] = function(file,     d,ys) 
   d= DATA.new():import(file or the.train) 
-  TREE.new(d):visit(print) end
+  d:tree():visit() end
 -- ---------------------------------------------------------------------------------------
 -- ## Start-up
 if   pcall(debug.getlocal, 4, 1) 
