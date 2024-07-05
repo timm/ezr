@@ -23,7 +23,7 @@ To test all the demos
 
 -- ## Lib
 
-local lib= {}
+local lib= {inf = 1E32}
 local abs, max, min, rand = math.abs, math.max, math.min, math.random
 local the=require"config"
 
@@ -106,17 +106,19 @@ function lib.csv(file)
 -- For any line containing `--(key) ... = value`, generate `key=coerce(value)` .
 function lib.settings(s,     t)
   t={}
-  for k,s1 in s:gmatch("[-][-]([%S]+)[^=]+=[%s]*([%S]+)[.]*\n") do t[k] = lib.coerce(s1) end
+  for k,s1 in s:gmatch("[-][-]([%S]+)[^=]+=[%s]*([%S]+)[.]*\n") do 
+    t[k] = lib.coerce(s1) end
   return t end
 
 function lib.all(eg,t,     reset,fails)
   fails,reset = 0,lib.copy(the)
   for _,x in pairs(t) do
+    print(1)
     math.randomseed(the.seed) -- setup
+    print(2)
     if eg[lib.oo(x)]()==false then fails=fails+1 end
     the = lib.copy(reset) -- tear down
   end 
   os.exit(fails) end 
 
 return lib
-

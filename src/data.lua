@@ -85,6 +85,23 @@ function DATA:add(row)
   if self.cols then l.push(self.rows, self.cols:add(row)) else 
      self.cols = COLS.new(row) end end 
 
+-- `DATA:chebyshev(row:list) -> 0..1`    
+-- Report distance to best solution (and _lower_ numbers are _better_).    
+function DATA:chebyshev(row,     d) 
+  d=0; for _,c in pairs(self.cols.y) do d = max(d,abs(c:norm(row[c.pos]) - c.goal)) end
+  return d end
+  
+function DATA:chebyshevs(  rows,       num)
+  num = NUM.new()
+  for _,r in pairs(rows or self.rows) do num:add(self:chebyshev(r)) end 
+  return num end
+
+-- `DATA:sort() -> DATA`   
+-- Sort rows by `chebyshev` (so best rows appear first). 
+function DATA:sort()
+  table.sort(self.rows, function(a,b) return self:chebyshev(a) < self:chebyshev(b) end)
+  return self end 
+
 -- ### class COLS
 -- Column creation and column updates.
 
@@ -111,29 +128,17 @@ function COLS:add(row)
 local eg={}
 local copy,o,oo,push=l.copy,l.o,l.oo,l.push
 
-local function all(eg,t,     reset,fails)
-  fails,reset = 0,copy(the)
-  for _,x in pairs(t) do
-    math.randomseed(the.seed) -- setup
-    if eg[oo(x)]()==false then fails=fails+1 end
-    the = copy(reset) -- tear down
-  end 
-  os.exit(fails) end 
-
-eg["actions"] = function(_) 
-  print"lua sandbox.lua --[all,copy,cohen,train,bins] [ARG]" end
-
-eg["-s"] = function(x) the.seed=  x end
+eg["-h"] = function(_) print("lua data.lua --[all,copy,cohen,train,clone] [FILE]") end
 eg["-t"] = function(x) the.train= x end
 
-eg["--all"] = function(_) all{"--copy","--cohen","--train","--bins"} end
+eg["--all"] = function(_) l.all(eg,{"--copy","--cohen","--train","--clone"}) end
 
 eg["--copy"] = function(_,     n1,n2,n3) 
   n1,n2 = NUM.new(),NUM.new()
   for i=1,100 do n2:add(n1:add(rand()^2)) end
   n3 = copy(n2)
   for i=1,100 do n3:add(n2:add(n1:add(rand()^2))) end
-  for k,v in pairs(n3) do if k ~="_id" then ; assert(v == n2[k] and v == n1[k]) end  end
+  for k,v in pairs(n3) do if k ~="_id" then ; assert(v == n2[k] and v == n1[k]) end end
   n3:add(0.5)
   assert(n2.mu ~= n3.mu) end
 
@@ -154,14 +159,10 @@ eg["--clone"] = function(file,     d0,d1)
   d1 = d0:clone(d0.rows)
   for k,col1 in pairs(d1.cols.x) do print""
      print(o(col1))
-     print(o(d0.cols.x[k])) end end
-
+     print(o(d0.cols.x[k])) end end 
 -- ---------------------------------------------------------------------------------------
 -- ## Start-up
 if   pcall(debug.getlocal, 4, 1) 
 then return {DATA=DATA,NUM=NUM,SYM=SYM,the=the,lib=l,eg=eg}
-else the = l.settings(l.help)
-     math.randomseed(the.seed or 1234567891)
+else math.randomseed(the.seed or 1234567891)
      for k,v in pairs(arg) do if eg[v] then eg[v](l.coerce(arg[k+1])) end end end
-
-

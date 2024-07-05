@@ -1,7 +1,8 @@
 #!/usr/bin/env lua
 -- <!-- vim : set ts=4 sts=4 et : -->
 -- <img src=tree.png align=left width=500>
-local l,the={},{}; l.help=[[
+local l,the={},{}
+local help=[[
 # tree.lua 
 Multi-objective tree generation   
 (c)2024 Tim Menzies <timm@ieee.org> MIT license
@@ -26,147 +27,12 @@ of different value. The left-ish branch of that tree points to the
 better rows. ]]
 
 local l=require"lib"
-local data=require"data"
-local NUM,SYM,DATA = data.NUM, data.SYM, data.DATA
+local the=require"config"
+local discrete = require"discretize"
+local NUM,SYM,DATA,BIN = discrete.NUM, discrete.SYM, discrete.DATA, discrete.BIN
+local TREE={}
 ------------------------------------------------------------------------------
 -- ## Inference Layer
-
--- `DATA:chebyshev(row:list) -> 0..1`    
--- Report distance to best solution (and _lower_ numbers are _better_).    
-function DATA:chebyshev(row,     d) 
-  d=0; for _,c in pairs(self.cols.y) do d = max(d,abs(c:norm(row[c.pos]) - c.goal)) end
-  return d end
-  
-function DATA:chebyshevs(  rows,       num)
-  num = NUM.new()
-  for _,r in pairs(rows or self.rows) do num:add(self:chebyshev(r)) end 
-  return num end
-
- -- `DATA:sort() -> DATA`   
--- Sort rows by `chebyshev` (so best rows appear first). 
-function DATA:sort()
-  table.sort(self.rows, function(a,b) return self:chebyshev(a) < self:chebyshev(b) end)
-  return self end 
-
--- ### class BIN: discretization
--- BINs hold information on what happens to some `y` variable as we move from
--- `lo` to `hi` in another column. TREEs will be built by searching through the bins.
-
--- `BIN.new(name:str, pos:int, ?lo:atom, ?hi:atom) -> BIN`
-function BIN.new(name,pos,  lo,hi)
-  hi = hi or lo or -l.inf
-  lo = lo or l.inf
-  return l.new(BIN,{name=name, pos=pos, lo=lo, hi= hi, y=NUM.new()}) end
-
--- `BIN:add(row:row, y:num) -> nil`    
--- ①  Expand `lo` and `hi` to cover `x`.     
--- ②  Update `self.y` with `y`.
-function BIN:add(row,y,     x) 
-  x = row[self.pos]
-  if x ~= "?" then
-    if x < self.lo then self.lo = x end -- ①  
-    if x > self.hi then self.hi = x end -- ①  
-    self.y:add(y) end end -- ②  
-
--- `BIN:__tostring() -> str`
-function BIN:__tostring(     lo,hi,s)
-  lo,hi,s = self.lo, self.hi,self.name
-  if lo == -l.inf then return l.fmt("%s <= %g", s,hi) end
-  if hi ==  l.inf then return l.fmt("%s > %g",s,lo) end
-  if lo ==  hi  then return l.fmt("%s == %s",s,lo) end
-  return l.fmt("%g < %s <= %g", lo, s, hi) end
-
--- `BIN:selects(rows: list[row]) : list[row]`   
--- Return the subset of `rows` selected by `self`.
-function BIN:selects(rows,     u)
-  u={}; for _,r in pairs(rows) do if self:select(r) then l.push(u,r) end end; return u end
-
--- `BIN:select(row: row) : bool`
-function BIN:select(row,     x)
-  x=row[self.pos]
-  return (x=="?") or (self.lo==self.hi and self.lo==x) or (self.lo < x and x <= self.hi) end
-
--- ### Bin generation
--- `DATA:bins(?rows: list[rows]) : dict[int, list[bins]] `   
--- ①  For each x-columns,    
--- ②  Return  a list of  bins ...    
--- ③  ... that separate  the Chebyshev distances ...   
--- ④  ... rejecting any bin that span from minus to plus infinity.
-function DATA:bins(  rows,      tbins) 
-  tbins, rows = {}, rows or self.rows
-  for _,col in pairs(self.cols.x) do -- ①
-    tbins[col.pos] = {}
-    for _,bin in pairs(col:bins(self:dontKnowSort(col.pos,rows), -- ②  
-                               function(row) return self:chebyshev(row) end)) do -- ③  
-      if not (bin.lo== -l.inf and bin.hi==l.inf) then --  ④     
-         l.push(tbins[col.pos],bin) end end  end
-  return tbins end 
-
--- `DATA:dontKnowSort(pos:int, rows: list[row]) : list[row]`    
--- Sort rows on item `pos`, pushing all the "?" values to the front of the list.   
-function DATA:dontKnowSort(pos,rows,     val,down)
-  val  = function(a)   return a[pos]=="?" and -l.inf or a[pos] end  
-  down = function(a,b) return val(a) < val(b) end  
-  return l.sort(rows or self.rows, down) end  
-
--- `SYM:bins(rows:list[row], y:callable) -> list[BIN]`   
--- Generate one bin for each symbol seen in a  SYM column.
-function SYM:bins(rows,y,     out,x) 
-  out={}
-  for k,row in pairs(rows) do
-    x= row[self.pos]
-    if x ~= "?" then
-      out[x] = out[x] or BIN.new(self.name,self.pos,x)
-      out[x]:add(row,y(row)) end end
-  return out end
-
--- `NUM:bins(rows:list[row], y:callable) -> list[BIN]`   
--- Generate one bins for the numeric ranges in this column. Assumes
--- rows are sorted with all the "?" values pushed to the front. Run
--- over rows till we clear the "?" values, then set `want` the
--- remaining rows divided by `the.bins`.  Collect `x` and `y(row)`
--- values for each remaining row, saving them in `b` (the new bin)
--- and `ab` the combination of the new bin and the last thing we
--- added to `out`.
-local _newBin, _fillGaps
-function NUM:bins(rows,y,     out,b,ab,want,b4,x)
-  out = {} 
-  b = BIN.new(self.name, self.pos) 
-  ab= BIN.new(self.name, self.pos)
-  for k,row in pairs(rows) do
-    x = row[self.pos] 
-    if x ~= "?" then 
-      want = want or (#rows - k - 1)/the.bins
-      if x ~= b4 and                 -- if there is a break between values
-         b.y.n >= want and           -- and the current bin is big enough
-         #rows - k > want and        -- and after, there is space for 1 more bin 
-         not self:small(b.hi - b.lo) -- the span of this bin is not trivially small
-      then 
-         b,ab = _newBin(b,ab,x,out)  -- ensure the `b` info is added to end of `out`
-      end
-      b:add(row,y(row))    -- update the current new bin
-      ab:add(row,y(row))   -- update the combination of current new bin and end of `out`
-      b4 = x end 
-  end
-  _newBin(b,ab,x,out) -- handle end of list
-  return _fillGaps(out) end 
-
--- helper function for NUM:bins. If the new bin is the same as the last bin,
--- then replace the last bin with `ab` (which is the new bin plus the last bin).
--- Else push the new bin onto `out`.
-function _newBin(b,ab,x,out,      a)
-  a = out[#out]
-  if   a and a.y:same(b.y)  
-  then out[#out] = ab     -- replace the last bin with last plus `b`
-  else l.push(out,b) end  -- add `b` to the out
-  return BIN.new(b.name,b.pos,x), l.copy(out[#out]) end -- return the new b,ab
-
--- helper function for NUM:bins. Fill in any gaps in the bins
-function _fillGaps(out)
-  out[1].lo    = -l.inf  -- expand out to cover -infinity to...
-  out[#out].hi =  l.inf  -- ... plus infinity
-  for k = 2,#out do out[k].lo = out[k-1].hi end  -- fill in any gaps with the bins
-  return out end
 
 -- ### Tree
 -- -- rebin at each lelvel. keep in the same data. pass arund rows. gen a new data in each row.
@@ -301,55 +167,14 @@ function l.settings(s,     t)
 -- ## Start-up Actions
 local eg={}
 local copy,o,oo,push=l.copy,l.o,l.oo,l.oush
-local function all(eg,t,     reset,fails)
-  fails,reset = 0,copy(the)
-  for _,x in pairs(t) do
-    math.randomseed(the.seed) -- setup
-    if eg[oo(x)]()==false then fails=fails+1 end
-    the = copy(reset) -- tear down
-  end 
-  os.exit(fails) end 
 
-eg["actions"] = function(_) 
-  print"lua sandbox.lua --[all,copy,cohen,train,bins] [ARG]" end
-
-eg["-h"] = function(x) print(l.help) end
+eg["-h"] = function(x) print("lua tree.lua --tree file.csv") end
 
 eg["-b"] = function(x) the.bins=  x end
 eg["-c"] = function(x) the.cohen= x end
 eg["-f"] = function(x) the.fmt=   x end
 eg["-s"] = function(x) the.seed=  x end
 eg["-t"] = function(x) the.train= x end
-
-eg["--all"] = function(_) all{"--copy","--cohen","--train","--bins"} end
-
-eg["--copy"] = function(_,     n1,n2,n3) 
-  n1,n2 = NUM.new(),NUM.new()
-  for i=1,100 do n2:add(n1:add(rand()^2)) end
-  n3 = copy(n2)
-  for i=1,100 do n3:add(n2:add(n1:add(rand()^2))) end
-  for k,v in pairs(n3) do if k ~="_id" then ; assert(v == n2[k] and v == n1[k]) end  end
-  n3:add(0.5)
-  assert(n2.mu ~= n3.mu) end
-
-eg["--cohen"] = function(_,    u,t) 
-    for inc = 1,1.25,0.03 do 
-      u,t = NUM.new(), NUM.new()
-      for i=1,20 do u:add( inc * t:add(rand()^.5))  end
-      print(inc, u:same(t)) end end 
-
-eg["--train"] = function(file,     d) 
-  d= DATA.new():import(file or the.train):sort() 
-  for i,row in pairs(d.rows) do
-    if i==1 or i %25 ==0 then 
-      print(l.fmt("%3s\t%.2f\t%s",i, d:chebyshev(row), o(row))) end end end
-
-eg["--clone"] = function(file,     d0,d1) 
-  d0= DATA.new():import(file or the.train) 
-  d1 = d0:clone(d0.rows)
-  for k,col1 in pairs(d1.cols.x) do print""
-     print(o(col1))
-     print(o(d0.cols.x[k])) end end
 
 eg["--bins"] = function(file,     d) 
   d= DATA.new():import(file or the.train):sort()
@@ -369,8 +194,8 @@ eg["--tree"] = function(file,     d,ys)
 -- ---------------------------------------------------------------------------------------
 -- ## Start-up
 if   pcall(debug.getlocal, 4, 1) 
-then return {DATA=DATA,NUM=NUM,SYM=SYM,BIN=BIN,TREE=TREE,the=the,lib=l,eg=eg}
-else the = l.settings(l.help)
+then return {DATA=DATA,NUM=NUM,SYM=SYM,BIN=BIN,TREE=TREE,the=the,lib=l,eg=eg,help=help}
+else the = l.settings(help)
      math.randomseed(the.seed or 1234567891)
      for k,v in pairs(arg) do if eg[v] then eg[v](l.coerce(arg[k+1])) end end end
 

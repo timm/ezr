@@ -30,11 +30,12 @@ rows, the top rows are best (minimal Lbs, max Acc, max Mpg).
 
 - Line width = 90 characters.
 - Indentation = 2 characters.
-- Polymorphic = yes;  inheritance = no. I'll let other people
-  explain why: see 
+- Methods = yes; Encapsulation = yes; Polymorphism = yes;  but inheritance = no  (I'll let other people
+  explain why no inheritance; see 
   Hatton's [Does OO sync with the way we think?](https://www.cs.kent.edu/~jmaletic/cs69995-PC/papers/Hatton98.pdf)
   and 
-  Diederich's [Stop Writing Classes](https://www.youtube.com/watch?v=o9pEzgHorH0).
+  Diederich's [Stop Writing Classes](https://www.youtube.com/watch?v=o9pEzgHorH0)).
+- Group methods by functionality, not class (e.g. so all the `add` methods of different classes are together).
 - Function args prefixed by two spaces are optional inputs.
   In the type hints, these arguments are marked with a "?".
 - Function args prefixed by four spaces are local to that function.
