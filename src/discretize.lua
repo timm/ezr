@@ -127,7 +127,7 @@ function _fillGaps(out)
   out[#out].hi =  l.inf  -- ... plus infinity
   for k = 2,#out do out[k].lo = out[k-1].hi end  -- fill in any gaps with the bins
   return out end
-------------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 -- ## Start-up Actions
 local eg={}
 local copy,o,oo,push=l.copy,l.o,l.oo,l.push
