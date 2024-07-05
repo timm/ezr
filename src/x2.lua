@@ -20,7 +20,7 @@ the.bins=7
 local SYM,NUM,COLS,DATA,BIN={},{},{},{},{}
 local function new(isa,t)   isa.__index=isa; setmetatable(t,isa); return t end
 
-function SYM:new(s,n) return new(SYM,{name=s,pos=n,bins={},n=0,has={},mode=nil,most=0}) end
+function SYM:new(s,n) return new(SYM,{name=s,pos=n,bins={},n=0,has={},mode=nil,most=0})end
 function NUM:new(s,n) return new(NUM,{name=s,pos=n,bins={},n=0,w=0,mu=0,m2=0,sd=0,
                                                            lo=the.inf, hi=-the.inf}) end
 function COLS:new()   return new(COLS,{all={}, x={}, y={}, names=""}) end
@@ -37,7 +37,9 @@ function oo(t)        print(o(t)); return t end
 function o(t)         return "("..table.concat(#t==0 and kat(t) or cat(t),", ")..")" end
 function cat(t,    u) u={}; for _,v in pairs(t) do push(u,tostring(v)) end; return u end
 function kat(t,    u)
-  u={}; for k,v in pairs(t) do push(u, string.format(":%s %s",k,v)); return u end
+  u={}
+  for k,v in pairs(t) do 
+    if not tostring(k):find"^_" then push(u,string.format("%s:%s",k,v)) end end
   table.sort(u)
   return u end
 
@@ -135,6 +137,9 @@ local eg={}
 eg["-h"] = function(_) print("lua x2.lua --[aa|bb] [FILE.csv]") end
 
 eg["--train"] = function(train,     d)
-  d=DATA:new():read(train or the.train) end
+  d=DATA:new():read(train or the.train) 
+  oo(d.cols.x[2])
+  end
+
 
 eg[arg[1] or "-h"](coerce(arg[2]))
