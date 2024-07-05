@@ -6,6 +6,7 @@ return {
   cohen = 0.35,                     -- less than cohen*sd means "same" 
   fmt   = "%g",                     -- format string for number 
   help  = false,                     -- show help    
+  inf   = 1E32, 
   seed  = 1234567891,               -- random number seed   
   train = "../data/misc/auto93.csv" -- training data    
 }
