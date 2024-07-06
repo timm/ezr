@@ -157,7 +157,7 @@ function DATA:bins(rows,     x,y,b)
         print(string.format("[%s][%s]",x,b))
         if col.bins[b] and col.bins[b].add 
         then col.bins[b]:add(x,y) 
-        else oo(col) ; print("---",x,b) end end end end
+        else oo(col) ; print("---",x,b,o(cols.bins[b]) end end end end
   return self end 
 
 function DATA:splitter(      lo,w,n,out,tmp)
