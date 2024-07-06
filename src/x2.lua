@@ -16,10 +16,7 @@ function COLS:new()   return new(COLS,{all={}, x={}, y={}, names=""}) end
 function DATA:new()   return new(DATA,{rows={}, cols=COLS:new()}) end
  
 function BIN:new(name,pos,  lo,hi) 
- self = new(BIN,{x=NUM:new(name,pos),y=NUM:new(name,pos)}) 
- self.x.lo = lo or inf
- self.x.hi = hi or lo
- return self end
+  return new(BIN,{name=name,pos=pos, lo=lo or inf, hi=hi or lo, y=NUM:new(name,pos)}) end 
 
 function TREE:new(here,lvl,name,pos,lo,hi,mu)
   return l.new(TREE,{lvl=lvl or 0, bin=BIN:new(name,pos,lo,hi), 
@@ -102,12 +99,15 @@ function DATA:add(row)
   for _,c in pairs(self.cols.all) do if row[c.pos]~="?" then c:add(row[c.pos]) end end end 
 
 function BIN:add(x,y)
-  if x ~= "?" then self.x:add(x); self.y:add(y) end end
+  if x ~= "?" then 
+    if x < self.lo then self.lo = x end
+    if x > self.hi then self.hi = x end
+    self.y:add(y) end end
 
 --- Query
 -- -----
 function SYM:bin(x) return x end
-function NUM:bin(n) return the.bins*self:cdf(n) // 1 end
+function NUM:bin(n) return math.floor(0.5 + the.bins*self:cdf(n))  end
 
 function NUM:norm(n) return n=="?" and n or (n-self.lo)/(self.hi-self.lo + 1/the.inf) end
 
@@ -144,17 +144,20 @@ function DATA:chebyshev(row,     d)
   d=0; for _,y in pairs(self.cols.y) do d = max(d,abs(y:norm(row[y.pos]) - y.w)) end
   return d end
 
-function DATA:bins(rows,     x,y,bin) 
+function DATA:bins(rows,     x,y,b) 
   for _,row in pairs(rows or self.rows) do 
     y = self:chebyshev(row)
     print""
     for _,col in pairs(self.cols.x) do
       x = row[col.pos]
       if x ~= "?" then 
-        bin = col:bin(x)
-        col.bins[bin] = col.bins[bin] or BIN:new(col.name,col.pos,x,x)
-        for k,v in pairs(col.bins[bin]) do print(">",k,v) end
-        col.bins[bin]:add(x,y) end end end
+        b = col:bin(x)
+        print(string.format("<%s><%s>",x,b))
+        col.bins[b] = col.bins[b] or  BIN:new(col.name,col.pos,x,x) 
+        print(string.format("[%s][%s]",x,b))
+        if col.bins[b] and col.bins[b].add 
+        then col.bins[b]:add(x,y) 
+        else oo(col) ; print("---",x,b) end end end end
   return self end 
 
 function DATA:splitter(      lo,w,n,out,tmp)
