@@ -49,7 +49,7 @@ function l.copy(t,  u)
   u={}; for k,v in pairs(t) do u[l.copy(k)] = l.copy(v) end
   return setmetatable(u, getmetatable(t)) end
 
-function l.new(dmeta,d) --> instance ; and initializes polymorphism for that class
+function l.new(dmeta,d) --> instance ;(a) create 1 instance; (b) enable class polymorphism
   dmeta.__index=dmeta; setmetatable(d,dmeta); return d end
 
 -- ## Structs for storing DATA
@@ -87,6 +87,11 @@ function DATA:clone(  rows,    data)  --> data ; new data has same structure as 
   return data end
 
 -- ## Update
+function DATA:add(row) --> nil
+  l.push(self.rows,row)
+  for _,col in pairs(self.cols.all) do 
+    if row[col.pos]~="?" then col:add(row[col.pos]) end end end 
+
 function SYM:add(x) --> x
   if x ~="?" then self.n=self.n + 1; self.has[x]=(self.has[x] or 0)+1 end; return x end
 
@@ -108,11 +113,6 @@ function NUM:sub(n,     d) --> n
                    self.mu = self.mu - d/self.n
                    self.m2 = self.m2 - d*(n - self.mu) end
   return n end
-
-function DATA:add(row) --> nil
-  l.push(self.rows,row)
-  for _,col in pairs(self.cols.all) do 
-    if row[col.pos]~="?" then col:add(row[col.pos]) end end end 
 
 -- ## Query
 function NUM:mid() --> number
@@ -264,6 +264,6 @@ eg["--bins"] = function(train,    d)
   d:bins() end
 
 -- ## Start up
-if arg[1]=="x2"  then  eg[arg[1] or "-h"](l.coerce(arg[2])) end
+if arg[1]=="x2" then eg[arg[2] or "-h"](l.coerce(arg[3])) end
 
 return {NUM=NUM, SYM=SYM, DATA=DATA, TREE=TREE, BIN=BIN, lib=l}
