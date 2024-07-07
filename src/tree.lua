@@ -31,7 +31,7 @@ local the=require"config"
 local discrete = require"discretize"
 local NUM,SYM,DATA,BIN = discrete.NUM, discrete.SYM, discrete.DATA, discrete.BIN
 local TREE={}
-------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 -- ## Inference Layer
 
 -- ### Tree
@@ -48,7 +48,7 @@ function TREE:visit(fun)
   fun = fun or print
   fun(self)
   for _,kid in pairs(self._kids) do kid:visit(fun) end end 
-
+------------------------------------------------------------------------------
 -- Make tree
 function DATA:tree(  stop,_grow)
   function _grow(rows,stop,lvl,  name,pos,lo,hi,    tree,tbins,sub,c)

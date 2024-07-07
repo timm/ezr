@@ -140,23 +140,18 @@ function DATA:chebyshev(row,     d) --> number ; max distance of any goal to bes
   d=0; for _,y in pairs(self.cols.y) do d = max(d,abs(y:norm(row[y.pos]) - y.w)) end
   return d end
 
-function DATA:chebyshevs(rows,    sum,n) --> number ; mean chebyshev
-  sum,n=0,0; for _,r in pairs(rows or self.rows) do n=n+1; sum=sum+self:chebyshev(r) end
-  return sum/n end
+function DATA:chebyshevs(rows,    n) --> number ; mean chebyshev
+  n= NUM(); for _,r in pairs(rows or self.rows) do n:add(self:chebyshev(r)); return n end
 -- ## Discretization
 local BIN={}
 
-function BIN:new(s,n,  lo,hi) --> BIN
-  return l.new(BIN,{name=s,pos=n, lo=lo or the.inf, hi=hi or lo or the.inf, y=NUM:new(s,n)}) end 
+function BIN:new(s,n,  lo,hi,y) --> BIN
+  return l.new(BIN,{name=s,pos=n, lo=lo or the.inf, hi=hi or lo or the.inf, y=y or NUM:new(s,n)}) end 
 
 function BIN:add(x,y)
   if x ~= "?" then if x < self.lo then self.lo = x end
                    if x > self.hi then self.hi = x end
                    self.y:add(y) end  end
- 
-function BIN:sub(x,y) -- assumes removal in ascending order
-  if x ~= "?" then self.y:sub(y) 
-                   self.lo = x end end
 
 function BIN:__tostring(     lo,hi,s)
   lo,hi,s = self.x.lo, self.x.hi,self.x.name
@@ -172,7 +167,7 @@ function BIN:selects(rows,     u,lo,hi,x)
     if x=="?" or lo==hi and lo==x or lo < x and x <= hi then l.push(u,r) end end
   return u end
 
-function SYM:bins(rows,y,     t,x) --> array[bin] ; proposes one split per symbol value
+function SYM:bins(rows,y,_,     t,x) --> array[bin] ; proposes one split per symbol value
   t = {}
   for row in pairs(rows) do
     x = row[self.pos]
@@ -180,24 +175,27 @@ function SYM:bins(rows,y,     t,x) --> array[bin] ; proposes one split per symbo
                      t[x]:add(x, y(row)) end end
   return t end
 
-function NUM:bins(rows,y) --> nil | [bin1,bin2] ; proposes a binary split of these numerics
-  local left1,right1, left,right,last,y1,tmp,xpect,x,q,got
-  function q(x) return x=="?" and -the.inf or x end
+function NUM:bins(rows,y,   left,right) --> nil | [bin1,bin2] ;get binary split of numerics
+  local function x(row) return row[self.pos] end
+  local function q(z) return z=="?" and -the.inf or z end
   table.sort(rows, function(a,b) return q(a[self.pos]) < q(b[self.pos]) end)
-  left  = BIN:new(self.name,self.pos,self.lo)
-  right = BIN:new(self.name,self.pos,self.lo,self.hi); right.y=l.copy(self)
-  xpect = self:div()
+  local left0,right0 = BIN:new(self.name,self.pos), NUM:new()
+  local ys={}; for i,r in pairs(rows) do ys[i] = right:add(y(r)) end
+  local epsilon = the.cohen*right:div()
+  local min,got = self:div(), #rows
   for i,row in pairs(rows) do
-    x  = row[self.pos]
-    y1 = y(row)
-    if x ~= "?" then got = got or (#rows - i - 1)
-                     left:add(x,y1)
-                     right:sub(x,y1)
-                     if last ~= x and left.n >= got^0.5 and right.n >= got^0.5 then
-                       tmp = (left.n*left:div() + right.n*right:div()) / got
-                       if tmp < xpect then 
-                         xpect,left1,right1 = tmp, l.copy(left), l.copy(right) end end end end
-    if left1 then return {left,right} end end
+    if x(row) == "?" then got = got - 1 else
+      left0:add(x(row), ys[i])
+      right0:sub(ys[i])
+      if left0.y.n >= got^0.5 and right0.n >= got^0.5 then
+        if x(row) ~= x(rows[i+1]) then
+          if abs(left.y:mid() - right:mid()) > epsilon then
+            local tmp = (left0.y.n*left0.y:div() + right0.n*right0:div()) / got
+            if tmp < min then 
+              min,left,right = tmp, l.copy(left0), l.copy(right0) 
+    end end end end end end end
+    left.lo = -the.inf
+    if left then return {left,BIN:new(self.name,self.pos, left.hi,the.inf,right)} end end 
 
 -- ## TREE
 local TREE={}
