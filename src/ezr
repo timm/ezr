@@ -1,11 +1,10 @@
 #!/usr/bin/env lua
 -- <!-- vim:set filetype=lua et : -->
---
---        __               ____                _ __  
---      /'__`\            /\_ ,`\             /\`'__\
---     /\  __/            \/_/  /_            \ \ \/ 
---     \ \____\             /\____\            \ \_\ 
---      \/____/             \/____/             \/_/ 
+
+--       ___    ____   _ __ 
+--      / _ \  |_  /  | '__|
+--     |  __/   / /   | |   
+--      \___|  /___|  |_|    (easier AI)
 
 --                      _         
 --       _   _   ._   _|_  o   _  
@@ -32,20 +31,30 @@ local the = {
 local abs,log, max, min = math.abs, math.log, math.max, math.min
 local l = {}
 
+function l.sort(a,fun) --> a
+  table.sort(a,fun); return a end
+
+l.fmt = string.format --> s
+
+function l.printf(s,...) --> nil
+  print(string.format(s,...)) end
+
 function l.push(t,z)  --> x
   t[1+#t]=z; return z end
 
 function l.ocat(a,    u) --> array[str]
-  u={}; for _,v in pairs(a) do l.push(u,tostring(v)) end; return u end
+  u={}; for _,v in pairs(a) do l.push(u,l.o(v)) end; return u end
 
 function l.okat(d,    u) --> array[str]
   u={}
   for k,v in pairs(d) do 
-    if not tostring(k):find"^_" then l.push(u,string.format("%s:%s",k,v)) end end
+    if not tostring(k):find"^_" then l.push(u,l.fmt("%s:%s",k,l.o(v))) end end
   table.sort(u)
   return u end
 
 function l.o(t)  --> t
+  if type(t)== "number" then return fmt(the.all.fmt,t) end
+  if type(t)~= "table"  then return tostring(t) end
   return "("..table.concat(#t==0 and l.okat(t) or l.ocat(t),", ")..")" end
 
 function l.oo(t) --> t
@@ -80,7 +89,7 @@ function EG.new(sGroup,sFlag, sHelp, fun)  --> nil
     EG.groups[sGroup] = EG.groups[sGroup] or {}
     l.push(EG.groups[sGroup], {flag=sFlag, help= sHelp, fun=fun}) end
 
-function EG.main(arg,out,      fails,group)
+function EG.main(out,      fails,group)
   fails = 0
   trios=EG.groups["all"]
   for n,s in pairs(arg) do
@@ -91,13 +100,13 @@ function EG.main(arg,out,      fails,group)
   return fails > 0 and os.exit(fails) or out end
 
 function EG.help(    it)
-  it = the.about
-  print(string.format("%s\n(c) %s %s %s",it.what, it.when, it.who, it.license))
+  print(fmt("%s\n(c) %s %s %s",
+            the.about.what, the.about.when, the.about.who, the.about.license))
   print("\nUSAGE: ezr [group] [--flag] [ARG]\nOPTIONS:\n")
   for _,group in pairs(EG.groups) do
-    print (string.format("  ezr %10s %6s [ARG]",group))
+    print (fmt("  ezr %10s %6s [ARG]",group))
     for _,trios in pairs(EG.groups[group]) do
-      print(string.format("%21s %5s %s",trios.flag, trios.help)) end end end
+      print(fmt("%21s %5s %s",trios.flag, trios.help)) end end end
 
 --       _|   _.  _|_   _. 
 --      (_|  (_|   |_  (_| 
@@ -208,10 +217,10 @@ function BIN:add(x,y)
 
 function BIN:__tostring(     lo,hi,s)
   lo,hi,s = self.x.lo, self.x.hi,self.x.name
-  if lo == -the.inf then return string.format("%s <= %g", s,hi) end
-  if hi ==  the.inf then return string.format("%s > %g",  s,lo) end
-  if lo ==  hi  then return string.format("%s == %s", s,lo) end
-  return string.format("%g < %s <= %g", lo, s, hi) end
+  if lo == -the.inf then return fmt("%s <= %g", s,hi) end
+  if hi ==  the.inf then return fmt("%s > %g",  s,lo) end
+  if lo ==  hi  then return fmt("%s == %s", s,lo) end
+  return fmt("%g < %s <= %g", lo, s, hi) end
 
 function BIN:selects(rows,     u,lo,hi,x)
   u,lo,hi = {}, self.x.lo, self.y.hi
@@ -228,27 +237,30 @@ function SYM:bins(rows,y,_,     t,x) --> array[bin] ; proposes one split per sym
                      t[x]:add(x, y(row)) end end
   return t end
 
-function NUM:bins(rows,y,   left,right) --> nil | [bin1,bin2] ;get binary split of numerics
+function NUM:bins(rows,y,xepsilon,yepsilon) --> nil | [bin1,bin2] ;get binary split of numerics
   local function x(row) return row[self.pos] end
-  local function q(z) return z=="?" and -the.inf or z end
-  table.sort(rows, function(a,b) return q(a[self.pos]) < q(b[self.pos]) end)
-  local left0,right0 = BIN:new(self.name,self.pos), NUM:new()
-  local ys={}; for i,r in pairs(rows) do ys[i] = right:add(y(r)) end
-  local epsilon = the.cohen*right:div()
-  local min,got = self:div(), #rows
+  local ys,right0 = {},NUM:new()
+  for i,r in pairs(rows) do ys[i] = right:add(y(r)) end
+  return self:num1(l.sort(rows,function(a,b) return q(x(a)) < q(x(b)) end),
+                   function x(row) return row[self.pos] end,y, 
+                   BIN:new(self.name,self.pos), right0,
+                   xepsilon, yepsilon, self:div(), #rows) end
+
+
+function NUM:bins1(rows,x,y,left0,right0,xepsilon,yepsilon,min,got,ys,       left,right)
   for i,row in pairs(rows) do
     if x(row) == "?" then got = got - 1 else
       left0:add(x(row), ys[i])
       right0:sub(ys[i])
       if left0.y.n >= got^0.5 and right0.n >= got^0.5 then
         if x(row) ~= x(rows[i+1]) then
-          if abs(left.y:mid() - right:mid()) > epsilon then
-            local tmp = (left0.y.n*left0.y:div() + right0.n*right0:div()) / got
-            if tmp < min then 
-              min,left,right = tmp, l.copy(left0), l.copy(right0) 
-    end end end end end end end
-    left.lo = -the.inf
-    if left then return {left,BIN:new(self.name,self.pos, left.hi,the.inf,right)} end end
+          if abs(left.y:mid() - right:mid()) > yepsilon then
+            if left.hi - left.lo > xepsilon and x(rows[#rows]) - left.hi >= xepsilon then
+              local tmp = (left0.y.n*left0.y:div() + right0.n*right0:div()) / got
+              if tmp < min then 
+                min,left,right = tmp, l.copy(left0), l.copy(right0) end end end end end end end 
+  left.lo = -the.inf
+  if left then return {left,BIN:new(self.name,self.pos, left.hi,the.inf,right)} end end
 
 --      _|_  ._   _    _  
 --       |_  |   (/_  (/_ 
@@ -260,7 +272,7 @@ function TREE:new(here,lvl,s,n,lo,hi,mu)
                      mu=mu or 0, here=here, _kids={}})  end
 
 function TREE:__tostring() 
-  return string.format("%.2f\t%5s\t%s%s", self.mu, #self.here.rows, 
+  return fmt("%.2f\t%5s\t%s%s", self.mu, #self.here.rows, 
                        ("|.. "):rep(self.lvl-1), self.lvl==0 and "" or self.bin) end
 
 function TREE:visit(fun) 

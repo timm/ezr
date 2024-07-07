@@ -1,11 +1,13 @@
 coding101
+- tim's zeroth rule: LLMs wont replace programmers
 - how to use the code . knn (simplest)
   - shebang, vim settings
   - Githib, readme, license, .gitignore
   - docs/index.md (from README.md)
     - proj1: folrk issues. milestones. doc
-  - uncle bob's rule (5 lines)
-  - uncle tim's rule (use less globals)
+  - bob's rule (5 lines)
+  - sven's rule (config crisis)
+  - tim's rule (use less globals)
   - "Any code of your own that you haven't looked at for six or more months might as well have been written by someone else." — Eagleson's law
     - thou shalt document
     - thou shalt add a regresson/demo suite
