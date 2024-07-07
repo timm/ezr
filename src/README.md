@@ -46,6 +46,7 @@ rows, the top rows are best (minimal Lbs, max Acc, max Mpg).
 - `z` is anything.
 - `t,d,a` are table,array,dict. Arrays have numeric keys; dicts have symbolic keys. 
 - `s,n,b` are strings, numbers,booleans. 
+- `fun` is a function
 - Suffix `s`" is a list of things; e.g. `ns` = list of numbers.
 - When used as prefixes, these denote types; e.g. `sFile` is a file name that is a string.
   e.g.  `n1,n2` are two numbers

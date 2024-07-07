@@ -1,11 +1,34 @@
 #!/usr/bin/env lua
 -- <!-- vim:set filetype=lua et : -->
+--
+--        __               ____                _ __  
+--      /'__`\            /\_ ,`\             /\`'__\
+--     /\  __/            \/_/  /_            \ \ \/ 
+--     \ \____\             /\____\            \ \_\ 
+--      \/____/             \/____/             \/_/ 
+
+--                      _         
+--       _   _   ._   _|_  o   _  
+--      (_  (_)  | |   |   |  (_| 
+--                             _| 
+
+local the = {
+  about = {what="ezr: tools for simpler, explainable, AI",
+           when=2024,
+           who="Tim Menzies",
+           license="BSD, 2 paragraph"},
+  all = { inf   = 1E32, 
+          seed  = 1234567891,               -- random number seed   
+          train = "../data/misc/auto93.csv" -- training data    
+          fmt   = "%g",
+          cohen = -.35},
+  bins = {bins=17}}          
+
 -- See README.md for the  data formats, type hints, and coding conventions used in this code.
 
-local the = require"config"
-the.bins=7
+--      |  o  |_  
+--      |  |  |_) 
 
--- ## Lib
 local abs,log, max, min = math.abs, math.log, math.max, math.min
 local l = {}
 
@@ -52,7 +75,34 @@ function l.copy(t,  u)
 function l.new(dmeta,d) --> instance ;(a) create 1 instance; (b) enable class polymorphism
   dmeta.__index=dmeta; setmetatable(d,dmeta); return d end
 
--- ## Structs for storing DATA
+local EG={groups={}}
+function EG.new(sGroup,sFlag, sHelp, fun)  --> nil
+    EG.groups[sGroup] = EG.groups[sGroup] or {}
+    l.push(EG.groups[sGroup], {flag=sFlag, help= sHelp, fun=fun}) end
+
+function EG.main(arg,out,      fails,group)
+  fails = 0
+  trios=EG.groups["all"]
+  for n,s in pairs(arg) do
+    trios = EG.groups[s] or trios
+    for _,trio in pairs(trios) do
+      if trio.flag:find("^"..s) then 
+        fails = fails + (trio.fun(coerce(arg[n+1])) == false and 1 or 0) end end end 
+  return fails > 0 and os.exit(fails) or out end
+
+function EG.help(    it)
+  it = the.about
+  print(string.format("%s\n(c) %s %s %s",it.what, it.when, it.who, it.license))
+  print("\nUSAGE: ezr [group] [--flag] [ARG]\nOPTIONS:\n")
+  for _,group in pairs(EG.groups) do
+    print (string.format("  ezr %10s %6s [ARG]",group))
+    for _,trios in pairs(EG.groups[group]) do
+      print(string.format("%21s %5s %s",trios.flag, trios.help)) end end end
+
+--       _|   _.  _|_   _. 
+--      (_|  (_|   |_  (_| 
+--                         
+
 local SYM,NUM,COLS,DATA = {},{},{},{}
 
 function SYM:new(s,n) --> sym
@@ -141,8 +191,11 @@ function DATA:chebyshev(row,     d) --> number ; max distance of any goal to bes
   return d end
 
 function DATA:chebyshevs(rows,    n) --> number ; mean chebyshev
-  n= NUM(); for _,r in pairs(rows or self.rows) do n:add(self:chebyshev(r)); return n end
--- ## Discretization
+  n= NUM(); for _,r in pairs(rows or self.rows) do n:add(self:chebyshev(r)); return n end
+
+--       _|  o   _   _  ._   _   _|_  o  _    _  
+--      (_|  |  _>  (_  |   (/_   |_  |  /_  (/_ 
+
 local BIN={}
 
 function BIN:new(s,n,  lo,hi,y) --> BIN
@@ -195,9 +248,11 @@ function NUM:bins(rows,y,   left,right) --> nil | [bin1,bin2] ;get binary split 
               min,left,right = tmp, l.copy(left0), l.copy(right0) 
     end end end end end end end
     left.lo = -the.inf
-    if left then return {left,BIN:new(self.name,self.pos, left.hi,the.inf,right)} end end 
+    if left then return {left,BIN:new(self.name,self.pos, left.hi,the.inf,right)} end end
 
--- ## TREE
+--      _|_  ._   _    _  
+--       |_  |   (/_  (/_ 
+
 local TREE={}
 
 function TREE:new(here,lvl,s,n,lo,hi,mu)
