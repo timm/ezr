@@ -37,14 +37,18 @@ rows, the top rows are best (minimal Lbs, max Acc, max Mpg).
   Diederich's [Stop Writing Classes](https://www.youtube.com/watch?v=o9pEzgHorH0)).
 - Group methods by functionality, not class (e.g. so all the `add` methods of different classes are together).
 - Function args prefixed by two spaces are optional inputs.
-  In the type hints, these arguments are marked with a "?".
-- Function args prefixed by four spaces are local to that function.
-- UPPPER CASE words are classes; 
-- Type `table`s are either of type `list` (numberic indexes) or 
-  `dict` (symbolic indexes). 
-- Type `num` (not to be confused with class NUM) are floats or ints. 
-- Type `atom` are bools, strs, or nums.
-- Type `thing` are atoms or "?" (for "don't know").
-- Type `rows` are lists of things; i.e. `row  =  list[thing]`. ]]
 
- 
+## Type hints for function arguments
+
+- Function args use Alfold type hints[^plain].
+- 2 blanks denote start of optionals. 4 blanks denote start of locals.
+- `t,d,a` are table,array,dict. Arrays have numeric keys; dicts have symbolic keys. 
+- `s,n,b" are strings, numbers,booleans. `xs`" is anything.
+- Suffix `ss`" is a list of things; e.g. `ns` = list of numbers.
+- When used as prefixes, these denote types; e.g. `sFile` is a file name that is a string.
+- Classes are UPPER CASE; e.g NUM. Lower case class numbers denote instances; e.g. `num`.
+- `rows` = `list[n | s | "?"]`
+- `rows` = `list[row]`
+
+[^plain]:  Alfold is a small plain in Hungary, so "Alfold" is my name for an ultra-lightweight version of the  Hungarian prefix notation 
+

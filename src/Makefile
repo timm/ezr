@@ -25,8 +25,8 @@ bins:
 	mkdir -p ~/tmp
 	cp ../docs/img/tree.png ~/tmp/tree.png
 	pycco -d ~/tmp $<
-	echo "p { text-align: right }" >> ~/tmp/pycco.css
-	echo "info p { text-align: left }" >> ~/tmp/pycco.css
+	echo "h2,p { text-align: right }" >> ~/tmp/pycco.css
+	echo "h2 { border-top: solid 1px black;}" >> ~/tmp/pycco.css
 	open $@
 
 csv=$(wildcard ../data/*/*.csv)
