@@ -26,6 +26,7 @@ booleans ("true,false") or "?" (for don't know). e.g
 
 Internally, rows are sorted by the the goal columns. e.g. in the above
 rows, the top rows are best (minimal Lbs, max Acc, max Mpg). 
+
 ## Coding conventions
 
 - Line width = 90 characters.
@@ -36,19 +37,20 @@ rows, the top rows are best (minimal Lbs, max Acc, max Mpg).
   and 
   Diederich's [Stop Writing Classes](https://www.youtube.com/watch?v=o9pEzgHorH0)).
 - Group methods by functionality, not class (e.g. so all the `add` methods of different classes are together).
-- Function args prefixed by two spaces are optional inputs.
+- In function args, 2 blanks denote start of optionals. 4 blanks denote start of locals.
 
 ## Type hints for function arguments
 
-- Function args use Alfold type hints[^plain].
-- 2 blanks denote start of optionals. 4 blanks denote start of locals.
+- Function args uses Alfold-style type hints[^plain].
+- Function arguments lists end with return types; e.g. `function most(n1,n2) --> n `
+- `z` is anything.
 - `t,d,a` are table,array,dict. Arrays have numeric keys; dicts have symbolic keys. 
-- `s,n,b" are strings, numbers,booleans. `xs`" is anything.
-- Suffix `ss`" is a list of things; e.g. `ns` = list of numbers.
+- `s,n,b` are strings, numbers,booleans. 
+- Suffix `s`" is a list of things; e.g. `ns` = list of numbers.
 - When used as prefixes, these denote types; e.g. `sFile` is a file name that is a string.
+  e.g.  `n1,n2` are two numbers
 - Classes are UPPER CASE; e.g NUM. Lower case class numbers denote instances; e.g. `num`.
 - `rows` = `list[n | s | "?"]`
 - `rows` = `list[row]`
 
-[^plain]:  Alfold is a small plain in Hungary, so "Alfold" is my name for an ultra-lightweight version of the  Hungarian prefix notation 
-
+[^plain]:  Alfold is a small plain in Hungary, so "Alfold" is my name for an lightweight plain version of the  Hungarian prefix notation.

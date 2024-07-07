@@ -9,8 +9,8 @@ the.bins=7
 local abs,log, max, min = math.abs, math.log, math.max, math.min
 local l = {}
 
-function l.push(t,x)  --> x
-  t[1+#t]=x; return x end
+function l.push(t,z)  --> x
+  t[1+#t]=z; return z end
 
 function l.ocat(a,    u) --> array[str]
   u={}; for _,v in pairs(a) do l.push(u,tostring(v)) end; return u end
@@ -92,11 +92,11 @@ function DATA:add(row) --> nil
   for _,col in pairs(self.cols.all) do 
     if row[col.pos]~="?" then col:add(row[col.pos]) end end end 
 
-function SYM:add(x) --> x
-  if x ~="?" then self.n=self.n + 1; self.has[x]=(self.has[x] or 0)+1 end; return x end
+function SYM:add(z) --> x
+  if z ~="?" then self.n=self.n + 1; self.has[z]=(self.has[z] or 0)+1 end; return x end
 
-function SYM:sub(x) --> x
-  if x ~="?" then self.n=self.n - 1; self.has[x]=self.has[x] - 1 end; return x end
+function SYM:sub(z) --> x
+  if x ~="?" then self.n=self.n - 1; self.has[z]=self.has[z] - 1 end; return x end
 
 function NUM:add(n,      d) --> n
   if n ~= "?" then self.n  = self.n + 1
