@@ -137,7 +137,7 @@ eg["--copy"] = function(_,     n1,n2,n3)
   n1,n2 = NUM.new(),NUM.new()
   for i=1,100 do n2:add(n1:add(rand()^2)) end
   n3 = copy(n2)
-  for i=1,100 do n3:add(n2:add(n1:add(rand()^2))) end
+  for i=1,100 do n3:add(n2:add(n1:add(l.rand()^2))) end
   for k,v in pairs(n3) do if k ~="_id" then ; assert(v == n2[k] and v == n1[k]) end end
   n3:add(0.5)
   assert(n2.mu ~= n3.mu) end

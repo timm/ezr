@@ -18,7 +18,7 @@ local the = {
            license="BSD, 2 paragraph"},
   all = { inf   = 1E32, 
           seed  = 1234567891,               -- random number seed   
-          train = "../data/misc/auto93.csv" -- training data    
+          train = "../data/misc/auto93.csv", -- training data    
           fmt   = "%g",
           cohen = -.35},
   bins = {bins=17}}          
@@ -30,6 +30,9 @@ local the = {
 
 local abs,log, max, min = math.abs, math.log, math.max, math.min
 local l = {}
+
+function l.rand(...) --> n
+  return math.random(...) end
 
 function l.sort(a,fun) --> a
   table.sort(a,fun); return a end
@@ -53,7 +56,7 @@ function l.okat(d,    u) --> array[str]
   return u end
 
 function l.o(t)  --> t
-  if type(t)== "number" then return fmt(the.all.fmt,t) end
+  if type(t)== "number" then return l.fmt(the.all.fmt,t) end
   if type(t)~= "table"  then return tostring(t) end
   return "("..table.concat(#t==0 and l.okat(t) or l.ocat(t),", ")..")" end
 
@@ -85,28 +88,31 @@ function l.new(dmeta,d) --> instance ;(a) create 1 instance; (b) enable class po
   dmeta.__index=dmeta; setmetatable(d,dmeta); return d end
 
 local EG={groups={}}
-function EG.new(sGroup,sFlag, sHelp, fun)  --> nil
+function EG.add(sGroup,sFlag, sHelp, fun)  --> nil
     EG.groups[sGroup] = EG.groups[sGroup] or {}
     l.push(EG.groups[sGroup], {flag=sFlag, help= sHelp, fun=fun}) end
 
-function EG.main(out,      fails,group)
+function EG.main(out,      fails,trios)
   fails = 0
   trios=EG.groups["all"]
   for n,s in pairs(arg) do
     trios = EG.groups[s] or trios
     for _,trio in pairs(trios) do
       if trio.flag:find("^"..s) then 
-        fails = fails + (trio.fun(coerce(arg[n+1])) == false and 1 or 0) end end end 
+        fails = fails + (trio.fun(l.coerce(arg[n+1])) == false and 1 or 0) end end end 
   return fails > 0 and os.exit(fails) or out end
 
-function EG.help(    it)
-  print(fmt("%s\n(c) %s %s %s",
-            the.about.what, the.about.when, the.about.who, the.about.license))
-  print("\nUSAGE: ezr [group] [--flag] [ARG]\nOPTIONS:\n")
-  for _,group in pairs(EG.groups) do
-    print (fmt("  ezr %10s %6s [ARG]",group))
-    for _,trios in pairs(EG.groups[group]) do
-      print(fmt("%21s %5s %s",trios.flag, trios.help)) end end end
+-- --------------------------------------------------------------------------------------
+EG.add("all", "-h", "show help", function(_) 
+  print(l.fmt("\n%s\n(c) %s %s %s",
+              the.about.what, the.about.when, the.about.who, the.about.license))
+  print("\nUSAGE: ezr [group] [--flag] [ARG]\n\nOPTIONS:")
+  t={}; for s,_ in pairs(EG.groups) do l.push(t,s) end
+  for _,s in pairs(l.sort(t)) do
+    pre = l.fmt("ezr %s",s=="all" and "" or s)
+    for _,trios in pairs(EG.groups[s]) do
+      l.printf("  %-10s %-15s %s",pre,trios.flag, trios.help)
+      pre="" end end end)
 
 --       _|   _.  _|_   _. 
 --      (_|  (_|   |_  (_| 
@@ -118,7 +124,7 @@ function SYM:new(s,n) --> sym
   return l.new(SYM,{name=s,pos=n,n=0,has={}}) end
 
 function NUM:new(s,n) --> num
-  return l.new(NUM,{name=s,pos=n,n=0,w=0,mu=0,m2=0, lo=the.inf, hi=-the.inf}) end
+  return l.new(NUM,{name=s,pos=n,n=0,w=0,mu=0,m2=0, lo=the.all.inf, hi=-the.all.inf}) end
 
 function COLS:new() --> cols
   return l.new(COLS,{all={}, x={}, y={}, names=""}) end
@@ -135,7 +141,7 @@ function DATA:head(row,    col) --> nil
   self.cols.names = row
   for pos,name in pairs(row) do 
     if not name:find"X$" then 
-      col = l.push(self.all, (name:find"^[A-Z]" and NUM or SYM):new(name,pos)) 
+      col = l.push(self.cols.all, (name:find"^[A-Z]" and NUM or SYM):new(name,pos)) 
       if     name:find"-$" then col.w=0; l.push(self.y, col) 
       elseif name:find"+$" then col.w=1; l.push(self.y, col) 
       else   l.push(self.x, col) end end end end
@@ -152,10 +158,10 @@ function DATA:add(row) --> nil
     if row[col.pos]~="?" then col:add(row[col.pos]) end end end 
 
 function SYM:add(z) --> x
-  if z ~="?" then self.n=self.n + 1; self.has[z]=(self.has[z] or 0)+1 end; return x end
+  if z ~="?" then self.n=self.n + 1; self.has[z]=(self.has[z] or 0)+1 end end
 
 function SYM:sub(z) --> x
-  if x ~="?" then self.n=self.n - 1; self.has[z]=self.has[z] - 1 end; return x end
+  if z ~="?" then self.n=self.n - 1; self.has[z]=self.has[z] - 1 end end
 
 function NUM:add(n,      d) --> n
   if n ~= "?" then self.n  = self.n + 1
@@ -189,7 +195,7 @@ function SYM:div(   e,N)  --> number ; returns entropy
   return -e end
 
 function NUM:norm(x) --> x | 0..1
-  return x=="?" and x or (x-self.lo)/(self.hi-self.lo + 1/the.inf) end
+  return x=="?" and x or (x-self.lo)/(self.hi-self.lo + 1/the.all.inf) end
 
 function DATA:sort() --> data ; sorts rows by chebyshev, so left-hand-side rows  are better
   table.sort(self.rows, function(a,b) return self:chebyshev(a) < self:chebyshev(b) end)
@@ -200,7 +206,26 @@ function DATA:chebyshev(row,     d) --> number ; max distance of any goal to bes
   return d end
 
 function DATA:chebyshevs(rows,    n) --> number ; mean chebyshev
-  n= NUM(); for _,r in pairs(rows or self.rows) do n:add(self:chebyshev(r)); return n end
+  n= NUM:new()
+  for _,r in pairs(rows or self.rows) do n:add(self:chebyshev(r)) end; return n end
+
+-- ---------------------------------------------------------------------------------------
+EG.add("all", "--copy", "testing deep copy", function(_,     n1,n2,n3) 
+  n1,n2 = NUM:new(),NUM:new()
+  for i=1,100 do n2:add(n1:add(l.rand()^2)) end
+  n3 = l.copy(n2)
+  for i=1,100 do n3:add(n2:add(n1:add(l.rand()^2))) end
+  for k,v in pairs(n3) do if k ~="_id" then ; assert(v == n2[k] and v == n1[k]) end end
+  n3:add(0.5)
+  assert(n2.mu ~= n3.mu) end)
+
+EG.add("data", "--train ?file", "read in  csv data", function(train,     d) 
+  d=DATA:new():read(train or the.all.train) 
+  l.oo(d.cols.x[2]) end)
+
+EG.add("data", "--sort", "read and sort data", function(train)
+  for i,row in pairs(DATA:new():read(train or the.all.train):sort().rows) do 
+    if i==1 or i%25==0 then print(i, l.o(row)) end end end)
 
 --       _|  o   _   _  ._   _   _|_  o  _    _  
 --      (_|  |  _>  (_  |   (/_   |_  |  /_  (/_ 
@@ -208,7 +233,8 @@ function DATA:chebyshevs(rows,    n) --> number ; mean chebyshev
 local BIN={}
 
 function BIN:new(s,n,  lo,hi,y) --> BIN
-  return l.new(BIN,{name=s,pos=n, lo=lo or the.inf, hi=hi or lo or the.inf, y=y or NUM:new(s,n)}) end 
+  return l.new(BIN,{name=s,pos=n, lo=lo or the.all.inf, 
+                    hi=hi or lo or the.all.inf, y=y or NUM:new(s,n)}) end 
 
 function BIN:add(x,y)
   if x ~= "?" then if x < self.lo then self.lo = x end
@@ -217,10 +243,10 @@ function BIN:add(x,y)
 
 function BIN:__tostring(     lo,hi,s)
   lo,hi,s = self.x.lo, self.x.hi,self.x.name
-  if lo == -the.inf then return fmt("%s <= %g", s,hi) end
-  if hi ==  the.inf then return fmt("%s > %g",  s,lo) end
-  if lo ==  hi  then return fmt("%s == %s", s,lo) end
-  return fmt("%g < %s <= %g", lo, s, hi) end
+  if lo == -the.all.inf then return l.fmt("%s <= %g", s,hi) end
+  if hi ==  the.all.inf then return l.fmt("%s > %g",  s,lo) end
+  if lo ==  hi          then return l.fmt("%s == %s", s,lo) end
+  return l.fmt("%g < %s <= %g", lo, s, hi) end
 
 function BIN:selects(rows,     u,lo,hi,x)
   u,lo,hi = {}, self.x.lo, self.y.hi
@@ -239,10 +265,11 @@ function SYM:bins(rows,y,_,     t,x) --> array[bin] ; proposes one split per sym
 
 function NUM:bins(rows,y,xepsilon,yepsilon) --> nil | [bin1,bin2] ;get binary split of numerics
   local function x(row) return row[self.pos] end
+  local function q(z)  return z=="?" and -the.all.inf or z end
   local ys,right0 = {},NUM:new()
-  for i,r in pairs(rows) do ys[i] = right:add(y(r)) end
+  for i,r in pairs(rows) do ys[i] = right0:add(y(r)) end
   return self:num1(l.sort(rows,function(a,b) return q(x(a)) < q(x(b)) end),
-                   function x(row) return row[self.pos] end,y, 
+                   function(row) return row[self.pos] end,y,
                    BIN:new(self.name,self.pos), right0,
                    xepsilon, yepsilon, self:div(), #rows) end
 
@@ -259,8 +286,8 @@ function NUM:bins1(rows,x,y,left0,right0,xepsilon,yepsilon,min,got,ys,       lef
               local tmp = (left0.y.n*left0.y:div() + right0.n*right0:div()) / got
               if tmp < min then 
                 min,left,right = tmp, l.copy(left0), l.copy(right0) end end end end end end end 
-  left.lo = -the.inf
-  if left then return {left,BIN:new(self.name,self.pos, left.hi,the.inf,right)} end end
+  left.lo = -the.all.inf
+  if left then return {left,BIN:new(self.name,self.pos, left.hi,the.all.inf,right)} end end
 
 --      _|_  ._   _    _  
 --       |_  |   (/_  (/_ 
@@ -272,7 +299,7 @@ function TREE:new(here,lvl,s,n,lo,hi,mu)
                      mu=mu or 0, here=here, _kids={}})  end
 
 function TREE:__tostring() 
-  return fmt("%.2f\t%5s\t%s%s", self.mu, #self.here.rows, 
+  return l.fmt("%.2f\t%5s\t%s%s", self.mu, #self.here.rows, 
                        ("|.. "):rep(self.lvl-1), self.lvl==0 and "" or self.bin) end
 
 function TREE:visit(fun) 
@@ -292,7 +319,7 @@ function DATA:tree(     _grow)
   return _grow(self.rows,(#self.rows)^0.5,0) end
 
 function DATA:splitter(      lo,w,n,out,tmp)
-  lo = the.inf
+  lo = the.all.inf
   for _,col in pairs(self.cols.x) do
     w,n,tmp,out = 0,0,{},out or col
     for _,bin in pairs(col.bins) do w=w+bin.y.n*bin.y:div(); n=n+bin.y.n; l.push(tmp,bin) end
@@ -311,24 +338,5 @@ local function _bestBins(bins,      most,best,n,xpect)
   best.best=true
   return bins, xpect/n end
 
--- ## eg
-local eg={}
-eg["-h"] = function(_) print("lua x2.lua --[aa|bb] [FILE.csv]") end
-
-eg["--train"] = function(train,     d) 
-  d=DATA:new():read(train or the.train) 
-  l.oo(d.cols.x[2]) end
-
-eg["--sort"] = function(train)
-  for i,row in pairs(DATA:new():read(train or the.train):sort().rows) do 
-    if i==1 or i%25==0 then print(i, l.o(row)) end end end 
-
-eg["--bins"] = function(train,    d)
-  d = DATA:new():read(train or the.train)
-  l.oo(d)
-  d:bins() end
-
--- ## Start up
-if arg[1]=="x2" then eg[arg[2] or "-h"](l.coerce(arg[3])) end
-
-return {NUM=NUM, SYM=SYM, DATA=DATA, TREE=TREE, BIN=BIN, lib=l}
+-- ---------------------------------------------------------------------------------------
+return EG.main{NUM=NUM, SYM=SYM, DATA=DATA, TREE=TREE, BIN=BIN, lib=l}
