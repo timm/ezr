@@ -1,3 +1,59 @@
+footer: © The Deckset Team
+slidenumbers: true
+
+# Deckset in Education
+
+----
+[.autoscale: false]
+# code
+
+[.column]
+Asdas
+Dasd
+As dads
+
+[.column] 
+```lua
+function DATA:add(row) --> nil
+  l.push(self.rows,row)
+  for _,col in pairs(self.cols.all) do 
+    if row[col.pos]~="?" then col:add(row[col.pos]) end end end 
+
+function SYM:add(z) --> x
+  if z ~="?" then 
+     self.n=self.n + 1
+     self.has[z]=(self.has[z] or 0)+1 end
+  return x end
+
+function SYM:sub(z) --> x
+  if x ~="?" then 
+     self.n=self.n - 1
+     self.has[z]=self.has[z] - 1 end
+  return x end
+
+function NUM:add(n,      d) --> n
+  if n ~= "?" then self.n  = self.n + 1
+                   d       = n - self.mu
+                   self.mu = self.mu + d/self.n
+                   self.m2 = self.m2 + d * (n-self.mu)
+                   if     n > self.hi then self.hi = n 
+                   elseif n < self.lo then self.lo = n end end
+  return n end
+
+function NUM:sub(n,     d) --> n
+  if n ~= "?" then self.n  = self.n - 1
+                   d       = n - self.mu
+                   self.mu = self.mu - d/self.n
+                   self.m2 = self.m2 - d*(n - self.mu) end
+  return n end
+
+```
+---
+
+
+## Preparing slides for your class doesn’t have to be an endless chore.
+## Here are a few Deckset features that will help you get the most out of your slides.
+
 coding101
 - tim's zeroth rule: LLMs wont replace programmers
 - how to use the code . knn (simplest)

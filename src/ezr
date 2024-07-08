@@ -87,32 +87,33 @@ function l.copy(t,  u)
 function l.new(dmeta,d) --> instance ;(a) create 1 instance; (b) enable class polymorphism
   dmeta.__index=dmeta; setmetatable(d,dmeta); return d end
 
-local EG={groups={}}
-function EG.add(sGroup,sFlag, sHelp, fun)  --> nil
-    EG.groups[sGroup] = EG.groups[sGroup] or {}
-    l.push(EG.groups[sGroup], {flag=sFlag, help= sHelp, fun=fun}) end
+function l.keys(t,    n,u)
+  u={}; for k,_ in pairs(t) do l.push(u,k) end;
+  n,u=0,l.sort(u)
+  return function () 
+    if n < #u then n=n+1; return u[n], t[u[n]] end end end  
+      
+local eg={all={}}
 
-function EG.main(out,      fails,trios)
-  fails = 0
-  trios=EG.groups["all"]
+function l.main(out,      fails,here)
+  fails,here = 0,"all"
   for n,s in pairs(arg) do
-    trios = EG.groups[s] or trios
-    for _,trio in pairs(trios) do
-      if trio.flag:find("^"..s) then 
-        fails = fails + (trio.fun(l.coerce(arg[n+1])) == false and 1 or 0) end end end 
+    here = eg[s] and s or here
+    for help,fun in pairs(eg[here]) do
+      if help:find(s.." ") then 
+        fails = fails + (fun(l.coerce(arg[n+1])) == false and 1 or 0) end end end 
   return fails > 0 and os.exit(fails) or out end
 
 -- --------------------------------------------------------------------------------------
-EG.add("all", "-h", "show help", function(_) 
+eg.all["-h                 show help"]= function(_)
   print(l.fmt("\n%s\n(c) %s %s %s",
               the.about.what, the.about.when, the.about.who, the.about.license))
-  print("\nUSAGE: ezr [group] [--flag] [ARG]\n\nOPTIONS:")
-  t={}; for s,_ in pairs(EG.groups) do l.push(t,s) end
-  for _,s in pairs(l.sort(t)) do
-    pre = l.fmt("ezr %s",s=="all" and "" or s)
-    for _,trios in pairs(EG.groups[s]) do
-      l.printf("  %-10s %-15s %s",pre,trios.flag, trios.help)
-      pre="" end end end)
+  print("\nUSAGE: ezr [group] [--flag] [ARG]\n\nCOMMANDS:")
+  for here,_ in l.keys(eg) do
+    pre = l.fmt("ezr %s", here=="all" and "" or here)
+    for help,_ in l.keys(eg[here]) do
+      l.printf("  %-10s %s",pre,help)
+      pre="" end end end
 
 --       _|   _.  _|_   _. 
 --      (_|  (_|   |_  (_| 
@@ -210,22 +211,24 @@ function DATA:chebyshevs(rows,    n) --> number ; mean chebyshev
   for _,r in pairs(rows or self.rows) do n:add(self:chebyshev(r)) end; return n end
 
 -- ---------------------------------------------------------------------------------------
-EG.add("all", "--copy", "testing deep copy", function(_,     n1,n2,n3) 
+eg.all[ "--copy             testing deep copy"] = function(_,     n1,n2,n3) 
   n1,n2 = NUM:new(),NUM:new()
   for i=1,100 do n2:add(n1:add(l.rand()^2)) end
   n3 = l.copy(n2)
   for i=1,100 do n3:add(n2:add(n1:add(l.rand()^2))) end
   for k,v in pairs(n3) do if k ~="_id" then ; assert(v == n2[k] and v == n1[k]) end end
   n3:add(0.5)
-  assert(n2.mu ~= n3.mu) end)
+  assert(n2.mu ~= n3.mu) end
 
-EG.add("data", "--train ?file", "read in  csv data", function(train,     d) 
-  d=DATA:new():read(train or the.all.train) 
-  l.oo(d.cols.x[2]) end)
+eg.data={}
 
-EG.add("data", "--sort", "read and sort data", function(train)
+eg.data["--train [?file]    read in  csv data"] = function(train,     d) 
+  d = DATA:new():read(train or the.all.train) 
+  l.oo(d.cols.x[2]) end
+
+eg.data["--sort             read and sort data"] = function(train)
   for i,row in pairs(DATA:new():read(train or the.all.train):sort().rows) do 
-    if i==1 or i%25==0 then print(i, l.o(row)) end end end)
+    if i==1 or i%25==0 then print(i, l.o(row)) end end end
 
 --       _|  o   _   _  ._   _   _|_  o  _    _  
 --      (_|  |  _>  (_  |   (/_   |_  |  /_  (/_ 
@@ -339,4 +342,4 @@ local function _bestBins(bins,      most,best,n,xpect)
   return bins, xpect/n end
 
 -- ---------------------------------------------------------------------------------------
-return EG.main{NUM=NUM, SYM=SYM, DATA=DATA, TREE=TREE, BIN=BIN, lib=l}
+return l.main{NUM=NUM, SYM=SYM, DATA=DATA, TREE=TREE, BIN=BIN, lib=l}
