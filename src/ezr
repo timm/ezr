@@ -100,19 +100,20 @@ function l.main(out,      fails,here)
   for n,s in pairs(arg) do
     here = eg[s] and s or here
     for help,fun in pairs(eg[here]) do
-      if help:find(s.." ") then 
+      if help:find("^("..s.."):") then 
         fails = fails + (fun(l.coerce(arg[n+1])) == false and 1 or 0) end end end 
   return fails > 0 and os.exit(fails) or out end
 
 -- --------------------------------------------------------------------------------------
-eg.all["-h                 show help"]= function(_)
+eg.all["-h:show help"]= function(_,     pre,left,right)
   print(l.fmt("\n%s\n(c) %s %s %s",
               the.about.what, the.about.when, the.about.who, the.about.license))
   print("\nUSAGE: ezr [group] [--flag] [ARG]\n\nCOMMANDS:")
   for here,_ in l.keys(eg) do
     pre = l.fmt("ezr %s", here=="all" and "" or here)
     for help,_ in l.keys(eg[here]) do
-      l.printf("  %-10s %s",pre,help)
+      left, right = help:match("^(.-):(.*)$")
+      l.printf("  %-10s %s %s",pre,left,right)
       pre="" end end end
 
 --       _|   _.  _|_   _. 
@@ -211,7 +212,7 @@ function DATA:chebyshevs(rows,    n) --> number ; mean chebyshev
   for _,r in pairs(rows or self.rows) do n:add(self:chebyshev(r)) end; return n end
 
 -- ---------------------------------------------------------------------------------------
-eg.all[ "--copy             testing deep copy"] = function(_,     n1,n2,n3) 
+eg.all[ "--copy:testing deep copy"] = function(_,     n1,n2,n3) 
   n1,n2 = NUM:new(),NUM:new()
   for i=1,100 do n2:add(n1:add(l.rand()^2)) end
   n3 = l.copy(n2)
@@ -222,11 +223,11 @@ eg.all[ "--copy             testing deep copy"] = function(_,     n1,n2,n3)
 
 eg.data={}
 
-eg.data["--train [?file]    read in  csv data"] = function(train,     d) 
+eg.data["--train [?file]:read in  csv data"] = function(train,     d) 
   d = DATA:new():read(train or the.all.train) 
   l.oo(d.cols.x[2]) end
 
-eg.data["--sort             read and sort data"] = function(train)
+eg.data["--sort:read and sort data"] = function(train)
   for i,row in pairs(DATA:new():read(train or the.all.train):sort().rows) do 
     if i==1 or i%25==0 then print(i, l.o(row)) end end end
 
