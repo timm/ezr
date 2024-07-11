@@ -32,6 +32,7 @@ coal-face scripting
   - big example: delta debugging, shaperio,code repair
 - dependancies
   - make
+    - the cult of no recrusve makes  
   - autobuild
   - big example: GH workflows
 - decomposition / composition
