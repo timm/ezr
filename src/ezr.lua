@@ -4,7 +4,7 @@
 --       ___    ____   _ __ 
 --      / _ \  |_  /  | '__|
 --     |  __/   / /   | |   
---      \___|  /___|  |_|    (easier AI)
+--      \___|  /___|  |_|    AI
 
 --                      _         
 --       _   _   ._   _|_  o   _  
@@ -93,7 +93,8 @@ function l.keys(t,    n,u)
   return function () 
     if n < #u then n=n+1; return u[n], t[u[n]] end end end  
       
-local eg={all={}}
+
+local eg={}
 
 function l.main(out,      fails,here)
   fails,here = 0,"all"
@@ -105,6 +106,8 @@ function l.main(out,      fails,here)
   return fails > 0 and os.exit(fails) or out end
 
 -- --------------------------------------------------------------------------------------
+eg.all = {}
+
 eg.all["-h:show help"]= function(_,     pre,left,right)
   print(l.fmt("\n%s\n(c) %s %s %s",
               the.about.what, the.about.when, the.about.who, the.about.license))
@@ -120,7 +123,7 @@ eg.all["-h:show help"]= function(_,     pre,left,right)
 --      (_|  (_|   |_  (_| 
 --                         
 
-local SYM,NUM,COLS,DATA = {},{},{},{}
+local SYM,NUM,_COLS,DATA = {},{},{},{}
 
 function SYM:new(s,n) --> sym
   return l.new(SYM,{name=s,pos=n,n=0,has={}}) end
@@ -128,11 +131,11 @@ function SYM:new(s,n) --> sym
 function NUM:new(s,n) --> num
   return l.new(NUM,{name=s,pos=n,n=0,w=0,mu=0,m2=0, lo=the.all.inf, hi=-the.all.inf}) end
 
-function COLS:new() --> cols
-  return l.new(COLS,{all={}, x={}, y={}, names=""}) end
+function _COLS:new() --> cols
+  return l.new(_COLS,{all={}, x={}, y={}, names=""}) end
 
 function DATA:new() --> data
-  return l.new(DATA,{rows={}, cols=COLS:new()}) end
+  return l.new(DATA,{rows={}, cols=_COLS:new()}) end
 
 -- ## Create
 function DATA:read(sFile) --> data
@@ -279,14 +282,18 @@ function NUM:bins(rows,y,xepsilon,yepsilon) --> nil | [bin1,bin2] ;get binary sp
 
 
 function NUM:bins1(rows,x,y,left0,right0,xepsilon,yepsilon,min,got,ys,       left,right)
+  y0,x0 = ys[1], x(rows[1])
+  yn,xn = ys[#rows], x(rows[#rows]) 
   for i,row in pairs(rows) do
     if x(row) == "?" then got = got - 1 else
       left0:add(x(row), ys[i])
       right0:sub(ys[i])
-      if left0.y.n >= got^0.5 and right0.n >= got^0.5 then
-        if x(row) ~= x(rows[i+1]) then
-          if abs(left.y:mid() - right:mid()) > yepsilon then
-            if left.hi - left.lo > xepsilon and x(rows[#rows]) - left.hi >= xepsilon then
+      if left0.y.n >= got^0.5 and right0.n >= got^0.5 then -- enough items
+        if x(row) ~= x(rows[i+1]) then -- there is a break
+          x1,x2,x3 = x(row) - x0, left0.hi - left0.lo,  xn - x(row) -- is there anything about the size of the break?
+          y1,y2,y3 = ys[i] - y0, right0.hi - right0.lo, yn - ys[i]  -- 
+          if abs(left0.y:mid() - right0:mid()) > yepsilon then -- enough y separation
+            if left0.lo - x(rows[1]) >= xepsilon and left0.hi - left0.lo > xepsilon and x(rows[#rows]) - left0.hi >= xepsilon then
               local tmp = (left0.y.n*left0.y:div() + right0.n*right0:div()) / got
               if tmp < min then 
                 min,left,right = tmp, l.copy(left0), l.copy(right0) end end end end end end end 

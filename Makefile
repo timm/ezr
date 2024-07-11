@@ -26,7 +26,7 @@ push    : ## save
 	luac -p $@
 
 
-~/tmp/ezr.pdf: ezr  ## .lua ==> .pdf
+~/tmp/%.pdf: %.lua  ## .lua ==> .pdf
 	mkdir -p ~/tmp
 	echo "pdf-ing $@ ... "
 	a2ps                 \
