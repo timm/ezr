@@ -64,7 +64,14 @@ SE theory
     "Writing code without tests is like driving a car with your eyes closed."
 - types.strongly typed languages. haskell. rust.
 
-
+- something about scale. e.g. jenkins
+   -  config in xml build scropt ==> ant script ==> tests
+   -  tempaltes for build . make make
+   -  create 300 jenkins jobs in 30 seconds
+- crontab:
+- cloud
+  - containers. docker. docker compse.
+  - serverless
 -----
 
 From here down, probably a second grad class on ?knowledge engineering.
