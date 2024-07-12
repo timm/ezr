@@ -72,6 +72,8 @@ SE theory
 - cloud
   - containers. docker. docker compse.
   - serverless
+- make expanded into maven/gradle/ build supprot tools.
+ 
 -----
 
 self critique: LLM is written by google and they check it. right? no!
