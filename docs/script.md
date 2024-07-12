@@ -74,6 +74,8 @@ SE theory
   - serverless
 -----
 
+self critique: LLM is written by google and they check it. right? no!
+
 From here down, probably a second grad class on ?knowledge engineering.
 
 Maths
