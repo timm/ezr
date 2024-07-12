@@ -6,6 +6,7 @@
 - how to use the code . knn (simplest)
   - shebang, vim settings
   - Githib, branching, merging, readme, license, .gitignore
+     - action ci/cd  
   - docs/index.md (from README.md)
     - proj1: folrk issues. milestones. doc
   - bob's rule (5 lines)
