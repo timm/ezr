@@ -25,23 +25,24 @@ push    : ## save
 			                   { print (code ? "" : "-- ") $$0 }' $^ > $@
 	luac -p $@
 
-
+                --right-footer="%s. of %s#"               \
+	
 ~/tmp/%.pdf: %.lua  ## .lua ==> .pdf
 	mkdir -p ~/tmp
 	echo "pdf-ing $@ ... "
 	a2ps                 \
 		-Br                 \
-		-l 100                 \
+--lines-per-page=100 \
 		--file-align=fill      \
 		--line-numbers=1        \
 		--pro=color               \
 		--left-title=""            \
 		--borders=no             \
 		--pretty-print="$(Top)/etc/lua.ssh" \
-		--columns 3                  \
+		--left-footer="$<"            \
+	  --right-footer="%s. of %s#"               \
+		--columns 2                  \
 		-M letter                     \
-		--footer=""                    \
-		--right-footer=""               \
 	  -o	 $@.ps $<
 	ps2pdf $@.ps $@; rm $@.ps
 	open $@
