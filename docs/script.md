@@ -5,7 +5,7 @@
 - tim's zeroth rule: LLMs wont replace programmers
 - how to use the code . knn (simplest)
   - shebang, vim settings
-  - Githib, readme, license, .gitignore
+  - Githib, branching, merging, readme, license, .gitignore
   - docs/index.md (from README.md)
     - proj1: folrk issues. milestones. doc
   - bob's rule (5 lines)
@@ -47,7 +47,11 @@ coal-face scripting
   - self-documenting code (my scripts, make with help file)
   - type hints
   - big example: rust
-- abstraction
+- testing
+  - ziztler's papers on differnt debugging
+  - fuzzing
+  - sharperio's debbuging 
+- - abstraction
   - separate mechanism from policy (my data little language)
   - iterators, try catch
   - functional programming
@@ -58,6 +62,7 @@ SE theory
     - "If debugging is the process of removing bugs, then programming must be the process of putting them in."
     "Writing code without tests is like driving a car with your eyes closed."
 - types.strongly typed languages. haskell. rust.
+
 
 -----
 
