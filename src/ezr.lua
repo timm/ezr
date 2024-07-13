@@ -129,6 +129,30 @@ function SYM:div(   e,N)  --> number ; returns entropy
 
 function NUM:norm(x) --> x | 0..1
   return x=="?" and x or (x-self.lo)/(self.hi-self.lo + 1/the.all.inf) end
+-- ---------------------------------------------------------------------------------------
+
+eg.col={}
+eg.col["--sym:test symbol"] = function(_,s)
+  s=SYM.new()
+  for _,x in pairs{"a", "a", "a", "a", "b","b","c"} do s:add(x) end
+  assert("a" ==  s:mid())
+  assert(1.37 < s:div() and s:div() < 1.38) end
+
+eg.col["--num:test num"] = function(_,n)
+  n=NUM.new()
+  for i=1,100 do n:add(i^0.5) end
+  assert(6.71 < n:mid() and n:mid() < 6.72)
+  assert(2.33 < n:div() and n:div() < 2.34) end
+
+eg.col["--inc:test inc"] = function(_,n,sd,mu)
+  math.randomseed(1)
+  n=NUM.new()
+  sd,mu = {},{}
+  for i=1,100 do n:add(i^0.5); sd[i]=n:div(); mu[i]=n:mid(); end
+  for i=100,2,-1 do 
+    n:sub(i^0.5)
+    assert( l.rnd(n:mid(),8) == l.rnd(mu[i-1],8))
+    assert( l.rnd(n:div(),8) == l.rnd(sd[i-1],8)) end end
 
 -- ## Data
 local DATA={}
@@ -144,9 +168,9 @@ function DATA:head(row,    col) --> nil
   for pos,name in pairs(row) do 
     if not name:find"X$" then 
       col = l.push(self.cols.all, (name:find"^[A-Z]" and NUM or SYM):new(name,pos)) 
-      if     name:find"-$" then col.w=0; l.push(self.y, col) 
-      elseif name:find"+$" then col.w=1; l.push(self.y, col) 
-      else   l.push(self.x, col) end end end end
+      if     name:find"-$" then col.w=0; l.push(self.cols.y, col) 
+      elseif name:find"+$" then col.w=1; l.push(self.cols.y, col) 
+      else   l.push(self.cols.x, col) end end end end
 
 function DATA:clone(  rows,    data)  --> data ; new data has same structure as self
   data = DATA:new():head(self.cols.names) 
@@ -173,7 +197,11 @@ function DATA:chebyshevs(rows,    n) --> number ; mean chebyshev
 -- ---------------------------------------------------------------------------------------
 eg.data={}
 
-eg.data["--train [?file]:read in  csv data"] = function(train,     d) 
+eg.data["--csv:[?file] print csv rows"] = function(train,     d) 
+  for i,row in l.csv(train or the.all.train) do 
+    if i==1 or i%25==0 then print(i, l.o(row)) end end end
+
+eg.data["--train:[?file] read in  csv data"] = function(train,     d) 
   d = DATA:new():read(train or the.all.train) 
   l.oo(d.cols.x[2]) end
 
@@ -224,7 +252,6 @@ function NUM:bins(rows,y,xepsilon,yepsilon) --> nil | [bin1,bin2] ;get binary sp
                    function(row) return row[self.pos] end,y,
                    BIN:new(self.name,self.pos), right0,
                    xepsilon, yepsilon, self:div(), #rows) end
-
 
 function NUM:bins1(rows,x,y,left0,right0,xepsilon,yepsilon,min,got,ys,       left,right)
   y0,x0 = ys[1], x(rows[1])
@@ -293,6 +320,10 @@ local function _bestBins(bins,      most,best,n,xpect)
   return bins, xpect/n end
 
 -- ## Lib
+function l.rnd(n, nPlaces)
+  local mult = 10^(nPlaces or 2)
+    return math.floor(n * mult + 0.5) / mult end
+
 function l.rand(...) --> n
   return math.random(...) end
 
@@ -360,11 +391,10 @@ function l.main(out,      fails,here)
   for n,s in pairs(arg) do
     here = eg[s] and s or here
     for help,fun in pairs(eg[here]) do
-      print(n,s,here,help)
       if help:find("^("..s.."):") then 
         fails = fails + (fun(l.coerce(arg[n+1])) == false and 1 or 0) end end end 
   return fails > 0 and os.exit(fails) or out end
-
+-- ---------------------------------------------------------------------------------------
 eg.all[ "--copy:testing deep copy"] = function(_,     n1,n2,n3) 
   n1,n2 = NUM:new(),NUM:new()
   for i=1,100 do n2:add(n1:add(l.rand()^2)) end

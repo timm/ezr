@@ -32,7 +32,7 @@ push    : ## save
 	echo "pdf-ing $@ ... "
 	a2ps                 \
 		-Br                 \
---lines-per-page=100 \
+		--lines-per-page=100 \
 		--file-align=fill      \
 		--line-numbers=1        \
 		--pro=color               \
