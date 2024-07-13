@@ -39,8 +39,8 @@ push    : ## save
 		--left-title=""            \
 		--borders=no             \
 		--pretty-print="$(Top)/etc/lua.ssh" \
-		--left-footer="$<"            \
-	  --right-footer="%s. of %s#"               \
+	    --left-footer="$<  "               \
+	    --right-footer="page %s. of %s#"               \
 		--columns 2                  \
 		-M letter                     \
 	  -o	 $@.ps $<

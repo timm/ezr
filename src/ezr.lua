@@ -12,7 +12,8 @@
           train = "../data/misc/auto93.csv", -- training data    
           fmt   = "%g",
           cohen = -.35},
-  bins = {bins=17}}          
+  bins = {enough=0.5,
+          epsilon=0.35}}          
 
 local l,eg = {},{all={}}
 local abs,log, max, min = math.abs, math.log, math.max, math.min
@@ -88,7 +89,7 @@ local SYM,NUM = {},{}
 function SYM:new(s,n) --> sym
   return l.new(SYM,{name=s,pos=n,n=0,has={}}) end
 
-function NUM:new(s,n) --> num
+function NUM:new(s,n) --> NUM
   return l.new(NUM,{name=s,pos=n,n=0,w=0,mu=0,m2=0, lo=the.all.inf, hi=-the.all.inf}) end
 
 function SYM:add(z) --> x
@@ -98,12 +99,12 @@ function SYM:sub(z) --> x
   if z ~="?" then self.n=self.n - 1; self.has[z]=self.has[z] - 1 end end
 
 function NUM:add(n,      d) --> n
-  if n ~= "?" then self.n  = self.n + 1
+  if n ~= "?" then self.n  = self.n + 1 --     -      -      -      -      -      -   [1]
                    d       = n - self.mu
                    self.mu = self.mu + d/self.n
                    self.m2 = self.m2 + d * (n-self.mu)
                    if     n > self.hi then self.hi = n 
-                   elseif n < self.lo then self.lo = n end end
+                   elseif n < self.lo then self.lo = n end end 
   return n end
 
 function NUM:sub(n,     d) --> n
@@ -129,28 +130,36 @@ function SYM:div(   e,N)  --> number ; returns entropy
 
 function NUM:norm(x) --> x | 0..1
   return x=="?" and x or (x-self.lo)/(self.hi-self.lo + 1/the.all.inf) end
--- ---------------------------------------------------------------------------------------
 
+function NUM.xpect(num1,num2)  --> NUM
+  return (num1.n*num1:div() + num2.n*num2:div()) / (num1.n + num2.n) end
+
+function NUM:clone() return NUM:new(self.name,self.pos) end
+
+function NUM.similar(num1,num2,enough,epsilon)
+   return num1.n < enough or num2.n < enough or abs(num1:mid() - num2:mid()) < epsilon end
+
+-- ---------------------------------------------------------------------------------------
 eg.col={}
 eg.col["--sym:test symbol"] = function(_,s)
-  s=SYM.new()
+  s=SYM:new()
   for _,x in pairs{"a", "a", "a", "a", "b","b","c"} do s:add(x) end
   assert("a" ==  s:mid())
   assert(1.37 < s:div() and s:div() < 1.38) end
 
 eg.col["--num:test num"] = function(_,n)
-  n=NUM.new()
+  n=NUM:new()
   for i=1,100 do n:add(i^0.5) end
   assert(6.71 < n:mid() and n:mid() < 6.72)
   assert(2.33 < n:div() and n:div() < 2.34) end
 
-eg.col["--inc:test inc"] = function(_,n,sd,mu)
+eg.col["--sub:test removing things from a NUM"] = function(_,n,sd,mu)
   math.randomseed(1)
-  n=NUM.new()
+  n=NUM:new()
   sd,mu = {},{}
   for i=1,100 do n:add(i^0.5); sd[i]=n:div(); mu[i]=n:mid(); end
-  for i=100,2,-1 do 
-    n:sub(i^0.5)
+  for i=100,2,-1 do
+    n:sub(i^0.5);  
     assert( l.rnd(n:mid(),8) == l.rnd(mu[i-1],8))
     assert( l.rnd(n:div(),8) == l.rnd(sd[i-1],8)) end end
 
@@ -235,7 +244,7 @@ function BIN:selects(rows,     u,lo,hi,x)
     if x=="?" or lo==hi and lo==x or lo < x and x <= hi then l.push(u,r) end end
   return u end
 
-function SYM:bins(rows,y,_,     t,x) --> array[bin] ; proposes one split per symbol value
+function SYM:bins(rows,y,_,_,     t,x) --> array[bin] ; proposes one split per symbol value
   t = {}
   for row in pairs(rows) do
     x = row[self.pos]
@@ -243,34 +252,41 @@ function SYM:bins(rows,y,_,     t,x) --> array[bin] ; proposes one split per sym
                      t[x]:add(x, y(row)) end end
   return t end
 
-function NUM:bins(rows,y,xepsilon,yepsilon) --> nil | [bin1,bin2] ;get binary split of numerics
-  local function x(row) return row[self.pos] end
-  local function q(z)  return z=="?" and -the.all.inf or z end
-  local ys,right0 = {},NUM:new()
-  for i,r in pairs(rows) do ys[i] = right0:add(y(r)) end
-  return self:num1(l.sort(rows,function(a,b) return q(x(a)) < q(x(b)) end),
-                   function(row) return row[self.pos] end,y,
-                   BIN:new(self.name,self.pos), right0,
-                   xepsilon, yepsilon, self:div(), #rows) end
-
-function NUM:bins1(rows,x,y,left0,right0,xepsilon,yepsilon,min,got,ys,       left,right)
-  y0,x0 = ys[1], x(rows[1])
-  yn,xn = ys[#rows], x(rows[#rows]) 
-  for i,row in pairs(rows) do
-    if x(row) == "?" then got = got - 1 else
-      left0:add(x(row), ys[i])
-      right0:sub(ys[i])
-      if left0.y.n >= got^0.5 and right0.n >= got^0.5 then -- enough items
-        if x(row) ~= x(rows[i+1]) then -- there is a break
-          x1,x2,x3 = x(row) - x0, left0.hi - left0.lo,  xn - x(row) -- is there anything about the size of the break?
-          y1,y2,y3 = ys[i] - y0, right0.hi - right0.lo, yn - ys[i]  -- 
-          if abs(left0.y:mid() - right0:mid()) > yepsilon then -- enough y separation
-            if left0.lo - x(rows[1]) >= xepsilon and left0.hi - left0.lo > xepsilon and x(rows[#rows]) - left0.hi >= xepsilon then
-              local tmp = (left0.y.n*left0.y:div() + right0.n*right0:div()) / got
-              if tmp < min then 
-                min,left,right = tmp, l.copy(left0), l.copy(right0) end end end end end end end 
-  left.lo = -the.all.inf
-  if left then return {left,BIN:new(self.name,self.pos, left.hi,the.all.inf,right)} end end
+function NUM:bins(rows,y,  enough,epsilon,       x,now,out,changed)
+  local x,q,new,similar,now,out
+  function x(row) return row[self.pos] end
+  function q(row)  return x(row)=="?" and -1E32 or x(row) end
+  rows = l.sort(rows, function(a,b) return q(a) < q(b) end)
+  now = {y = {lo=self:clone(), hi=self:clone()},
+         x = {lo=self:clone(), hi=self:clone()}}
+  for i,row in pairs(rows) do 
+    if x(row) ~= "?" then  now.x.hi:add( x(row)); now.y.hi:add( y(row)) end end
+  enough = now.x.hi.n^enough
+  epsilon = now.x.hi:div()^epsilon
+  out = l.copy(now)
+  out.ydiv = now.y.hi:div()
+  for i,row in pairs(rows) do 
+    if x(row) ~= "?" then
+      now.x.lo:add( now.x.hi:sub( x(row)))
+      now.y.lo:add( now.y.hi:sub( y(row)))
+      if not now.x.lo:similar(now.x.hi, enough,epsilon) then
+        if x(row) ~= x(rows[i+1]) then      
+          if now.y.lo:xpect(now.y.hi) < out.ydiv then
+            changed = true
+            out = l.copy(now)
+            out.ydiv = now.y.lo:xpect(now.y.hi) end end end end end 
+  if changed then
+    return { BIN:new(self.name, self.pos, -the.all.inf, out.x.hi.lo, out.y.lo),
+             BIN:new(self.name, self.pos, out.x.hi.lo,  the.all.inf, out.y.hi) } end end 
+-- ---------------------------------------------------------------------------------------
+eg.bins={}
+eg.bins["--bins:[?file] read in  csv data"] = function(train,     d)
+  d = DATA:new():read(train or the.all.train)
+  print(d.cols.y[1].name)
+  l.oo(d.cols.y[1]:bins(d.rows,
+                         function(row) return d:chebyshev(row) end,
+                         the.bins.enough, the.bins.epsilon)) 
+  end
 
 -- ## Tree
 local TREE={}
