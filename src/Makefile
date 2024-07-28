@@ -23,7 +23,7 @@ bins:
 
 ~/tmp/%.html : %.py
 	mkdir -p ~/tmp
-	cp ../docs/img/tree.png ~/tmp/tree.png
+	cp ../docs/img/mqs.png ~/tmp/mqs.png
 	gawk 'sub(/^@of."/,"# ") { sub(/\"\)/,"")} 1' $^ > ~/tmp/$^
 	pycco -d ~/tmp ~/tmp/$<
 	echo "h3,p { text-align: right }" >> ~/tmp/pycco.css
