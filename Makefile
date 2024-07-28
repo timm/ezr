@@ -27,6 +27,25 @@ push    : ## save
 
                 --right-footer="%s. of %s#"               \
 	
+~/tmp/%.pdf: %.py  ## .lua ==> .pdf
+	mkdir -p ~/tmp
+	echo "pdf-ing $@ ... "
+	a2ps                 \
+		-Br                 \
+		--chars-per-line=100 \
+		--file-align=fill      \
+		--line-numbers=1        \
+		--pro=color               \
+		--left-title=""            \
+		--borders=no             \
+	    --left-footer="$<  "               \
+	    --right-footer="page %s. of %s#"               \
+		--columns 3                 \
+		-M letter                     \
+	  -o	 $@.ps $<
+	ps2pdf $@.ps $@; rm $@.ps
+	open $@
+
 ~/tmp/%.pdf: %.lua  ## .lua ==> .pdf
 	mkdir -p ~/tmp
 	echo "pdf-ing $@ ... "
