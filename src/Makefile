@@ -21,15 +21,18 @@ bins:
      ./sandbox.lua --bins $$f  \
      | gawk 'BEGIN {FS="\n";RS=""; print""} {n += NF} END {print NR,n/NR}' ; done
 
-~/tmp/%.html : %.lua
+~/tmp/%.html : %.py
 	mkdir -p ~/tmp
 	cp ../docs/img/tree.png ~/tmp/tree.png
-	pycco -d ~/tmp $<
-	echo "h2,p { text-align: right }" >> ~/tmp/pycco.css
-	echo "h2 { border-top: solid 1px black;}" >> ~/tmp/pycco.css
+	gawk 'sub(/^@of."/,"# ") { sub(/\"\)/,"")} 1' $^ > ~/tmp/$^
+	pycco -d ~/tmp ~/tmp/$<
+	echo "h3,p { text-align: right }" >> ~/tmp/pycco.css
+	echo "h2   { border-top: black solid 1px; }" >> ~/tmp/pycco.css
 	open $@
 
 csv=$(wildcard ../data/*/*.csv)
 
 xx:
 		$(foreach f,$(csv), echo "# $f"; lua tree.lua --tree $f;)
+watch:
+		watch './ezr2.py all; date'
