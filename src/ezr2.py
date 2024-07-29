@@ -7,6 +7,7 @@ from typing import Any as any
 from typing import Callable
 from fileinput import FileInput as file_or_stdin
 from dataclasses import dataclass, field, fields
+import datetime
 from typing import Any, List, Dict, Type
 from math import log,cos,sqrt,pi
 import re,sys,random,inspect
@@ -16,6 +17,8 @@ R  = random.random
 # Linus Torvalds:
 # "I’m a huge proponent of designing your code around the data, rather than the other way around....
 # Bad programmers worry about the code. Good programmers worry about data structures and their relationships."
+
+# All programs have magic control options, which we keep the `the` variables.
 @dataclass
 class CONFIG:
   k:int  = 1
@@ -28,6 +31,7 @@ class CONFIG:
 
 the = CONFIG()
 
+# Some misc types..
 def LIST(): return field(default_factory=list)
 def DICT(): return field(default_factory=dict)
 
@@ -37,18 +41,23 @@ row     = list[atom]
 rows    = list[row]
 classes = dict[str,rows] # `str` is the class name
 
-@dataclass
+# NUMs and SYMs are both COLumns. All COLumns count `n` (items seen),
+# `at` (their column number) and `txt` (column name).
+@dataclass  
 class COL:
   n   : int = 0
   at  : int = 0
   txt : str = ""
 
+# SYMs tracks  symbol counts  and tracks the `mode` (the most common frequent symbol).
 @dataclass
 class SYM(COL):
   has  : Dict = DICT()
   mode : atom=None
-  most : int=0
+  most : int=0 
 
+# NUMs tracks  `lo,hi` seen so far, as well the `mu` (mean) and `sd` (standard deviation),
+# using Welford's algorithm.
 @dataclass
 class NUM(COL):
   mu : number =  0
@@ -58,9 +67,12 @@ class NUM(COL):
   hi : number = -1E32
   goal : number = 1
 
+  # A minus sign at end of a NUM's name says "this is a column to minimize"
+  # (all other goals are to be maximizes).
   def __post_init__(self:COLS) -> None:  
     if  self.txt and self.txt[-1] == "-": self.goal=0
 
+# 
 @dataclass
 class COLS:
   names: List   # column names
@@ -68,6 +80,7 @@ class COLS:
   x    : List = LIST()  # independent COLums
   y    : List = LIST()  # depedent COLumns
 
+  # Collect  `all` the COLs as well as the dependent/indepedent `x`,`y` lists.
   def __post_init__(self:COLS) -> None:
     for at,txt in enumerate(self.names):
       a,z = txt[0],txt[-1]
@@ -77,7 +90,7 @@ class COLS:
         (self.y if z in "+-" else self.x).append(col)
         if z=="-": col.goal = 0
 
-@dataclass
+@dataclass  
 class DATA:
   cols : COLS = None         # summaries of rows
   rows : rows = LIST() # rows
@@ -296,13 +309,13 @@ def csv(file) -> row:
 
 # ## Examples
 
-class egs:
+class egs: # sassdddsf
   def all():
    for s in dir(egs):
      if s[0] != "_" and s != "all":
+        print(s)
         random.seed(the.seed)
-        print(f"{s} ",end="",flush=True); getattr(egs,s)()
-   print("")
+        getattr(egs,s)()
 
   def nums():
     r  = 256
