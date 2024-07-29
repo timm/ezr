@@ -10,7 +10,7 @@ from dataclasses import dataclass, field, fields
 import datetime
 from typing import Any, List, Dict, Type
 from math import exp,log,cos,sqrt,pi
-import re,sys,random,inspect
+import re,sys,ast,random,inspect
 R  = random.random
 
 # ## Data Types
@@ -18,14 +18,15 @@ R  = random.random
 # All programs have magic control options, which we keep the `the` variables.
 @dataclass
 class CONFIG:
-  k     : int = 1   # low frequency Bayes hack
-  m     : int = 2   # low frequency Bayes hack
-  cut   : float = 0.5 # borderline best:rest
-  label : int = 4   # initial number of labels
   Last  : int = 30  # max number of labellings
+  cut   : float = 0.5 # borderline best:rest
+  eg    : str = "smo"  #start up action
+  k     : int = 1   # low frequency Bayes hack
+  label : int = 4   # initial number of labels
+  m     : int = 2   # low frequency Bayes hack
   p     : int = 2   # distance formula exponent
   seed  : int = 1234567891 # random number seed
-  train : str = "../data/config/SS-A.csv" # csv file. row1 has column names
+  train : str = "../data/misc/auto93.csv" # csv file. row1 has column names
 
 the = CONFIG()
 
@@ -170,7 +171,7 @@ def update1(self:SYM, x:any) -> any:
 
 @of("Update `mu` and `sd` (and `lo` and `hi`). If `x` is a string, coerce to a number.")
 def update1(self:NUM, x:any) -> number:
-  if isinstance(x,str): x = _coerce(x)
+  if isinstance(x,str): x = coerce(x)
   self.lo  = min(x, self.lo)
   self.hi  = max(x, self.hi)
   d        = x - self.mu
@@ -178,10 +179,6 @@ def update1(self:NUM, x:any) -> number:
   self.m2 += d * (x -  self.mu)
   self.sd  = 0 if self.n <2 else (self.m2/(self.n-1))**.5
   return x
-
-def _coerce(x:str) -> number:
-  try: return float(x)
-  except ValueError: return int(x)
 
 # ## Guessing values
 
@@ -214,7 +211,7 @@ def guess(self:DATA, fun:Callable=None) -> row:
 def exploit(self:COL, other:COL, n=20):
   n       = (self.n + other.n + 2*the.k)
   pr1,pr2 = (self.n + the.k) / n, (other.n + the.k) / n
-  key     = lambda x: self.like(x,pr1) - other.like(x,pr2)
+  key     = lambda x: 2*self.like(x,pr1) -  other.like(x,pr2)
   return max([self.guess() for _ in range(n)], key=key)
 
 @of("Guess a row more like `self` than `other`.")
@@ -299,26 +296,21 @@ def like(self:NUM, x:number, _) -> float:
   denom = (2*pi*v) **0.5
   return min(1, nom/(denom + 1E-30))
 
-# this was meant to be a replacement for "_guess" in SMO. but it never seemed to work
-def _mqs(data,todo:rows, done:rows, score:callable) -> rows:
-    cut  = int(.5 + len(done) ** the.cut)
-    best = data.clone(done[:cut])
-    rest = data.clone(done[cut:])
-    random.shuffle(todo) # optimization: only sort a random subset of todo 
-    return data.neighbors(best.explore(rest), todo[:100]) + todo[100:]
-
 @of("active learning")
-def smo(self:DATA, score=lambda B,R: B-R ):
+def smo(self:DATA, score=lambda B,R: B-R, generate=None ):
   def _ranked(rows): return self.clone(rows).chebyshevs().rows
 
   def _guess(todo:rows, done:rows) -> rows:
     cut  = int(.5 + len(done) ** the.cut)
     best = self.clone(done[:cut])
     rest = self.clone(done[cut:])
-    key  = lambda r: score(best.like(r, len(done), 2),
-                           rest.like(r, len(done), 2))
     random.shuffle(todo) # optimization: only sort a random subset of todo 
-    return  sorted(todo[:100], key=key, reverse=True) + todo[100:]
+    some=200
+    if generate:
+      return self.neighbors(generate(best,rest), todo[:some]) + todo[some:]  #[:100]) + todo[100:]
+    else:
+      key  = lambda r: score(best.like(r, len(done), 2), rest.like(r, len(done), 2))
+      return  sorted(todo[:some], key=key, reverse=True) + todo[some:]
 
   def _smo1(todo:rows, done:rows) -> rows:
     for k in range(the.Last - the.label):
@@ -333,13 +325,28 @@ def smo(self:DATA, score=lambda B,R: B-R ):
 
 # ## Utils
 
+def coerce(s:str) -> atom:
+  "Coerces strings to atoms."
+  try: return ast.literal_eval(s)
+  except Exception:  return s
+
 def r2(x): return round(x,2)
 def r3(x): return round(x,3)
+
 def csv(file) -> row:
   with file_or_stdin(None if file=="-" else file) as src:
     for line in src:
       line = re.sub(r'([\n\t\r ]|#.*)', '', line)
       if line: yield [s.strip() for s in line.split(",")]
+
+def cli(d:dict):
+  "For dictionary key `k`, if command line has `-k X`, then `d[k]=coerce(X)`."
+  for k,v in d.items():
+    v = str(v)
+    for c,arg in enumerate(sys.argv):
+      after = sys.argv[c+1] if c < len(sys.argv) - 1 else ""
+      if arg in ["-"+k[0], "--"+k]:
+        d[k] = coerce("False" if v=="True" else ("True" if v=="False" else after))
 
 # ## Examples
 
@@ -365,7 +372,7 @@ class egs: # sassdddsf
     assert abs(n1.mode == n2.mode), "syms mu?"
     assert abs(n1.ent() -  n2.ent()) < 0.05, "syms ent?"
 
-  def _csv():
+  def csvs():
     d = DATA()
     n=0
     for row in csv(the.train): n += len(row)
@@ -375,13 +382,13 @@ class egs: # sassdddsf
     d = DATA().updates(csv(the.train))
     assert d.cols.y[1].n==398,"reads?"
 
-  def likes():
+  def likings():
     d = DATA().updates(csv(the.train)).chebyshevs()
     random.shuffle(d.rows)
     lst = sorted( round(d.like(row,2000,2),2) for row in d.rows[:100])
     print(lst)
 
-  def _chebyshevs():
+  def chebys():
     d = DATA().updates(csv(the.train))
     random.shuffle(d.rows)
     lst = d.chebyshevs().rows
@@ -392,7 +399,7 @@ class egs: # sassdddsf
     assert lgood < lbad, "chebyshev?"
 
 
-  def guess():
+  def guesses():
     d = DATA().updates(csv(the.train))
     random.shuffle(d.rows)
     lst = d.chebyshevs().rows
@@ -406,33 +413,43 @@ class egs: # sassdddsf
     print("explore",dgood.explore(dbad))
     for _ in range(50): print("explore",dbad.explore(dgood))
 
-  def dists():
+  def distances():
     d = DATA().updates(csv(the.train))
     random.shuffle(d.rows)
     lst = sorted( round(d.dist(d.rows[0], row),2) for row in d.rows[:100])
     for x in lst: assert 0 <= x <= 1, "dists1?" 
     assert .33 <= lst[len(lst)//2] <= .66, "dists2?"
 
-  def d2h():
+  def heavensh():
     d = DATA().updates(csv(the.train)).d2hs()
     lst = [row for i,row in enumerate(d.rows) if i % 30 ==0]
     assert d.d2h(d.rows[0]) < d.d2h(d.rows[-1]), "d2h?"
 
-  def clone():
+  def clones():
     d1 = DATA().updates(csv(the.train))
     d2 = d1.clone(d1.rows)
     for a,b in zip(d1.cols.y, d2.cols.y):
       for k,v1 in a.__dict__.items():
         assert v1 == b.__dict__[k],"clone?"
 
-  def d2h():
+  def smos():
+    print("")
+    repeats=20
     d = DATA().updates(csv(the.train))
-    b4 = r2(NUM().updates(d.chebyshev(row) for row in d.rows).mu)
-    print("pool",[b4] + sorted(r2(d.chebyshev(d.smo()[0])) 
-                               for _ in range(20)))
+    b4 = NUM().updates(d.chebyshev(row) for row in d.rows)
+    print(the.train,f"\tbase: {b4.mu:.2f} ({b4.sd:.2f})")
+
+    pool = NUM().updates(d.chebyshev(d.smo()[0]) for _ in range(repeats))
+    print(the.train,f"\tpool: {pool.mu:.2f} ({pool.sd:.2f})")
+
+    generate =lambda best,rest: best.exploit(rest)
+    mqs = NUM().updates(d.chebyshev(d.smo(generate=generate)[0]) for _ in range(repeats))
+    print(the.train,f"\tmqs : {mqs.mu:.2f} ({mqs.sd:.2f})")
+
 
 # ## Start-up
 
 if __name__ == "__main__" and len(sys.argv)> 1:
+  cli(the.__dict__)
   random.seed(the.seed)
-  getattr(egs, sys.argv[1])()
+  getattr(egs, the.eg, lambda : print(f"ezr: [{the.eg}] unknown."))()
