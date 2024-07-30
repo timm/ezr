@@ -18,3 +18,18 @@ all:
 	$(foreach f,$(subst .md,,$(wildcard [A-Z]*.md)),$(MAKE) eg=$f;) ## run all */md files as lua
 
 -include ../Makefile
+
+~/tmp/%.pdf : %.md
+	pandoc  \
+	-V fontsize=10pt \
+	-t beamer  \
+	-V theme:Warsaw \
+	-V "header-includes:\usepackage{xcolor}" \
+	-V "header-includes:\usecolortheme{whale}\definecolor{customred}{HTML}{CC0000}" \
+	-V "header-includes:\setbeamercolor{structure}{fg=customred}" \
+  -V "header-includes:\setbeamercolor{palette primary}{bg=customred, fg=white}" \
+	-V "header-includes:\usepackage{etoolbox}\makeatletter\patchcmd{\@makefntext}{\normalfont}{\footnotesize}{}{}\makeatother" \
+	$< -o $@
+	open $@
+
+

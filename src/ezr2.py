@@ -14,7 +14,6 @@ import re,sys,ast,random,inspect
 from time import time
 import stats
 R  = random.random
-
 # ## Data Types
 
 # All programs have magic control options, which we keep the `the` variables.
@@ -42,8 +41,8 @@ classes = dict[str,rows] # `str` is the class name
 def LIST(): return field(default_factory=list)
 def DICT(): return field(default_factory=dict)
 
-# NUMs and SYMs are both COLumns. All COLumns count `n` (items seen),
-# `at` (their column number) and `txt` (column name).
+# NUMs and SYMs are COLumns. COLumns know  `n` (items seen), 
+# `at` (their column pos) and `txt` (column name).
 @dataclass
 class COL:
   n   : int = 0
@@ -57,8 +56,7 @@ class SYM(COL):
   mode : atom=None
   most : int=0
 
-# NUMs tracks  `lo,hi` seen so far, as well the `mu` (mean) and `sd` (standard deviation),
-# using Welford's algorithm.
+# NUMs tracks  `lo,hi`; `mu` (mean);`sd` (standard deviation) using Welford's algorithm.
 @dataclass
 class NUM(COL):
   mu : number =  0
@@ -68,13 +66,11 @@ class NUM(COL):
   hi : number = -1E32
   goal : number = 1
 
-  # A minus sign at end of a NUM's name says "this is a column to minimize"
-  # (all other goals are to be maximizes).
+  # "+"/"-" at end of name denotes column to maximize/minimize.
   def __post_init__(self:COLS) -> None:  
     if  self.txt and self.txt[-1] == "-": self.goal=0
 
-# COLS are a factory that reads some `names` from the first
-# row , the creates the appropriate columns.
+# COLS are factories that turn  `names` from row1 into the appropriate columns.
 @dataclass
 class COLS:
   names: list[str]   # column names
@@ -362,7 +358,7 @@ def cli(d:dict):
       if arg in ["-"+k[0], "--"+k]:
         d[k] = coerce("False" if v=="True" else ("True" if v=="False" else after))
 
-# ## Examples
+# ## Examples
 
 class egs: # sassdddsf
   def all():
@@ -474,8 +470,7 @@ class egs: # sassdddsf
                   stats.SOME(mqs4,"mqs4"),
                   stats.SOME(mqs1000,"mqs1000")])
 
-
-# ## Start-up
+# ## Start-up
 
 if __name__ == "__main__" and len(sys.argv)> 1:
   cli(the.__dict__)
