@@ -28,7 +28,7 @@ all:
 	-V "header-includes:\usecolortheme{whale}\definecolor{customred}{HTML}{CC0000}" \
 	-V "header-includes:\setbeamercolor{structure}{fg=customred}" \
   -V "header-includes:\setbeamercolor{palette primary}{bg=customred, fg=white}" \
-	-V "header-includes:\usepackage{etoolbox}\makeatletter\patchcmd{\@makefntext}{\normalfont}{\footnotesize}{}{}\makeatother" \
+	-V "header-includes:\usepackage{etoolbox}\makeatletter\patchcmd{\@makefntext}{\normalfont}{\scriptnotesize}{}{}\makeatother" \
 	$< -o $@
 	open $@
 

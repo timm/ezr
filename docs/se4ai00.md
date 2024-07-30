@@ -2,8 +2,25 @@
 % Tim Menzies
 % March 22, 2024
 
+# Changing How we Think About AI
 
-#  Issues with SE 4 AI
+The next slide may change, forever, all you think you know about AI.
+
+# Surfing the long tail
+
+
+- LLMs for specific problems?
+  - LLMs  know a lot, about things we do a lot (e.g.  "if" statements in code)
+  - And they know _less_ about things we do _less_ often
+- Model collapse: 
+  - We are about to run out of training data [^less24] for LLMs.
+  - Can't reply of synthetic data generation (no new information from data already seen)
+- So,  we make do with _less_ data?
+  - Are their domain,  were models need less, not more, data?
+
+[^less24]:  Udandarao, V., Prabhu, A., Ghosh, A., Sharma, Y., Torr, P.H., Bibi, A., Albanie, S. and Bethge, M., 2024.  No" zero-shot" without exponential data: Pretraining concept frequency determines multimodal model performance. arXiv preprint arXiv:2404.04125.
+
+#  Software Review (1)
 
 - The more we use AI in SE, the more code will be auto-generated. 
 - The more we auto-generate code, the less time software engineers 
@@ -14,7 +31,7 @@
 - In this scenario, it becomes very important to reduce the human effort
   and CPU effort required for that tuning.
 
-# Software Review
+# Software Review (2)
 
 - We define “software review” as a panel of SMEs (subject matter experts),
   looking at examples of behavior to recommend how to improve software.
@@ -25,7 +42,8 @@
 - These predictive models work with SMEs to guide them as they explore the examples. Afterwards, the models
   can handle new examples, while the panelists are busy, elsewhere
 
-# How many questions can we ask a human?
+# Q: How few questions can humans answer? A: Not so many
+
 
 What | N
 ----:|-------
@@ -40,12 +58,9 @@ Chessboard model    | 200 examples
 Probable Correctness theory | simpler cases: 50 to 6 (if we can binary chop)<br> safety-critical cases: 272 to 8 (if we can binary chop)<
  
 
-[^zhu16]: Zhu, X., Vondrick, C., Fowlkes, C.C. et al. Do We Need More Training Data?. 
-Int J Comput Vis 119, 76–92 (2016). https://doi-org.prox.lib.ncsu.edu/10.1007/s11263-015-0812-2
+[^zhu16]: Zhu, X., Vondrick, C., Fowlkes, C.C. et al. Do We Need More Training Data?.  Int J Comput Vis 119, 76–92 (2016). https://doi-org.prox.lib.ncsu.edu/10.1007/s11263-015-0812-2
 
-[^Me08]: Menzies, T., Turhan, B., Bener, A., Gay, G., Cukic, B., &
-predictors. In Proceedings of the 4th international workshop on
-Predictor models in software engineering (pp. 47-54).
+[^Me08]: Menzies, T., Turhan, B., Bener, A., Gay, G., Cukic, B.,  PROMISE workshop, 2008, (pp. 47-54).
 
 # Maths: Gasussians
 
