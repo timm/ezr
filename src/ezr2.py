@@ -11,6 +11,8 @@ import datetime
 from typing import Any, List, Dict, Type
 from math import exp,log,cos,sqrt,pi
 import re,sys,ast,random,inspect
+from time import time
+import stats
 R  = random.random
 
 # ## Data Types
@@ -212,12 +214,17 @@ def exploit(self:COL, other:COL, n=20):
   n       = (self.n + other.n + 2*the.k)
   pr1,pr2 = (self.n + the.k) / n, (other.n + the.k) / n
   key     = lambda x: 2*self.like(x,pr1) -  other.like(x,pr2)
-  return max([self.guess() for _ in range(n)], key=key)
+  def trio():
+    x=self.guess()
+    return key(x),self.at,x
+  return max([trio() for _ in range(n)], key=nth(0))
 
 @of("Guess a row more like `self` than `other`.")
-def exploit(self:DATA, other:DATA):
-  out=self.guess()
-  for coli,colj in zip(self.cols.x, other.cols.x): out[coli.at] = coli.exploit(colj)
+def exploit(self:DATA, other:DATA, top=1000):
+  out = ["?" for _ in self.cols.all]
+  for _,at,x in sorted([coli.exploit(colj) for coli,colj in zip(self.cols.x, other.cols.x)],
+                       reverse=True,key=nth(0))[:top]:
+     out[at] = x
   return out
 
 @of("Guess a row in between the rows of `self` and `other`.")
@@ -307,7 +314,7 @@ def smo(self:DATA, score=lambda B,R: B-R, generate=None ):
     random.shuffle(todo) # optimization: only sort a random subset of todo 
     some=200
     if generate:
-      return self.neighbors(generate(best,rest), todo[:some]) + todo[some:]  #[:100]) + todo[100:]
+      return self.neighbors(generate(best,rest), todo[:some]) + todo[some:]  
     else:
       key  = lambda r: score(best.like(r, len(done), 2), rest.like(r, len(done), 2))
       return  sorted(todo[:some], key=key, reverse=True) + todo[some:]
@@ -324,6 +331,13 @@ def smo(self:DATA, score=lambda B,R: B-R, generate=None ):
   return _smo1(self.rows[the.label:], _ranked(self.rows[:the.label]))
 
 # ## Utils
+
+def timing(fun) -> number:
+    start = time()
+    fun()
+    return time() - start
+
+def nth(n): return lambda a:a[n]
 
 def coerce(s:str) -> atom:
   "Coerces strings to atoms."
@@ -433,18 +447,32 @@ class egs: # sassdddsf
         assert v1 == b.__dict__[k],"clone?"
 
   def smos():
-    print("")
+    print("\n"+the.train)
     repeats=20
     d = DATA().updates(csv(the.train))
-    b4 = NUM().updates(d.chebyshev(row) for row in d.rows)
-    print(the.train,f"\tbase: {b4.mu:.2f} ({b4.sd:.2f})")
+    b4 = [d.chebyshev(row) for row in d.rows]
+    print(f"rows\t: {len(d.rows)}")
+    print(f"xcols\t: {len(d.cols.x)}")
+    print(f"ycols\t: {len(d.cols.y)}")
 
-    pool = NUM().updates(d.chebyshev(d.smo()[0]) for _ in range(repeats))
-    print(the.train,f"\tpool: {pool.mu:.2f} ({pool.sd:.2f})")
+    start = time()
+    pool = [d.chebyshev(d.smo()[0]) for _ in range(repeats)]
+    print(f"pool\t: {(time() - start) /repeats:.2f} msecs")
 
-    generate =lambda best,rest: best.exploit(rest)
-    mqs = NUM().updates(d.chebyshev(d.smo(generate=generate)[0]) for _ in range(repeats))
-    print(the.train,f"\tmqs : {mqs.mu:.2f} ({mqs.sd:.2f})")
+    generate =lambda best,rest: best.exploit(rest,1000)
+    start = time()
+    mqs1000 = [d.chebyshev(d.smo(generate=generate)[0]) for _ in range(repeats)]
+    print(f"mqs1K\t: {(time() - start)/repeats:.2f} msecs")
+
+    generate =lambda best,rest: best.exploit(rest,4)
+    start = time()
+    mqs4 = [d.chebyshev(d.smo(generate=generate)[0]) for _ in range(repeats)]
+    print(f"mqs4\t: {(time() - start)/repeats:.2f} msecs")
+
+    stats.some0([ stats.SOME(b4,"baseline"),
+                  stats.SOME(pool,"pool"),
+                  stats.SOME(mqs4,"mqs4"),
+                  stats.SOME(mqs1000,"mqs1000")])
 
 
 # ## Start-up

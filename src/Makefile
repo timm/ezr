@@ -38,4 +38,4 @@ watch:
 		watch './ezr2.py all; date'
 
 smos:
-	$(foreach f,$(wildcard ../data/misc/*.csv), ./ezr2.py -t $f -e smos; )
+	$(foreach f,$(wildcard ../data/*/*.csv), ./ezr2.py -t $f -e smos; )
