@@ -19,17 +19,26 @@ all:
 
 -include ../Makefile
 
-~/tmp/%.pdf : %.md
+~/tmp/%.pdf : %.md Makefile
 	pandoc  \
-	-V fontsize=10pt \
+	-s  -V fontsize=9pt \
 	-t beamer  \
 	-V theme:Warsaw \
 	-V "header-includes:\usepackage{xcolor}" \
 	-V "header-includes:\usecolortheme{whale}\definecolor{customred}{HTML}{CC0000}" \
 	-V "header-includes:\setbeamercolor{structure}{fg=customred}" \
   -V "header-includes:\setbeamercolor{palette primary}{bg=customred, fg=white}" \
-	-V "header-includes:\usepackage{etoolbox}\makeatletter\patchcmd{\@makefntext}{\normalfont}{\scriptnotesize}{}{}\makeatother" \
+	-V "header-includes:\setbeamertemplate{navigation symbols}{}\setbeamertemplate{footline}[page number]" \
+	-V "header-includes:\usepackage{graphicx}" \
+	-V -highlight=tango  \
+	 -V monofontoptions='Scale=0.2' \
 	$< -o $@
-	open $@
 
 
+
+# $R/docs/%.pdf : $R/docs/%.md  ## make pdf
+# 	@mkdir -p $R/docs
+# 	@echo "pdf-ing $@ ... "
+# 	pandoc "$<"  -o "$@" --from markdown --template "$R/etc/eis.tex" --listings
+#
+# 	@open $@

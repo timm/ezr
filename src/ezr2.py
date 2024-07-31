@@ -14,6 +14,7 @@ import re,sys,ast,random,inspect
 from time import time
 import stats
 R  = random.random
+
 # ## Data Types
 
 # All programs have magic control options, which we keep the `the` variables.
@@ -41,8 +42,8 @@ classes = dict[str,rows] # `str` is the class name
 def LIST(): return field(default_factory=list)
 def DICT(): return field(default_factory=dict)
 
-# NUMs and SYMs are COLumns. COLumns know  `n` (items seen), 
-# `at` (their column pos) and `txt` (column name).
+# NUMs and SYMs are both COLumns. All COLumns count `n` (items seen),
+# `at` (their column number) and `txt` (column name).
 @dataclass
 class COL:
   n   : int = 0
@@ -56,7 +57,8 @@ class SYM(COL):
   mode : atom=None
   most : int=0
 
-# NUMs tracks  `lo,hi`; `mu` (mean);`sd` (standard deviation) using Welford's algorithm.
+# NUMs tracks  `lo,hi` seen so far, as well the `mu` (mean) and `sd` (standard deviation),
+# using Welford's algorithm.
 @dataclass
 class NUM(COL):
   mu : number =  0
@@ -66,11 +68,13 @@ class NUM(COL):
   hi : number = -1E32
   goal : number = 1
 
-  # "+"/"-" at end of name denotes column to maximize/minimize.
+  # A minus sign at end of a NUM's name says "this is a column to minimize"
+  # (all other goals are to be maximizes).
   def __post_init__(self:COLS) -> None:  
     if  self.txt and self.txt[-1] == "-": self.goal=0
 
-# COLS are factories that turn  `names` from row1 into the appropriate columns.
+# COLS are a factory that reads some `names` from the first
+# row , the creates the appropriate columns.
 @dataclass
 class COLS:
   names: list[str]   # column names
@@ -121,7 +125,7 @@ def of(doc):
 
 @of("Returns 0..1 for min..max.")
 def norm(self:NUM, x) -> number:
-  return x=="?" and x or (x - self.lo) / (self.hi - self.lo + 1E-32)
+  return x if x=="?" else  (x - self.lo) / (self.hi - self.lo + 1E-32)
 
 @of("Entropy = measure of disorder.")
 def ent(self:SYM) -> number:
@@ -216,11 +220,14 @@ def exploit(self:COL, other:COL, n=20):
   return max([trio() for _ in range(n)], key=nth(0))
 
 @of("Guess a row more like `self` than `other`.")
-def exploit(self:DATA, other:DATA, top=1000):
+def exploit(self:DATA, other:DATA, top=1000,used=None):
   out = ["?" for _ in self.cols.all]
   for _,at,x in sorted([coli.exploit(colj) for coli,colj in zip(self.cols.x, other.cols.x)],
                        reverse=True,key=nth(0))[:top]:
      out[at] = x
+     if used != None:
+        used[at] = used.get(at,None) or NUM(at=at)
+        used[at].update(x)
   return out
 
 @of("Guess a row in between the rows of `self` and `other`.")
@@ -310,7 +317,7 @@ def smo(self:DATA, score=lambda B,R: B-R, generate=None ):
     random.shuffle(todo) # optimization: only sort a random subset of todo 
     some=200
     if generate:
-      return self.neighbors(generate(best,rest), todo[:some]) + todo[some:]  
+      return self.neighbors(generate(best,rest), todo[:some]) + todo[some:] 
     else:
       key  = lambda r: score(best.like(r, len(done), 2), rest.like(r, len(done), 2))
       return  sorted(todo[:some], key=key, reverse=True) + todo[some:]
@@ -358,7 +365,7 @@ def cli(d:dict):
       if arg in ["-"+k[0], "--"+k]:
         d[k] = coerce("False" if v=="True" else ("True" if v=="False" else after))
 
-# ## Examples
+# ## Examples
 
 class egs: # sassdddsf
   def all():
@@ -455,14 +462,15 @@ class egs: # sassdddsf
     pool = [d.chebyshev(d.smo()[0]) for _ in range(repeats)]
     print(f"pool\t: {(time() - start) /repeats:.2f} msecs")
 
-    generate =lambda best,rest: best.exploit(rest,1000)
+    generate1 =lambda best,rest: best.exploit(rest,1000)
     start = time()
-    mqs1000 = [d.chebyshev(d.smo(generate=generate)[0]) for _ in range(repeats)]
+    mqs1000 = [d.chebyshev(d.smo(generate=generate1)[0]) for _ in range(repeats)]
     print(f"mqs1K\t: {(time() - start)/repeats:.2f} msecs")
 
-    generate =lambda best,rest: best.exploit(rest,4)
+    used={}
+    generate2 =lambda best,rest: best.exploit(rest,top=4,used=used)
     start = time()
-    mqs4 = [d.chebyshev(d.smo(generate=generate)[0]) for _ in range(repeats)]
+    mqs4 = [d.chebyshev(d.smo(generate=generate2)[0]) for _ in range(20)]
     print(f"mqs4\t: {(time() - start)/repeats:.2f} msecs")
 
     stats.some0([ stats.SOME(b4,"baseline"),
@@ -470,7 +478,8 @@ class egs: # sassdddsf
                   stats.SOME(mqs4,"mqs4"),
                   stats.SOME(mqs1000,"mqs1000")])
 
-# ## Start-up
+
+# ## Start-up
 
 if __name__ == "__main__" and len(sys.argv)> 1:
   cli(the.__dict__)
