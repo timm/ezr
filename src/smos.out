@@ -1,0 +1,717 @@
+
+../data/config/Apache_AllMeasurements.csv
+rows	: 192
+xcols	: 9
+ycols	: 1
+pool	: 0.03 msecs
+mqs1K	: 0.02 msecs
+mqs4	: 0.02 msecs
+#
+ 0,                 pool,  0.00,  0.00, *                   |                   ,  0.00,  0.00
+ 0,                 mqs4,  0.00,  0.00, *                   |                   ,  0.00,  0.03
+ 0,              mqs1000,  0.00,  0.00, *                   |                   ,  0.00,  0.03
+#
+ 1,             baseline,  0.22,  0.38,   ---   *           |--------           ,  0.00,  1.00
+
+../data/config/SQL_AllMeasurements.csv
+rows	: 4653
+xcols	: 38
+ycols	: 1
+pool	: 0.16 msecs
+mqs1K	: 0.08 msecs
+mqs4	: 0.11 msecs
+#
+ 0,                 mqs4,  0.13,  0.04, --- *-              |                   ,  0.04,  0.19
+ 0,              mqs1000,  0.14,  0.04,   - *-              |                   ,  0.05,  0.22
+ 0,                 pool,  0.15,  0.04,   - *--             |                   ,  0.05,  0.24
+#
+ 1,             baseline,  0.48,  0.13,               ---  *| ----------        ,  0.18,  0.92
+
+../data/config/SS-A.csv
+rows	: 1343
+xcols	: 3
+ycols	: 2
+pool	: 0.03 msecs
+mqs1K	: 0.02 msecs
+mqs4	: 0.02 msecs
+#
+ 0,                 pool,  0.01,  0.03, * --------          |                   ,  0.00,  0.22
+#
+ 1,              mqs1000,  0.10,  0.09, --   *  ------      |                   ,  0.01,  0.25
+ 1,                 mqs4,  0.11,  0.05,   --  *-----        |                   ,  0.03,  0.25
+#
+ 2,             baseline,  0.29,  0.15,          ---     *  |-------            ,  0.03,  0.67
+
+../data/config/SS-B.csv
+rows	: 206
+xcols	: 3
+ycols	: 2
+pool	: 0.02 msecs
+mqs1K	: 0.02 msecs
+mqs4	: 0.02 msecs
+#
+ 0,                 pool,  0.00,  0.00, *--                 |                   ,  0.00,  0.16
+ 0,              mqs1000,  0.00,  0.25, *                   |                   ,  0.00,  0.25
+#
+ 1,                 mqs4,  0.25,  0.25,          *          |                   ,  0.00,  0.25
+#
+ 2,             baseline,  0.60,  0.24,              ------ |   *    ------     ,  0.00,  1.00
+
+../data/config/SS-C.csv
+rows	: 1512
+xcols	: 3
+ycols	: 2
+pool	: 0.03 msecs
+mqs1K	: 0.02 msecs
+mqs4	: 0.02 msecs
+#
+ 0,                 pool,  0.08,  0.02,     -*-             |                   ,  0.00,  0.32
+ 0,              mqs1000,  0.09,  0.05,       *  -          |                   ,  0.06,  0.18
+ 0,                 mqs4,  0.09,  0.02,      - *------------|-                  ,  0.06,  0.31
+#
+ 1,             baseline,  0.18,  0.09,          --  *    --|--------           ,  0.00,  0.53
+
+../data/config/SS-D.csv
+rows	: 196
+xcols	: 3
+ycols	: 2
+pool	: 0.03 msecs
+mqs1K	: 0.03 msecs
+mqs4	: 0.03 msecs
+#
+ 0,                 pool,  0.52,  0.08, ------  *   -----   |                   ,  0.39,  0.69
+#
+ 1,              mqs1000,  0.59,  0.11,       --     *      |                   ,  0.39,  0.66
+ 1,                 mqs4,  0.60,  0.09,         --    * -   |                   ,  0.39,  0.66
+#
+ 2,             baseline,  0.74,  0.11,              ------ |  *   ------------ ,  0.39,  1.00
+
+../data/config/SS-E.csv
+rows	: 756
+xcols	: 3
+ycols	: 2
+pool	: 0.04 msecs
+mqs1K	: 0.03 msecs
+mqs4	: 0.02 msecs
+#
+ 0,                 pool,  0.27,  0.11,  ----*     --       |                   ,  0.15,  0.48
+#
+ 1,              mqs1000,  0.34,  0.13,   ---    *  ---     |                   ,  0.21,  0.55
+#
+ 2,                 mqs4,  0.38,  0.15,   -----    *  ---   |                   ,  0.17,  0.55
+#
+ 3,             baseline,  0.55,  0.26,            ---     *|      ------------ ,  0.17,  1.00
+
+../data/config/SS-F.csv
+rows	: 196
+xcols	: 3
+ycols	: 2
+pool	: 0.03 msecs
+mqs1K	: 0.02 msecs
+mqs4	: 0.02 msecs
+#
+ 0,                 pool,  0.59,  0.08, ----   *   -        |                   ,  0.49,  0.68
+ 0,              mqs1000,  0.60,  0.14,         *  --       |                   ,  0.49,  0.69
+ 0,                 mqs4,  0.63,  0.09, ----       *---     |                   ,  0.49,  0.69
+#
+ 1,             baseline,  0.75,  0.12,          --------   *      -----------  ,  0.49,  1.00
+
+../data/config/SS-G.csv
+rows	: 196
+xcols	: 3
+ycols	: 2
+pool	: 0.03 msecs
+mqs1K	: 0.03 msecs
+mqs4	: 0.02 msecs
+#
+ 0,                 pool,  0.58,  0.11, -      *  -------   |                   ,  0.47,  0.71
+ 0,              mqs1000,  0.59,  0.12, --      * ---       |                   ,  0.47,  0.67
+ 0,                 mqs4,  0.62,  0.15, --        *  --     |                   ,  0.47,  0.70
+#
+ 1,             baseline,  0.76,  0.13,           --------  |*      ----------- ,  0.47,  1.00
+
+../data/config/SS-H.csv
+rows	: 259
+xcols	: 4
+ycols	: 2
+pool	: 0.03 msecs
+mqs1K	: 0.02 msecs
+mqs4	: 0.02 msecs
+#
+ 0,                 pool,  0.30,  0.00, *                   |                   ,  0.30,  0.50
+#
+ 1,                 mqs4,  0.47,  0.07, -------- *          |                   ,  0.30,  0.65
+#
+ 2,              mqs1000,  0.47,  0.07, -------- *  -----   |                   ,  0.30,  0.65
+#
+ 3,             baseline,  0.95,  0.12,                  ---|----------     * - ,  0.30,  1.00
+
+../data/config/SS-I.csv
+rows	: 1080
+xcols	: 5
+ycols	: 2
+pool	: 0.06 msecs
+mqs1K	: 0.04 msecs
+mqs4	: 0.04 msecs
+#
+ 0,                 mqs4,  0.19,  0.25,        *  ---       |                   ,  0.00,  0.35
+ 0,              mqs1000,  0.26,  0.30,           * -       |                   ,  0.00,  0.34
+ 0,                 pool,  0.27,  0.25, -         *--       |                   ,  0.00,  0.35
+#
+ 1,             baseline,  0.43,  0.09,             ---  * -|-----              ,  0.00,  1.00
+
+../data/config/SS-J.csv
+rows	: 3840
+xcols	: 6
+ycols	: 2
+pool	: 0.06 msecs
+mqs1K	: 0.05 msecs
+mqs4	: 0.04 msecs
+#
+ 0,                 pool,  0.11,  0.05, -- *--------------- |                   ,  0.03,  0.82
+#
+ 1,                 mqs4,  0.35,  0.32,  ---         *   ---|-----              ,  0.04,  0.67
+#
+ 2,              mqs1000,  0.44,  0.36,   ---------     *   |                   ,  0.04,  0.71
+#
+ 3,             baseline,  0.85,  0.04,                     |            *----- ,  0.79,  1.00
+
+../data/config/SS-K.csv
+rows	: 2880
+xcols	: 6
+ycols	: 2
+pool	: 0.06 msecs
+mqs1K	: 0.04 msecs
+mqs4	: 0.04 msecs
+#
+ 0,                 mqs4,  0.21,  0.19,     -- *      ---   |                   ,  0.02,  0.56
+#
+ 1,                 pool,  0.43,  0.23,  --------       *  -|                   ,  0.02,  0.58
+ 1,              mqs1000,  0.46,  0.26,  ------          *--|--                 ,  0.05,  0.61
+#
+ 2,             baseline,  0.94,  0.05,                     |             -- *- ,  0.61,  1.00
+
+../data/config/SS-L.csv
+rows	: 1023
+xcols	: 11
+ycols	: 2
+pool	: 0.07 msecs
+mqs1K	: 0.05 msecs
+mqs4	: 0.05 msecs
+#
+ 0,              mqs1000,  0.17,  0.02, *-                  |                   ,  0.17,  0.23
+ 0,                 mqs4,  0.17,  0.06, *                   |                   ,  0.17,  0.24
+#
+ 1,                 pool,  0.22,  0.06,   *-------          |                   ,  0.17,  0.89
+#
+ 2,             baseline,  0.83,  0.47,    --------------   |           *       ,  0.17,  1.00
+
+../data/config/SS-M.csv
+rows	: 864
+xcols	: 17
+ycols	: 3
+pool	: 0.07 msecs
+mqs1K	: 0.03 msecs
+mqs4	: 0.03 msecs
+#
+ 0,                 pool,  0.00,  0.00, *                   |                   ,  0.00,  0.01
+ 0,                 mqs4,  0.01,  0.00, *                   |                   ,  0.00,  0.01
+ 0,              mqs1000,  0.01,  0.01, *-----              |                   ,  0.00,  0.16
+#
+ 1,             baseline,  0.18,  0.27, ------ *         ---|------------------ ,  0.00,  0.99
+
+../data/config/SS-N.csv
+rows	: 53662
+xcols	: 17
+ycols	: 2
+pool	: 0.37 msecs
+mqs1K	: 0.34 msecs
+mqs4	: 0.41 msecs
+#
+ 0,                 mqs4,  0.22,  0.10,       *   --        |                   ,  0.17,  0.31
+ 0,                 pool,  0.27,  0.02,  -------  *         |                   ,  0.14,  0.31
+ 0,              mqs1000,  0.27,  0.01,         --*         |                   ,  0.17,  0.28
+#
+ 1,             baseline,  0.37,  0.02,                -- *-|                   ,  0.14,  0.64
+
+../data/config/SS-O.csv
+rows	: 972
+xcols	: 11
+ycols	: 2
+pool	: 0.05 msecs
+mqs1K	: 0.03 msecs
+mqs4	: 0.03 msecs
+#
+ 0,                 pool,  0.23,  0.07, --*  -              |                   ,  0.17,  0.35
+ 0,                 mqs4,  0.25,  0.02,  -- *--             |                   ,  0.17,  0.38
+ 0,              mqs1000,  0.28,  0.12,      *-             |                   ,  0.17,  0.40
+#
+ 1,             baseline,  0.48,  0.10,            --  *  --|---                ,  0.28,  1.00
+
+../data/config/SS-P.csv
+rows	: 1023
+xcols	: 11
+ycols	: 2
+pool	: 0.05 msecs
+mqs1K	: 0.02 msecs
+mqs4	: 0.02 msecs
+#
+ 0,                 pool,  0.17,  0.06, * --                |                   ,  0.17,  0.62
+ 0,                 mqs4,  0.17,  0.02, *-                  |                   ,  0.17,  0.89
+ 0,              mqs1000,  0.19,  0.04,  *----------        |                   ,  0.17,  0.44
+#
+ 1,             baseline,  0.83,  0.47,    --------------   |           *       ,  0.17,  1.00
+
+../data/config/SS-Q.csv
+rows	: 2736
+xcols	: 13
+ycols	: 3
+pool	: 0.07 msecs
+mqs1K	: 0.05 msecs
+mqs4	: 0.05 msecs
+#
+ 0,                 mqs4,  0.06,  0.01, *-----              |                   ,  0.05,  0.22
+ 0,                 pool,  0.07,  0.17,  *      --          |                   ,  0.05,  0.28
+ 0,              mqs1000,  0.07,  0.33,  *             -----|-                  ,  0.05,  0.56
+#
+ 1,             baseline,  0.29,  0.11,  -------   * -------|-------            ,  0.05,  0.91
+
+../data/config/SS-R.csv
+rows	: 3008
+xcols	: 14
+ycols	: 2
+pool	: 0.07 msecs
+mqs1K	: 0.05 msecs
+mqs4	: 0.05 msecs
+#
+ 0,                 mqs4,  0.23,  0.05,    - *  ------      |                   ,  0.14,  0.50
+ 0,                 pool,  0.23,  0.02,    --*--            |                   ,  0.15,  0.50
+ 0,              mqs1000,  0.31,  0.11,  ----      *--------|--------           ,  0.15,  0.61
+#
+ 1,             baseline,  0.41,  0.31,                   * |              --   ,  0.36,  0.74
+
+../data/config/SS-S.csv
+rows	: 3840
+xcols	: 6
+ycols	: 2
+pool	: 0.06 msecs
+mqs1K	: 0.05 msecs
+mqs4	: 0.05 msecs
+#
+ 0,                 pool,  0.02,  0.04,    *    ---------   |                   ,  0.00,  0.18
+ 0,              mqs1000,  0.03,  0.03, --  *   ---------   |                   ,  0.00,  0.15
+ 0,                 mqs4,  0.04,  0.03, --     *---------   |                   ,  0.00,  0.10
+#
+ 1,             baseline,  0.15,  0.04,   ------------------|-      *-          ,  0.00,  0.21
+
+../data/config/SS-T.csv
+rows	: 5184
+xcols	: 12
+ycols	: 2
+pool	: 0.08 msecs
+mqs1K	: 0.05 msecs
+mqs4	: 0.05 msecs
+#
+ 0,                 pool,  0.08,  0.04, ---     * --        |                   ,  0.04,  0.12
+#
+ 1,                 mqs4,  0.10,  0.04, -----      *------  |                   ,  0.04,  0.24
+#
+ 2,              mqs1000,  0.11,  0.04,       ---    * -----|---                ,  0.06,  0.18
+#
+ 3,             baseline,  0.13,  0.04,            --   *   |-----              ,  0.08,  0.27
+
+../data/config/SS-U.csv
+rows	: 4608
+xcols	: 21
+ycols	: 2
+pool	: 0.10 msecs
+mqs1K	: 0.05 msecs
+mqs4	: 0.06 msecs
+#
+ 0,                 pool,  0.32,  0.01, *                   |                   ,  0.31,  0.58
+ 0,                 mqs4,  0.32,  0.01, *-                  |                   ,  0.31,  0.58
+ 0,              mqs1000,  0.32,  0.01, *--------------     |                   ,  0.31,  0.59
+#
+ 1,             baseline,  0.62,  0.34,  ----             * |    -------------  ,  0.31,  0.99
+
+../data/config/SS-V.csv
+rows	: 6840
+xcols	: 16
+ycols	: 2
+pool	: 0.10 msecs
+mqs1K	: 0.06 msecs
+mqs4	: 0.06 msecs
+#
+ 0,                 pool,  0.04,  0.19,  *                  |                   ,  0.00,  0.34
+#
+ 1,                 mqs4,  0.05,  0.06, - *--------         |                   ,  0.01,  0.35
+#
+ 2,              mqs1000,  0.25,  0.04,          --*--      |                   ,  0.00,  0.35
+#
+ 3,             baseline,  0.55,  0.37,   ----------        |    *    --        ,  0.00,  0.86
+
+../data/config/SS-W.csv
+rows	: 65536
+xcols	: 16
+ycols	: 2
+pool	: 0.39 msecs
+mqs1K	: 0.36 msecs
+mqs4	: 0.38 msecs
+#
+ 0,                 pool,  0.29,  0.10,           - *    ---|                   ,  0.13,  0.44
+#
+ 1,                 mqs4,  0.36,  0.09,           ---    * -|-                  ,  0.20,  0.43
+ 1,              mqs1000,  0.37,  0.09,             ---   * |---                ,  0.28,  0.50
+#
+ 2,             baseline,  0.44,  0.10,               ----- |  *  ----          ,  0.10,  0.68
+
+../data/config/SS-X.csv
+rows	: 86058
+xcols	: 11
+ycols	: 2
+pool	: 0.58 msecs
+mqs1K	: 0.51 msecs
+mqs4	: 0.55 msecs
+#
+ 0,                 pool,  0.24,  0.03,               * ----|-                  ,  0.22,  0.41
+#
+ 1,              mqs1000,  0.29,  0.11,             --   *  | -----             ,  0.21,  0.47
+#
+ 2,                 mqs4,  0.33,  0.13,              -      *   -               ,  0.22,  0.40
+#
+ 3,             baseline,  0.47,  0.06,                  ---|------   * ---     ,  0.04,  0.61
+
+../data/config/X264_AllMeasurements.csv
+rows	: 1152
+xcols	: 16
+ycols	: 1
+pool	: 0.06 msecs
+mqs1K	: 0.03 msecs
+mqs4	: 0.03 msecs
+#
+ 0,              mqs1000,  0.00,  0.00, *-------------      |                   ,  0.00,  0.21
+ 0,                 mqs4,  0.00,  0.01, *                   |                   ,  0.00,  0.02
+ 0,                 pool,  0.00,  0.00, *                   |                   ,  0.00,  0.02
+#
+ 1,             baseline,  0.07,  0.06,  --  * -------------|-------            ,  0.00,  0.57
+
+../data/hpo/healthCloseIsses12mths0001-hard.csv
+rows	: 10000
+xcols	: 5
+ycols	: 3
+pool	: 0.09 msecs
+mqs1K	: 0.07 msecs
+
+../data/hpo/healthCloseIsses12mths0011-easy.csv
+rows	: 10000
+xcols	: 5
+ycols	: 3
+pool	: 0.08 msecs
+mqs1K	: 0.07 msecs
+
+../data/misc/HSMGP_num.csv
+rows	: 3456
+xcols	: 14
+ycols	: 1
+pool	: 0.08 msecs
+mqs1K	: 0.05 msecs
+mqs4	: 0.05 msecs
+#
+ 0,                 pool,  0.00,  0.00, *                   |                   ,  0.00,  0.01
+ 0,                 mqs4,  0.00,  0.00, *                   |                   ,  0.00,  0.01
+ 0,              mqs1000,  0.00,  0.00, *                   |                   ,  0.00,  0.01
+ 0,             baseline,  0.03,  0.03, -*---------------   |                   ,  0.00,  0.73
+
+../data/misc/Wine_quality.csv
+rows	: 1599
+xcols	: 10
+ycols	: 2
+pool	: 0.08 msecs
+mqs1K	: 0.05 msecs
+mqs4	: 0.08 msecs
+#
+ 0,              mqs1000,  0.25,  0.20,   *                 |                   ,  0.20,  0.40
+#
+ 1,                 pool,  0.40,  0.17, -         *         |                   ,  0.20,  0.42
+#
+ 2,                 mqs4,  0.40,  0.00,       ----*         |                   ,  0.32,  0.60
+#
+ 3,             baseline,  0.60,  0.20,                     *                   ,  0.20,  1.00
+
+../data/misc/auto93.csv
+rows	: 398
+xcols	: 4
+ycols	: 3
+pool	: 0.04 msecs
+mqs1K	: 0.02 msecs
+mqs4	: 0.02 msecs
+#
+ 0,                 pool,  0.25,  0.16, *       ------------|-----              ,  0.25,  0.75
+#
+ 1,                 mqs4,  0.41,  0.14, -----   *           |                   ,  0.25,  0.75
+ 1,              mqs1000,  0.41,  0.13, ------  *           |                   ,  0.25,  0.50
+#
+ 2,             baseline,  0.75,  0.16,              -----  |     *------------ ,  0.25,  1.00
+
+../data/misc/rs-6d-c3_obj1.csv
+rows	: 3840
+xcols	: 6
+ycols	: 1
+pool	: 0.06 msecs
+mqs1K	: 0.04 msecs
+mqs4	: 0.04 msecs
+#
+ 0,                 pool,  0.00,  0.00, *---                |                   ,  0.00,  0.04
+ 0,                 mqs4,  0.00,  0.00, *-------            |                   ,  0.00,  0.09
+ 0,              mqs1000,  0.00,  0.04, *       ---         |                   ,  0.00,  0.07
+#
+ 1,             baseline,  0.15,  0.04, --------------------|-      *-          ,  0.00,  0.21
+
+../data/misc/rs-6d-c3_obj2.csv
+rows	: 3840
+xcols	: 6
+ycols	: 1
+pool	: 0.06 msecs
+mqs1K	: 0.04 msecs
+mqs4	: 0.04 msecs
+#
+ 0,                 pool,  0.00,  0.00, *                   |                   ,  0.00,  0.00
+ 0,                 mqs4,  0.00,  0.00, *                   |                   ,  0.00,  0.01
+ 0,              mqs1000,  0.00,  0.00, *                   |                   ,  0.00,  0.00
+ 0,             baseline,  0.00,  0.00, *                   |                   ,  0.00,  0.06
+
+../data/misc/sol-6d-c2-obj1.csv
+rows	: 2866
+xcols	: 6
+ycols	: 1
+pool	: 0.05 msecs
+mqs1K	: 0.04 msecs
+mqs4	: 0.04 msecs
+#
+ 0,                 pool,  0.01,  0.00, *                   |                   ,  0.01,  0.02
+ 0,              mqs1000,  0.02,  0.01, * -                 |                   ,  0.01,  0.05
+#
+ 1,                 mqs4,  0.02,  0.01,  *-                 |                   ,  0.01,  0.06
+#
+ 2,             baseline,  0.06,  0.14,  --  *            --|---------          ,  0.01,  0.37
+
+../data/misc/wc+rs-3d-c4-obj1.csv
+rows	: 196
+xcols	: 3
+ycols	: 1
+pool	: 0.02 msecs
+mqs1K	: 0.03 msecs
+mqs4	: 0.01 msecs
+#
+ 0,                 pool,  0.00,  0.00, *                   |                   ,  0.00,  0.00
+#
+ 1,              mqs1000,  0.00,  0.00, *                   |                   ,  0.00,  0.08
+ 1,                 mqs4,  0.00,  0.00, *                   |                   ,  0.00,  0.02
+#
+ 2,             baseline,  0.26,  0.13, -------   * ------  |                   ,  0.00,  1.00
+
+../data/misc/wc+sol-3d-c4-obj1.csv
+rows	: 196
+xcols	: 3
+ycols	: 1
+pool	: 0.02 msecs
+mqs1K	: 0.01 msecs
+mqs4	: 0.01 msecs
+#
+ 0,                 pool,  0.00,  0.00, *                   |                   ,  0.00,  0.01
+#
+ 1,              mqs1000,  0.00,  0.00, *                   |                   ,  0.00,  0.22
+ 1,                 mqs4,  0.00,  0.00, *-------            |                   ,  0.00,  0.22
+#
+ 2,             baseline,  0.25,  0.13, --------  *  ------ |                   ,  0.00,  1.00
+
+../data/misc/wc+wc-3d-c4-obj1.csv
+rows	: 196
+xcols	: 3
+ycols	: 1
+pool	: 0.02 msecs
+mqs1K	: 0.01 msecs
+mqs4	: 0.01 msecs
+#
+ 0,                 pool,  0.00,  0.00, *                   |                   ,  0.00,  0.05
+#
+ 1,              mqs1000,  0.01,  0.00, *                   |                   ,  0.00,  0.01
+#
+ 2,                 mqs4,  0.01,  0.00, *                   |                   ,  0.00,  0.25
+#
+ 3,             baseline,  0.26,  0.13, --------  *  -----  |                   ,  0.00,  1.00
+
+../data/misc/wc-6d-c1-obj1.csv
+rows	: 2880
+xcols	: 6
+ycols	: 1
+pool	: 0.06 msecs
+mqs1K	: 0.06 msecs
+mqs4	: 0.05 msecs
+#
+ 0,                 pool,  0.00,  0.00, *                   |                   ,  0.00,  0.13
+#
+ 1,              mqs1000,  0.02,  0.02, --* ---             |                   ,  0.00,  0.08
+#
+ 2,                 mqs4,  0.05,  0.05, --   * -            |                   ,  0.00,  0.13
+#
+ 3,             baseline,  0.06,  0.05, ----  *  -----      |                   ,  0.00,  0.39
+
+../data/old/china.csv
+rows	: 499
+xcols	: 16
+ycols	: 1
+pool	: 0.09 msecs
+mqs1K	: 0.08 msecs
+mqs4	: 0.06 msecs
+#
+ 0,                 pool,  0.00,  0.00, *                   |                   ,  0.00,  0.00
+#
+ 1,              mqs1000,  0.00,  0.00, *                   |                   ,  0.00,  0.02
+#
+ 2,                 mqs4,  0.01,  0.01, *                   |                   ,  0.00,  0.03
+#
+ 3,             baseline,  0.04,  0.05,  *-----             |                   ,  0.00,  1.00
+
+../data/process/coc1000.csv
+rows	: 1000
+xcols	: 17
+ycols	: 5
+pool	: 0.11 msecs
+mqs1K	: 0.08 msecs
+mqs4	: 0.07 msecs
+#
+ 0,                 mqs4,  0.37,  0.00,   ----*             |                   ,  0.25,  0.50
+#
+ 1,              mqs1000,  0.37,  0.18,  --   *             |                   ,  0.25,  0.50
+ 1,                 pool,  0.50,  0.15, -----        *      |                   ,  0.25,  0.62
+#
+ 2,             baseline,  0.75,  0.19,              -------|-----*         --- ,  0.25,  1.00
+
+../data/process/nasa93dem.csv
+rows	: 93
+xcols	: 22
+ycols	: 4
+pool	: 0.04 msecs
+mqs1K	: 0.03 msecs
+
+../data/process/pom3a.csv
+rows	: 500
+xcols	: 9
+ycols	: 3
+pool	: 0.06 msecs
+mqs1K	: 0.04 msecs
+mqs4	: 0.05 msecs
+#
+ 0,              mqs1000,  0.12,  0.13, -*     ----         |                   ,  0.08,  0.44
+#
+ 1,                 pool,  0.21,  0.13, -    * -            |                   ,  0.09,  0.37
+ 1,                 mqs4,  0.22,  0.11,       *---          |                   ,  0.10,  0.37
+#
+ 2,             baseline,  0.70,  0.20,               ------|-     *   -------- ,  0.08,  1.00
+
+../data/process/pom3b.csv
+rows	: 500
+xcols	: 9
+ycols	: 3
+pool	: 0.09 msecs
+mqs1K	: 0.05 msecs
+mqs4	: 0.04 msecs
+#
+ 0,                 pool,  0.10,  0.01,  --*---             |                   ,  0.00,  0.26
+#
+ 1,              mqs1000,  0.16,  0.15,   --  *   --        |                   ,  0.03,  0.36
+ 1,                 mqs4,  0.17,  0.14,   --  *  --         |                   ,  0.03,  0.33
+#
+ 2,             baseline,  0.63,  0.22,            -------- |    *  ------      ,  0.00,  1.00
+
+../data/process/pom3c.csv
+rows	: 500
+xcols	: 9
+ycols	: 3
+pool	: 0.06 msecs
+mqs1K	: 0.04 msecs
+mqs4	: 0.04 msecs
+#
+ 0,                 pool,  0.42,  0.04,     ------ *        |                   ,  0.19,  0.59
+ 0,              mqs1000,  0.43,  0.04,     ------ *--      |                   ,  0.19,  0.59
+ 0,                 mqs4,  0.44,  0.02,     ------- *-      |                   ,  0.29,  0.48
+#
+ 1,             baseline,  0.76,  0.21,                   --|--     *    ------ ,  0.19,  1.00
+
+../data/process/pom3d.csv
+rows	: 500
+xcols	: 9
+ycols	: 3
+pool	: 0.06 msecs
+mqs1K	: 0.04 msecs
+mqs4	: 0.04 msecs
+#
+ 0,              mqs1000,  0.13,  0.04, -- *---             |                   ,  0.05,  0.22
+#
+ 1,                 pool,  0.15,  0.06,   - * ----          |                   ,  0.08,  0.34
+ 1,                 mqs4,  0.15,  0.04,     *               |                   ,  0.08,  0.18
+#
+ 2,             baseline,  0.50,  0.31,       ------       *|    -------        ,  0.05,  1.00
+
+../data/process/xomo_flight.csv
+rows	: 10000
+xcols	: 23
+ycols	: 4
+pool	: 0.18 msecs
+mqs1K	: 0.14 msecs
+mqs4	: 0.13 msecs
+#
+ 0,                 pool,  0.10,  0.05,  - *-               |                   ,  0.02,  0.30
+#
+ 1,              mqs1000,  0.12,  0.07,    * -              |                   ,  0.03,  0.22
+#
+ 2,                 mqs4,  0.17,  0.06,     - * --          |                   ,  0.05,  0.27
+#
+ 3,             baseline,  0.44,  0.16,         -----    *  |-----              ,  0.03,  1.00
+
+../data/process/xomo_ground.csv
+rows	: 10000
+xcols	: 23
+ycols	: 4
+pool	: 0.17 msecs
+mqs1K	: 0.14 msecs
+mqs4	: 0.13 msecs
+#
+ 0,                 pool,  0.12,  0.04, - *--               |                   ,  0.06,  0.25
+ 0,              mqs1000,  0.14,  0.07,  - * --             |                   ,  0.07,  0.26
+#
+ 1,                 mqs4,  0.26,  0.05,     --- *---        |                   ,  0.14,  0.36
+#
+ 2,             baseline,  0.45,  0.15,         ----    *  -|---                ,  0.07,  1.00
+
+../data/process/xomo_osp.csv
+rows	: 10000
+xcols	: 23
+ycols	: 4
+pool	: 0.18 msecs
+mqs1K	: 0.14 msecs
+mqs4	: 0.13 msecs
+#
+ 0,                 pool,  0.12,  0.05,  -- *------         |                   ,  0.03,  0.29
+ 0,              mqs1000,  0.14,  0.06,   -- * --           |                   ,  0.05,  0.22
+#
+ 1,                 mqs4,  0.20,  0.03,      --  *--        |                   ,  0.11,  0.27
+#
+ 2,             baseline,  0.39,  0.16,           ----    * |  ----             ,  0.05,  0.81
+
+../data/process/xomo_osp2.csv
+rows	: 10000
+xcols	: 23
+ycols	: 4
+pool	: 0.18 msecs
+mqs1K	: 0.16 msecs
+mqs4	: 0.14 msecs
+#
+ 0,              mqs1000,  0.23,  0.06, ----* ---           |                   ,  0.13,  0.34
+#
+ 1,                 pool,  0.28,  0.09,    -  * ---------   |                   ,  0.19,  0.50
+#
+ 2,                 mqs4,  0.31,  0.07,      -  *-          |                   ,  0.24,  0.36
+#
+ 3,             baseline,  0.59,  0.13,           ------    |*------------      ,  0.14,  1.00
