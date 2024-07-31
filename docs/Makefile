@@ -19,11 +19,12 @@ all:
 
 -include ../Makefile
 
-~/tmp/%.pdf : %.md Makefile
+~/tmp/%.pdf : %.md 
 	pandoc  \
-	-s  -V fontsize=9pt \
+	-s  -V fontsize=10pt \
 	-t beamer  \
 	-V theme:Warsaw \
+	-V fontfamily=libertine \
 	-V "header-includes:\usepackage{xcolor}" \
 	-V "header-includes:\usecolortheme{whale}\definecolor{customred}{HTML}{CC0000}" \
 	-V "header-includes:\setbeamercolor{structure}{fg=customred}" \
