@@ -1,6 +1,6 @@
 #!/usr/bin/env python3 -B
 # <!-- vim: set ts=2 sw=2 sts=2 et: -->
-# <img src="mqs.png" align=left width=200>
+# ##  Header <img src="mqs.png" align=left width=200>
 # &copy; 2024 Tim Menzies<br>BSD-2 license (share and enjoy)   
 from __future__ import annotations
 from typing import Any as any
