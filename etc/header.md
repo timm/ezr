@@ -12,11 +12,18 @@ a while, you realize:
 - Everyone  could have more fun if we avoided the same 
   dozen or so traps.
 
-So I decided to write down that theory and those tricks and    traps.
+So I decided to write down that theory and those tricks and    traps (see below).
 I took some XAI code (explainable AI) I'd written for semi-supervised
 multiple-objective optimization. Then I wrote notes on any
 part of the code where  I had spent time helping helping people
 with  those tricks, theory and traps.
+
+
+Also, this is  "simplicity-first approach.
+The SE and AI literature is full of bold experiments that try a range of new ideas.
+But some new ideas are better than others. With time, a little patience,
+and lots of implementation experience, we can find
+the least number of best ideas, that are simplest to implement. These are shown below.
 
 Those notes  divided into five groups of things about AI and SE
 that you might want to learn:
