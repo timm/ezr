@@ -21,13 +21,13 @@ R  = random.random
 class CONFIG:
   Last  : int = 30  # max number of labellings
   cut   : float = 0.5 # borderline best:rest
-  eg    : str = "smo"  #start up action
+  eg    : str = "mqs"  #start up action
   k     : int = 1   # low frequency Bayes hack
   label : int = 4   # initial number of labels
   m     : int = 2   # low frequency Bayes hack
   p     : int = 2   # distance formula exponent
   seed  : int = 1234567891 # random number seed
-  train : str = "../data/misc/auto93.csv" # csv file. row1 has column names
+  train : str = "data/misc/auto93.csv" # csv file. row1 has column names
 
 the = CONFIG()
 
@@ -80,6 +80,7 @@ class COLS:
   all  : list[COL] = LIST()  # all NUMS and SYMS
   x    : list[COL] = LIST()  # independent COLums
   y    : list[COL] = LIST()  # depedent COLumns
+  klass: COL = None
 
   # Collect  `all` the COLs as well as the dependent/independent `x`,`y` lists.
   # Upper case names are NUMerics. Anything ending in `+` or `-` is a goal to
@@ -90,7 +91,8 @@ class COLS:
       col = (NUM if a.isupper() else SYM)(at=at, txt=txt)
       self.all.append(col)
       if z != "X":
-        (self.y if z in "+-" else self.x).append(col)
+        (self.y if z in "!+-" else self.x).append(col)
+        if z=="!": self.klass = col
         if z=="-": col.goal = 0
 
 # DATAs store `rows`, which are summarized in `cols`.
@@ -102,7 +104,7 @@ class DATA:
   # Another way to create a DATA is to copy the columns structure of
   # an existing DATA, then maybe load in some rows to that new DATA.
   def clone(self:DATA, rows:rows=[]) -> DATA:
-    return DATA().update(self.cols.names).updates(rows)
+    return DATA().add(self.cols.names).adds(rows)
 
 # ## Decorators
 
@@ -130,48 +132,48 @@ def norm(self:NUM, x) -> number:
 def ent(self:SYM) -> number:
   return - sum(n/self.n * log(n/self.n,2) for n in self.has.values())
 
-# ## Update 
+# ## add 
 
-@of("Update COL with many values.")
-def updates(self:COL,  src) -> COL:
-  [self.update(row) for row in src]; return self
+@of("add COL with many values.")
+def adds(self:COL,  src) -> COL:
+  [self.add(row) for row in src]; return self
 
-@of("Update DATA with many values.")
-def updates(self:DATA, src) -> DATA:
-  [self.update(row) for row in src]; return self
+@of("add DATA with many values.")
+def adds(self:DATA, src) -> DATA:
+  [self.add(row) for row in src]; return self
 
 @of("Cache one more row, summarizes in `cols`.")
-def update(self:DATA,row:row) -> DATA:
-  if    self.cols: self.rows += [self.cols.update(row)]
+def add(self:DATA,row:row) -> DATA:
+  if    self.cols: self.rows += [self.cols.add(row)]
   else: self.cols = COLS(names=row) # for row q
   return self
 
-# Later on, these update methods
+# Later on, these add methods
 # will coerce strings to numbers (if needed). So the code 
-# always returns the updated rows.
+# always returns the addd rows.
 
-@of("Update all the `x` and `y` cols.")
-def update(self:COLS, row:row) -> row:
+@of("add all the `x` and `y` cols.")
+def add(self:COLS, row:row) -> row:
   for cols in [self.x, self.y]:
     for col in cols:
-        row[col.at] = col.update(row[col.at])
+        row[col.at] = col.add(row[col.at])
   return row
 
-@of("If `x` is known, update this COL.")
-def update(self:COL, x:any) -> any:
+@of("If `x` is known, add this COL.")
+def add(self:COL, x:any) -> any:
   if x != "?":
      self.n += 1
-     x = self.update1(x)
+     x = self.add1(x)
   return x
 
-@of("Update symbol counts.")
-def update1(self:SYM, x:any) -> any:
+@of("add symbol counts.")
+def add1(self:SYM, x:any) -> any:
   self.has[x] = self.has.get(x,0) + 1
   if self.has[x] > self.most: self.mode, self.most = x, self.has[x]
   return x
 
-@of("Update `mu` and `sd` (and `lo` and `hi`). If `x` is a string, coerce to a number.")
-def update1(self:NUM, x:any) -> number:
+@of("add `mu` and `sd` (and `lo` and `hi`). If `x` is a string, coerce to a number.")
+def add1(self:NUM, x:any) -> number:
   if isinstance(x,str): x = coerce(x)
   self.lo  = min(x, self.lo)
   self.hi  = max(x, self.hi)
@@ -226,7 +228,7 @@ def exploit(self:DATA, other:DATA, top=1000,used=None):
      out[at] = x
      if used != None:
         used[at] = used.get(at,None) or NUM(at=at)
-        used[at].update(x)
+        used[at].add(x)
   return out
 
 @of("Guess a row in between the rows of `self` and `other`.")
@@ -334,10 +336,21 @@ def smo(self:DATA, score=lambda B,R: B-R, generate=None ):
 
 # ## Utils
 
+def xval(lst:list, m:int, n:int) -> tuple[list,list]:
+  for _ in range(m):
+    random.shuffle(lst)
+    for n1 in range (n):
+      lo = len(lst)/n * n1
+      hi = len(lst)/n * (n1+1)
+      train, test = [],[]
+      for i,x in enumerate(lst):
+        (test if i >= lo and i < hi else train).append(x)
+      yield train,test
+
 def timing(fun) -> number:
-    start = time()
-    fun()
-    return time() - start
+  start = time()
+  fun()
+  return time() - start
 
 def nth(n): return lambda a:a[n]
 
@@ -376,15 +389,15 @@ class egs: # sassdddsf
 
   def nums():
     r  = 256
-    n1 = NUM().updates([R()**2 for _ in range(r)])
-    n2 = NUM().updates([n1.guess() for _ in range(r)])
+    n1 = NUM().adds([R()**2 for _ in range(r)])
+    n2 = NUM().adds([n1.guess() for _ in range(r)])
     assert abs(n1.mu - n2.mu) < 0.05, "nums mu?"
     assert abs(n1.sd - n2.sd) < 0.05, "nums sd?"
 
   def syms():
     r  = 256
-    n1 = SYM().updates("aaaabbc")
-    n2 = SYM().updates(n1.guess() for _ in range(r))
+    n1 = SYM().adds("aaaabbc")
+    n2 = SYM().adds(n1.guess() for _ in range(r))
     assert abs(n1.mode == n2.mode), "syms mu?"
     assert abs(n1.ent() -  n2.ent()) < 0.05, "syms ent?"
 
@@ -395,17 +408,17 @@ class egs: # sassdddsf
     assert n== 3192,"csv?"
 
   def reads():
-    d = DATA().updates(csv(the.train))
+    d = DATA().adds(csv(the.train))
     assert d.cols.y[1].n==398,"reads?"
 
   def likings():
-    d = DATA().updates(csv(the.train)).chebyshevs()
+    d = DATA().adds(csv(the.train)).chebyshevs()
     random.shuffle(d.rows)
     lst = sorted( round(d.like(row,2000,2),2) for row in d.rows[:100])
     print(lst)
 
   def chebys():
-    d = DATA().updates(csv(the.train))
+    d = DATA().adds(csv(the.train))
     random.shuffle(d.rows)
     lst = d.chebyshevs().rows
     mid = len(lst)//2
@@ -416,7 +429,7 @@ class egs: # sassdddsf
 
 
   def guesses():
-    d = DATA().updates(csv(the.train))
+    d = DATA().adds(csv(the.train))
     random.shuffle(d.rows)
     lst = d.chebyshevs().rows
     mid = len(lst)//2
@@ -430,28 +443,28 @@ class egs: # sassdddsf
     for _ in range(50): print("explore",dbad.explore(dgood))
 
   def distances():
-    d = DATA().updates(csv(the.train))
+    d = DATA().adds(csv(the.train))
     random.shuffle(d.rows)
     lst = sorted( round(d.dist(d.rows[0], row),2) for row in d.rows[:100])
     for x in lst: assert 0 <= x <= 1, "dists1?" 
     assert .33 <= lst[len(lst)//2] <= .66, "dists2?"
 
   def heavensh():
-    d = DATA().updates(csv(the.train)).d2hs()
+    d = DATA().adds(csv(the.train)).d2hs()
     lst = [row for i,row in enumerate(d.rows) if i % 30 ==0]
     assert d.d2h(d.rows[0]) < d.d2h(d.rows[-1]), "d2h?"
 
   def clones():
-    d1 = DATA().updates(csv(the.train))
+    d1 = DATA().adds(csv(the.train))
     d2 = d1.clone(d1.rows)
     for a,b in zip(d1.cols.y, d2.cols.y):
       for k,v1 in a.__dict__.items():
         assert v1 == b.__dict__[k],"clone?"
 
-  def smos():
+  def mqs():
     print("\n"+the.train)
     repeats=20
-    d = DATA().updates(csv(the.train))
+    d = DATA().adds(csv(the.train))
     b4 = [d.chebyshev(row) for row in d.rows]
     print(f"rows\t: {len(d.rows)}")
     print(f"xcols\t: {len(d.cols.x)}")

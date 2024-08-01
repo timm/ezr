@@ -31,7 +31,7 @@ So here is my code, annotated with those  notes.
 For those who want to try some exercises along the way, watch for the icon
 
 - <i class="_todo"></i> This icons comes with a pointer to some small
-  [homeworks](&nbsp; &nbsp; AI theory 
+  [homeworks](https://github.com/timm/ezr/tree/main/docs/hw)
 
 
 Share and enjoy.
@@ -64,9 +64,9 @@ the write you own extensions
     pip install ezr
     ezr -t path2data/misc/auto93.csv -e all # test the install
 
-<i class="_ikon"></i>   
-_Note how the use of packaging tools (pip) enables easy sharing of code.
-Configure  us share [setup.py](https://github.com/timm/ezr/blob/main/README.md). 
+<i class="_todo"></i>   _Packaging tools (pip) enables easy sharing of code.
+  [Try it yourself](https://github.com/timm/ezr/tree/main/docs/hw/package.md)_.
+
 
 ###  Running the code 
 
@@ -75,6 +75,5 @@ This code has lots of
 using, say:
 
      lua ez.lua -e klass      # calls the eg.klass() function
-
 
 asdasasd 
