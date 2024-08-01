@@ -473,6 +473,7 @@ class egs: # sassdddsf
     print("\n"+the.train)
     repeats=20
     d = DATA().adds(csv(the.train))
+    [print(col) for col in d.cols.all]
     b4 = [d.chebyshev(row) for row in d.rows]
     print(f"rows\t: {len(d.rows)}")
     print(f"xcols\t: {len(d.cols.x)}")
