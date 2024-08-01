@@ -1,7 +1,6 @@
 #!/usr/bin/env python3 -B
 # <!-- vim: set ts=2 sw=2 sts=2 et: -->
-# ##  Header <img src="mqs.png" align=left width=200>
-# &copy; 2024 Tim Menzies<br>BSD-2 license (share and enjoy)   
+# ##  Header 
 from __future__ import annotations
 from typing import Any as any
 from typing import Callable
@@ -15,7 +14,7 @@ from time import time
 import stats
 R  = random.random
 
-# ## Data Types
+# ##  Types
 
 # All programs have magic control options, which we keep the `the` variables.
 @dataclass
@@ -121,7 +120,7 @@ def of(doc):
     setattr(globals()[self], fun.__name__, fun)
   return doit
 
-# ## Misc methods
+# ## MiscMethods
 
 @of("Returns 0..1 for min..max.")
 def norm(self:NUM, x) -> number:
@@ -131,7 +130,7 @@ def norm(self:NUM, x) -> number:
 def ent(self:SYM) -> number:
   return - sum(n/self.n * log(n/self.n,2) for n in self.has.values())
 
-# ## Update (incremental update)
+# ## Update 
 
 @of("Update COL with many values.")
 def updates(self:COL,  src) -> COL:
@@ -182,7 +181,7 @@ def update1(self:NUM, x:any) -> number:
   self.sd  = 0 if self.n <2 else (self.m2/(self.n-1))**.5
   return x
 
-# ## Guessing values
+# ## Guessing 
 
 @of("Guess values at same frequency of `has`.")
 def guess(self:SYM) -> any:
@@ -243,7 +242,7 @@ def explore(self:COL, other:COL, n=20):
   key     = lambda x: abs(self.like(x,pr1) - other.like(x,pr2))
   return min([self.guess() for _ in range(n)], key=key)
 
-# ## Distance calculations
+# ## Distance 
 
 @of("Between two values (Aha's algorithm).")
 def dist(self:COL, x:any, y:any) -> float:
@@ -479,7 +478,7 @@ class egs: # sassdddsf
                   stats.SOME(mqs1000,"mqs1000")])
 
 
-# ## Start-up
+# ## Start
 
 if __name__ == "__main__" and len(sys.argv)> 1:
   cli(the.__dict__)

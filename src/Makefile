@@ -1,41 +1,89 @@
-# Default is to what ever the parent Makefile says to do.
+#.   
+#.   .-.
+#.  (o o)     go ahead ...
+#.  | O \     ... make my day
+#.   \   \
+#.    `~~~'
 
--include ../Makefile
+#----------------------------------------------------------
+SHELL     := bash 
+MAKEFLAGS += --warn-undefined-variables
+.SILENT:  
 
-stats:
-	echo "file,rows,cols,xnums,xsyms,ymin,ymax"
-	cd ../data; for f in */*.csv; do                          \
-    gawk 'BEGIN { OFS=FS=","; nums = ups =downs = syms = 0 } \
-          NR==1 { for(i=1;i<=NF;i++) {                        \
-                        if ($$i ~ /[+]$$/) {ups++} else {      \
-                        if ($$i ~ /[-]$$/) {downs++} else {     \
-                        if ($$i ~ /^[A-Z]/ ) {nums++}  else {syms++}}}}; next}  \
-          END   { s=FILENAME;                                                    \
-                  gsub(/.csv/,"",s);                                              \
-                  print s,NR--,NF,nums,syms,ups,downs}' $$f ; done
+Root=$(shell git rev-parse --show-toplevel)
 
-bins: 
-	 for f in ../data/*/*.csv; do \
-     gawk -F, 'NR==1{ for(i=1;i<=NF;i++) if ($$i ~ /[!+-]$$/) {y++} else {x++}; \
-                      printf("%s,%s,%s", FILENAME,x,y);  exit}' $$f; \
-     ./sandbox.lua --bins $$f  \
-     | gawk 'BEGIN {FS="\n";RS=""; print""} {n += NF} END {print NR,n/NR}' ; done
+help      :  ## show help
+	awk 'BEGIN {FS = ":.*?## "; print "\nmake [WHAT]" } \
+			/^[^[:space:]].*##/ {printf "   \033[36m%-18s\033[0m : %s\n", $$1, $$2} ' \
+		$(MAKEFILE_LIST)
+	awk 'sub(/#\. /,"") { printf "  \033[36m%-20s\033[0m \n", $$0}' Makefile
+	
+pull    : ## download
+	git pull
 
-~/tmp/%.html : %.py
+push    : ## save
+	echo -n "> Say, why are you saving? "; read x; git commit -am "$$x"; git push; git status
+
+~/tmp/%.md : %.py  ## make doco: py -> md
+	gawk -f inc/py2html.awk $^ > $@
+
+~/tmp/%.html : ~/tmp/%.md ## make doco: md -> html
+	cp inc/ezr.css ~/tmp
+	- cp -f inc/*.png ~/tmp/
+	pandoc --toc -c ezr.css \
+         --metadata title="Scripting AI (just the important bits)"  \
+			   -s --highlight-style tango -o $@  $^
+
+~/tmp/%.pdf: %.py  ## .py --> .pdf
 	mkdir -p ~/tmp
-	cp ../docs/img/mqs.png ~/tmp/mqs.png
-	gawk 'sub(/^@of."/,"# ") { sub(/\"\)/,"")} 1' $^ > ~/tmp/$^
-	pycco -d ~/tmp ~/tmp/$<
-	echo "h3,p { text-align: right }" >> ~/tmp/pycco.css
-	echo "h2   { border-top: black solid 1px; }" >> ~/tmp/pycco.css
+	echo "pdf-ing $@ ... "
+	a2ps                 \
+		-Br                 \
+		--chars-per-line 100  \
+		--file-align=fill      \
+		--line-numbers=1        \
+		--borders=no             \
+		--pro=color               \
+		--left-title=""            \
+		--columns  3                 \
+		-M letter                     \
+		--footer=""                    \
+		--right-footer=""               \
+	  -o	 $@.ps $<
+	ps2pdf $@.ps $@; rm $@.ps    
 	open $@
 
-csv=$(wildcard ../data/*/*.csv)
+#----------------------------------------------------------
+mqs : ## experiment:  assess mqs policies  
+	$(foreach f,$(wildcard ../data/*/*.csv), ./ezr.py -t $f -e smos &; )
 
-xx:
-		$(foreach f,$(csv), echo "# $f"; lua tree.lua --tree $f;)
-watch:
-		watch './ezr2.py all; date'
+#---------------------------------------------------------------------------------
+ALLS= $(subst data/config,var/out/alls,$(wildcard data/config/*.csv)) \
+      $(subst data/misc,var/out/alls,$(wildcard data/misc/*.csv)) \
+      $(subst data/process,var/out/alls,$(wildcard data/process/*.csv)) \
+      $(subst data/hpo,var/out/alls,$(wildcard data/hpo/*.csv))
 
-smos:
-	$(foreach f,$(wildcard ../data/*/*.csv), ./ezr2.py -t $f -e smos; )
+var/out/alls/%.csv : data/config/%.csv  ; echo $<; ./ezr.py -t $<  -R alls | tee $@
+var/out/alls/%.csv : data/misc/%.csv    ; echo $<; ./ezr.py -t $<  -R alls | tee $@
+var/out/alls/%.csv : data/process/%.csv ; echo $<; ./ezr.py -t $<  -R alls | tee $@
+var/out/alls/%.csv : data/hpo/%.csv     ; echo $<; ./ezr.py -t $<  -R alls | tee $@
+
+alls: 
+	mkdir -p var/out/alls
+	$(MAKE) -j $(ALLS)
+
+SMOS= $(subst data/config,var/out/smos,$(wildcard data/config/*.csv)) \
+      $(subst data/misc,var/out/smos,$(wildcard data/misc/*.csv)) \
+      $(subst data/process,var/out/smos,$(wildcard data/process/*.csv)) \
+      $(subst data/hpo,var/out/smos,$(wildcard data/hpo/*.csv))
+
+var/out/smos/%.csv : data/config/%.csv  ; echo $<; ./ezr.py -t $< -R smos | tee $@
+var/out/smos/%.csv : data/misc/%.csv    ; echo $<; ./ezr.py -t $< -R smos | tee $@
+var/out/smos/%.csv : data/process/%.csv ; echo $<; ./ezr.py -t $< -R smos | tee $@
+var/out/smos/%.csv : data/hpo/%.csv     ; echo $<; ./ezr.py -t $< -R smos | tee $@
+
+smos: 
+	mkdir -p var/out/smos
+	$(MAKE) -j $(SMOS)
+
+
