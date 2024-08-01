@@ -19,6 +19,7 @@ R  = random.random
 # All programs have magic control options, which we keep the `the` variables.
 @dataclass
 class CONFIG:
+  buffer: int = 100 # chunk size, when streaming
   Last  : int = 30  # max number of labellings
   cut   : float = 0.5 # borderline best:rest
   eg    : str = "mqs"  #start up action
@@ -269,6 +270,11 @@ def dist(self:DATA, r1:row, r2:row) -> float:
 def neighbors(self:DATA, row1:row, rows:rows=None) -> rows:
   return sorted(rows or self.rows, key=lambda row2: self.dist(row1, row2))
 
+@of("Sort rows randomly")
+def shuffle(self:DATA) -> DATA:
+  random.shuffle(self.rows)
+  return self
+
 @of("Sort rows by the Euclidean distance of the goals to heaven.")
 def chebyshevs(self:DATA) -> DATA:
   self.rows = sorted(self.rows, key=lambda r: self.chebyshev(r))
@@ -315,23 +321,25 @@ def smo(self:DATA, score=lambda B,R: B-R, generate=None ):
     cut  = int(.5 + len(done) ** the.cut)
     best = self.clone(done[:cut])
     rest = self.clone(done[cut:])
-    random.shuffle(todo) # optimization: only sort a random subset of todo 
-    some=200
+    #random.shuffle(todo) # optimization: only sort a random subset of todo 
+    #a,b = todo[:the.buffer//2],todo[the.buffer//2:]; random.shuffle(b); a ,b =a+b[:len(a)], b[len(a):]
+    a,b = todo[:the.buffer//2], todo[the.buffer:]; a = a+b[:len(a)]; b = b[len(a):]; 
+    #random.shuffle(todo); a,b= todo[:the.buffer], todo[the.buffer:]
+    #a=todo; b=[]
     if generate:
-      return self.neighbors(generate(best,rest), todo[:some]) + todo[some:] 
+      return self.neighbors(generate(best,rest), a) + b # todo[:some]) + todo[some:] 
     else:
       key  = lambda r: score(best.like(r, len(done), 2), rest.like(r, len(done), 2))
-      return  sorted(todo[:some], key=key, reverse=True) + todo[some:]
+      return  sorted(a, key=key, reverse=True) + b
 
   def _smo1(todo:rows, done:rows) -> rows:
     for k in range(the.Last - the.label):
-      if len(todo) < 3: break
+      if len(todo) < 3 : break
       top,*todo = _guess(todo, done)
       done += [top]
       done = _ranked(done)
     return done
 
-  random.shuffle(self.rows) # remove any  bias from older runs
   return _smo1(self.rows[the.label:], _ranked(self.rows[:the.label]))
 
 # ## Utils
@@ -471,18 +479,18 @@ class egs: # sassdddsf
     print(f"ycols\t: {len(d.cols.y)}")
 
     start = time()
-    pool = [d.chebyshev(d.smo()[0]) for _ in range(repeats)]
+    pool = [d.chebyshev(d.shuffle().smo()[0]) for _ in range(repeats)]
     print(f"pool\t: {(time() - start) /repeats:.2f} msecs")
 
     generate1 =lambda best,rest: best.exploit(rest,1000)
     start = time()
-    mqs1000 = [d.chebyshev(d.smo(generate=generate1)[0]) for _ in range(repeats)]
+    mqs1000 = [d.chebyshev(d.shuffle().smo(generate=generate1)[0]) for _ in range(repeats)]
     print(f"mqs1K\t: {(time() - start)/repeats:.2f} msecs")
 
     used={}
     generate2 =lambda best,rest: best.exploit(rest,top=4,used=used)
     start = time()
-    mqs4 = [d.chebyshev(d.smo(generate=generate2)[0]) for _ in range(20)]
+    mqs4 = [d.chebyshev(d.shuffle().smo(generate=generate2)[0]) for _ in range(20)]
     print(f"mqs4\t: {(time() - start)/repeats:.2f} msecs")
 
     stats.some0([ stats.SOME(b4,"baseline"),

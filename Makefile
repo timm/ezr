@@ -69,8 +69,12 @@ push    : ## save
 
 ~/tmp/%.html : ~/tmp/%.md ## make doco: md -> html
 	cp etc/ezr.css ~/tmp
-	pandoc --toc -c ezr.css \
+	pandoc --toc -c ezr.css   --number-sections \
          --metadata title="Scripting AI (just the important bits)"  \
 			   -s --highlight-style tango -o $@  $^
 
-
+mqs: ## experiment: mqs
+	$(foreach f, $(wildcard data/misc/*.csv),    ./ezr.py -t $f -e mqs  ; )
+	$(foreach f, $(wildcard data/process/*.csv), ./ezr.py -t $f -e mqs  ; )
+	$(foreach f, $(wildcard data/hpo/*.csv),     ./ezr.py -t $f -e mqs  ; )
+	$(foreach f, $(wildcard data/config/*.csv),  ./ezr.py -t $f -e mqs  ; )
