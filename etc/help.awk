@@ -5,5 +5,5 @@ BEGIN {
   print "\nmake [WHAT]" 
 }
 /^[^ \t].*##/ {          
-  printf("   %s%-12s%s : %s\n", COLOR, $1, RESET, $2) | "sort"  
+  printf("   %s%-15s%s : %s\n", COLOR, $1, RESET, $2) | "sort"  
 }

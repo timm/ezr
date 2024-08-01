@@ -24,10 +24,8 @@ push    : ## save
 		    sub(/^```.*/,"") { code = 1 - code } \
 			                   { print (code ? "" : "-- ") $$0 }' $^ > $@
 	luac -p $@
-
-                --right-footer="%s. of %s#"               \
 	
-~/tmp/%.pdf: %.py  ## .lua ==> .pdf
+~/tmp/%.pdf: %.py  ## make doco: .py ==> .pdf
 	mkdir -p ~/tmp
 	echo "pdf-ing $@ ... "
 	a2ps                 \
@@ -46,7 +44,7 @@ push    : ## save
 	ps2pdf $@.ps $@; rm $@.ps
 	open $@
 
-~/tmp/%.pdf: %.lua  ## .lua ==> .pdf
+~/tmp/%.pdf: %.lua  ## male doco: .lua ==> .pdf
 	mkdir -p ~/tmp
 	echo "pdf-ing $@ ... "
 	a2ps                 \
@@ -65,3 +63,15 @@ push    : ## save
 	  -o	 $@.ps $<
 	ps2pdf $@.ps $@; rm $@.ps
 	open $@
+
+~/tmp/%.md : %.py ## make doco: py -> md
+	gawk -f inc/py2html.awk $^ > $@
+
+~/tmp/%.html : ~/tmp/%.md ## make doco: md -> html
+	cp inc/ezr.css ~/tmp
+	- cp -f inc/*.png ~/tmp/
+	pandoc --toc -c ezr.css \
+         --metadata title="Scripting AI (just the important bits)"  \
+			   -s --highlight-style tango -o $@  $^
+
+
