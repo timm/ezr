@@ -15,6 +15,15 @@ body {
 
 pre { background: #f8f8f8; }
 
+._todo::before {
+  content: "\f4c4"; /* Unicode for the hands helping icon */
+  font-family: "Font Awesome 5 Free"; /* Font family for solid icons */
+  font-weight: 900; /* Font weight for solid icons */
+  font-size: 24px; /* Example size */
+  margin-right: 8px; /* Space between icon and text */
+  font-style: normal;
+  vertical-align: middle;
+}
 ._ikon::before {
   content: "\f0ad"; /* Unicode for the wrench icon */
   font-family: "Font Awesome 5 Free"; /* Font family for solid icons */

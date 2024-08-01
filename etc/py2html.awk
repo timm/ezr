@@ -1,4 +1,4 @@
-/^# ## / { slurp("inc/" tolower($3) ".md"); next }
+/^# ## / { slurp("etc/" tolower($3) ".md"); next }
 NR> 2   
 
 function slurp(f) {

@@ -21,13 +21,20 @@ with  those tricks, theory and traps.
 Those notes  divided into five groups of things about AI and SE
 that you might want to learn:
 
-- <i class="_ikon"></i>  &nbsp; &nbsp; SE  system issues
+- <i class="_ikon"></i>  &nbsp; &nbsp; SE system issues
 - <i class="_tools"></i> &nbsp; &nbsp; SE coding  
-- <i class="_robot"></i> &nbsp; &nbsp; AI coding 
+- <i class="_robot"></i> &nbsp;        AI coding 
 - <i class="_flask"></i> &nbsp; &nbsp; AI theory 
 - <i class="_skull"></i> &nbsp; &nbsp; Anti-pattern (things not to do)
 
-So here is my code, annotated with those  notes. Share and enjoy.
+So here is my code, annotated with those  notes. 
+For those who want to try some exercises along the way, watch for the icon
+
+- <i class="_todo"></i> This icons comes with a pointer to some small
+  [homeworks](&nbsp; &nbsp; AI theory 
+
+
+Share and enjoy.
 
 ## Setting Up
 
@@ -57,6 +64,10 @@ the write you own extensions
     pip install ezr
     ezr -t path2data/misc/auto93.csv -e all # test the install
 
+<i class="_ikon"></i>   
+_Note how the use of packaging tools (pip) enables easy sharing of code.
+Configure  us share [setup.py](https://github.com/timm/ezr/blob/main/README.md). 
+
 ###  Running the code 
 
 This code has lots of
@@ -66,3 +77,4 @@ using, say:
      lua ez.lua -e klass      # calls the eg.klass() function
 
 
+asdasasd 

@@ -65,11 +65,10 @@ push    : ## save
 	open $@
 
 ~/tmp/%.md : %.py ## make doco: py -> md
-	gawk -f inc/py2html.awk $^ > $@
+	gawk -f etc/py2html.awk $^ > $@
 
 ~/tmp/%.html : ~/tmp/%.md ## make doco: md -> html
-	cp inc/ezr.css ~/tmp
-	- cp -f inc/*.png ~/tmp/
+	cp etc/ezr.css ~/tmp
 	pandoc --toc -c ezr.css \
          --metadata title="Scripting AI (just the important bits)"  \
 			   -s --highlight-style tango -o $@  $^
