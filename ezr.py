@@ -32,7 +32,7 @@ class CONFIG:
   m     : int = 2   # low frequency Bayes hack
   p     : int = 2   # distance formula exponent
   seed  : int = 1234567891 # random number seed
-  Stop  : int = 2   # min size of tree leaves
+  Stop  : int = 30   # min size of tree leaves
   train : str = "data/misc/auto93.csv" # csv file. row1 has column names
 
 the = CONFIG()
@@ -281,7 +281,7 @@ def d2hs(self:DATA) -> DATA:
   self.rows = sorted(self.rows, key=lambda r: self.d2h(r))
   return self
 
-@of("Compute Euclidean distance of one row to the best `y` values.")
+@of("Compute euclidean distance of one row to the best `y` values.")
 def d2h(self:DATA,row:row) -> number:
   d = sum(abs(c.goal - c.norm(row[c.at]))**2 for c in self.cols.y)
   return (d/len(self.cols.y)) ** (1/the.p)
@@ -289,18 +289,17 @@ def d2h(self:DATA,row:row) -> number:
 # ## Cluter
 @dataclass
 class CLUSTER:
-  data :DATA = None
-  right : row = None
-  left  : row = None
-  cut  : number = None
-  fun  : Callable = None
+  data :DATA
+  right : row
+  left  : row
+  cut  : number
+  fun  : Callable
+  lvl : int = 0
   lefts : CLUSTER = None
   rights : CLUSTER = None
 
-  def show(self:CLUSTER, lvl=0) -> None:
-    print(("|.. " * self.lvl) + len(self.data.rows))
-    for kid in [self.lefts, self.rights]:
-      if kid: self.kids: kid.show( lvl+1 )
+  def __repr__(self:CLUSTER) -> string:
+    return f"{'|.. ' * self.lvl}{len(self.data.rows)}"
 
   def leaf(self:CLUSTER, data:DATA, row:row) -> CLUSTER:
     d = data.dist(self.left,row)
@@ -308,27 +307,36 @@ class CLUSTER:
     if self.rights and self.rights.fun(d,self.rights.cut): return rights.leaf(data,row)
     return self
 
-@of("return two distant parts")
-def twoFar(self:DATA, rows:rows, samples:int=None) -> tuple[row,row] :
-  return max(((any(rows),any(rows)) for _ in range(samples or the.fars)),
-              key= lambda two: self.dist(*two))
+  def nodes(self:CLUSTER):
+    def leafp(x): return x.lefts==None and x.rights==None
+    yield self, leafp(self)
+    for node in [self.lefts,self.rights]:
+      if node:
+        for x,isLeaf in node.nodes(): yield x, isLeaf
 
-@of("divide rows by distance to two faraway points")
-def half(self:DATA, rows:rows) -> tuple[rows,rows,row,row,float]:
-  left,right = self.twoFar(rows)
-  cut = i.dist(left,right)/2
+@of("Return two distant rows, optionally sorted into best, then rest")
+def twoFar(self:DATA, rows:rows, sortp=False, samples:int=None) -> tuple[row,row] :
+  left, right =  max(((any(rows),any(rows)) for _ in range(samples or the.fars)),
+                       key= lambda two: self.dist(*two))
+  if sortp and self.d2h(right) < self.d2h(left): right,left = left,right
+  return left, right
+
+@of("Divide rows by distance to two faraway points")
+def half(self:DATA, rows:rows, sortp=False) -> tuple[rows,rows,row,row,float]:
+  left,right = self.twoFar(rows, sortp=sortp)
+  cut = self.dist(left,right)/2
   lefts,rights = [],[]
   for j,row in enumerate(rows):
-    (lefts if self.dist(left,row) <= cut  else rights).append(row)
-  return lefts, rights, left, right, cut
+    (lefts if j < len(rows) // 2   else rights).append(row)
+  return self.dist(left,lefts[-1]),lefts, rights, left, right
 
 @of("recursive divide rows using distance to two far points")
-def cluster(self:DATA, rows:rows,  stop=None, cut=None, fun=None):
+def cluster(self:DATA, rows:rows,  sortp=False, stop=None, cut=None, fun=None,lvl=0):
   stop = stop or the.Stop
-  ls, rs, left, right, cut1 = self.half(rows)
-  it = CLUSTER(data=self.clone(rows), cut=cut, fun=fun, left=left, right=right)
-  if len(ls)>stop and len(ls) < len(rows) : it.lefts  = self.cluster(ls, stop, cut1, le)
-  if len(rs)>stop and len(rs) < lens(rows): it.rights = self.cluster(rs, stop, cut1, gt)
+  cut1, ls, rs, left, right = self.half(rows,sortp=sortp)
+  it = CLUSTER(data=self.clone(rows), cut=cut, fun=fun, left=left, right=right, lvl=lvl)
+  if len(ls)>stop and len(ls)<len(rows): it.lefts  = self.cluster(ls, sortp, stop, cut1, le,lvl+1)
+  if len(rs)>stop and len(rs)<len(rows): it.rights = self.cluster(rs, sortp, stop, cut1, gt,lvl+1)
   return it
 
 le = lambda x,y: x <= y
@@ -392,7 +400,8 @@ def xval(lst:list, m:int, n:int, some:int=10**6) -> tuple[list,list]:
       train, test = [],[]
       for i,x in enumerate(lst):
         (test if i >= lo and i < hi else train).append(x)
-      yield random.choices(train, k=min(len(train),some)), test
+      train = random.choices(train, k=min(len(train),some))
+      yield train,test
 
 def timing(fun) -> number:
   start = time()
@@ -485,6 +494,18 @@ class egs: # sassdddsf
     print("exploit",dgood.exploit(dbad,top=2))
     print("exploit",dbad.exploit(dgood,top=2))
 
+  def clones():
+    d1 = DATA().adds(csv(the.train))
+    d2 = d1.clone(d1.rows)
+    for a,b in zip(d1.cols.y, d2.cols.y):
+      for k,v1 in a.__dict__.items():
+        assert v1 == b.__dict__[k],"clone?"
+
+  def heavens():
+    d = DATA().adds(csv(the.train)).d2hs()
+    lst = [row for i,row in enumerate(d.rows) if i % 30 ==0]
+    assert d.d2h(d.rows[0]) < d.d2h(d.rows[-1]), "d2h?"
+
   def distances():
     d = DATA().adds(csv(the.train))
     random.shuffle(d.rows)
@@ -492,17 +513,20 @@ class egs: # sassdddsf
     for x in lst: assert 0 <= x <= 1, "dists1?" 
     assert .33 <= lst[len(lst)//2] <= .66, "dists2?"
 
-  def heavensh():
-    d = DATA().adds(csv(the.train)).d2hs()
-    lst = [row for i,row in enumerate(d.rows) if i % 30 ==0]
-    assert d.d2h(d.rows[0]) < d.d2h(d.rows[-1]), "d2h?"
+  def twoFar():
+    d = DATA().adds(csv(the.train))
+    for _ in range(100):
+      a,b = d.twoFar(d.rows, sortp=True)
+      assert d.chebyshev(a) <=  d.chebyshev(b), "twoFar?"
+    for _ in range(100):
+       cut,ls,rs,l,r = d.half(d.rows)
+       print(len(ls),len(rs))
 
-  def clones():
-    d1 = DATA().adds(csv(the.train))
-    d2 = d1.clone(d1.rows)
-    for a,b in zip(d1.cols.y, d2.cols.y):
-      for k,v1 in a.__dict__.items():
-        assert v1 == b.__dict__[k],"clone?"
+  def clusters():
+    d = DATA().adds(csv(the.train))
+    cluster = d.cluster(d.rows,sortp=True)
+    for node,leafp in cluster.nodes(): 
+      print(r2(d.chebyshev(node.left)) if node.left else "", node,sep="\t")
 
   def mqs():
     print("\n"+the.train)
