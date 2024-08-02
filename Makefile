@@ -6,7 +6,7 @@
 
 SHELL     := bash
 MAKEFLAGS += --warn-undefined-variables
-.SILENT:
+#.SILENT:
 
 Top=$(shell git rev-parse --show-toplevel)
 Data=$(Top)/../data
@@ -20,7 +20,7 @@ pull    : ## download
 push    : ## save
 	echo -en "\033[33mWhy this push? \033[0m"; read x; git commit -am "$$x"; git push; git status
 
-~/tmp/%.pdf: %.py  ## make doco: .py ==> .pdf
+$(Top)/docs/%.pdf: %.py  ## make doco: .py ==> .pdf
 	mkdir -p ~/tmp
 	echo "pdf-ing $@ ... "
 	a2ps                 \
@@ -39,17 +39,15 @@ push    : ## save
 	ps2pdf $@.ps $@; rm $@.ps
 	open $@
 
-~/tmp/%.md : %.py ## make doco: py -> md
-	sed -e '1,2d' -e 's/^# //' $^  > $@
+#~/tmp/%.md : %.py ## make doco: py -> md
+#	echo 1
 
-~/tmp/%.html : ~/tmp/%.md ## make doco: md -> html
-	mkdir -p ~/tmp
-	cp $(Top)/etc/ezr.css ~/tmp
-	pandoc --toc -c ezr.css --number-sections  --highlight-style tango -o $@  $^
-	sh $(Top)/etc/header.sh $(notdir $(subst .html,,$@)) > tmp
-	cat $@ >> tmp
-	echo "</body></html>" >> tmp
-	mv tmp $@
+docs/%.html : %.py ## make doco: md -> html
+	cat $^ \
+	| gawk -f etc/py2html.awk \
+	| pandoc -s  -f markdown --number-sections --toc \
+  		     --css ezr.css --highlight-style tango \
+	  			 -o $@ 
 
 mqs: ## experiment: mqs
 	$(foreach d, config hpo misc process,        \

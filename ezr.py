@@ -1,7 +1,9 @@
 #!/usr/bin/env python3 -B
 # <!-- vim: set ts=2 sw=2 sts=2 et: -->
-
-# ```
+# % ezr.py:<br>multi-objective active learning
+# % by timm <timm@ieee.org>
+# % &copy; 2024, BSD-2 license>
+# --------
 from __future__ import annotations
 from typing import Any as any
 from typing import Callable
@@ -15,12 +17,9 @@ from time import time
 import stats
 R = random.random
 any = random.choice
-# ```
-
+#
 # ##  Types
 # All programs have magic control options, which we keep the `the` variables.
-
-# ```
 @dataclass
 class CONFIG:
   buffer: int = 100 # chunk size, when streaming
@@ -33,14 +32,12 @@ class CONFIG:
   m     : int = 2   # low frequency Bayes hack
   p     : int = 2   # distance formula exponent
   seed  : int = 1234567891 # random number seed
+  Stop  : int = 2   # min size of tree leaves
   train : str = "data/misc/auto93.csv" # csv file. row1 has column names
 
 the = CONFIG()
-# ```
-
+#
 # Some misc types:
-
-# ```
 number  = float  | int   #
 atom    = number | bool | str # and sometimes "?"
 row     = list[atom]
@@ -49,39 +46,30 @@ classes = dict[str,rows] # `str` is the class name
 
 def LIST(): return field(default_factory=list)
 def DICT(): return field(default_factory=dict)
-# ```
-
+#
 # NUMs and SYMs are both COLumns. All COLumns count `n` (items seen),
 # `at` (their column number) and `txt` (column name).
-
-# ```
 @dataclass
 class COL:
   n   : int = 0
   at  : int = 0
   txt : str = ""
-# ```
-
+#
 # SYMs tracks  symbol counts  and tracks the `mode` (the most common frequent symbol).
-
-# ```
 @dataclass
 class SYM(COL):
   has  : dict = DICT()
   mode : atom=None
   most : int=0
-# ```
-
+#
 # NUMs tracks  `lo,hi` seen so far, as well the `mu` (mean) and `sd` (standard deviation),
 # using Welford's algorithm.
-
-# ```
 @dataclass
 class NUM(COL):
   mu : number =  0
   m2 : number =  0
   sd : number =  0
-  lo : number =  1E21
+  lo : number =  1E32
   hi : number = -1E32
   goal : number = 1
 
@@ -89,12 +77,9 @@ class NUM(COL):
   # (all other goals are to be maximizes).
   def __post_init__(self:COLS) -> None:  
     if  self.txt and self.txt[-1] == "-": self.goal=0
-# ```
-
+#
 # COLS are a factory that reads some `names` from the first
 # row , the creates the appropriate columns.
-
-# ```
 @dataclass
 class COLS:
   names: list[str]   # column names
@@ -115,11 +100,8 @@ class COLS:
         (self.y if z in "!+-" else self.x).append(col)
         if z=="!": self.klass = col
         if z=="-": col.goal = 0
-# ```
-
+#
 # DATAs store `rows`, which are summarized in `cols`.
-
-# ```
 @dataclass
 class DATA:
   cols : COLS = None         # summaries of rows
@@ -129,41 +111,32 @@ class DATA:
   # an existing DATA, then maybe load in some rows to that new DATA.
   def clone(self:DATA, rows:rows=[]) -> DATA:
     return DATA().add(self.cols.names).adds(rows)
-# ```
-
+#
 # ## Decorators
-
 # I like how JULIA and CLOS lets you define all your data types
 # before anything else. Also, you can group together related methods
 # from different classes. I think that really simplifies explaining the
 # code. So this `of` decorator lets me
 # define methods separately to class definition (and, btw,  it collects a
 # documentation strings). 
-
-# ```
 def of(doc):
   def doit(fun):
     fun.__doc__ = doc
     self = inspect.getfullargspec(fun).annotations['self']
     setattr(globals()[self], fun.__name__, fun)
   return doit
-# ```
-
+#
 # ## MiscMethods
-
-# ```
+#
 @of("Returns 0..1 for min..max.")
 def norm(self:NUM, x) -> number:
-  return x if x=="?" else  (x - self.lo) / (self.hi - self.lo + 1E-32)
+  return x if x=="?" else  ((x - self.lo) / (self.hi - self.lo + 1E-32))
 
 @of("Entropy = measure of disorder.")
 def ent(self:SYM) -> number:
   return - sum(n/self.n * log(n/self.n,2) for n in self.has.values())
-# ```
 
-# ## add 
-
-# ```
+# ## add 
 @of("add COL with many values.")
 def adds(self:COL,  src) -> COL:
   [self.add(row) for row in src]; return self
@@ -172,31 +145,22 @@ def adds(self:COL,  src) -> COL:
 def adds(self:DATA, src) -> DATA:
   [self.add(row) for row in src]; return self
 
-@of("Cache one more row, summarizes in `cols`.")
+@of("As a side-effect on adding one row (to `rows`), update the column sumamries (in `cols`).")
 def add(self:DATA,row:row) -> DATA:
   if    self.cols: self.rows += [self.cols.add(row)]
   else: self.cols = COLS(names=row) # for row q
   return self
-# ```
 
-# Later on, these add methods
-# will coerce strings to numbers (if needed). So the code 
-# always returns the addd rows.
-
-# ```
 @of("add all the `x` and `y` cols.")
 def add(self:COLS, row:row) -> row:
-  for cols in [self.x, self.y]:
-    for col in cols:
-        row[col.at] = col.add(row[col.at])
+  [col.add(row[col.at]) for cols in [self.x, self.y] for col in cols]
   return row
 
 @of("If `x` is known, add this COL.")
 def add(self:COL, x:any) -> any:
   if x != "?":
-     self.n += 1
-     x = self.add1(x)
-  return x
+    self.n += 1
+    self.add1(x)
 
 @of("add symbol counts.")
 def add1(self:SYM, x:any) -> any:
@@ -213,12 +177,8 @@ def add1(self:NUM, x:any) -> number:
   self.mu += d / self.n
   self.m2 += d * (x -  self.mu)
   self.sd  = 0 if self.n <2 else (self.m2/(self.n-1))**.5
-  return x
-# ```
-
+#
 # ## Guessing 
-
-# ```
 @of("Guess values at same frequency of `has`.")
 def guess(self:SYM) -> any:
   r = R()
@@ -277,11 +237,8 @@ def explore(self:COL, other:COL, n=20):
   pr1,pr2 = (self.n + the.k) / n, (other.n + the.k) / n
   key     = lambda x: abs(self.like(x,pr1) - other.like(x,pr2))
   return min([self.guess() for _ in range(n)], key=key)
-# ```
-
-# ## Distance 
-
-# ```
+#
+# ## Distance 
 @of("Between two values (Aha's algorithm).")
 def dist(self:COL, x:any, y:any) -> float:
   return 1 if x==y=="?" else self.dist1(x,y)
@@ -317,7 +274,7 @@ def chebyshevs(self:DATA) -> DATA:
 
 @of("Compute Chebyshev distance of one row to the best `y` values.")
 def chebyshev(self:DATA,row:row) -> number:
-  return  max(abs(c.goal - c.norm(row[c.at])) for c in self.cols.y)
+  return  max(abs(col.goal - col.norm(row[col.at])) for col in self.cols.y)
 
 @of("Sort rows by the Euclidean distance of the goals to heaven.")
 def d2hs(self:DATA) -> DATA:
@@ -328,11 +285,29 @@ def d2hs(self:DATA) -> DATA:
 def d2h(self:DATA,row:row) -> number:
   d = sum(abs(c.goal - c.norm(row[c.at]))**2 for c in self.cols.y)
   return (d/len(self.cols.y)) ** (1/the.p)
-# ```
-
+#
 # ## Cluter
+@dataclass
+class CLUSTER:
+  data :DATA = None
+  right : row = None
+  left  : row = None
+  cut  : number = None
+  fun  : Callable = None
+  lefts : CLUSTER = None
+  rights : CLUSTER = None
 
-# ```
+  def show(self:CLUSTER, lvl=0) -> None:
+    print(("|.. " * self.lvl) + len(self.data.rows))
+    for kid in [self.lefts, self.rights]:
+      if kid: self.kids: kid.show( lvl+1 )
+
+  def leaf(self:CLUSTER, data:DATA, row:row) -> CLUSTER:
+    d = data.dist(self.left,row)
+    if self.lefts  and self.lefts.fun( d,self.lefts.cut):  return lefts.leaf(data,row)
+    if self.rights and self.rights.fun(d,self.rights.cut): return rights.leaf(data,row)
+    return self
+
 @of("return two distant parts")
 def twoFar(self:DATA, rows:rows, samples:int=None) -> tuple[row,row] :
   return max(((any(rows),any(rows)) for _ in range(samples or the.fars)),
@@ -341,30 +316,27 @@ def twoFar(self:DATA, rows:rows, samples:int=None) -> tuple[row,row] :
 @of("divide rows by distance to two faraway points")
 def half(self:DATA, rows:rows) -> tuple[rows,rows,row,row,float]:
   left,right = self.twoFar(rows)
-  toLeft = i.dist(left,right)/2
+  cut = i.dist(left,right)/2
   lefts,rights = [],[]
   for j,row in enumerate(rows):
-    (lefts if self.dist(left,row) <= toLeft  else rights).append(row)
-  return lefts, rights, left, right, toLeft
+    (lefts if self.dist(left,row) <= cut  else rights).append(row)
+  return lefts, rights, left, right, cut
 
-# XXX
-def cluster(data:DATA, rows:rows, lvl:int=0, fun=None,n=None,top=None):
-  stop = stop or the.dist.stop
-  ls, rs, left, right, toLeft = i.half(rows)
-  it = o(data=data.clone(rows), lvl=lvl, fun=fun,n=n,left=left,right=right,toLeft=toLeft)
-  if it.ok2go(ls,stop): it.lefts  = i.cluster(ls, lvl+1, lambda r: i.dist(r,left) <
-= toLeft,stop)
-  if it.ok2go(rs,stop): it.rights = i.cluster(rs, lvl+1, lambda r: i.dist(r,left) >
- toLeft,stop)
+@of("recursive divide rows using distance to two far points")
+def cluster(self:DATA, rows:rows,  stop=None, cut=None, fun=None):
+  stop = stop or the.Stop
+  ls, rs, left, right, cut1 = self.half(rows)
+  it = CLUSTER(data=self.clone(rows), cut=cut, fun=fun, left=left, right=right)
+  if len(ls)>stop and len(ls) < len(rows) : it.lefts  = self.cluster(ls, stop, cut1, le)
+  if len(rs)>stop and len(rs) < lens(rows): it.rights = self.cluster(rs, stop, cut1, gt)
   return it
 
-# ```
-
-# ## Bayes
-
-# ```
+le = lambda x,y: x <= y
+gt = lambda x,y: x >  y
+#
+# ## Bayes
 @of("How much DATA likes a `row`.")
-def like(self:DATA, r:row, nall:int, nh:int) -> float:
+def loglike(self:DATA, r:row, nall:int, nh:int) -> float:
   prior = (len(self.rows) + the.k) / (nall + the.k*nh)
   likes = [c.like(r[c.at], prior) for c in self.cols.x if r[c.at] != "?"]
   return sum(log(x) for x in likes + [prior] if x>0)
@@ -407,14 +379,8 @@ def smo(self:DATA, score=lambda B,R: B-R, generate=None ):
     return done
 
   return _smo1(self.rows[the.label:], _ranked(self.rows[:the.label]))
-# ```
-
-# ## Utils
-
-# ```
-le = lambda x,y: x <= y
-gt = lambda x,y: x >  y
-
+#
+# ## Utils
 def dot(s="."): print(s, file=sys.stderr, flush=True, end="")
 
 def xval(lst:list, m:int, n:int, some:int=10**6) -> tuple[list,list]:
@@ -447,7 +413,7 @@ def csv(file) -> row:
   with file_or_stdin(None if file=="-" else file) as src:
     for line in src:
       line = re.sub(r'([\n\t\r ]|#.*)', '', line)
-      if line: yield [s.strip() for s in line.split(",")]
+      if line: yield [coerce(s.strip()) for s in line.split(",")]
 
 def cli(d:dict):
   "For dictionary key `k`, if command line has `-k X`, then `d[k]=coerce(X)`."
@@ -457,11 +423,8 @@ def cli(d:dict):
       after = sys.argv[c+1] if c < len(sys.argv) - 1 else ""
       if arg in ["-"+k[0], "--"+k]:
         d[k] = coerce("False" if v=="True" else ("True" if v=="False" else after))
-# ```
-
+#
 # ## Examples
-
-# ```
 class egs: # sassdddsf
   def all():
    for s in dir(egs):
@@ -497,7 +460,7 @@ class egs: # sassdddsf
   def likings():
     d = DATA().adds(csv(the.train)).chebyshevs()
     random.shuffle(d.rows)
-    lst = sorted( round(d.like(row,2000,2),2) for row in d.rows[:100])
+    lst = sorted( round(d.loglike(row,2000,2),2) for row in d.rows[:100])
     print(lst)
 
   def chebys():
@@ -507,7 +470,7 @@ class egs: # sassdddsf
     mid = len(lst)//2
     good,bad = lst[:mid], lst[mid:]
     dgood,dbad = d.clone(good), d.clone(bad)
-    lgood,lbad = dgood.like(bad[-1], len(lst),2), dbad.like(bad[-1], len(lst),2)
+    lgood,lbad = dgood.loglike(bad[-1], len(lst),2), dbad.loglike(bad[-1], len(lst),2)
     assert lgood < lbad, "chebyshev?"
 
   def guesses():
@@ -519,10 +482,8 @@ class egs: # sassdddsf
     dgood,dbad = d.clone(good), d.clone(bad)
     print(good[0])
     print(bad[-1])
-    print("exploit",dgood.exploit(dbad))
-    print("exploit",dbad.exploit(dgood))
-    print("explore",dgood.explore(dbad))
-    for _ in range(50): print("explore",dbad.explore(dgood))
+    print("exploit",dgood.exploit(dbad,top=2))
+    print("exploit",dbad.exploit(dgood,top=2))
 
   def distances():
     d = DATA().adds(csv(the.train))
@@ -571,13 +532,9 @@ class egs: # sassdddsf
                   stats.SOME(pool,"pool"),
                   stats.SOME(mqs4,"mqs4"),
                   stats.SOME(mqs1000,"mqs1000")])
-# ```
-
+#
 # ## Start
-
-# ```
 if __name__ == "__main__" and len(sys.argv)> 1:
   cli(the.__dict__)
   random.seed(the.seed)
   getattr(egs, the.eg, lambda : print(f"ezr: [{the.eg}] unknown."))()
-# ```

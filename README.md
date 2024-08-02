@@ -41,6 +41,8 @@ Share and enjoy.
 
 ## Setting Up
 
+### Get some example data
+
 ### Installation
 
 First get some test data:
@@ -51,9 +53,9 @@ Just grab the code:
 
     git clone http://github.com/timm/ezr
     cd ezr/src
-    python3 ezr.py -t path2data/misc/auto93.csv -e all
+    python3 -B ezr.py -t path2data/misc/auto93.csv -e all
 
-Or nstall from local code (if you edit the code, those changes are
+Or install from local code (if you edit the code, those changes are
 instantly accessible):
 
     git clone http://github.com/timm/ezr
@@ -74,4 +76,4 @@ This code has lots of
 `eg.xxx()` functions. Each of these can be called on the command line
 using, say:
 
-     python3 ezr.lua -e klass      # calls the eg.klass() function
+     python3 -B ezr.py -e klass      # calls the eg.klass() function
