@@ -28,8 +28,8 @@ For good-old-fashioned command-line warrior stuff, see 100-200
 - 
 
 |Anit-patterns<br>(things not to do) | SE system | SE coding | AI coding | AI theory<br>(standard) | New AI ideas| 
-|:---------------------------------:|:-----------:|:-----------:|:-----------:|:----------------------:|:-------------|
-|00 - 99                          | 100 - 199 |  200-299  | 300-399   | 400 - 499            |  500-599    | 
+|:----------------------------------:|:---------:|:---------:|:---------:|:-----------------------:|:-----------:|
+|00 - 99                             | 100 - 199 |  200-299  | 300-399   | 400 - 499               |  500-599    | 
 
 
 One more thing.  The SE and AI literature is full of bold experiments
