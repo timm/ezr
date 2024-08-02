@@ -367,7 +367,7 @@ def smo(self:DATA, score=lambda B,R: B-R, generate=None ):
     if generate:
       return self.neighbors(generate(best,rest), a) + b # todo[:some]) + todo[some:] 
     else:
-      key  = lambda r: score(best.like(r, len(done), 2), rest.like(r, len(done), 2))
+      key  = lambda r: score(best.loglike(r, len(done), 2), rest.loglike(r, len(done), 2))
       return  sorted(a, key=key, reverse=True) + b
 
   def _smo1(todo:rows, done:rows) -> rows:
