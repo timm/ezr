@@ -13,11 +13,11 @@ def main(f):
   d = DATA().adds(csv(f))
   somes = []
   for k in [1,2,5]:
-    for n in [25,50,100,200,400]:
-      some = SOME(txt=f"k{k}n{n}") 
+    for ome in [25,50,100,200,400]:
+      some = SOME(txt=f"k{k}some{some}") 
       somes += [some]
-      for train,test in xval(d.rows, 4,4):
-        train = random.choices(train,k=n)
+      for train,test in xval(d.rows, 5,5,some):
+        print(len(train))
         n,acc = 0,0
         for row in test:
           want = row[ d.cols.klass.at ]

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3 -B
 # <!-- vim: set ts=2 sw=2 sts=2 et: -->
-# ##  Header 
+
+# ```
 from __future__ import annotations
 from typing import Any as any
 from typing import Callable
@@ -13,10 +14,13 @@ import re,sys,ast,random,inspect
 from time import time
 import stats
 R  = random.random
+# ```
 
 # ##  Types
-
+#  
 # All programs have magic control options, which we keep the `the` variables.
+
+# ```
 @dataclass
 class CONFIG:
   buffer: int = 100 # chunk size, when streaming
@@ -31,8 +35,11 @@ class CONFIG:
   train : str = "data/misc/auto93.csv" # csv file. row1 has column names
 
 the = CONFIG()
+# ```
 
 # Some misc types:
+
+# ```
 number  = float  | int   #
 atom    = number | bool | str # and sometimes "?"
 row     = list[atom]
@@ -41,24 +48,33 @@ classes = dict[str,rows] # `str` is the class name
 
 def LIST(): return field(default_factory=list)
 def DICT(): return field(default_factory=dict)
+# ```
 
 # NUMs and SYMs are both COLumns. All COLumns count `n` (items seen),
 # `at` (their column number) and `txt` (column name).
+
+# ```
 @dataclass
 class COL:
   n   : int = 0
   at  : int = 0
   txt : str = ""
+# ```
 
 # SYMs tracks  symbol counts  and tracks the `mode` (the most common frequent symbol).
+
+# ```
 @dataclass
 class SYM(COL):
   has  : dict = DICT()
   mode : atom=None
   most : int=0
+# ```
 
 # NUMs tracks  `lo,hi` seen so far, as well the `mu` (mean) and `sd` (standard deviation),
 # using Welford's algorithm.
+
+# ```
 @dataclass
 class NUM(COL):
   mu : number =  0
@@ -72,9 +88,12 @@ class NUM(COL):
   # (all other goals are to be maximizes).
   def __post_init__(self:COLS) -> None:  
     if  self.txt and self.txt[-1] == "-": self.goal=0
+# ```
 
 # COLS are a factory that reads some `names` from the first
 # row , the creates the appropriate columns.
+
+# ```
 @dataclass
 class COLS:
   names: list[str]   # column names
@@ -95,8 +114,11 @@ class COLS:
         (self.y if z in "!+-" else self.x).append(col)
         if z=="!": self.klass = col
         if z=="-": col.goal = 0
+# ```
 
 # DATAs store `rows`, which are summarized in `cols`.
+
+# ```
 @dataclass
 class DATA:
   cols : COLS = None         # summaries of rows
@@ -106,6 +128,7 @@ class DATA:
   # an existing DATA, then maybe load in some rows to that new DATA.
   def clone(self:DATA, rows:rows=[]) -> DATA:
     return DATA().add(self.cols.names).adds(rows)
+# ```
 
 # ## Decorators
 
@@ -116,15 +139,18 @@ class DATA:
 # define methods separately to class definition (and, btw,  it collects a
 # documentation strings). 
 
+# ```
 def of(doc):
   def doit(fun):
     fun.__doc__ = doc
     self = inspect.getfullargspec(fun).annotations['self']
     setattr(globals()[self], fun.__name__, fun)
   return doit
+# ```
 
 # ## MiscMethods
 
+# ```
 @of("Returns 0..1 for min..max.")
 def norm(self:NUM, x) -> number:
   return x if x=="?" else  (x - self.lo) / (self.hi - self.lo + 1E-32)
@@ -132,9 +158,11 @@ def norm(self:NUM, x) -> number:
 @of("Entropy = measure of disorder.")
 def ent(self:SYM) -> number:
   return - sum(n/self.n * log(n/self.n,2) for n in self.has.values())
+# ```
 
 # ## add 
 
+# ```
 @of("add COL with many values.")
 def adds(self:COL,  src) -> COL:
   [self.add(row) for row in src]; return self
@@ -148,11 +176,13 @@ def add(self:DATA,row:row) -> DATA:
   if    self.cols: self.rows += [self.cols.add(row)]
   else: self.cols = COLS(names=row) # for row q
   return self
+# ```
 
 # Later on, these add methods
 # will coerce strings to numbers (if needed). So the code 
 # always returns the addd rows.
 
+# ```
 @of("add all the `x` and `y` cols.")
 def add(self:COLS, row:row) -> row:
   for cols in [self.x, self.y]:
@@ -183,9 +213,11 @@ def add1(self:NUM, x:any) -> number:
   self.m2 += d * (x -  self.mu)
   self.sd  = 0 if self.n <2 else (self.m2/(self.n-1))**.5
   return x
+# ```
 
-# ## Guessing 
+# ## Guessing 
 
+# ```
 @of("Guess values at same frequency of `has`.")
 def guess(self:SYM) -> any:
   r = R()
@@ -244,9 +276,11 @@ def explore(self:COL, other:COL, n=20):
   pr1,pr2 = (self.n + the.k) / n, (other.n + the.k) / n
   key     = lambda x: abs(self.like(x,pr1) - other.like(x,pr2))
   return min([self.guess() for _ in range(n)], key=key)
+# ```
 
 # ## Distance 
 
+# ```
 @of("Between two values (Aha's algorithm).")
 def dist(self:COL, x:any, y:any) -> float:
   return 1 if x==y=="?" else self.dist1(x,y)
@@ -293,9 +327,11 @@ def d2hs(self:DATA) -> DATA:
 def d2h(self:DATA,row:row) -> number:
   d = sum(abs(c.goal - c.norm(row[c.at]))**2 for c in self.cols.y)
   return (d/len(self.cols.y)) ** (1/the.p)
+# ```
 
 # ## Bayes
 
+# ```
 @of("How much DATA likes a `row`.")
 def like(self:DATA, r:row, nall:int, nh:int) -> float:
   prior = (len(self.rows) + the.k) / (nall + the.k*nh)
@@ -341,10 +377,12 @@ def smo(self:DATA, score=lambda B,R: B-R, generate=None ):
     return done
 
   return _smo1(self.rows[the.label:], _ranked(self.rows[:the.label]))
+# ```
 
 # ## Utils
 
-def xval(lst:list, m:int, n:int) -> tuple[list,list]:
+# ```
+def xval(lst:list, m:int, n:int, some:int=10**6) -> tuple[list,list]:
   for _ in range(m):
     random.shuffle(lst)
     for n1 in range (n):
@@ -353,7 +391,7 @@ def xval(lst:list, m:int, n:int) -> tuple[list,list]:
       train, test = [],[]
       for i,x in enumerate(lst):
         (test if i >= lo and i < hi else train).append(x)
-      yield train,test
+      yield random.choices(train, k=min(len(train),some)), test
 
 def timing(fun) -> number:
   start = time()
@@ -384,9 +422,11 @@ def cli(d:dict):
       after = sys.argv[c+1] if c < len(sys.argv) - 1 else ""
       if arg in ["-"+k[0], "--"+k]:
         d[k] = coerce("False" if v=="True" else ("True" if v=="False" else after))
+# ```
 
 # ## Examples
 
+# ```
 class egs: # sassdddsf
   def all():
    for s in dir(egs):
@@ -434,7 +474,6 @@ class egs: # sassdddsf
     dgood,dbad = d.clone(good), d.clone(bad)
     lgood,lbad = dgood.like(bad[-1], len(lst),2), dbad.like(bad[-1], len(lst),2)
     assert lgood < lbad, "chebyshev?"
-
 
   def guesses():
     d = DATA().adds(csv(the.train))
@@ -498,11 +537,13 @@ class egs: # sassdddsf
                   stats.SOME(pool,"pool"),
                   stats.SOME(mqs4,"mqs4"),
                   stats.SOME(mqs1000,"mqs1000")])
-
+# ```
 
 # ## Start
 
+# ```
 if __name__ == "__main__" and len(sys.argv)> 1:
   cli(the.__dict__)
   random.seed(the.seed)
   getattr(egs, the.eg, lambda : print(f"ezr: [{the.eg}] unknown."))()
+# ```

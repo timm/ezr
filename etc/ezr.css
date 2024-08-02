@@ -1,73 +1,28 @@
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Delicious+Handrawn&display=swap');
+*, 
+*::before, 
+*::after {
+    padding: 0; 
+    margin: 0; 
+    box-sizing: border-box;
+}
+
+
+body { max-width: 700px; }
 
 body {
-  font-family: xGeorgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
-  padding: 1em;
-  line-height: 120%;
-  max-width: 800px;
-}
-.p code { font-weight: bold; color:red; }
-
-.good { font-size: 20pt; color: #28A745; vertical-align: middle;}
-.blue { font-size: 20pt; color: #007BFF; vertical-align: middle;}
-.orange { font-size: 20pt; color: #FD7E14; vertical-align: middle;}
-.bad    { font-size: 20pt; color: red; vertical-align: middle; }
-
-pre { background: #f8f8f8; }
-
-._todo::before {
-  content: "\f4c4"; /* Unicode for the hands helping icon */
-  font-family: "Font Awesome 5 Free"; /* Font family for solid icons */
-  font-weight: 900; /* Font weight for solid icons */
-  font-size: 24px; /* Example size */
-  margin-right: 8px; /* Space between icon and text */
-  font-style: normal;
-  vertical-align: middle;
-}
-._ikon::before {
-  content: "\f0ad"; /* Unicode for the wrench icon */
-  font-family: "Font Awesome 5 Free"; /* Font family for solid icons */
-  font-weight: 900; /* Font weight for solid icons */
-  color: #FD7E14; /* Example color */
-  font-size: 24px; /* Example size */
-  margin-right: 8px; /* Space between icon and text */
-  font-style: normal;
-  vertical-align: middle;
-}
-._tools::before {
-  content: "\f7d9"; /* Unicode for the tools icon */
-  font-family: "Font Awesome 5 Free"; /* Font family for solid icons */
-  font-weight: 900; /* Font weight for solid icons */
-  color: #007BFF; /* Example color */
-  font-size: 24px; /* Example size */
-  margin-right: 8px; /* Space between icon and text */
-  font-style: normal;
-}  
-._robot::before {
-  content: "\f544"; /* Unicode for the roboto icon */
-  font-family: "Font Awesome 5 Free"; /* Font family for solid icons */
-  font-weight: 900; /* Font weight for solid icons */
-  color: #28A745; /* Example color */
-  font-size: 24px; /* Example size */
-  margin-right: 8px; /* Space between icon and text */
-  font-style: normal;
-}   
-._flask::before {
-  content: "\f0c3"; /* Unicode for the flask icon */
-  font-family: "Font Awesome 5 Free"; /* Font family for solid icons */
-  font-weight: 900; /* Font weight for solid icons */
-  color: black; /* Example color */
-  font-size: 20px; /* Example size */
-  margin-right: 8px; /* Space between icon and text */
-  font-style: normal;
-}
-._skull::before {
-  content: "\f714"; /* Unicode for the flask icon */
-  font-family: "Font Awesome 5 Free"; /* Font family for solid icons */
-  font-weight: 900; /* Font weight for solid icons */
-  color: #CC0000; /* Example color */
-  font-size: 24px; /* Example size */
-  margin-right: 8px; /* Space between icon and text */
-  font-style: normal;
+  color: #555;
+  max-width: 80ch;
+  font-family: "Helvetica", "Arial", sans-serif;
+  padding: 2em 1em;
 }
 
+h1::first-letter{
+  color:#ff8A00;
+}
+
+h1 { font-size: 50px; font-family: "Delicious Handrawn", cursive;}
+
+h1,h2,h3,p { margin-top: 10px;}
+
+pre { font-size: small; }

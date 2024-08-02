@@ -1,58 +1,77 @@
-# EZR AI: Why Micro Modeling?
+# Easier  AI (just the important bits)
 
-Micro modeling, learned from fewer data points, speeds up the process
-and simplifies AI tools, enabling rapid iteration and easier
-interpretation, unlocking significant value from minimal data.
 
-Why why explore micro-modeling? Why not just (e.g.) use large language models are as our oracles for everything?
+&copy; 2024 Tim Menzies, timm@ieee.org     
+BSD-2 license. Share and enjoy.  
 
-Well, just to say the obvious, it takes a lot of resources to learn a (say) trillion parameter model. Most organizations lack those resources
-which  means most people have to rent (and trust) models built by other people.
-That would be fine in the larger models never hallucinated bad output
-or if those larger models knew everything, or could be quickly tuned to local data.  
+----------------------------------
 
-So let us try that. Here's the results of
-applying few short and zero-shot learning to a LLM (Google's Gemini model) for the process of reviewing 400 used cars 
-(zero-shot and few-shot learning are ways of presenting a few examples to an LLM, in order to tune it to some local task).
-In this example,  we are looking for good lightweight cars
-that are fast and which have good gas mileage 
-The way we scores our cars then in that plot, better cars are found lower down. 
+For over two decades, I have been mentoring people about SE and AI.
+When you do that, after a while, you realize:
 
-The green curve in that plot compares the EZR results to the LLMs. 
-The EZR curve is lower than the LLM which means if finds better cars, much faster than the LLM.
-Note only that, but the EZR models are much easier to build than the LLMs  (EZR took
-milliseconds of training a model with 8 variables while the LLM needed hundreds of millions of dollars to train a model with trillions of parameters). 
+- When it is all said and done, you only need  a dozen or so cool tricks;
+- Other people really only need a  few dozen or so bits of AI theory;
+- Everyone  could have more fun, and get more done, if we avoided
+  the same dozen or so traps.
 
-Which is not to say that EZR always wins for all tasks. But it does mean that there are range of tasks for which lightweight AI tools are getting really good and really simple and really fast.
-So I would say that a modern AI practitioner, or user of AI, needs to know about very big modeling methods (using LLMs). But that same practitioner should
-know about  EZR modeling methods. In fact, I'd recommend trying EZR before LLM since then:
+So I decided to write down that theory and those tricks and    traps
+(see below).  I took some XAI code (explainable AI) I'd written for
+semi-supervised multiple-objective optimization. Then I wrote notes
+on any part of the code where  I had spent time helping helping
+people with  those tricks, theory and traps.
 
-- Poor results with tiny EZR  model can tell you if and when you need to a larger model.
-- On the other hand, if the tiny EZR models get good results, then maybe you won't need a much bigger model. This would avoid numerous problems
-   with understandability, validation, reproducing results, high CPU costs, privacy concerns, and poor performance on specific problems.
-- And it need not be just one of the other. Together, tiny EZR  models can be used to enhance LLMs. For 
-   example, once you build a  tiny EZR model, you have an oracle that can generate test cases for the LLM (so tiny EZR modeling can help you understanding those bigger models).
+Here is how the notes are labelled. For way-out ideas, read the 500+ ones.
+For good-old-fashioned command-line warrior stuff, see 100-200
 
-The rest of this document show
-principles of AI micro modeling. The text
-is organized around a set of hand-on
-coding tutorials. All the code is written in a simplified Python-like language called Lua.
-One way to learn/teach this code is to read this briefing document then, when it tells you to,
-go explore a file in 
-`/tests`. THere:
-- the code has to be ported to (say) Python; That porting should be pretty straightforward but there will be enogugh "gotchas" to make you pause, somethings, and thing hard about
-    what is going on.
-- then some code modification is and you have to explain
-how/why that code modification effects the output (and say whether or not that change could be a good thing).
+- Odd number items are about SE;
+- So even numbers are about AI;
+- 
 
-The test code of this site is written  in `ezr/docs` inside markdown files. To run them:
+|Anit-patterns (things not to do) | SE system | SE coding | AI coding | AI theory (standard) | New AI ideas| 
+|---------------------------------|-----------|-----------|-----------|----------------------|-------------|
+|00 - 99                          | 100 - 199 |  200-299  | 300-399   | 400 - 499            |  500-599    | 
 
-     cd ezr/docs
-     make eg=Code
 
-> [!IMPORTANT]
-| Note that only markdown file with leading upper case names have tests.
+One more thing.  The SE and AI literature is full of bold experiments
+that try a range of new ideas.  But some new ideas are better than
+others. With all little time, and lots of implementation experience,
+we can focus of which  ideas offer the "most bang per buck".
 
-The above idiom will convert Code.md to Code.lua, then execute it
-(importing what it needs from `/src/*.lua`).
+Share and enjoy.
 
+## Setting Up
+
+### Installation
+
+First get some test data:
+
+    git clone http://github.com/timm/data
+
+Just grab the code:
+
+    git clone http://github.com/timm/ezr
+    cd ezr/src
+    python3 ezr.lua -t path2data/misc/auto93.csv -e all
+
+Or nstall from local code (if you edit the code, those changes are
+instantly accessible):
+
+    git clone http://github.com/timm/ezr
+    cd ezr
+    pip [-e] install ./setup.py
+    ezr -t path2data/misc/auto93.csv -e all # test the isntall
+
+Install from the web. Best if you want to just want to import the code,
+the write you own extensions
+
+    pip install ezr
+    ezr -t path2data/misc/auto93.csv -e all # test the install
+
+
+###  Running the code 
+
+This code has lots of
+`eg.xxx()` functions. Each of these can be called on the command line
+using, say:
+
+     lua ez.lua -e klass      # calls the eg.klass() function

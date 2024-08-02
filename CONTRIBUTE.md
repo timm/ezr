@@ -32,25 +32,5 @@
         {4       85      70       78     3       2070  18.6  40}
 
 
-### Code Conventions
 
-As to our coding conventions:
-
-- This code is written in Lua since that is a very simple notation.
-  For a short tutorial on Lua, see "[Learn Lua in Y
-  minutes](https://learnxinyminutes.com/docs/lua/)".
-- UPPER CASE names are classes. `XXX.new()` is the constructor for
-  class `XXX`.
-- In function headers, anything after two spaces is an optional arg.
-  Also, anything after four spaces is a local variable. For example, looking at the
-  first two functions defined below:
-  - `c,tmp` are local variables within the `chebyshev()` function, shown below.
-  - `d` is an optional argument for `RANGE.new()` (and it is not supplied then we 
-    default `hi` to the value of `lo`).
-- This code uses polymorphism, but no inheritance.
-   Why not use full OO? I will let others explain that.
-   See Les Hatton's comments on that 
-   [Does OO sync with how we think?](https://www.researchgate.net/publication/3247400_Does_OO_sync_with_how_we_think).
-   and see also Jack Diederich's 
-   [Stop Writing Classes](https://www.youtube.com/watch?v=o9pEzgHorH0).
 
