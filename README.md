@@ -28,7 +28,7 @@ For good-old-fashioned command-line warrior stuff, see 100-200
 - 
 
 |Anit-patterns (things not to do) | SE system | SE coding | AI coding | AI theory (standard) | New AI ideas| 
-|---------------------------------|-----------|-----------|-----------|----------------------|-------------|
+|:---------------------------------:|:-----------:|:-----------:|:-----------:|:----------------------:|:-------------|
 |00 - 99                          | 100 - 199 |  200-299  | 300-399   | 400 - 499            |  500-599    | 
 
 
@@ -51,7 +51,7 @@ Just grab the code:
 
     git clone http://github.com/timm/ezr
     cd ezr/src
-    python3 ezr.lua -t path2data/misc/auto93.csv -e all
+    python3 ezr.py -t path2data/misc/auto93.csv -e all
 
 Or nstall from local code (if you edit the code, those changes are
 instantly accessible):
@@ -74,4 +74,4 @@ This code has lots of
 `eg.xxx()` functions. Each of these can be called on the command line
 using, say:
 
-     lua ez.lua -e klass      # calls the eg.klass() function
+     python3 ezr.lua -e klass      # calls the eg.klass() function
