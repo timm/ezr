@@ -6,7 +6,7 @@
 
 SHELL     := bash
 MAKEFLAGS += --warn-undefined-variables
-#.SILENT:
+.SILENT:
 
 Top=$(shell git rev-parse --show-toplevel)
 Data=$(Top)/../data
