@@ -1,3 +1,0 @@
-here="$(dirname $(cd $( dirname "${BASH_SOURCE[0]}" ) && pwd ))"
-
-here=$here bash --init-file $here/etc/dotbashrc -i

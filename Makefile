@@ -9,9 +9,10 @@ MAKEFLAGS += --warn-undefined-variables
 .SILENT:
 
 Top=$(shell git rev-parse --show-toplevel)
+Data=$(Top)/../data
 
 help      :  ## show help
-		gawk -f $(Top)/etc/help.awk $(MAKEFILE_LIST) 
+	gawk -f $(Top)/etc/help.awk $(MAKEFILE_LIST) 
 
 pull    : ## download
 	git pull
@@ -42,15 +43,15 @@ push    : ## save
 	sed -e '1,2d' -e 's/^# //' $^  > $@
 
 ~/tmp/%.html : ~/tmp/%.md ## make doco: md -> html
-	cp etc/ezr.css ~/tmp
+	mkdir ~/tmp
+	cp $(Top)/etc/ezr.css ~/tmp
 	pandoc --toc -c ezr.css --number-sections  --highlight-style tango -o $@  $^
-	sh etc/header.sh $(notdir $(subst .html,,$@)) > tmp
+	sh $(Top)/etc/header.sh $(notdir $(subst .html,,$@)) > tmp
 	cat $@ >> tmp
 	echo "</body></html>" >> tmp
 	mv tmp $@
 
 mqs: ## experiment: mqs
-	$(foreach f, $(wildcard data/misc/*.csv),    ./ezr.py -t $f -e mqs  ; )
-	$(foreach f, $(wildcard data/process/*.csv), ./ezr.py -t $f -e mqs  ; )
-	$(foreach f, $(wildcard data/hpo/*.csv),     ./ezr.py -t $f -e mqs  ; )
-	$(foreach f, $(wildcard data/config/*.csv),  ./ezr.py -t $f -e mqs  ; )
+	$(foreach d, config hpo misc process,        \
+    $(foreach f, $(wildcard $(Data)/$d/*.csv),  \
+      ls $f; ))
