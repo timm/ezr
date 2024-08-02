@@ -1,3 +1,8 @@
+cross-val
+- order effects
+- overfitting, hold-out sets
+- temporaol validation
+
 # coding101
 
 - in complete
@@ -49,6 +54,8 @@ coal-face scripting
   - type hints
   - big example: rust
 - testing
+  - test driven development
+    - unit test, watch
   - ziztler's papers on differnt debugging
   - fuzzing
   - sharperio's debbuging 
@@ -56,6 +63,9 @@ coal-face scripting
   - separate mechanism from policy (my data little language)
   - iterators, try catch
   - functional programming
+
+python
+-  Destructuring
 
 SE theory
 - decomposition: parnas. interface, polymorphism

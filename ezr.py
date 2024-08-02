@@ -13,11 +13,11 @@ from math import exp,log,cos,sqrt,pi
 import re,sys,ast,random,inspect
 from time import time
 import stats
-R  = random.random
+R = random.random
+any = random.choice
 # ```
 
 # ##  Types
-#  
 # All programs have magic control options, which we keep the `the` variables.
 
 # ```
@@ -27,6 +27,7 @@ class CONFIG:
   Last  : int = 30  # max number of labellings
   cut   : float = 0.5 # borderline best:rest
   eg    : str = "mqs"  #start up action
+  fars  : int = 20  # number of times to look for far pairs
   k     : int = 1   # low frequency Bayes hack
   label : int = 4   # initial number of labels
   m     : int = 2   # low frequency Bayes hack
@@ -329,6 +330,36 @@ def d2h(self:DATA,row:row) -> number:
   return (d/len(self.cols.y)) ** (1/the.p)
 # ```
 
+# ## Cluter
+
+# ```
+@of("return two distant parts")
+def twoFar(self:DATA, rows:rows, samples:int=None) -> tuple[row,row] :
+  return max(((any(rows),any(rows)) for _ in range(samples or the.fars)),
+              key= lambda two: self.dist(*two))
+
+@of("divide rows by distance to two faraway points")
+def half(self:DATA, rows:rows) -> tuple[rows,rows,row,row,float]:
+  left,right = self.twoFar(rows)
+  toLeft = i.dist(left,right)/2
+  lefts,rights = [],[]
+  for j,row in enumerate(rows):
+    (lefts if self.dist(left,row) <= toLeft  else rights).append(row)
+  return lefts, rights, left, right, toLeft
+
+# XXX
+def cluster(data:DATA, rows:rows, lvl:int=0, fun=None,n=None,top=None):
+  stop = stop or the.dist.stop
+  ls, rs, left, right, toLeft = i.half(rows)
+  it = o(data=data.clone(rows), lvl=lvl, fun=fun,n=n,left=left,right=right,toLeft=toLeft)
+  if it.ok2go(ls,stop): it.lefts  = i.cluster(ls, lvl+1, lambda r: i.dist(r,left) <
+= toLeft,stop)
+  if it.ok2go(rs,stop): it.rights = i.cluster(rs, lvl+1, lambda r: i.dist(r,left) >
+ toLeft,stop)
+  return it
+
+# ```
+
 # ## Bayes
 
 # ```
@@ -357,7 +388,6 @@ def smo(self:DATA, score=lambda B,R: B-R, generate=None ):
     cut  = int(.5 + len(done) ** the.cut)
     best = self.clone(done[:cut])
     rest = self.clone(done[cut:])
-    #random.shuffle(todo) # optimization: only sort a random subset of todo 
     #a,b = todo[:the.buffer//2],todo[the.buffer//2:]; random.shuffle(b); a ,b =a+b[:len(a)], b[len(a):]
     a,b = todo[:the.buffer//2], todo[the.buffer:]; a = a+b[:len(a)]; b = b[len(a):]; 
     #random.shuffle(todo); a,b= todo[:the.buffer], todo[the.buffer:]
@@ -382,6 +412,9 @@ def smo(self:DATA, score=lambda B,R: B-R, generate=None ):
 # ## Utils
 
 # ```
+le = lambda x,y: x <= y
+gt = lambda x,y: x >  y
+
 def dot(s="."): print(s, file=sys.stderr, flush=True, end="")
 
 def xval(lst:list, m:int, n:int, some:int=10**6) -> tuple[list,list]:
@@ -514,7 +547,6 @@ class egs: # sassdddsf
     print("\n"+the.train)
     repeats=20
     d = DATA().adds(csv(the.train))
-    [print(col) for col in d.cols.all]
     b4 = [d.chebyshev(row) for row in d.rows]
     print(f"rows\t: {len(d.rows)}")
     print(f"xcols\t: {len(d.cols.x)}")
@@ -535,7 +567,7 @@ class egs: # sassdddsf
     mqs4 = [d.chebyshev(d.shuffle().smo(generate=generate2)[0]) for _ in range(20)]
     print(f"mqs4\t: {(time() - start)/repeats:.2f} msecs")
 
-    stats.some0([ stats.SOME(b4,"baseline"),
+    stats.report([ stats.SOME(b4,"baseline"),
                   stats.SOME(pool,"pool"),
                   stats.SOME(mqs4,"mqs4"),
                   stats.SOME(mqs1000,"mqs1000")])

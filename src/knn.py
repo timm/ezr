@@ -1,13 +1,15 @@
+#!/usr/bin/env python3 -B
 # # KNN
 # Here is some code that does a 5x5 cross-val for a knn.
-# Adapt it to  explore k=1,2,5 neasest neghits.
-# also looking at the code HERE, try exploring a random subset of 
-# `train` of size 25,50,200,400
+# Adapt it to  explore k=1,2,5 and  the distance coeffience p
+# of 1,2,3, 4. Also see what happens in use just n=[25,50,100,200,100000]
+# rows (selected at random) where selecting 100000 should means "just 
+# use all the rows.
 # 
 # ```python
 import random,sys
 sys.path.insert(0, '..')
-from  stats import SOME,some0
+from  stats import SOME,report
 from  ezr import DATA, SYM, csv, xval, the, dot
       
 def knn(data,  k, row1, rows=None):
@@ -16,9 +18,8 @@ def knn(data,  k, row1, rows=None):
     seen.add( row[data.cols.klass.at] )
   return seen.mode
 
-def one(data,k,p, train,test):
+def one(data,k,train,test):
   n,acc = 0,0
-  the.p=p
   for row in test:
     want = row[ data.cols.klass.at ]
     got  = knn(data, k, row, train)
@@ -29,15 +30,15 @@ def one(data,k,p, train,test):
 def main(file): 
   data = DATA().adds(csv(file))
   somes = []
-  for n in [25,50,100,200,100000]:
-    for k in [1,2,5]:
-      for p in [1,2,3,4]:
-        dot()
-        somes  += [SOME(txt=f"k{k}p{p}n{n}")]
-        for train,test in xval(data.rows, 5,5, n):
-          somes[-1].add(one(data, k, p, train, test))
+  d=0
+  for k in [1,2,5]:
+     d += 1
+     dot(d % 10)
+     somes  += [SOME(txt=f"k{k}")]
+     for train,test in xval(data.rows, 5,5):
+       somes[-1].add(one(data, k, train, test))
   print("\n" + file)
-  some0(somes)
+  report(somes)
 
 random.seed(1234567891)
 for file in sys.argv[1:]: main(file)
