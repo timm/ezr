@@ -8,10 +8,8 @@
 import random,sys
 sys.path.insert(0, '..')
 from  stats import SOME,some0
-from  ezr import DATA, SYM, csv, xval, the
+from  ezr import DATA, SYM, csv, xval, the, dot
       
-def dot(): print(".", file=sys.stderr, flush=True, end="")
-
 def knn(data,  k, row1, rows=None):
   seen = SYM()
   for row in data.neighbors(row1, rows=rows)[:k]:
@@ -29,7 +27,6 @@ def one(data,k,p, train,test):
   return acc/n
  
 def main(file): 
-  random.seed(1234567891)
   data = DATA().adds(csv(file))
   somes = []
   for n in [25,50,100,200,100000]:
@@ -42,5 +39,6 @@ def main(file):
   print("\n" + file)
   some0(somes)
 
+random.seed(1234567891)
 for file in sys.argv[1:]: main(file)
 # ```

@@ -382,6 +382,8 @@ def smo(self:DATA, score=lambda B,R: B-R, generate=None ):
 # ## Utils
 
 # ```
+def dot(s="."): print(s, file=sys.stderr, flush=True, end="")
+
 def xval(lst:list, m:int, n:int, some:int=10**6) -> tuple[list,list]:
   for _ in range(m):
     random.shuffle(lst)

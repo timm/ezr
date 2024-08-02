@@ -159,28 +159,33 @@ def bars(somes, width=40):
     last=some.rank
     print(all.bar(some.has(), width=width, word="%20s", fmt="%5.2f"))
  
-def some2(n=5):
-  some0([ SOME([0.34, 0.49 ,0.51, 0.6]*n,   txt="x1"),
-        SOME([0.6  ,0.7 , 0.8 , 0.89]*n,  txt="x2"),
-        SOME([0.09 ,0.22, 0.28 , 0.5]*n, txt="x3"),
-        SOME([0.6  ,0.7,  0.8 , 0.9]*n,   txt="x4"),
-        SOME([0.1  ,0.2,  0.3 , 0.4]*n,   txt="x5")])
-  
-def some3():
-  some0([ SOME([0.32,  0.45,  0.50,  0.5,  0.55],    "one"),
-        SOME([ 0.76,  0.90,  0.95,  0.99,  0.995], "two")])
-
-def some4(n=20):
-  some0([ SOME([0.24, 0.25 ,0.26, 0.29]*n,   "x1"),
-        SOME([0.35, 0.52 ,0.63, 0.8]*n,   "x2"),
-        SOME([0.13 ,0.23, 0.38 , 0.48]*n, "x3"),
-        ])
-
-def some0(somes):
+def report(somes):
   all = SOME(somes)
   last = None
   for some in sk(somes):
     if some.rank != last: print("#")
     last=some.rank
     print(all.bar(some,width=40,word="%20s", fmt="%5.2f"))
-    
+
+# ---------------------------------------------------------------------------------------
+def some1(n=5):
+  report([ SOME([0.34, 0.49 ,0.51, 0.6]*n,   txt="x1"),
+        SOME([0.6  ,0.7 , 0.8 , 0.89]*n,  txt="x2"),
+        SOME([0.09 ,0.22, 0.28 , 0.5]*n, txt="x3"),
+        SOME([0.6  ,0.7,  0.8 , 0.9]*n,   txt="x4"),
+        SOME([0.1  ,0.2,  0.3 , 0.4]*n,   txt="x5")])
+  
+def some2():
+  report([ SOME([0.32,  0.45,  0.50,  0.5,  0.55],    "one"),
+        SOME([ 0.76,  0.90,  0.95,  0.99,  0.995], "two")])
+
+def some3(n=20):
+  report([ SOME([0.24, 0.25 ,0.26, 0.29]*n,   "x1"),
+        SOME([0.35, 0.52 ,0.63, 0.8]*n,   "x2"),
+        SOME([0.13 ,0.23, 0.38 , 0.48]*n, "x3"),
+        ])
+
+if __name__ == "__main__": 
+  for fun in [some1,  some2, some3]:
+    print("\n# " + ("-" * 90))
+    fun()

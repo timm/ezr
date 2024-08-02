@@ -11,8 +11,8 @@ cat <<EOF
 <script>hljs.highlightAll();</script>
 <link rel="stylesheet" href="ezr.css">
 </head><body>
-<small><p align="right"><a href="home">home</a> :: <a href="issues">issues</a> :: <a href="license">license</a>
-:: <a href="home">home</a> :: <a href="issues">issues</a> :: <a href="license">license</a></p></small>
-
+<small><p align="left"><a href="home">home</a> :: <a href="issues">issues</a> :: <a href="license">license</a>
+</p></small>
 <h1>$1</h1>
+<hr>
 EOF

@@ -43,7 +43,7 @@ push    : ## save
 	sed -e '1,2d' -e 's/^# //' $^  > $@
 
 ~/tmp/%.html : ~/tmp/%.md ## make doco: md -> html
-	mkdir ~/tmp
+	mkdir -p ~/tmp
 	cp $(Top)/etc/ezr.css ~/tmp
 	pandoc --toc -c ezr.css --number-sections  --highlight-style tango -o $@  $^
 	sh $(Top)/etc/header.sh $(notdir $(subst .html,,$@)) > tmp
