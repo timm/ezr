@@ -1,13 +1,10 @@
 #!/usr/bin/env python3 -B
 # <!-- vim: set ts=2 sw=2 sts=2 et: -->
-# % ezr.py:<br>multi-objective active learning
-# % by timm, <timm@ieee.org>
-# % &copy; 2024, BSD-2 license {[se/tut/license](se/tut/license.md)}
 """
-ezr.py: exploring multi-objective active learning
-(c) 2024 Tim Menzies (timm@ieee.org). BSD-2 license
+## Ezr.py
+&copy;  2024 Tim Menzies (timm@ieee.org). BSD-2 license
 
-USAGE:
+### USAGE:   
   python3 ezr.py [OPTIONS]
 
 This code explores multi-objective optimization; i.e. what
@@ -15,23 +12,26 @@ predicts for the better goal values? This code also explores
 active learning; i.e. how to make predictions after looking at
 the fewest number of goal values?
 
-OPTIONS:
-  -b --buffer int    chunk size, when streaming   = 100
-  -L --Last   int    max number of labels         = 30
-  -c --cut    float  borderline best:rest         = 0.5
-  -e --eg     str    start up action              = mqs
-  -f --fars   int    number of times to look far  = 20
-  -h --help          show help                    = False
-  -k --k      int    low frequency Bayes hack     = 1
-  -l --label  int    initial number of labels     = 4
-  -m --m      int    low frequency Bayes hack     = 2
-  -p --p      int    distance formula exponent    = 2
-  -s --seed   int    random number seed           = 1234567891
-  -S --Stop   int    min size of tree leaves      = 30
-  -t --train  str    training csv file. row1 has names = data/misc/auto93.csv
+### OPTIONS:   
 
+    -b --buffer int    chunk size, when streaming   = 100  
+    -L --Last   int    max number of labels         = 30  
+    -c --cut    float  borderline best:rest         = 0.5  
+    -e --eg     str    start up action              = mqs   
+    -f --fars   int    number of times to look far  = 20   
+    -h --help          show help                    = False   
+    -k --k      int    low frequency Bayes hack     = 1   
+    -l --label  int    initial number of labels     = 4   
+    -m --m      int    low frequency Bayes hack     = 2   
+    -p --p      int    distance formula exponent    = 2   
+    -s --seed   int    random number seed           = 1234567891   
+    -S --Stop   int    min size of tree leaves      = 30   
+    -t --train  str    training csv file. row1 has names = data/misc/auto93.csv
+
+### Data Format
 Training data consists of csv files where "?" denotes missing values.
 Row one  list the columns names, defining the roles of the columns:
+
 - NUMeric column names start with an upper case letter.
 - All other columns are SYMbolic.
 - Names ending with "+" or "-" are goals to maximize/minimize
@@ -39,22 +39,25 @@ Row one  list the columns names, defining the roles of the columns:
 
 For example, here is data where the goals are `Lbs-,Acc+,Mpg+`
 i.e. we want to minimize car weight and maximize acceleration
-and maximize fuel consumption. Note that the top rows are
+and maximize fuel consumption.
+
+     {Clndrs  Volume  HpX  Model  origin  Lbs-  Acc+  Mpg+}
+     -------  ------  ---  -----  ------  ----  ----  ----
+      4       90      48   78     2       1985  21.5   40
+      4       98      79   76     1       2255  17.7   30
+      4       98      68   77     3       2045  18.5   30
+      4       79      67   74     2       2000  16     30
+      ...
+      4      151      85   78     1       2855  17.6   20
+      6      168      132  80     3       2910  11.4   30
+      8      350      165  72     1       4274  12     10
+      8      304      150  73     1       3672  11.5   10
+
+Note that the top rows are
 better than the bottom ones (lighter, faster cars that are
 more economical).
-
-  {Clndrs  Volume  HpX  Model  origin  Lbs-  Acc+  Mpg+}
-  -------  ------  ---  -----  ------  ----  ----  ----
-   4       90      48   78     2       1985  21.5   40
-   4       98      79   76     1       2255  17.7   30
-   4       98      68   77     3       2045  18.5   30
-   4       79      67   74     2       2000  16     30
-   ...
-   4      151      85   78     1       2855  17.6   20
-   6      168      132  80     3       2910  11.4   30
-   8      350      165  72     1       4274  12     10
-   8      304      150  73     1       3672  11.5   10
 """
+# ## Imports
 from __future__ import annotations
 from typing import Any as any
 from typing import List, Dict, Type, Callable, Generator
