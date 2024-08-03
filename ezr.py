@@ -1,29 +1,28 @@
 #!/usr/bin/env python3 -B
 # <!-- vim: set ts=2 sw=2 sts=2 et: -->
 # % ezr.py:<br>multi-objective active learning
-# % by timm <timm@ieee.org>
-# % &copy; 2024, BSD-2 license>
+# % by timm, <timm@ieee.org>
+# % &copy; 2024, BSD-2 license {[se/tut/license](se/tut/license.md)}
 # --------
 from __future__ import annotations
 from typing import Any as any
-from typing import Callable
+from typing import List, Dict, Type, Callable, Generator
 from fileinput import FileInput as file_or_stdin
 from dataclasses import dataclass, field, fields
 import datetime
-from typing import Any, List, Dict, Type
 from math import exp,log,cos,sqrt,pi
 import re,sys,ast,random,inspect
 from time import time
 import stats
 R = random.random
-any = random.choice
+one = random.choice
 #
 # ##  Types
 # All programs have magic control options, which we keep the `the` variables.
 @dataclass
 class CONFIG:
   buffer: int = 100 # chunk size, when streaming
-  Last  : int = 30  # max number of labellings
+  Last  : int = 30  # max number of labels
   cut   : float = 0.5 # borderline best:rest
   eg    : str = "mqs"  #start up action
   fars  : int = 20  # number of times to look for far pairs
@@ -85,7 +84,7 @@ class COLS:
   names: list[str]   # column names
   all  : list[COL] = LIST()  # all NUMS and SYMS
   x    : list[COL] = LIST()  # independent COLums
-  y    : list[COL] = LIST()  # depedent COLumns
+  y    : list[COL] = LIST()  # dependent COLumns
   klass: COL = None
 
   # Collect  `all` the COLs as well as the dependent/independent `x`,`y` lists.
@@ -145,7 +144,7 @@ def adds(self:COL,  src) -> COL:
 def adds(self:DATA, src) -> DATA:
   [self.add(row) for row in src]; return self
 
-@of("As a side-effect on adding one row (to `rows`), update the column sumamries (in `cols`).")
+@of("As a side-effect on adding one row (to `rows`), update the column summaries (in `cols`).")
 def add(self:DATA,row:row) -> DATA:
   if    self.cols: self.rows += [self.cols.add(row)]
   else: self.cols = COLS(names=row) # for row q
@@ -258,10 +257,6 @@ def dist(self:DATA, r1:row, r2:row) -> float:
   n = sum(c.dist(r1[c.at], r2[c.at])**the.p for c in self.cols.x)
   return (n / len(self.cols.x))**(1/the.p)
 
-@of("Sort `rows` by their distance to `row1`'s x values.")
-def neighbors(self:DATA, row1:row, rows:rows=None) -> rows:
-  return sorted(rows or self.rows, key=lambda row2: self.dist(row1, row2))
-
 @of("Sort rows randomly")
 def shuffle(self:DATA) -> DATA:
   random.shuffle(self.rows)
@@ -286,7 +281,37 @@ def d2h(self:DATA,row:row) -> number:
   d = sum(abs(c.goal - c.norm(row[c.at]))**2 for c in self.cols.y)
   return (d/len(self.cols.y)) ** (1/the.p)
 #
-# ## Cluter
+# ## Nearest Neighbor
+@of("Sort `rows` by their distance to `row1`'s x values.")
+def neighbors(self:DATA, row1:row, rows:rows=None) -> rows:
+  return sorted(rows or self.rows, key=lambda row2: self.dist(row1, row2))
+
+@of("Return predictions for `cols` (defaults to klass column).")
+def predict(self:DATA, row1:row, rows:rows, cols=None, k=2):
+  cols = cols or [self.cols.klass]
+  got = {col : [] for col in cols}
+  for row2 in self.neighbors(row1, rows)[:k]:
+    d = 1E-32 + self.dist(row1,row2)
+    [lst.append((d, row2[col.at])) for col,lst in got.items()]
+  return {col.at : col.predict(lst) for col,lst in got.items()}
+ 
+@of("Find weighted sum of numbers (weighted by distance).")
+def predict(self:NUM, pairs:list[tuple[float,number]]) -> number:
+  ws,tmp = 0,0
+  for d,num in pairs: 
+    w    = 1/d**2
+    ws  += w
+    tmp += w*num
+  return tmp/ws
+
+@of("Sort symbols by votes (voting by distance).")
+def predict(self:SYM, pairs:list[tuple[float,any]]) -> number:
+  votes = {}
+  for d,x in pairs:
+    votes[x] = votes.get(x,0) + 1/d**2
+  return max(votes, key=votes.get)
+#
+# ## Cluster
 @dataclass
 class CLUSTER:
   data :DATA
@@ -298,13 +323,13 @@ class CLUSTER:
   lefts : CLUSTER = None
   rights : CLUSTER = None
 
-  def __repr__(self:CLUSTER) -> string:
+  def __repr__(self:CLUSTER) -> str:
     return f"{'|.. ' * self.lvl}{len(self.data.rows)}"
 
   def leaf(self:CLUSTER, data:DATA, row:row) -> CLUSTER:
     d = data.dist(self.left,row)
-    if self.lefts  and self.lefts.fun( d,self.lefts.cut):  return lefts.leaf(data,row)
-    if self.rights and self.rights.fun(d,self.rights.cut): return rights.leaf(data,row)
+    if self.lefts  and self.lefts.fun( d,self.lefts.cut):  return self.lefts.leaf(data,row)
+    if self.rights and self.rights.fun(d,self.rights.cut): return self.rights.leaf(data,row)
     return self
 
   def nodes(self:CLUSTER):
@@ -316,9 +341,9 @@ class CLUSTER:
 
 @of("Return two distant rows, optionally sorted into best, then rest")
 def twoFar(self:DATA, rows:rows, sortp=False, samples:int=None) -> tuple[row,row] :
-  left, right =  max(((any(rows),any(rows)) for _ in range(samples or the.fars)),
+  left, right =  max(((one(rows), one(rows)) for _ in range(samples or the.fars)),
                        key= lambda two: self.dist(*two))
-  if sortp and self.d2h(right) < self.d2h(left): right,left = left,right
+  if sortp and self.chebyshev(right) < self.chebyshev(left): right,left = left,right
   return left, right
 
 @of("Divide rows by distance to two faraway points")
@@ -326,13 +351,14 @@ def half(self:DATA, rows:rows, sortp=False) -> tuple[rows,rows,row,row,float]:
   left,right = self.twoFar(rows, sortp=sortp)
   cut = self.dist(left,right)/2
   lefts,rights = [],[]
-  for j,row in enumerate(rows):
-    (lefts if j < len(rows) // 2   else rights).append(row)
+  for row in rows: 
+    (lefts if self.dist(row,left) <= cut else rights).append(row)
   return self.dist(left,lefts[-1]),lefts, rights, left, right
 
 @of("recursive divide rows using distance to two far points")
-def cluster(self:DATA, rows:rows,  sortp=False, stop=None, cut=None, fun=None,lvl=0):
+def cluster(self:DATA, rows:rows=None,  sortp=False, stop=None, cut=None, fun=None,lvl=0):
   stop = stop or the.Stop
+  rows = rows or self.rows
   cut1, ls, rs, left, right = self.half(rows,sortp=sortp)
   it = CLUSTER(data=self.clone(rows), cut=cut, fun=fun, left=left, right=right, lvl=lvl)
   if len(ls)>stop and len(ls)<len(rows): it.lefts  = self.cluster(ls, sortp, stop, cut1, le,lvl+1)
@@ -341,6 +367,7 @@ def cluster(self:DATA, rows:rows,  sortp=False, stop=None, cut=None, fun=None,lv
 
 le = lambda x,y: x <= y
 gt = lambda x,y: x >  y
+
 #
 # ## Bayes
 @of("How much DATA likes a `row`.")
@@ -361,37 +388,41 @@ def like(self:NUM, x:number, _) -> float:
   return min(1, nom/(denom + 1E-30))
 
 @of("active learning")
-def smo(self:DATA, score=lambda B,R: B-R, generate=None ):
-  def _ranked(rows): return self.clone(rows).chebyshevs().rows
+def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True ):
+  def ranked(rows): return self.clone(rows).chebyshevs().rows
 
-  def _guess(todo:rows, done:rows) -> rows:
+  def todos(todo):
+    if faster: # replace back half of `a` with items from `b`
+       a,b = todo[:the.buffer//2], todo[the.buffer:]
+       return a + b[:len(a)], b[len(a):]
+    else:
+      return todo,[]
+
+  def guess(todo:rows, done:rows) -> rows:
     cut  = int(.5 + len(done) ** the.cut)
     best = self.clone(done[:cut])
     rest = self.clone(done[cut:])
-    #a,b = todo[:the.buffer//2],todo[the.buffer//2:]; random.shuffle(b); a ,b =a+b[:len(a)], b[len(a):]
-    a,b = todo[:the.buffer//2], todo[the.buffer:]; a = a+b[:len(a)]; b = b[len(a):]; 
-    #random.shuffle(todo); a,b= todo[:the.buffer], todo[the.buffer:]
-    #a=todo; b=[]
+    a,b  = todos(todo)
     if generate:
       return self.neighbors(generate(best,rest), a) + b # todo[:some]) + todo[some:] 
     else:
       key  = lambda r: score(best.loglike(r, len(done), 2), rest.loglike(r, len(done), 2))
       return  sorted(a, key=key, reverse=True) + b
 
-  def _smo1(todo:rows, done:rows) -> rows:
+  def loop(todo:rows, done:rows) -> rows:
     for k in range(the.Last - the.label):
       if len(todo) < 3 : break
-      top,*todo = _guess(todo, done)
-      done += [top]
-      done = _ranked(done)
+      top,*todo = guess(todo, done)
+      done     += [top]
+      done      = ranked(done)
     return done
 
-  return _smo1(self.rows[the.label:], _ranked(self.rows[:the.label]))
+  return loop(self.rows[the.label:], ranked(self.rows[:the.label]))
 #
 # ## Utils
 def dot(s="."): print(s, file=sys.stderr, flush=True, end="")
 
-def xval(lst:list, m:int, n:int, some:int=10**6) -> tuple[list,list]:
+def xval(lst:list, m:int=5, n:int=5, some:int=10**6) -> Generator[rows,rows]:
   for _ in range(m):
     random.shuffle(lst)
     for n1 in range (n):
@@ -418,7 +449,7 @@ def coerce(s:str) -> atom:
 def r2(x): return round(x,2)
 def r3(x): return round(x,3)
 
-def csv(file) -> row:
+def csv(file) -> Generator[row]:
   with file_or_stdin(None if file=="-" else file) as src:
     for line in src:
       line = re.sub(r'([\n\t\r ]|#.*)', '', line)
@@ -434,7 +465,7 @@ def cli(d:dict):
         d[k] = coerce("False" if v=="True" else ("True" if v=="False" else after))
 #
 # ## Examples
-class egs: # sassdddsf
+class egs: 
   def all():
    for s in dir(egs):
      if s[0] != "_" and s != "all":
@@ -528,6 +559,14 @@ class egs: # sassdddsf
     for node,leafp in cluster.nodes(): 
       print(r2(d.chebyshev(node.left)) if node.left else "", node,sep="\t")
 
+  def predict(file=None):
+    d = DATA().adds(csv(file or the.train))
+    for train,test in xval(d.rows):
+      trained = d.clone(train)
+      cluster = trained.cluster()
+      for row in test:
+        trained.predict(row, cluster.leaf(row,d).data.rows)
+
   def mqs():
     print("\n"+the.train)
     repeats=20
@@ -538,19 +577,19 @@ class egs: # sassdddsf
     print(f"ycols\t: {len(d.cols.y)}")
 
     start = time()
-    pool = [d.chebyshev(d.shuffle().smo()[0]) for _ in range(repeats)]
-    print(f"pool\t: {(time() - start) /repeats:.2f} msecs")
+    pool = [d.chebyshev(d.shuffle().activeLearning()[0]) for _ in range(repeats)]
+    print(f"pool\t: {(time() - start) /repeats:.2f} secs")
 
     generate1 =lambda best,rest: best.exploit(rest,1000)
     start = time()
-    mqs1000 = [d.chebyshev(d.shuffle().smo(generate=generate1)[0]) for _ in range(repeats)]
-    print(f"mqs1K\t: {(time() - start)/repeats:.2f} msecs")
+    mqs1000 = [d.chebyshev(d.shuffle().activeLearning(generate=generate1)[0]) for _ in range(repeats)]
+    print(f"mqs1K\t: {(time() - start)/repeats:.2f} secs")
 
     used={}
     generate2 =lambda best,rest: best.exploit(rest,top=4,used=used)
     start = time()
-    mqs4 = [d.chebyshev(d.shuffle().smo(generate=generate2)[0]) for _ in range(20)]
-    print(f"mqs4\t: {(time() - start)/repeats:.2f} msecs")
+    mqs4 = [d.chebyshev(d.shuffle().activeLearning(generate=generate2)[0]) for _ in range(20)]
+    print(f"mqs4\t: {(time() - start)/repeats:.2f} secs")
 
     stats.report([ stats.SOME(b4,"baseline"),
                   stats.SOME(pool,"pool"),

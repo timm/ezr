@@ -93,7 +93,8 @@
 <h1 class="title">ezr.py:<br>multi-objective active learning</h1>
 <p class="author">by timm <a href="mailto:timm@ieee.org"
 class="email">timm@ieee.org</a></p>
-<p class="date">© 2024, BSD-2 license&gt;</p>
+<p class="date">© 2024, BSD-2 license {<a
+href="se/tut/license.md">se/tut/license</a>}</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -109,16 +110,18 @@ class="toc-section-number">4</span> add</a></li>
 class="toc-section-number">5</span> Guessing</a></li>
 <li><a href="#distance" id="toc-distance"><span
 class="toc-section-number">6</span> Distance</a></li>
+<li><a href="#nearest-neighbor" id="toc-nearest-neighbor"><span
+class="toc-section-number">7</span> Nearest Neighbor</a></li>
 <li><a href="#cluter" id="toc-cluter"><span
-class="toc-section-number">7</span> Cluter</a></li>
+class="toc-section-number">8</span> Cluter</a></li>
 <li><a href="#bayes" id="toc-bayes"><span
-class="toc-section-number">8</span> Bayes</a></li>
+class="toc-section-number">9</span> Bayes</a></li>
 <li><a href="#utils" id="toc-utils"><span
-class="toc-section-number">9</span> Utils</a></li>
+class="toc-section-number">10</span> Utils</a></li>
 <li><a href="#examples" id="toc-examples"><span
-class="toc-section-number">10</span> Examples</a></li>
+class="toc-section-number">11</span> Examples</a></li>
 <li><a href="#start" id="toc-start"><span
-class="toc-section-number">11</span> Start</a></li>
+class="toc-section-number">12</span> Start</a></li>
 </ul>
 </nav>
 <hr />
@@ -153,7 +156,7 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a hr
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  m     : <span class="bu">int</span> <span class="op">=</span> <span class="dv">2</span>   <span class="co"># low frequency Bayes hack</span></span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  p     : <span class="bu">int</span> <span class="op">=</span> <span class="dv">2</span>   <span class="co"># distance formula exponent</span></span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  seed  : <span class="bu">int</span> <span class="op">=</span> <span class="dv">1234567891</span> <span class="co"># random number seed</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  Stop  : <span class="bu">int</span> <span class="op">=</span> <span class="dv">2</span>   <span class="co"># min size of tree leaves</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  Stop  : <span class="bu">int</span> <span class="op">=</span> <span class="dv">30</span>   <span class="co"># min size of tree leaves</span></span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  train : <span class="bu">str</span> <span class="op">=</span> <span class="st">&quot;data/misc/auto93.csv&quot;</span> <span class="co"># csv file. row1 has column names</span></span>
 <span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>the <span class="op">=</span> CONFIG()</span></code></pre></div>
@@ -193,7 +196,7 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a hr
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  mu : number <span class="op">=</span>  <span class="dv">0</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  m2 : number <span class="op">=</span>  <span class="dv">0</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  sd : number <span class="op">=</span>  <span class="dv">0</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  lo : number <span class="op">=</span>  <span class="fl">1E21</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  lo : number <span class="op">=</span>  <span class="fl">1E32</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  hi : number <span class="op">=</span> <span class="op">-</span><span class="fl">1E32</span></span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  goal : number <span class="op">=</span> <span class="dv">1</span></span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
@@ -255,7 +258,7 @@ class="header-section-number">3</span> MiscMethods</h2>
 <p>Returns 0..1 for min..max.</p>
 <div class="sourceCode" id="cb10"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> norm(<span class="va">self</span>:NUM, x) <span class="op">-&gt;</span> number:</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> x <span class="cf">if</span> x<span class="op">==</span><span class="st">&quot;?&quot;</span> <span class="cf">else</span>  (x <span class="op">-</span> <span class="va">self</span>.lo) <span class="op">/</span> (<span class="va">self</span>.hi <span class="op">-</span> <span class="va">self</span>.lo <span class="op">+</span> <span class="fl">1E-32</span>)</span></code></pre></div>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> x <span class="cf">if</span> x<span class="op">==</span><span class="st">&quot;?&quot;</span> <span class="cf">else</span>  ((x <span class="op">-</span> <span class="va">self</span>.lo) <span class="op">/</span> (<span class="va">self</span>.hi <span class="op">-</span> <span class="va">self</span>.lo <span class="op">+</span> <span class="fl">1E-32</span>))</span></code></pre></div>
 <p>Entropy = measure of disorder.</p>
 <div class="sourceCode" id="cb11"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ent(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number:</span>
@@ -280,16 +283,14 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a h
 <p>add all the <code>x</code> and <code>y</code> cols.</p>
 <div class="sourceCode" id="cb15"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add(<span class="va">self</span>:COLS, row:row) <span class="op">-&gt;</span> row:</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> cols <span class="kw">in</span> [<span class="va">self</span>.x, <span class="va">self</span>.y]:</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> col <span class="kw">in</span> cols:</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>        row[col.at] <span class="op">=</span> col.add(row[col.at])</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> row</span></code></pre></div>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  [col.add(row[col.at]) <span class="cf">for</span> cols <span class="kw">in</span> [<span class="va">self</span>.x, <span class="va">self</span>.y] <span class="cf">for</span> col <span class="kw">in</span> cols]</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> row</span></code></pre></div>
 <p>If <code>x</code> is known, add this COL.</p>
 <div class="sourceCode" id="cb16"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add(<span class="va">self</span>:COL, x:<span class="bu">any</span>) <span class="op">-&gt;</span> <span class="bu">any</span>:</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> x <span class="op">!=</span> <span class="st">&quot;?&quot;</span>:</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>     <span class="va">self</span>.n <span class="op">+=</span> <span class="dv">1</span></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>     x <span class="op">=</span> <span class="va">self</span>.add1(x)</span></code></pre></div>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.n <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span>.add1(x)</span></code></pre></div>
 <p>add symbol counts.</p>
 <div class="sourceCode" id="cb17"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add1(<span class="va">self</span>:SYM, x:<span class="bu">any</span>) <span class="op">-&gt;</span> <span class="bu">any</span>:</span>
@@ -393,296 +394,356 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb28-1"><a h
 class="sourceCode python"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> dist(<span class="va">self</span>:DATA, r1:row, r2:row) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  n <span class="op">=</span> <span class="bu">sum</span>(c.dist(r1[c.at], r2[c.at])<span class="op">**</span>the.p <span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.cols.x)</span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (n <span class="op">/</span> <span class="bu">len</span>(<span class="va">self</span>.cols.x))<span class="op">**</span>(<span class="dv">1</span><span class="op">/</span>the.p)</span></code></pre></div>
-<p>Sort <code>rows</code> by their distance to <code>row1</code>’s x
-values.</p>
-<div class="sourceCode" id="cb30"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> neighbors(<span class="va">self</span>:DATA, row1:row, rows:rows<span class="op">=</span><span class="va">None</span>) <span class="op">-&gt;</span> rows:</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">sorted</span>(rows <span class="kw">or</span> <span class="va">self</span>.rows, key<span class="op">=</span><span class="kw">lambda</span> row2: <span class="va">self</span>.dist(row1, row2))</span></code></pre></div>
 <p>Sort rows randomly</p>
-<div class="sourceCode" id="cb31"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> shuffle(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> DATA:</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  random.shuffle(<span class="va">self</span>.rows)</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">self</span></span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> shuffle(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> DATA:</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  random.shuffle(<span class="va">self</span>.rows)</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">self</span></span></code></pre></div>
 <p>Sort rows by the Euclidean distance of the goals to heaven.</p>
-<div class="sourceCode" id="cb32"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> chebyshevs(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> DATA:</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.rows <span class="op">=</span> <span class="bu">sorted</span>(<span class="va">self</span>.rows, key<span class="op">=</span><span class="kw">lambda</span> r: <span class="va">self</span>.chebyshev(r))</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">self</span></span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> chebyshevs(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> DATA:</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.rows <span class="op">=</span> <span class="bu">sorted</span>(<span class="va">self</span>.rows, key<span class="op">=</span><span class="kw">lambda</span> r: <span class="va">self</span>.chebyshev(r))</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">self</span></span></code></pre></div>
 <p>Compute Chebyshev distance of one row to the best <code>y</code>
 values.</p>
-<div class="sourceCode" id="cb33"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> chebyshev(<span class="va">self</span>:DATA,row:row) <span class="op">-&gt;</span> number:</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span>  <span class="bu">max</span>(<span class="bu">abs</span>(c.goal <span class="op">-</span> c.norm(row[c.at])) <span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.cols.y)</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> chebyshev(<span class="va">self</span>:DATA,row:row) <span class="op">-&gt;</span> number:</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span>  <span class="bu">max</span>(<span class="bu">abs</span>(col.goal <span class="op">-</span> col.norm(row[col.at])) <span class="cf">for</span> col <span class="kw">in</span> <span class="va">self</span>.cols.y)</span></code></pre></div>
 <p>Sort rows by the Euclidean distance of the goals to heaven.</p>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> d2hs(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> DATA:</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.rows <span class="op">=</span> <span class="bu">sorted</span>(<span class="va">self</span>.rows, key<span class="op">=</span><span class="kw">lambda</span> r: <span class="va">self</span>.d2h(r))</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">self</span></span></code></pre></div>
+<p>Compute euclidean distance of one row to the best <code>y</code>
+values.</p>
 <div class="sourceCode" id="cb34"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> d2hs(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> DATA:</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.rows <span class="op">=</span> <span class="bu">sorted</span>(<span class="va">self</span>.rows, key<span class="op">=</span><span class="kw">lambda</span> r: <span class="va">self</span>.d2h(r))</span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">self</span></span></code></pre></div>
-<p>Compute Euclidean distance of one row to the best <code>y</code>
+class="sourceCode python"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> d2h(<span class="va">self</span>:DATA,row:row) <span class="op">-&gt;</span> number:</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  d <span class="op">=</span> <span class="bu">sum</span>(<span class="bu">abs</span>(c.goal <span class="op">-</span> c.norm(row[c.at]))<span class="op">**</span><span class="dv">2</span> <span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.cols.y)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (d<span class="op">/</span><span class="bu">len</span>(<span class="va">self</span>.cols.y)) <span class="op">**</span> (<span class="dv">1</span><span class="op">/</span>the.p)</span></code></pre></div>
+<h2 data-number="7" id="nearest-neighbor"><span
+class="header-section-number">7</span> Nearest Neighbor</h2>
+<p>Sort <code>rows</code> by their distance to <code>row1</code>’s x
 values.</p>
 <div class="sourceCode" id="cb35"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> d2h(<span class="va">self</span>:DATA,row:row) <span class="op">-&gt;</span> number:</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  d <span class="op">=</span> <span class="bu">sum</span>(<span class="bu">abs</span>(c.goal <span class="op">-</span> c.norm(row[c.at]))<span class="op">**</span><span class="dv">2</span> <span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.cols.y)</span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (d<span class="op">/</span><span class="bu">len</span>(<span class="va">self</span>.cols.y)) <span class="op">**</span> (<span class="dv">1</span><span class="op">/</span>the.p)</span></code></pre></div>
-<h2 data-number="7" id="cluter"><span
-class="header-section-number">7</span> Cluter</h2>
+class="sourceCode python"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> neighbors(<span class="va">self</span>:DATA, row1:row, rows:rows<span class="op">=</span><span class="va">None</span>) <span class="op">-&gt;</span> rows:</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">sorted</span>(rows <span class="kw">or</span> <span class="va">self</span>.rows, key<span class="op">=</span><span class="kw">lambda</span> row2: <span class="va">self</span>.dist(row1, row2))</span></code></pre></div>
+<p>Weighted sum of influences on numeric cols.</p>
 <div class="sourceCode" id="cb36"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CLUSTER:</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  data :DATA <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  right : row <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>  left  : row <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  cut  : number <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  fun  : Callable <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  lefts : CLUSTER <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>  rights : CLUSTER <span class="op">=</span> <span class="va">None</span></span>
-<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> show(<span class="va">self</span>:CLUSTER, lvl<span class="op">=</span><span class="dv">0</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
-<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>((<span class="st">&quot;|.. &quot;</span> <span class="op">*</span> <span class="va">self</span>.lvl) <span class="op">+</span> <span class="bu">len</span>(<span class="va">self</span>.data.rows))</span>
-<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> kid <span class="kw">in</span> [<span class="va">self</span>.lefts, <span class="va">self</span>.rights]:</span>
-<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> kid: <span class="va">self</span>.kids: kid.show( lvl<span class="op">+</span><span class="dv">1</span> )</span>
-<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> leaf(<span class="va">self</span>:CLUSTER, data:DATA, row:row) <span class="op">-&gt;</span> CLUSTER:</span>
-<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> data.dist(<span class="va">self</span>.left,row)</span>
-<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="va">self</span>.lefts  <span class="kw">and</span> <span class="va">self</span>.lefts.fun( d,<span class="va">self</span>.lefts.cut):  <span class="cf">return</span> lefts.leaf(data,row)</span>
-<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="va">self</span>.rights <span class="kw">and</span> <span class="va">self</span>.rights.fun(d,<span class="va">self</span>.rights.cut): <span class="cf">return</span> rights.leaf(data,row)</span>
-<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">self</span></span></code></pre></div>
-<p>return two distant parts</p>
+class="sourceCode python"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict(<span class="va">self</span>:DATA, row1:row, rows:rows, cols<span class="op">=</span><span class="va">None</span>,k<span class="op">=</span><span class="dv">2</span>):</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  got <span class="op">=</span> {col : [] <span class="cf">for</span> col <span class="kw">in</span> cols}</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row2 <span class="kw">in</span> <span class="va">self</span>.neighbors(row1, rows)[:k]:</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> <span class="va">self</span>.dist(row1,row2)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    [lst.append((d, row2[col.at)) <span class="cf">for</span> col,lst <span class="kw">in</span> got.items()]</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {col.at : col.predict(lst) <span class="cf">for</span> col,lst <span class="kw">in</span> got.items()}</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a> </span></code></pre></div>
+<p>Find weighted sum of numbers (weighted by distance)..</p>
 <div class="sourceCode" id="cb37"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> twoFar(<span class="va">self</span>:DATA, rows:rows, samples:<span class="bu">int</span><span class="op">=</span><span class="va">None</span>) <span class="op">-&gt;</span> <span class="bu">tuple</span>[row,row] :</span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">max</span>(((<span class="bu">any</span>(rows),<span class="bu">any</span>(rows)) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(samples <span class="kw">or</span> the.fars)),</span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>              key<span class="op">=</span> <span class="kw">lambda</span> two: <span class="va">self</span>.dist(<span class="op">*</span>two))</span></code></pre></div>
-<p>divide rows by distance to two faraway points</p>
+class="sourceCode python"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict(<span class="va">self</span>:NUM, pairs:<span class="bu">list</span>[<span class="bu">tuple</span>[<span class="bu">float</span>,number]]) <span class="op">-&gt;</span> number:</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  ws,tmp <span class="op">=</span> <span class="dv">0</span>,<span class="dv">0</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> d,num <span class="kw">in</span> pairs: </span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    w    <span class="op">=</span> <span class="dv">1</span><span class="op">/</span>(d<span class="op">+</span><span class="fl">1E-32</span>)<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    ws  <span class="op">+=</span> w</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">+=</span> w<span class="op">*</span>num</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> tmp<span class="op">/</span>ws</span></code></pre></div>
+<p>Sort symbols by votes (voting by distance).</p>
 <div class="sourceCode" id="cb38"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> half(<span class="va">self</span>:DATA, rows:rows) <span class="op">-&gt;</span> <span class="bu">tuple</span>[rows,rows,row,row,<span class="bu">float</span>]:</span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  left,right <span class="op">=</span> <span class="va">self</span>.twoFar(rows)</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  cut <span class="op">=</span> i.dist(left,right)<span class="op">/</span><span class="dv">2</span></span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  lefts,rights <span class="op">=</span> [],[]</span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> j,row <span class="kw">in</span> <span class="bu">enumerate</span>(rows):</span>
-<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>    (lefts <span class="cf">if</span> <span class="va">self</span>.dist(left,row) <span class="op">&lt;=</span> cut  <span class="cf">else</span> rights).append(row)</span>
-<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> lefts, rights, left, right, cut</span></code></pre></div>
-<p>recursive divide rows using distance to two far points</p>
+class="sourceCode python"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict(<span class="va">self</span>:SYM, pairs:<span class="bu">list</span>[<span class="bu">tuple</span>[<span class="bu">float</span>,<span class="bu">any</span>]]) <span class="op">-&gt;</span> number:</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  votes<span class="op">=</span>{}</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> d,x <span class="kw">in</span> pairs:</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>    votes[x] <span class="op">=</span> votes.get(x,<span class="dv">0</span>) <span class="op">+</span> <span class="dv">1</span><span class="op">/</span>(d<span class="op">+</span><span class="fl">1E-32</span>)<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">max</span>(votes, key<span class="op">=</span>votes.get)</span></code></pre></div>
+<h2 data-number="8" id="cluter"><span
+class="header-section-number">8</span> Cluter</h2>
 <div class="sourceCode" id="cb39"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cluster(<span class="va">self</span>:DATA, rows:rows,  stop<span class="op">=</span><span class="va">None</span>, cut<span class="op">=</span><span class="va">None</span>, fun<span class="op">=</span><span class="va">None</span>):</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  stop <span class="op">=</span> stop <span class="kw">or</span> the.Stop</span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  ls, rs, left, right, cut1 <span class="op">=</span><span class="va">self</span>.half(rows)</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  it <span class="op">=</span> CLUSTER(data<span class="op">=</span><span class="va">self</span>.clone(rows),  cut<span class="op">=</span>cut, fun<span class="op">=</span>fun, left<span class="op">=</span>left,right<span class="op">=</span>right)</span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="bu">len</span>(ls)<span class="op">&gt;</span>stop <span class="kw">and</span> <span class="bu">len</span>(ls) <span class="op">&lt;</span> <span class="bu">len</span>(rows) : it.lefts  <span class="op">=</span> <span class="va">self</span>.cluster(ls, stop, cut1, le)</span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="bu">len</span>(rs)<span class="op">&gt;</span>stop <span class="kw">and</span> <span class="bu">len</span>(rs) <span class="op">&lt;</span> lens(rows): it.rights <span class="op">=</span> <span class="va">self</span>.cluster(rs, stop, cut1, gt)</span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> it</span>
-<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>le <span class="op">=</span> <span class="kw">lambda</span> x,y: x <span class="op">&lt;=</span> y</span>
-<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>gt <span class="op">=</span> <span class="kw">lambda</span> x,y: x <span class="op">&gt;</span>  y</span></code></pre></div>
-<h2 data-number="8" id="bayes"><span
-class="header-section-number">8</span> Bayes</h2>
-<p>How much DATA likes a <code>row</code>.</p>
+class="sourceCode python"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CLUSTER:</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  data :DATA</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  right : row</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  left  : row</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  cut  : number</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>  fun  : Callable</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  lvl : <span class="bu">int</span> <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  lefts : CLUSTER <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>  rights : CLUSTER <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> <span class="fu">__repr__</span>(<span class="va">self</span>:CLUSTER) <span class="op">-&gt;</span> string:</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="ss">f&quot;</span><span class="sc">{</span><span class="st">&#39;|.. &#39;</span> <span class="op">*</span> <span class="va">self</span><span class="sc">.</span>lvl<span class="sc">}{</span><span class="bu">len</span>(<span class="va">self</span>.data.rows)<span class="sc">}</span><span class="ss">&quot;</span></span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> leaf(<span class="va">self</span>:CLUSTER, data:DATA, row:row) <span class="op">-&gt;</span> CLUSTER:</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> data.dist(<span class="va">self</span>.left,row)</span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="va">self</span>.lefts  <span class="kw">and</span> <span class="va">self</span>.lefts.fun( d,<span class="va">self</span>.lefts.cut):  <span class="cf">return</span> lefts.leaf(data,row)</span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="va">self</span>.rights <span class="kw">and</span> <span class="va">self</span>.rights.fun(d,<span class="va">self</span>.rights.cut): <span class="cf">return</span> rights.leaf(data,row)</span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">self</span></span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> nodes(<span class="va">self</span>:CLUSTER):</span>
+<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> leafp(x): <span class="cf">return</span> x.lefts<span class="op">==</span><span class="va">None</span> <span class="kw">and</span> x.rights<span class="op">==</span><span class="va">None</span></span>
+<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">yield</span> <span class="va">self</span>, leafp(<span class="va">self</span>)</span>
+<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> node <span class="kw">in</span> [<span class="va">self</span>.lefts,<span class="va">self</span>.rights]:</span>
+<span id="cb39-25"><a href="#cb39-25" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> node:</span>
+<span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> x,isLeaf <span class="kw">in</span> node.nodes(): <span class="cf">yield</span> x, isLeaf</span></code></pre></div>
+<p>Return two distant rows, optionally sorted into best, then rest</p>
 <div class="sourceCode" id="cb40"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> like(<span class="va">self</span>:DATA, r:row, nall:<span class="bu">int</span>, nh:<span class="bu">int</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  prior <span class="op">=</span> (<span class="bu">len</span>(<span class="va">self</span>.rows) <span class="op">+</span> the.k) <span class="op">/</span> (nall <span class="op">+</span> the.k<span class="op">*</span>nh)</span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  likes <span class="op">=</span> [c.like(r[c.at], prior) <span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.cols.x <span class="cf">if</span> r[c.at] <span class="op">!=</span> <span class="st">&quot;?&quot;</span>]</span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">sum</span>(log(x) <span class="cf">for</span> x <span class="kw">in</span> likes <span class="op">+</span> [prior] <span class="cf">if</span> x<span class="op">&gt;</span><span class="dv">0</span>)</span></code></pre></div>
-<p>How much a SYM likes a value <code>x</code>.</p>
+class="sourceCode python"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> twoFar(<span class="va">self</span>:DATA, rows:rows, sortp<span class="op">=</span><span class="va">False</span>, samples:<span class="bu">int</span><span class="op">=</span><span class="va">None</span>) <span class="op">-&gt;</span> <span class="bu">tuple</span>[row,row] :</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  left, right <span class="op">=</span>  <span class="bu">max</span>(((<span class="bu">any</span>(rows),<span class="bu">any</span>(rows)) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(samples <span class="kw">or</span> the.fars)),</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>                       key<span class="op">=</span> <span class="kw">lambda</span> two: <span class="va">self</span>.dist(<span class="op">*</span>two))</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> sortp <span class="kw">and</span> <span class="va">self</span>.chebyshev(right) <span class="op">&lt;</span> <span class="va">self</span>.chebyshev(left): right,left <span class="op">=</span> left,right</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> left, right</span></code></pre></div>
+<p>Divide rows by distance to two faraway points</p>
 <div class="sourceCode" id="cb41"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> like(<span class="va">self</span>:SYM, x:<span class="bu">any</span>, prior:<span class="bu">float</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (<span class="va">self</span>.has.get(x,<span class="dv">0</span>) <span class="op">+</span> the.m<span class="op">*</span>prior) <span class="op">/</span> (<span class="va">self</span>.n <span class="op">+</span> the.m)</span></code></pre></div>
-<p>How much a NUM likes a value <code>x</code>.</p>
+class="sourceCode python"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> half(<span class="va">self</span>:DATA, rows:rows, sortp<span class="op">=</span><span class="va">False</span>) <span class="op">-&gt;</span> <span class="bu">tuple</span>[rows,rows,row,row,<span class="bu">float</span>]:</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  left,right <span class="op">=</span> <span class="va">self</span>.twoFar(rows, sortp<span class="op">=</span>sortp)</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  cut <span class="op">=</span> <span class="va">self</span>.dist(left,right)<span class="op">/</span><span class="dv">2</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  lefts,rights <span class="op">=</span> [],[]</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row <span class="kw">in</span> rows: </span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>    (lefts <span class="cf">if</span> <span class="va">self</span>.dist(row,left) <span class="op">&lt;=</span> cut <span class="cf">else</span> rights).append(row)</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">self</span>.dist(left,lefts[<span class="op">-</span><span class="dv">1</span>]),lefts, rights, left, right</span></code></pre></div>
+<p>recursive divide rows using distance to two far points</p>
 <div class="sourceCode" id="cb42"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> like(<span class="va">self</span>:NUM, x:number, _) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  v     <span class="op">=</span> <span class="va">self</span>.sd<span class="op">**</span><span class="dv">2</span> <span class="op">+</span> <span class="fl">1E-30</span></span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  nom   <span class="op">=</span> exp(<span class="op">-</span><span class="dv">1</span><span class="op">*</span>(x <span class="op">-</span> <span class="va">self</span>.mu)<span class="op">**</span><span class="dv">2</span><span class="op">/</span>(<span class="dv">2</span><span class="op">*</span>v)) <span class="op">+</span> <span class="fl">1E-30</span></span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  denom <span class="op">=</span> (<span class="dv">2</span><span class="op">*</span>pi<span class="op">*</span>v) <span class="op">**</span><span class="fl">0.5</span></span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">min</span>(<span class="dv">1</span>, nom<span class="op">/</span>(denom <span class="op">+</span> <span class="fl">1E-30</span>))</span></code></pre></div>
-<p>active learning</p>
+class="sourceCode python"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cluster(<span class="va">self</span>:DATA, rows:rows,  sortp<span class="op">=</span><span class="va">False</span>, stop<span class="op">=</span><span class="va">None</span>, cut<span class="op">=</span><span class="va">None</span>, fun<span class="op">=</span><span class="va">None</span>,lvl<span class="op">=</span><span class="dv">0</span>):</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  stop <span class="op">=</span> stop <span class="kw">or</span> the.Stop</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  cut1, ls, rs, left, right <span class="op">=</span> <span class="va">self</span>.half(rows,sortp<span class="op">=</span>sortp)</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  it <span class="op">=</span> CLUSTER(data<span class="op">=</span><span class="va">self</span>.clone(rows), cut<span class="op">=</span>cut, fun<span class="op">=</span>fun, left<span class="op">=</span>left, right<span class="op">=</span>right, lvl<span class="op">=</span>lvl)</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="bu">len</span>(ls)<span class="op">&gt;</span>stop <span class="kw">and</span> <span class="bu">len</span>(ls)<span class="op">&lt;</span><span class="bu">len</span>(rows): it.lefts  <span class="op">=</span> <span class="va">self</span>.cluster(ls, sortp, stop, cut1, le,lvl<span class="op">+</span><span class="dv">1</span>)</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="bu">len</span>(rs)<span class="op">&gt;</span>stop <span class="kw">and</span> <span class="bu">len</span>(rs)<span class="op">&lt;</span><span class="bu">len</span>(rows): it.rights <span class="op">=</span> <span class="va">self</span>.cluster(rs, sortp, stop, cut1, gt,lvl<span class="op">+</span><span class="dv">1</span>)</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> it</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>le <span class="op">=</span> <span class="kw">lambda</span> x,y: x <span class="op">&lt;=</span> y</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>gt <span class="op">=</span> <span class="kw">lambda</span> x,y: x <span class="op">&gt;</span>  y</span></code></pre></div>
+<h2 data-number="9" id="bayes"><span
+class="header-section-number">9</span> Bayes</h2>
+<p>How much DATA likes a <code>row</code>.</p>
 <div class="sourceCode" id="cb43"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> smo(<span class="va">self</span>:DATA, score<span class="op">=</span><span class="kw">lambda</span> B,R: B<span class="op">-</span>R, generate<span class="op">=</span><span class="va">None</span> ):</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _ranked(rows): <span class="cf">return</span> <span class="va">self</span>.clone(rows).chebyshevs().rows</span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>    cut  <span class="op">=</span> <span class="bu">int</span>(<span class="fl">.5</span> <span class="op">+</span> <span class="bu">len</span>(done) <span class="op">**</span> the.cut)</span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>    best <span class="op">=</span> <span class="va">self</span>.clone(done[:cut])</span>
-<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>    rest <span class="op">=</span> <span class="va">self</span>.clone(done[cut:])</span>
-<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">#a,b = todo[:the.buffer//2],todo[the.buffer//2:]; random.shuffle(b); a ,b =a+b[:len(a)], b[len(a):]</span></span>
-<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>    a,b <span class="op">=</span> todo[:the.<span class="bu">buffer</span><span class="op">//</span><span class="dv">2</span>], todo[the.<span class="bu">buffer</span>:]<span class="op">;</span> a <span class="op">=</span> a<span class="op">+</span>b[:<span class="bu">len</span>(a)]<span class="op">;</span> b <span class="op">=</span> b[<span class="bu">len</span>(a):]<span class="op">;</span> </span>
-<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">#random.shuffle(todo); a,b= todo[:the.buffer], todo[the.buffer:]</span></span>
-<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">#a=todo; b=[]</span></span>
-<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> generate:</span>
-<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="va">self</span>.neighbors(generate(best,rest), a) <span class="op">+</span> b <span class="co"># todo[:some]) + todo[some:] </span></span>
-<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>      key  <span class="op">=</span> <span class="kw">lambda</span> r: score(best.like(r, <span class="bu">len</span>(done), <span class="dv">2</span>), rest.like(r, <span class="bu">len</span>(done), <span class="dv">2</span>))</span>
-<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span>  <span class="bu">sorted</span>(a, key<span class="op">=</span>key, reverse<span class="op">=</span><span class="va">True</span>) <span class="op">+</span> b</span>
-<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _smo1(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
-<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(the.Last <span class="op">-</span> the.label):</span>
-<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="bu">len</span>(todo) <span class="op">&lt;</span> <span class="dv">3</span> : <span class="cf">break</span></span>
-<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a>      top,<span class="op">*</span>todo <span class="op">=</span> _guess(todo, done)</span>
-<span id="cb43-22"><a href="#cb43-22" aria-hidden="true" tabindex="-1"></a>      done <span class="op">+=</span> [top]</span>
-<span id="cb43-23"><a href="#cb43-23" aria-hidden="true" tabindex="-1"></a>      done <span class="op">=</span> _ranked(done)</span>
-<span id="cb43-24"><a href="#cb43-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> done</span>
-<span id="cb43-25"><a href="#cb43-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-26"><a href="#cb43-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> _smo1(<span class="va">self</span>.rows[the.label:], _ranked(<span class="va">self</span>.rows[:the.label]))</span></code></pre></div>
-<h2 data-number="9" id="utils"><span
-class="header-section-number">9</span> Utils</h2>
+class="sourceCode python"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> loglike(<span class="va">self</span>:DATA, r:row, nall:<span class="bu">int</span>, nh:<span class="bu">int</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  prior <span class="op">=</span> (<span class="bu">len</span>(<span class="va">self</span>.rows) <span class="op">+</span> the.k) <span class="op">/</span> (nall <span class="op">+</span> the.k<span class="op">*</span>nh)</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  likes <span class="op">=</span> [c.like(r[c.at], prior) <span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.cols.x <span class="cf">if</span> r[c.at] <span class="op">!=</span> <span class="st">&quot;?&quot;</span>]</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">sum</span>(log(x) <span class="cf">for</span> x <span class="kw">in</span> likes <span class="op">+</span> [prior] <span class="cf">if</span> x<span class="op">&gt;</span><span class="dv">0</span>)</span></code></pre></div>
+<p>How much a SYM likes a value <code>x</code>.</p>
 <div class="sourceCode" id="cb44"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> dot(s<span class="op">=</span><span class="st">&quot;.&quot;</span>): <span class="bu">print</span>(s, <span class="bu">file</span><span class="op">=</span>sys.stderr, flush<span class="op">=</span><span class="va">True</span>, end<span class="op">=</span><span class="st">&quot;&quot;</span>)</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> xval(lst:<span class="bu">list</span>, m:<span class="bu">int</span>, n:<span class="bu">int</span>, some:<span class="bu">int</span><span class="op">=</span><span class="dv">10</span><span class="op">**</span><span class="dv">6</span>) <span class="op">-&gt;</span> <span class="bu">tuple</span>[<span class="bu">list</span>,<span class="bu">list</span>]:</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(m):</span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>    random.shuffle(lst)</span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n1 <span class="kw">in</span> <span class="bu">range</span> (n):</span>
-<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>      lo <span class="op">=</span> <span class="bu">len</span>(lst)<span class="op">/</span>n <span class="op">*</span> n1</span>
-<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>      hi <span class="op">=</span> <span class="bu">len</span>(lst)<span class="op">/</span>n <span class="op">*</span> (n1<span class="op">+</span><span class="dv">1</span>)</span>
-<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>      train, test <span class="op">=</span> [],[]</span>
-<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> i,x <span class="kw">in</span> <span class="bu">enumerate</span>(lst):</span>
-<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>        (test <span class="cf">if</span> i <span class="op">&gt;=</span> lo <span class="kw">and</span> i <span class="op">&lt;</span> hi <span class="cf">else</span> train).append(x)</span>
-<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>      <span class="cf">yield</span> random.choices(train, k<span class="op">=</span><span class="bu">min</span>(<span class="bu">len</span>(train),some)), test</span>
-<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> timing(fun) <span class="op">-&gt;</span> number:</span>
-<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>  start <span class="op">=</span> time()</span>
-<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>  fun()</span>
-<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> time() <span class="op">-</span> start</span>
-<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-19"><a href="#cb44-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nth(n): <span class="cf">return</span> <span class="kw">lambda</span> a:a[n]</span>
-<span id="cb44-20"><a href="#cb44-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-21"><a href="#cb44-21" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> <span class="bu">coerce</span>(s:<span class="bu">str</span>) <span class="op">-&gt;</span> atom:</span>
-<span id="cb44-22"><a href="#cb44-22" aria-hidden="true" tabindex="-1"></a>  <span class="co">&quot;Coerces strings to atoms.&quot;</span></span>
-<span id="cb44-23"><a href="#cb44-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">try</span>: <span class="cf">return</span> ast.literal_eval(s)</span>
-<span id="cb44-24"><a href="#cb44-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">except</span> <span class="pp">Exception</span>:  <span class="cf">return</span> s</span>
-<span id="cb44-25"><a href="#cb44-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-26"><a href="#cb44-26" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> r2(x): <span class="cf">return</span> <span class="bu">round</span>(x,<span class="dv">2</span>)</span>
-<span id="cb44-27"><a href="#cb44-27" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> r3(x): <span class="cf">return</span> <span class="bu">round</span>(x,<span class="dv">3</span>)</span>
-<span id="cb44-28"><a href="#cb44-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-29"><a href="#cb44-29" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> csv(<span class="bu">file</span>) <span class="op">-&gt;</span> row:</span>
-<span id="cb44-30"><a href="#cb44-30" aria-hidden="true" tabindex="-1"></a>  <span class="cf">with</span> file_or_stdin(<span class="va">None</span> <span class="cf">if</span> <span class="bu">file</span><span class="op">==</span><span class="st">&quot;-&quot;</span> <span class="cf">else</span> <span class="bu">file</span>) <span class="im">as</span> src:</span>
-<span id="cb44-31"><a href="#cb44-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> line <span class="kw">in</span> src:</span>
-<span id="cb44-32"><a href="#cb44-32" aria-hidden="true" tabindex="-1"></a>      line <span class="op">=</span> re.sub(<span class="vs">r&#39;([\n\t\r ]|#.*)&#39;</span>, <span class="st">&#39;&#39;</span>, line)</span>
-<span id="cb44-33"><a href="#cb44-33" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> line: <span class="cf">yield</span> [s.strip() <span class="cf">for</span> s <span class="kw">in</span> line.split(<span class="st">&quot;,&quot;</span>)]</span>
-<span id="cb44-34"><a href="#cb44-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-35"><a href="#cb44-35" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cli(d:<span class="bu">dict</span>):</span>
-<span id="cb44-36"><a href="#cb44-36" aria-hidden="true" tabindex="-1"></a>  <span class="co">&quot;For dictionary key `k`, if command line has `-k X`, then `d[k]=coerce(X)`.&quot;</span></span>
-<span id="cb44-37"><a href="#cb44-37" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> k,v <span class="kw">in</span> d.items():</span>
-<span id="cb44-38"><a href="#cb44-38" aria-hidden="true" tabindex="-1"></a>    v <span class="op">=</span> <span class="bu">str</span>(v)</span>
-<span id="cb44-39"><a href="#cb44-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c,arg <span class="kw">in</span> <span class="bu">enumerate</span>(sys.argv):</span>
-<span id="cb44-40"><a href="#cb44-40" aria-hidden="true" tabindex="-1"></a>      after <span class="op">=</span> sys.argv[c<span class="op">+</span><span class="dv">1</span>] <span class="cf">if</span> c <span class="op">&lt;</span> <span class="bu">len</span>(sys.argv) <span class="op">-</span> <span class="dv">1</span> <span class="cf">else</span> <span class="st">&quot;&quot;</span></span>
-<span id="cb44-41"><a href="#cb44-41" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> arg <span class="kw">in</span> [<span class="st">&quot;-&quot;</span><span class="op">+</span>k[<span class="dv">0</span>], <span class="st">&quot;--&quot;</span><span class="op">+</span>k]:</span>
-<span id="cb44-42"><a href="#cb44-42" aria-hidden="true" tabindex="-1"></a>        d[k] <span class="op">=</span> <span class="bu">coerce</span>(<span class="st">&quot;False&quot;</span> <span class="cf">if</span> v<span class="op">==</span><span class="st">&quot;True&quot;</span> <span class="cf">else</span> (<span class="st">&quot;True&quot;</span> <span class="cf">if</span> v<span class="op">==</span><span class="st">&quot;False&quot;</span> <span class="cf">else</span> after))</span></code></pre></div>
-<h2 data-number="10" id="examples"><span
-class="header-section-number">10</span> Examples</h2>
+class="sourceCode python"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> like(<span class="va">self</span>:SYM, x:<span class="bu">any</span>, prior:<span class="bu">float</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (<span class="va">self</span>.has.get(x,<span class="dv">0</span>) <span class="op">+</span> the.m<span class="op">*</span>prior) <span class="op">/</span> (<span class="va">self</span>.n <span class="op">+</span> the.m)</span></code></pre></div>
+<p>How much a NUM likes a value <code>x</code>.</p>
 <div class="sourceCode" id="cb45"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> egs: <span class="co"># sassdddsf</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> <span class="bu">all</span>():</span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>   <span class="cf">for</span> s <span class="kw">in</span> <span class="bu">dir</span>(egs):</span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>     <span class="cf">if</span> s[<span class="dv">0</span>] <span class="op">!=</span> <span class="st">&quot;_&quot;</span> <span class="kw">and</span> s <span class="op">!=</span> <span class="st">&quot;all&quot;</span>:</span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(s)</span>
-<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>        random.seed(the.seed)</span>
-<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>        <span class="bu">getattr</span>(egs,s)()</span>
-<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> nums():</span>
-<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>    r  <span class="op">=</span> <span class="dv">256</span></span>
-<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>    n1 <span class="op">=</span> NUM().adds([R()<span class="op">**</span><span class="dv">2</span> <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(r)])</span>
-<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>    n2 <span class="op">=</span> NUM().adds([n1.guess() <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(r)])</span>
-<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="bu">abs</span>(n1.mu <span class="op">-</span> n2.mu) <span class="op">&lt;</span> <span class="fl">0.05</span>, <span class="st">&quot;nums mu?&quot;</span></span>
-<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="bu">abs</span>(n1.sd <span class="op">-</span> n2.sd) <span class="op">&lt;</span> <span class="fl">0.05</span>, <span class="st">&quot;nums sd?&quot;</span></span>
-<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> syms():</span>
-<span id="cb45-17"><a href="#cb45-17" aria-hidden="true" tabindex="-1"></a>    r  <span class="op">=</span> <span class="dv">256</span></span>
-<span id="cb45-18"><a href="#cb45-18" aria-hidden="true" tabindex="-1"></a>    n1 <span class="op">=</span> SYM().adds(<span class="st">&quot;aaaabbc&quot;</span>)</span>
-<span id="cb45-19"><a href="#cb45-19" aria-hidden="true" tabindex="-1"></a>    n2 <span class="op">=</span> SYM().adds(n1.guess() <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(r))</span>
-<span id="cb45-20"><a href="#cb45-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="bu">abs</span>(n1.mode <span class="op">==</span> n2.mode), <span class="st">&quot;syms mu?&quot;</span></span>
-<span id="cb45-21"><a href="#cb45-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="bu">abs</span>(n1.ent() <span class="op">-</span>  n2.ent()) <span class="op">&lt;</span> <span class="fl">0.05</span>, <span class="st">&quot;syms ent?&quot;</span></span>
-<span id="cb45-22"><a href="#cb45-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-23"><a href="#cb45-23" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> csvs():</span>
-<span id="cb45-24"><a href="#cb45-24" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA()</span>
-<span id="cb45-25"><a href="#cb45-25" aria-hidden="true" tabindex="-1"></a>    n<span class="op">=</span><span class="dv">0</span></span>
-<span id="cb45-26"><a href="#cb45-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> row <span class="kw">in</span> csv(the.train): n <span class="op">+=</span> <span class="bu">len</span>(row)</span>
-<span id="cb45-27"><a href="#cb45-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> n<span class="op">==</span> <span class="dv">3192</span>,<span class="st">&quot;csv?&quot;</span></span>
-<span id="cb45-28"><a href="#cb45-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-29"><a href="#cb45-29" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> reads():</span>
-<span id="cb45-30"><a href="#cb45-30" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
-<span id="cb45-31"><a href="#cb45-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> d.cols.y[<span class="dv">1</span>].n<span class="op">==</span><span class="dv">398</span>,<span class="st">&quot;reads?&quot;</span></span>
-<span id="cb45-32"><a href="#cb45-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-33"><a href="#cb45-33" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> likings():</span>
-<span id="cb45-34"><a href="#cb45-34" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train)).chebyshevs()</span>
-<span id="cb45-35"><a href="#cb45-35" aria-hidden="true" tabindex="-1"></a>    random.shuffle(d.rows)</span>
-<span id="cb45-36"><a href="#cb45-36" aria-hidden="true" tabindex="-1"></a>    lst <span class="op">=</span> <span class="bu">sorted</span>( <span class="bu">round</span>(d.like(row,<span class="dv">2000</span>,<span class="dv">2</span>),<span class="dv">2</span>) <span class="cf">for</span> row <span class="kw">in</span> d.rows[:<span class="dv">100</span>])</span>
-<span id="cb45-37"><a href="#cb45-37" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(lst)</span>
-<span id="cb45-38"><a href="#cb45-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-39"><a href="#cb45-39" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> chebys():</span>
-<span id="cb45-40"><a href="#cb45-40" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
-<span id="cb45-41"><a href="#cb45-41" aria-hidden="true" tabindex="-1"></a>    random.shuffle(d.rows)</span>
-<span id="cb45-42"><a href="#cb45-42" aria-hidden="true" tabindex="-1"></a>    lst <span class="op">=</span> d.chebyshevs().rows</span>
-<span id="cb45-43"><a href="#cb45-43" aria-hidden="true" tabindex="-1"></a>    mid <span class="op">=</span> <span class="bu">len</span>(lst)<span class="op">//</span><span class="dv">2</span></span>
-<span id="cb45-44"><a href="#cb45-44" aria-hidden="true" tabindex="-1"></a>    good,bad <span class="op">=</span> lst[:mid], lst[mid:]</span>
-<span id="cb45-45"><a href="#cb45-45" aria-hidden="true" tabindex="-1"></a>    dgood,dbad <span class="op">=</span> d.clone(good), d.clone(bad)</span>
-<span id="cb45-46"><a href="#cb45-46" aria-hidden="true" tabindex="-1"></a>    lgood,lbad <span class="op">=</span> dgood.like(bad[<span class="op">-</span><span class="dv">1</span>], <span class="bu">len</span>(lst),<span class="dv">2</span>), dbad.like(bad[<span class="op">-</span><span class="dv">1</span>], <span class="bu">len</span>(lst),<span class="dv">2</span>)</span>
-<span id="cb45-47"><a href="#cb45-47" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> lgood <span class="op">&lt;</span> lbad, <span class="st">&quot;chebyshev?&quot;</span></span>
-<span id="cb45-48"><a href="#cb45-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-49"><a href="#cb45-49" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> guesses():</span>
-<span id="cb45-50"><a href="#cb45-50" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
-<span id="cb45-51"><a href="#cb45-51" aria-hidden="true" tabindex="-1"></a>    random.shuffle(d.rows)</span>
-<span id="cb45-52"><a href="#cb45-52" aria-hidden="true" tabindex="-1"></a>    lst <span class="op">=</span> d.chebyshevs().rows</span>
-<span id="cb45-53"><a href="#cb45-53" aria-hidden="true" tabindex="-1"></a>    mid <span class="op">=</span> <span class="bu">len</span>(lst)<span class="op">//</span><span class="dv">2</span></span>
-<span id="cb45-54"><a href="#cb45-54" aria-hidden="true" tabindex="-1"></a>    good,bad <span class="op">=</span> lst[:mid], lst[mid:]</span>
-<span id="cb45-55"><a href="#cb45-55" aria-hidden="true" tabindex="-1"></a>    dgood,dbad <span class="op">=</span> d.clone(good), d.clone(bad)</span>
-<span id="cb45-56"><a href="#cb45-56" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(good[<span class="dv">0</span>])</span>
-<span id="cb45-57"><a href="#cb45-57" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(bad[<span class="op">-</span><span class="dv">1</span>])</span>
-<span id="cb45-58"><a href="#cb45-58" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;exploit&quot;</span>,dgood.exploit(dbad))</span>
-<span id="cb45-59"><a href="#cb45-59" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;exploit&quot;</span>,dbad.exploit(dgood))</span>
-<span id="cb45-60"><a href="#cb45-60" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;explore&quot;</span>,dgood.explore(dbad))</span>
-<span id="cb45-61"><a href="#cb45-61" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">50</span>): <span class="bu">print</span>(<span class="st">&quot;explore&quot;</span>,dbad.explore(dgood))</span>
-<span id="cb45-62"><a href="#cb45-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-63"><a href="#cb45-63" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> distances():</span>
-<span id="cb45-64"><a href="#cb45-64" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
-<span id="cb45-65"><a href="#cb45-65" aria-hidden="true" tabindex="-1"></a>    random.shuffle(d.rows)</span>
-<span id="cb45-66"><a href="#cb45-66" aria-hidden="true" tabindex="-1"></a>    lst <span class="op">=</span> <span class="bu">sorted</span>( <span class="bu">round</span>(d.dist(d.rows[<span class="dv">0</span>], row),<span class="dv">2</span>) <span class="cf">for</span> row <span class="kw">in</span> d.rows[:<span class="dv">100</span>])</span>
-<span id="cb45-67"><a href="#cb45-67" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> x <span class="kw">in</span> lst: <span class="cf">assert</span> <span class="dv">0</span> <span class="op">&lt;=</span> x <span class="op">&lt;=</span> <span class="dv">1</span>, <span class="st">&quot;dists1?&quot;</span> </span>
-<span id="cb45-68"><a href="#cb45-68" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="fl">.33</span> <span class="op">&lt;=</span> lst[<span class="bu">len</span>(lst)<span class="op">//</span><span class="dv">2</span>] <span class="op">&lt;=</span> <span class="fl">.66</span>, <span class="st">&quot;dists2?&quot;</span></span>
-<span id="cb45-69"><a href="#cb45-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-70"><a href="#cb45-70" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> heavensh():</span>
-<span id="cb45-71"><a href="#cb45-71" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train)).d2hs()</span>
-<span id="cb45-72"><a href="#cb45-72" aria-hidden="true" tabindex="-1"></a>    lst <span class="op">=</span> [row <span class="cf">for</span> i,row <span class="kw">in</span> <span class="bu">enumerate</span>(d.rows) <span class="cf">if</span> i <span class="op">%</span> <span class="dv">30</span> <span class="op">==</span><span class="dv">0</span>]</span>
-<span id="cb45-73"><a href="#cb45-73" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> d.d2h(d.rows[<span class="dv">0</span>]) <span class="op">&lt;</span> d.d2h(d.rows[<span class="op">-</span><span class="dv">1</span>]), <span class="st">&quot;d2h?&quot;</span></span>
-<span id="cb45-74"><a href="#cb45-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-75"><a href="#cb45-75" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> clones():</span>
-<span id="cb45-76"><a href="#cb45-76" aria-hidden="true" tabindex="-1"></a>    d1 <span class="op">=</span> DATA().adds(csv(the.train))</span>
-<span id="cb45-77"><a href="#cb45-77" aria-hidden="true" tabindex="-1"></a>    d2 <span class="op">=</span> d1.clone(d1.rows)</span>
-<span id="cb45-78"><a href="#cb45-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> a,b <span class="kw">in</span> <span class="bu">zip</span>(d1.cols.y, d2.cols.y):</span>
-<span id="cb45-79"><a href="#cb45-79" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> k,v1 <span class="kw">in</span> a.__dict__.items():</span>
-<span id="cb45-80"><a href="#cb45-80" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> v1 <span class="op">==</span> b.__dict__[k],<span class="st">&quot;clone?&quot;</span></span>
-<span id="cb45-81"><a href="#cb45-81" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-82"><a href="#cb45-82" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> mqs():</span>
-<span id="cb45-83"><a href="#cb45-83" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span><span class="op">+</span>the.train)</span>
-<span id="cb45-84"><a href="#cb45-84" aria-hidden="true" tabindex="-1"></a>    repeats<span class="op">=</span><span class="dv">20</span></span>
-<span id="cb45-85"><a href="#cb45-85" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
-<span id="cb45-86"><a href="#cb45-86" aria-hidden="true" tabindex="-1"></a>    b4 <span class="op">=</span> [d.chebyshev(row) <span class="cf">for</span> row <span class="kw">in</span> d.rows]</span>
-<span id="cb45-87"><a href="#cb45-87" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;rows</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.rows)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
-<span id="cb45-88"><a href="#cb45-88" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;xcols</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.cols.x)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
-<span id="cb45-89"><a href="#cb45-89" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;ycols</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.cols.y)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
-<span id="cb45-90"><a href="#cb45-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-91"><a href="#cb45-91" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time()</span>
-<span id="cb45-92"><a href="#cb45-92" aria-hidden="true" tabindex="-1"></a>    pool <span class="op">=</span> [d.chebyshev(d.shuffle().smo()[<span class="dv">0</span>]) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats)]</span>
-<span id="cb45-93"><a href="#cb45-93" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;pool</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start) <span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> msecs&quot;</span>)</span>
-<span id="cb45-94"><a href="#cb45-94" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-95"><a href="#cb45-95" aria-hidden="true" tabindex="-1"></a>    generate1 <span class="op">=</span><span class="kw">lambda</span> best,rest: best.exploit(rest,<span class="dv">1000</span>)</span>
-<span id="cb45-96"><a href="#cb45-96" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time()</span>
-<span id="cb45-97"><a href="#cb45-97" aria-hidden="true" tabindex="-1"></a>    mqs1000 <span class="op">=</span> [d.chebyshev(d.shuffle().smo(generate<span class="op">=</span>generate1)[<span class="dv">0</span>]) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats)]</span>
-<span id="cb45-98"><a href="#cb45-98" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;mqs1K</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start)<span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> msecs&quot;</span>)</span>
-<span id="cb45-99"><a href="#cb45-99" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-100"><a href="#cb45-100" aria-hidden="true" tabindex="-1"></a>    used<span class="op">=</span>{}</span>
-<span id="cb45-101"><a href="#cb45-101" aria-hidden="true" tabindex="-1"></a>    generate2 <span class="op">=</span><span class="kw">lambda</span> best,rest: best.exploit(rest,top<span class="op">=</span><span class="dv">4</span>,used<span class="op">=</span>used)</span>
-<span id="cb45-102"><a href="#cb45-102" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time()</span>
-<span id="cb45-103"><a href="#cb45-103" aria-hidden="true" tabindex="-1"></a>    mqs4 <span class="op">=</span> [d.chebyshev(d.shuffle().smo(generate<span class="op">=</span>generate2)[<span class="dv">0</span>]) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">20</span>)]</span>
-<span id="cb45-104"><a href="#cb45-104" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;mqs4</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start)<span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> msecs&quot;</span>)</span>
-<span id="cb45-105"><a href="#cb45-105" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-106"><a href="#cb45-106" aria-hidden="true" tabindex="-1"></a>    stats.report([ stats.SOME(b4,<span class="st">&quot;baseline&quot;</span>),</span>
-<span id="cb45-107"><a href="#cb45-107" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(pool,<span class="st">&quot;pool&quot;</span>),</span>
-<span id="cb45-108"><a href="#cb45-108" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(mqs4,<span class="st">&quot;mqs4&quot;</span>),</span>
-<span id="cb45-109"><a href="#cb45-109" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(mqs1000,<span class="st">&quot;mqs1000&quot;</span>)])</span></code></pre></div>
-<h2 data-number="11" id="start"><span
-class="header-section-number">11</span> Start</h2>
+class="sourceCode python"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> like(<span class="va">self</span>:NUM, x:number, _) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  v     <span class="op">=</span> <span class="va">self</span>.sd<span class="op">**</span><span class="dv">2</span> <span class="op">+</span> <span class="fl">1E-30</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  nom   <span class="op">=</span> exp(<span class="op">-</span><span class="dv">1</span><span class="op">*</span>(x <span class="op">-</span> <span class="va">self</span>.mu)<span class="op">**</span><span class="dv">2</span><span class="op">/</span>(<span class="dv">2</span><span class="op">*</span>v)) <span class="op">+</span> <span class="fl">1E-30</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  denom <span class="op">=</span> (<span class="dv">2</span><span class="op">*</span>pi<span class="op">*</span>v) <span class="op">**</span><span class="fl">0.5</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">min</span>(<span class="dv">1</span>, nom<span class="op">/</span>(denom <span class="op">+</span> <span class="fl">1E-30</span>))</span></code></pre></div>
+<p>active learning</p>
 <div class="sourceCode" id="cb46"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">&quot;__main__&quot;</span> <span class="kw">and</span> <span class="bu">len</span>(sys.argv)<span class="op">&gt;</span> <span class="dv">1</span>:</span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  cli(the.__dict__)</span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  random.seed(the.seed)</span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="bu">getattr</span>(egs, the.eg, <span class="kw">lambda</span> : <span class="bu">print</span>(<span class="ss">f&quot;ezr: [</span><span class="sc">{</span>the<span class="sc">.</span>eg<span class="sc">}</span><span class="ss">] unknown.&quot;</span>))()</span></code></pre></div>
+class="sourceCode python"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> smo(<span class="va">self</span>:DATA, score<span class="op">=</span><span class="kw">lambda</span> B,R: B<span class="op">-</span>R, generate<span class="op">=</span><span class="va">None</span> ):</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _ranked(rows): <span class="cf">return</span> <span class="va">self</span>.clone(rows).chebyshevs().rows</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>    cut  <span class="op">=</span> <span class="bu">int</span>(<span class="fl">.5</span> <span class="op">+</span> <span class="bu">len</span>(done) <span class="op">**</span> the.cut)</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    best <span class="op">=</span> <span class="va">self</span>.clone(done[:cut])</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    rest <span class="op">=</span> <span class="va">self</span>.clone(done[cut:])</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">#a,b = todo[:the.buffer//2],todo[the.buffer//2:]; random.shuffle(b); a ,b =a+b[:len(a)], b[len(a):]</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>    a,b <span class="op">=</span> todo[:the.<span class="bu">buffer</span><span class="op">//</span><span class="dv">2</span>], todo[the.<span class="bu">buffer</span>:]<span class="op">;</span> a <span class="op">=</span> a<span class="op">+</span>b[:<span class="bu">len</span>(a)]<span class="op">;</span> b <span class="op">=</span> b[<span class="bu">len</span>(a):]<span class="op">;</span> </span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">#random.shuffle(todo); a,b= todo[:the.buffer], todo[the.buffer:]</span></span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">#a=todo; b=[]</span></span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> generate:</span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="va">self</span>.neighbors(generate(best,rest), a) <span class="op">+</span> b <span class="co"># todo[:some]) + todo[some:] </span></span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>      key  <span class="op">=</span> <span class="kw">lambda</span> r: score(best.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>), rest.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>))</span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span>  <span class="bu">sorted</span>(a, key<span class="op">=</span>key, reverse<span class="op">=</span><span class="va">True</span>) <span class="op">+</span> b</span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _smo1(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(the.Last <span class="op">-</span> the.label):</span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="bu">len</span>(todo) <span class="op">&lt;</span> <span class="dv">3</span> : <span class="cf">break</span></span>
+<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a>      top,<span class="op">*</span>todo <span class="op">=</span> _guess(todo, done)</span>
+<span id="cb46-22"><a href="#cb46-22" aria-hidden="true" tabindex="-1"></a>      done <span class="op">+=</span> [top]</span>
+<span id="cb46-23"><a href="#cb46-23" aria-hidden="true" tabindex="-1"></a>      done <span class="op">=</span> _ranked(done)</span>
+<span id="cb46-24"><a href="#cb46-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> done</span>
+<span id="cb46-25"><a href="#cb46-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-26"><a href="#cb46-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> _smo1(<span class="va">self</span>.rows[the.label:], _ranked(<span class="va">self</span>.rows[:the.label]))</span></code></pre></div>
+<h2 data-number="10" id="utils"><span
+class="header-section-number">10</span> Utils</h2>
+<div class="sourceCode" id="cb47"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> dot(s<span class="op">=</span><span class="st">&quot;.&quot;</span>): <span class="bu">print</span>(s, <span class="bu">file</span><span class="op">=</span>sys.stderr, flush<span class="op">=</span><span class="va">True</span>, end<span class="op">=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> xval(lst:<span class="bu">list</span>, m:<span class="bu">int</span>, n:<span class="bu">int</span>, some:<span class="bu">int</span><span class="op">=</span><span class="dv">10</span><span class="op">**</span><span class="dv">6</span>) <span class="op">-&gt;</span> <span class="bu">tuple</span>[<span class="bu">list</span>,<span class="bu">list</span>]:</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(m):</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>    random.shuffle(lst)</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n1 <span class="kw">in</span> <span class="bu">range</span> (n):</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>      lo <span class="op">=</span> <span class="bu">len</span>(lst)<span class="op">/</span>n <span class="op">*</span> n1</span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>      hi <span class="op">=</span> <span class="bu">len</span>(lst)<span class="op">/</span>n <span class="op">*</span> (n1<span class="op">+</span><span class="dv">1</span>)</span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>      train, test <span class="op">=</span> [],[]</span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> i,x <span class="kw">in</span> <span class="bu">enumerate</span>(lst):</span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>        (test <span class="cf">if</span> i <span class="op">&gt;=</span> lo <span class="kw">and</span> i <span class="op">&lt;</span> hi <span class="cf">else</span> train).append(x)</span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>      train <span class="op">=</span> random.choices(train, k<span class="op">=</span><span class="bu">min</span>(<span class="bu">len</span>(train),some))</span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>      <span class="cf">yield</span> train,test</span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> timing(fun) <span class="op">-&gt;</span> number:</span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>  start <span class="op">=</span> time()</span>
+<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a>  fun()</span>
+<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> time() <span class="op">-</span> start</span>
+<span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nth(n): <span class="cf">return</span> <span class="kw">lambda</span> a:a[n]</span>
+<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-22"><a href="#cb47-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> <span class="bu">coerce</span>(s:<span class="bu">str</span>) <span class="op">-&gt;</span> atom:</span>
+<span id="cb47-23"><a href="#cb47-23" aria-hidden="true" tabindex="-1"></a>  <span class="co">&quot;Coerces strings to atoms.&quot;</span></span>
+<span id="cb47-24"><a href="#cb47-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">try</span>: <span class="cf">return</span> ast.literal_eval(s)</span>
+<span id="cb47-25"><a href="#cb47-25" aria-hidden="true" tabindex="-1"></a>  <span class="cf">except</span> <span class="pp">Exception</span>:  <span class="cf">return</span> s</span>
+<span id="cb47-26"><a href="#cb47-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-27"><a href="#cb47-27" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> r2(x): <span class="cf">return</span> <span class="bu">round</span>(x,<span class="dv">2</span>)</span>
+<span id="cb47-28"><a href="#cb47-28" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> r3(x): <span class="cf">return</span> <span class="bu">round</span>(x,<span class="dv">3</span>)</span>
+<span id="cb47-29"><a href="#cb47-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-30"><a href="#cb47-30" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> csv(<span class="bu">file</span>) <span class="op">-&gt;</span> row:</span>
+<span id="cb47-31"><a href="#cb47-31" aria-hidden="true" tabindex="-1"></a>  <span class="cf">with</span> file_or_stdin(<span class="va">None</span> <span class="cf">if</span> <span class="bu">file</span><span class="op">==</span><span class="st">&quot;-&quot;</span> <span class="cf">else</span> <span class="bu">file</span>) <span class="im">as</span> src:</span>
+<span id="cb47-32"><a href="#cb47-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> line <span class="kw">in</span> src:</span>
+<span id="cb47-33"><a href="#cb47-33" aria-hidden="true" tabindex="-1"></a>      line <span class="op">=</span> re.sub(<span class="vs">r&#39;([\n\t\r ]|#.*)&#39;</span>, <span class="st">&#39;&#39;</span>, line)</span>
+<span id="cb47-34"><a href="#cb47-34" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> line: <span class="cf">yield</span> [<span class="bu">coerce</span>(s.strip()) <span class="cf">for</span> s <span class="kw">in</span> line.split(<span class="st">&quot;,&quot;</span>)]</span>
+<span id="cb47-35"><a href="#cb47-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-36"><a href="#cb47-36" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cli(d:<span class="bu">dict</span>):</span>
+<span id="cb47-37"><a href="#cb47-37" aria-hidden="true" tabindex="-1"></a>  <span class="co">&quot;For dictionary key `k`, if command line has `-k X`, then `d[k]=coerce(X)`.&quot;</span></span>
+<span id="cb47-38"><a href="#cb47-38" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> k,v <span class="kw">in</span> d.items():</span>
+<span id="cb47-39"><a href="#cb47-39" aria-hidden="true" tabindex="-1"></a>    v <span class="op">=</span> <span class="bu">str</span>(v)</span>
+<span id="cb47-40"><a href="#cb47-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c,arg <span class="kw">in</span> <span class="bu">enumerate</span>(sys.argv):</span>
+<span id="cb47-41"><a href="#cb47-41" aria-hidden="true" tabindex="-1"></a>      after <span class="op">=</span> sys.argv[c<span class="op">+</span><span class="dv">1</span>] <span class="cf">if</span> c <span class="op">&lt;</span> <span class="bu">len</span>(sys.argv) <span class="op">-</span> <span class="dv">1</span> <span class="cf">else</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb47-42"><a href="#cb47-42" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> arg <span class="kw">in</span> [<span class="st">&quot;-&quot;</span><span class="op">+</span>k[<span class="dv">0</span>], <span class="st">&quot;--&quot;</span><span class="op">+</span>k]:</span>
+<span id="cb47-43"><a href="#cb47-43" aria-hidden="true" tabindex="-1"></a>        d[k] <span class="op">=</span> <span class="bu">coerce</span>(<span class="st">&quot;False&quot;</span> <span class="cf">if</span> v<span class="op">==</span><span class="st">&quot;True&quot;</span> <span class="cf">else</span> (<span class="st">&quot;True&quot;</span> <span class="cf">if</span> v<span class="op">==</span><span class="st">&quot;False&quot;</span> <span class="cf">else</span> after))</span></code></pre></div>
+<h2 data-number="11" id="examples"><span
+class="header-section-number">11</span> Examples</h2>
+<div class="sourceCode" id="cb48"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> egs: <span class="co"># sassdddsf</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> <span class="bu">all</span>():</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>   <span class="cf">for</span> s <span class="kw">in</span> <span class="bu">dir</span>(egs):</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>     <span class="cf">if</span> s[<span class="dv">0</span>] <span class="op">!=</span> <span class="st">&quot;_&quot;</span> <span class="kw">and</span> s <span class="op">!=</span> <span class="st">&quot;all&quot;</span>:</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(s)</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>        random.seed(the.seed)</span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>        <span class="bu">getattr</span>(egs,s)()</span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> nums():</span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>    r  <span class="op">=</span> <span class="dv">256</span></span>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a>    n1 <span class="op">=</span> NUM().adds([R()<span class="op">**</span><span class="dv">2</span> <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(r)])</span>
+<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a>    n2 <span class="op">=</span> NUM().adds([n1.guess() <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(r)])</span>
+<span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="bu">abs</span>(n1.mu <span class="op">-</span> n2.mu) <span class="op">&lt;</span> <span class="fl">0.05</span>, <span class="st">&quot;nums mu?&quot;</span></span>
+<span id="cb48-14"><a href="#cb48-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="bu">abs</span>(n1.sd <span class="op">-</span> n2.sd) <span class="op">&lt;</span> <span class="fl">0.05</span>, <span class="st">&quot;nums sd?&quot;</span></span>
+<span id="cb48-15"><a href="#cb48-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-16"><a href="#cb48-16" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> syms():</span>
+<span id="cb48-17"><a href="#cb48-17" aria-hidden="true" tabindex="-1"></a>    r  <span class="op">=</span> <span class="dv">256</span></span>
+<span id="cb48-18"><a href="#cb48-18" aria-hidden="true" tabindex="-1"></a>    n1 <span class="op">=</span> SYM().adds(<span class="st">&quot;aaaabbc&quot;</span>)</span>
+<span id="cb48-19"><a href="#cb48-19" aria-hidden="true" tabindex="-1"></a>    n2 <span class="op">=</span> SYM().adds(n1.guess() <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(r))</span>
+<span id="cb48-20"><a href="#cb48-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="bu">abs</span>(n1.mode <span class="op">==</span> n2.mode), <span class="st">&quot;syms mu?&quot;</span></span>
+<span id="cb48-21"><a href="#cb48-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="bu">abs</span>(n1.ent() <span class="op">-</span>  n2.ent()) <span class="op">&lt;</span> <span class="fl">0.05</span>, <span class="st">&quot;syms ent?&quot;</span></span>
+<span id="cb48-22"><a href="#cb48-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-23"><a href="#cb48-23" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> csvs():</span>
+<span id="cb48-24"><a href="#cb48-24" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA()</span>
+<span id="cb48-25"><a href="#cb48-25" aria-hidden="true" tabindex="-1"></a>    n<span class="op">=</span><span class="dv">0</span></span>
+<span id="cb48-26"><a href="#cb48-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> row <span class="kw">in</span> csv(the.train): n <span class="op">+=</span> <span class="bu">len</span>(row)</span>
+<span id="cb48-27"><a href="#cb48-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> n<span class="op">==</span> <span class="dv">3192</span>,<span class="st">&quot;csv?&quot;</span></span>
+<span id="cb48-28"><a href="#cb48-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-29"><a href="#cb48-29" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> reads():</span>
+<span id="cb48-30"><a href="#cb48-30" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
+<span id="cb48-31"><a href="#cb48-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> d.cols.y[<span class="dv">1</span>].n<span class="op">==</span><span class="dv">398</span>,<span class="st">&quot;reads?&quot;</span></span>
+<span id="cb48-32"><a href="#cb48-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-33"><a href="#cb48-33" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> likings():</span>
+<span id="cb48-34"><a href="#cb48-34" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train)).chebyshevs()</span>
+<span id="cb48-35"><a href="#cb48-35" aria-hidden="true" tabindex="-1"></a>    random.shuffle(d.rows)</span>
+<span id="cb48-36"><a href="#cb48-36" aria-hidden="true" tabindex="-1"></a>    lst <span class="op">=</span> <span class="bu">sorted</span>( <span class="bu">round</span>(d.loglike(row,<span class="dv">2000</span>,<span class="dv">2</span>),<span class="dv">2</span>) <span class="cf">for</span> row <span class="kw">in</span> d.rows[:<span class="dv">100</span>])</span>
+<span id="cb48-37"><a href="#cb48-37" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(lst)</span>
+<span id="cb48-38"><a href="#cb48-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-39"><a href="#cb48-39" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> chebys():</span>
+<span id="cb48-40"><a href="#cb48-40" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
+<span id="cb48-41"><a href="#cb48-41" aria-hidden="true" tabindex="-1"></a>    random.shuffle(d.rows)</span>
+<span id="cb48-42"><a href="#cb48-42" aria-hidden="true" tabindex="-1"></a>    lst <span class="op">=</span> d.chebyshevs().rows</span>
+<span id="cb48-43"><a href="#cb48-43" aria-hidden="true" tabindex="-1"></a>    mid <span class="op">=</span> <span class="bu">len</span>(lst)<span class="op">//</span><span class="dv">2</span></span>
+<span id="cb48-44"><a href="#cb48-44" aria-hidden="true" tabindex="-1"></a>    good,bad <span class="op">=</span> lst[:mid], lst[mid:]</span>
+<span id="cb48-45"><a href="#cb48-45" aria-hidden="true" tabindex="-1"></a>    dgood,dbad <span class="op">=</span> d.clone(good), d.clone(bad)</span>
+<span id="cb48-46"><a href="#cb48-46" aria-hidden="true" tabindex="-1"></a>    lgood,lbad <span class="op">=</span> dgood.loglike(bad[<span class="op">-</span><span class="dv">1</span>], <span class="bu">len</span>(lst),<span class="dv">2</span>), dbad.loglike(bad[<span class="op">-</span><span class="dv">1</span>], <span class="bu">len</span>(lst),<span class="dv">2</span>)</span>
+<span id="cb48-47"><a href="#cb48-47" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> lgood <span class="op">&lt;</span> lbad, <span class="st">&quot;chebyshev?&quot;</span></span>
+<span id="cb48-48"><a href="#cb48-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-49"><a href="#cb48-49" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> guesses():</span>
+<span id="cb48-50"><a href="#cb48-50" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
+<span id="cb48-51"><a href="#cb48-51" aria-hidden="true" tabindex="-1"></a>    random.shuffle(d.rows)</span>
+<span id="cb48-52"><a href="#cb48-52" aria-hidden="true" tabindex="-1"></a>    lst <span class="op">=</span> d.chebyshevs().rows</span>
+<span id="cb48-53"><a href="#cb48-53" aria-hidden="true" tabindex="-1"></a>    mid <span class="op">=</span> <span class="bu">len</span>(lst)<span class="op">//</span><span class="dv">2</span></span>
+<span id="cb48-54"><a href="#cb48-54" aria-hidden="true" tabindex="-1"></a>    good,bad <span class="op">=</span> lst[:mid], lst[mid:]</span>
+<span id="cb48-55"><a href="#cb48-55" aria-hidden="true" tabindex="-1"></a>    dgood,dbad <span class="op">=</span> d.clone(good), d.clone(bad)</span>
+<span id="cb48-56"><a href="#cb48-56" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(good[<span class="dv">0</span>])</span>
+<span id="cb48-57"><a href="#cb48-57" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(bad[<span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb48-58"><a href="#cb48-58" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;exploit&quot;</span>,dgood.exploit(dbad,top<span class="op">=</span><span class="dv">2</span>))</span>
+<span id="cb48-59"><a href="#cb48-59" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;exploit&quot;</span>,dbad.exploit(dgood,top<span class="op">=</span><span class="dv">2</span>))</span>
+<span id="cb48-60"><a href="#cb48-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-61"><a href="#cb48-61" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> clones():</span>
+<span id="cb48-62"><a href="#cb48-62" aria-hidden="true" tabindex="-1"></a>    d1 <span class="op">=</span> DATA().adds(csv(the.train))</span>
+<span id="cb48-63"><a href="#cb48-63" aria-hidden="true" tabindex="-1"></a>    d2 <span class="op">=</span> d1.clone(d1.rows)</span>
+<span id="cb48-64"><a href="#cb48-64" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> a,b <span class="kw">in</span> <span class="bu">zip</span>(d1.cols.y, d2.cols.y):</span>
+<span id="cb48-65"><a href="#cb48-65" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> k,v1 <span class="kw">in</span> a.__dict__.items():</span>
+<span id="cb48-66"><a href="#cb48-66" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> v1 <span class="op">==</span> b.__dict__[k],<span class="st">&quot;clone?&quot;</span></span>
+<span id="cb48-67"><a href="#cb48-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-68"><a href="#cb48-68" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> heavens():</span>
+<span id="cb48-69"><a href="#cb48-69" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train)).d2hs()</span>
+<span id="cb48-70"><a href="#cb48-70" aria-hidden="true" tabindex="-1"></a>    lst <span class="op">=</span> [row <span class="cf">for</span> i,row <span class="kw">in</span> <span class="bu">enumerate</span>(d.rows) <span class="cf">if</span> i <span class="op">%</span> <span class="dv">30</span> <span class="op">==</span><span class="dv">0</span>]</span>
+<span id="cb48-71"><a href="#cb48-71" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> d.d2h(d.rows[<span class="dv">0</span>]) <span class="op">&lt;</span> d.d2h(d.rows[<span class="op">-</span><span class="dv">1</span>]), <span class="st">&quot;d2h?&quot;</span></span>
+<span id="cb48-72"><a href="#cb48-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-73"><a href="#cb48-73" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> distances():</span>
+<span id="cb48-74"><a href="#cb48-74" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
+<span id="cb48-75"><a href="#cb48-75" aria-hidden="true" tabindex="-1"></a>    random.shuffle(d.rows)</span>
+<span id="cb48-76"><a href="#cb48-76" aria-hidden="true" tabindex="-1"></a>    lst <span class="op">=</span> <span class="bu">sorted</span>( <span class="bu">round</span>(d.dist(d.rows[<span class="dv">0</span>], row),<span class="dv">2</span>) <span class="cf">for</span> row <span class="kw">in</span> d.rows[:<span class="dv">100</span>])</span>
+<span id="cb48-77"><a href="#cb48-77" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> x <span class="kw">in</span> lst: <span class="cf">assert</span> <span class="dv">0</span> <span class="op">&lt;=</span> x <span class="op">&lt;=</span> <span class="dv">1</span>, <span class="st">&quot;dists1?&quot;</span> </span>
+<span id="cb48-78"><a href="#cb48-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="fl">.33</span> <span class="op">&lt;=</span> lst[<span class="bu">len</span>(lst)<span class="op">//</span><span class="dv">2</span>] <span class="op">&lt;=</span> <span class="fl">.66</span>, <span class="st">&quot;dists2?&quot;</span></span>
+<span id="cb48-79"><a href="#cb48-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-80"><a href="#cb48-80" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> twoFar():</span>
+<span id="cb48-81"><a href="#cb48-81" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
+<span id="cb48-82"><a href="#cb48-82" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">100</span>):</span>
+<span id="cb48-83"><a href="#cb48-83" aria-hidden="true" tabindex="-1"></a>      a,b <span class="op">=</span> d.twoFar(d.rows, sortp<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb48-84"><a href="#cb48-84" aria-hidden="true" tabindex="-1"></a>      <span class="cf">assert</span> d.chebyshev(a) <span class="op">&lt;=</span>  d.chebyshev(b), <span class="st">&quot;twoFar?&quot;</span></span>
+<span id="cb48-85"><a href="#cb48-85" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">100</span>):</span>
+<span id="cb48-86"><a href="#cb48-86" aria-hidden="true" tabindex="-1"></a>       cut,ls,rs,l,r <span class="op">=</span> d.half(d.rows)</span>
+<span id="cb48-87"><a href="#cb48-87" aria-hidden="true" tabindex="-1"></a>       <span class="bu">print</span>(<span class="bu">len</span>(ls),<span class="bu">len</span>(rs))</span>
+<span id="cb48-88"><a href="#cb48-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-89"><a href="#cb48-89" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> clusters():</span>
+<span id="cb48-90"><a href="#cb48-90" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
+<span id="cb48-91"><a href="#cb48-91" aria-hidden="true" tabindex="-1"></a>    cluster <span class="op">=</span> d.cluster(d.rows,sortp<span class="op">=</span><span class="va">True</span>))</span>
+<span id="cb48-92"><a href="#cb48-92" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> node,leafp <span class="kw">in</span> cluster.nodes(): </span>
+<span id="cb48-93"><a href="#cb48-93" aria-hidden="true" tabindex="-1"></a>      <span class="bu">print</span>(r2(d.chebyshev(node.left)) <span class="cf">if</span> node.left <span class="cf">else</span> <span class="st">&quot;&quot;</span>, node,sep<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)</span>
+<span id="cb48-94"><a href="#cb48-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-95"><a href="#cb48-95" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> predict()</span>
+<span id="cb48-96"><a href="#cb48-96" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
+<span id="cb48-97"><a href="#cb48-97" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> train,test <span class="kw">in</span> xval(d.rows):</span>
+<span id="cb48-98"><a href="#cb48-98" aria-hidden="true" tabindex="-1"></a>      trained <span class="op">=</span> d.clone(train)</span>
+<span id="cb48-99"><a href="#cb48-99" aria-hidden="true" tabindex="-1"></a>      cluster <span class="op">=</span> trained.cluster()</span>
+<span id="cb48-100"><a href="#cb48-100" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> row <span class="kw">in</span> test:</span>
+<span id="cb48-101"><a href="#cb48-101" aria-hidden="true" tabindex="-1"></a>         leaf <span class="op">=</span> cluster.leaf(row)</span>
+<span id="cb48-102"><a href="#cb48-102" aria-hidden="true" tabindex="-1"></a>         one,two,<span class="op">*</span>_ <span class="op">=</span> leaf.data.neighbors(row,leaf.data.rows)</span>
+<span id="cb48-103"><a href="#cb48-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-104"><a href="#cb48-104" aria-hidden="true" tabindex="-1"></a>    cluster <span class="op">=</span> d.cluster(d.rows,sortp<span class="op">=</span><span class="va">True</span>))</span>
+<span id="cb48-105"><a href="#cb48-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-106"><a href="#cb48-106" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> mqs():</span>
+<span id="cb48-107"><a href="#cb48-107" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span><span class="op">+</span>the.train)</span>
+<span id="cb48-108"><a href="#cb48-108" aria-hidden="true" tabindex="-1"></a>    repeats<span class="op">=</span><span class="dv">20</span></span>
+<span id="cb48-109"><a href="#cb48-109" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
+<span id="cb48-110"><a href="#cb48-110" aria-hidden="true" tabindex="-1"></a>    b4 <span class="op">=</span> [d.chebyshev(row) <span class="cf">for</span> row <span class="kw">in</span> d.rows]</span>
+<span id="cb48-111"><a href="#cb48-111" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;rows</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.rows)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb48-112"><a href="#cb48-112" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;xcols</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.cols.x)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb48-113"><a href="#cb48-113" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;ycols</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.cols.y)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb48-114"><a href="#cb48-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-115"><a href="#cb48-115" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time()</span>
+<span id="cb48-116"><a href="#cb48-116" aria-hidden="true" tabindex="-1"></a>    pool <span class="op">=</span> [d.chebyshev(d.shuffle().smo()[<span class="dv">0</span>]) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats)]</span>
+<span id="cb48-117"><a href="#cb48-117" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;pool</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start) <span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> msecs&quot;</span>)</span>
+<span id="cb48-118"><a href="#cb48-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-119"><a href="#cb48-119" aria-hidden="true" tabindex="-1"></a>    generate1 <span class="op">=</span><span class="kw">lambda</span> best,rest: best.exploit(rest,<span class="dv">1000</span>)</span>
+<span id="cb48-120"><a href="#cb48-120" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time()</span>
+<span id="cb48-121"><a href="#cb48-121" aria-hidden="true" tabindex="-1"></a>    mqs1000 <span class="op">=</span> [d.chebyshev(d.shuffle().smo(generate<span class="op">=</span>generate1)[<span class="dv">0</span>]) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats)]</span>
+<span id="cb48-122"><a href="#cb48-122" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;mqs1K</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start)<span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> msecs&quot;</span>)</span>
+<span id="cb48-123"><a href="#cb48-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-124"><a href="#cb48-124" aria-hidden="true" tabindex="-1"></a>    used<span class="op">=</span>{}</span>
+<span id="cb48-125"><a href="#cb48-125" aria-hidden="true" tabindex="-1"></a>    generate2 <span class="op">=</span><span class="kw">lambda</span> best,rest: best.exploit(rest,top<span class="op">=</span><span class="dv">4</span>,used<span class="op">=</span>used)</span>
+<span id="cb48-126"><a href="#cb48-126" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time()</span>
+<span id="cb48-127"><a href="#cb48-127" aria-hidden="true" tabindex="-1"></a>    mqs4 <span class="op">=</span> [d.chebyshev(d.shuffle().smo(generate<span class="op">=</span>generate2)[<span class="dv">0</span>]) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">20</span>)]</span>
+<span id="cb48-128"><a href="#cb48-128" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;mqs4</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start)<span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> msecs&quot;</span>)</span>
+<span id="cb48-129"><a href="#cb48-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-130"><a href="#cb48-130" aria-hidden="true" tabindex="-1"></a>    stats.report([ stats.SOME(b4,<span class="st">&quot;baseline&quot;</span>),</span>
+<span id="cb48-131"><a href="#cb48-131" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(pool,<span class="st">&quot;pool&quot;</span>),</span>
+<span id="cb48-132"><a href="#cb48-132" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(mqs4,<span class="st">&quot;mqs4&quot;</span>),</span>
+<span id="cb48-133"><a href="#cb48-133" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(mqs1000,<span class="st">&quot;mqs1000&quot;</span>)])</span></code></pre></div>
+<h2 data-number="12" id="start"><span
+class="header-section-number">12</span> Start</h2>
+<div class="sourceCode" id="cb49"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">&quot;__main__&quot;</span> <span class="kw">and</span> <span class="bu">len</span>(sys.argv)<span class="op">&gt;</span> <span class="dv">1</span>:</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  cli(the.__dict__)</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>  random.seed(the.seed)</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>  <span class="bu">getattr</span>(egs, the.eg, <span class="kw">lambda</span> : <span class="bu">print</span>(<span class="ss">f&quot;ezr: [</span><span class="sc">{</span>the<span class="sc">.</span>eg<span class="sc">}</span><span class="ss">] unknown.&quot;</span>))()</span></code></pre></div>
 </body>
 </html>
