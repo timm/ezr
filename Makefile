@@ -42,6 +42,11 @@ $(Top)/docs/%.pdf: %.py  ## make doco: .py ==> .pdf
 #~/tmp/%.md : %.py ## make doco: py -> md
 #	echo 1
 
+docs/%.html : docs/%.md ## make doco: md -> html
+	pandoc -s  -f markdown --number-sections --toc  \
+  		     --css ezr.css --highlight-style tango \
+	  			 -o $@  $<
+
 docs/%.html : %.py ## make doco: md -> html
 	gawk -f etc/py2html.awk $^ \
 	| pandoc -s  -f markdown --number-sections --toc \

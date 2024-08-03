@@ -1,5 +1,7 @@
-# Open problems
-
+% Open problems
+% by timm, <timm@ieee.org>
+% &copy; 2024, BSD-2 license>
+<hr>
 The general problem: 
 
 - do everything with least labels
@@ -24,6 +26,7 @@ More specific problems:
   - anything better than twoFar?
 - streaming
   - early stopping?
+  - why does the faster heuristic work? can we use that to build a better algorithm?
 - oracle errors
   - assume X% wrong, try things with increasing X (e.g. 0,10,20,40%)
 - explanation 
@@ -34,6 +37,8 @@ More specific problems:
   - audio data
   - image data
 - other data
+  - how much of fig7 of https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/MSR-TR-2011-8.pdf
+    can we cover?
   - Some of the goals we are exploring are a little dull. Can we do better?
     - For https://arxiv.org/pdf/2311.17483.pdf, fig 9, what support can you add to support (say) 5 of the 
       lefthand side requirements? 
@@ -50,6 +55,7 @@ More specific problems:
           - and [DF](https://pymoo.org/problems/dynamic/df.html) looks pretty cool.
         - Try to avoid the really simple ones. Try to do something SE relevant
 - hyper-parameter optimization
+  - can ezr tune ezr?
 - non-optimization
   - classification
   - regression
