@@ -392,7 +392,7 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
   def ranked(rows): return self.clone(rows).chebyshevs().rows
 
   def todos(todo):
-    if faster: # replace back half of `a` with items from `b`
+    if faster: # swap back half of the buffer with later items
        n= the.buffer//2
        a1,a2 = todo[:n], todo[n:2*n]
        b1,b2 = todo[2*n:3*n], todo[3*n:]
