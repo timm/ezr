@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="by timm, timm@ieee.org" />
+  <title>Open problems</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="ezr.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Open problems</h1>
+<p class="author">by timm, <a href="mailto:timm@ieee.org"
+class="email">timm@ieee.org</a></p>
+<p class="date">© 2024, BSD-2 license&gt;</p>
+</header>
+<hr>
+<p>The general problem:</p>
+<ul>
+<li>do everything with least labels</li>
+<li>seem stuck at around 30-40 labels. Can we get it to 15-20?</li>
+</ul>
+<p>More specific problems:</p>
+<ul>
+<li>acquisition functions
+<ul>
+<li>explore? exploit? adaptive?</li>
+<li>uncertainty (or not)</li>
+<li>different for different kinds of data?</li>
+<li>membership query synthesis</li>
+</ul></li>
+<li>initial label selection
+<ul>
+<li>random, diversity, rrp</li>
+</ul></li>
+<li>initial data selection
+<ul>
+<li>full dendogram generation, then reflection across the whole
+structure.
+<ul>
+<li>e.g. sample rows at a frequency equal to leaf diversity</li>
+</ul></li>
+<li>divide larger data sets in two (at random)
+<ul>
+<li>does a model learnt from first half part work for second part?</li>
+<li>how large must the first part be before we can learn a model stable
+for the second part?</li>
+</ul></li>
+</ul></li>
+<li>clustering
+<ul>
+<li>anything better than twoFar?</li>
+</ul></li>
+<li>streaming
+<ul>
+<li>early stopping?</li>
+</ul></li>
+<li>oracle errors
+<ul>
+<li>assume X% wrong, try things with increasing X
+(e.g. 0,10,20,40%)</li>
+</ul></li>
+<li>explanation
+<ul>
+<li>can we learn a stable symbolic model that predicts for better?</li>
+<li>what is the “explanation tax”; i.e. how much do we lose if we use
+the rules?</li>
+</ul></li>
+<li>higher dimensional data
+<ul>
+<li>text mining</li>
+<li>audio data</li>
+<li>image data</li>
+</ul></li>
+<li>other data
+<ul>
+<li>Some of the goals we are exploring are a little dull. Can we do
+better?
+<ul>
+<li>For https://arxiv.org/pdf/2311.17483.pdf, fig 9, what support can
+you add to support (say) 5 of the lefthand side requirements?</li>
+<li>This one is challenging. How would you generate the data to explore?
+<ul>
+<li>But wait! we only need under 40 examples. Does that help us?</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li>benchmark against standard optimizers
+<ul>
+<li>e.g. optuna, hyperplan (BOHB), DE
+<ul>
+<li>will need an oracle that can label any example (see “regression” or
+“data synthesis”, below)</li>
+<li>or, apply all this to known models
+<ul>
+<li>e.g <a href="https://github.com/anyoptimization/pymoo">Pymoo</a> has
+hundreds of such models</li>
+<li>See <a
+href="https://pymoo.org/problems/test_problems.html">here</a></li>
+<li>The DTLZ models are really widely used (but I fret they are
+simplistic):
+<ul>
+<li>and <a href="https://pymoo.org/problems/dynamic/df.html">DF</a>
+looks pretty cool.</li>
+</ul></li>
+<li>Try to avoid the really simple ones. Try to do something SE
+relevant</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li>hyper-parameter optimization</li>
+<li>non-optimization
+<ul>
+<li>classification</li>
+<li>regression</li>
+<li>anomaly detection</li>
+<li>data synthesis
+<ul>
+<li>need a measure of new data being the same as old</li>
+</ul></li>
+<li>data de-biasing</li>
+</ul></li>
+<li>LLMs
+<ul>
+<li>better than LLM?</li>
+<li>use to select for questions in few shot learning?</li>
+<li>use to select prompts for case based reasoning?</li>
+</ul></li>
+</ul>
+</body>
+</html>
