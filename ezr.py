@@ -393,8 +393,10 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
 
   def todos(todo):
     if faster: # replace back half of `a` with items from `b`
-       a,b = todo[:the.buffer//2], todo[the.buffer:]
-       return a + b[:len(a)], b[len(a):]
+       n= the.buffer//2
+       a1,a2 = todo[:n], todo[n:2*n]
+       b1,b2 = todo[2*n:3*n], todo[3*n:]
+       return a1 + b1, b2 + a2
     else:
       return todo,[]
 
