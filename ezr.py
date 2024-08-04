@@ -658,9 +658,13 @@ class egs:
 
   def clusters2():
     d = DATA().adds(csv(the.train))
-    somes = []
-    for train,test in xval(d.rows):
-      for k in [1,2,3,5]:
+    somes  = []
+    mids  = stats.SOME(txt="mid")
+    somes += [mids]
+    for k in [1,2,3,5]:
+      ks   = stats.SOME(txt=f"k{k}")
+      somes += [ks]
+      for train,test in xval(d.rows):
         cluster = d.cluster(train)
         for want in test:
           leaf = cluster.leaf(d, want)
@@ -669,10 +673,9 @@ class egs:
           mid  = leaf.data.mid()
           for at,got1 in got.items():
             sd = d.cols.all[at].div()
-            want1 = want[at]
-            want2 = mid[at]
-            print("k3 ",f"{(want1 - got1)/sd:.3f}")
-            print("mid",f"{(want2 - got1)/sd:.3f}")
+            mids.add((want[at] - mid[at])/sd)
+            ks.add(  (want[at] - got1   )/sd)
+    stats.report(somes)
 
   def predicts(file=None):
     d = DATA().adds(csv(file or the.train)).shuffle()
