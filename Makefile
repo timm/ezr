@@ -46,7 +46,7 @@ docs/%.html : docs/%.md etc/b4.html docs/ezr.css Makefile ## make doco: md -> ht
   		     --css ezr.css --highlight-style tango \
 	  			 -o $@  $<
 
-docs/%.html : %.py etc/b4.html docs/ezr.css Makefile ## make doco: md -> html
+docs/%.html : %.py etc/py2html.awk etc/b4.html docs/ezr.css Makefile ## make doco: md -> html
 	echo "$< ... "
 	gawk -f etc/py2html.awk $< \
 	| pandoc -s  -f markdown --number-sections --toc \
@@ -55,6 +55,7 @@ docs/%.html : %.py etc/b4.html docs/ezr.css Makefile ## make doco: md -> html
 					 --metadata title="$<" \
 	  			 -o $@ 
 
+# another commaned
 mqs: ## experiment: mqs
 	$(foreach d, config hpo misc process,        \
     $(foreach f, $(wildcard $(Data)/$d/*.csv),  \
