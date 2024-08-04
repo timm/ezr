@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="by timm, timm@ieee.org" />
-  <title>Open problems</title>
+  <title>Open Problems in Active Learning for Multi-Objective Optimization</title>
   <style>
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -21,78 +21,160 @@
       margin: 0 0.8em 0.2em -1.6em;
       vertical-align: middle;
     }
-    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
   </style>
   <link rel="stylesheet" href="ezr.css" />
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
 </head>
 <body>
+<a href="https://github.com/timm/ezr"> <img
+alt="License" src="https://img.shields.io/badge/home-black"></a> <a 
+href="https://github.com/timm/ezr/issues"> <img
+alt="License" src="https://img.shields.io/badge/issues-red"></a> <a 
+href="https://github.com/timm/ezr/blob/main/LICENSE.md"> <img
+alt="License" src="https://img.shields.io/badge/license-bsd2-green"></a> <img 
+src="https://img.shields.io/badge/purpose-ai%20,%20se-blueviolet"> <img
+alt="lisp" src="https://img.shields.io/badge/language-python3-blue">
+
 <header id="title-block-header">
-<h1 class="title">Open problems</h1>
+<h1 class="title">Open Problems in Active Learning for Multi-Objective
+Optimization</h1>
 <p class="author">by timm, <a href="mailto:timm@ieee.org"
 class="email">timm@ieee.org</a></p>
-<p class="date">© 2024, BSD-2 license&gt;</p>
+<p class="date">© 2024, BSD-2 license</p>
 </header>
-<hr>
-<p>The general problem:</p>
+<nav id="TOC" role="doc-toc">
 <ul>
-<li>do everything with least labels</li>
-<li>seem stuck at around 30-40 labels. Can we get it to 15-20?</li>
+<li><a href="#the-general-problem" id="toc-the-general-problem"><span
+class="toc-section-number">1</span> The general problem:</a></li>
+<li><a href="#more-specific-problems"
+id="toc-more-specific-problems"><span
+class="toc-section-number">2</span> More specific problems:</a>
+<ul>
+<li><a href="#acquisition-functions"
+id="toc-acquisition-functions"><span
+class="toc-section-number">2.1</span> Acquisition functions</a></li>
+<li><a href="#initial-label-selection"
+id="toc-initial-label-selection"><span
+class="toc-section-number">2.2</span> Initial label selection</a></li>
+<li><a href="#initial-data-selection"
+id="toc-initial-data-selection"><span
+class="toc-section-number">2.3</span> Initial data selection</a></li>
+<li><a href="#clustering" id="toc-clustering"><span
+class="toc-section-number">2.4</span> Clustering</a></li>
+<li><a href="#streaming" id="toc-streaming"><span
+class="toc-section-number">2.5</span> Streaming</a></li>
+<li><a href="#oracle-errors" id="toc-oracle-errors"><span
+class="toc-section-number">2.6</span> Oracle errors</a></li>
+<li><a href="#explanation" id="toc-explanation"><span
+class="toc-section-number">2.7</span> Explanation</a></li>
+<li><a href="#higher-dimensional-data"
+id="toc-higher-dimensional-data"><span
+class="toc-section-number">2.8</span> Higher dimensional data</a></li>
+<li><a href="#other-data" id="toc-other-data"><span
+class="toc-section-number">2.9</span> Other data</a></li>
+<li><a href="#benchmark-against-standard-optimizers"
+id="toc-benchmark-against-standard-optimizers"><span
+class="toc-section-number">2.10</span> Benchmark against standard
+optimizers</a></li>
+<li><a href="#hyper-parameter-optimization"
+id="toc-hyper-parameter-optimization"><span
+class="toc-section-number">2.11</span> Hyper-parameter
+optimization</a></li>
+<li><a href="#non-optimization" id="toc-non-optimization"><span
+class="toc-section-number">2.12</span> Non-optimization</a></li>
+<li><a href="#llms" id="toc-llms"><span
+class="toc-section-number">2.13</span> LLMs</a></li>
+</ul></li>
 </ul>
-<p>More specific problems:</p>
+</nav>
+<hr>
+<h2 data-number="1" id="the-general-problem"><span
+class="header-section-number">1</span> The general problem:</h2>
 <ul>
-<li>acquisition functions
+<li>Given rows of data with many <span class="math inline">\(X\)</span>
+independent values and many <span class="math inline">\(Y\)</span> goals
+where <span class="math inline">\(Y=f(X)\)</span>:
 <ul>
-<li>explore? exploit? adaptive?</li>
-<li>uncertainty (or not)</li>
-<li>different for different kinds of data?</li>
-<li>membership query synthesis</li>
+<li>Look at the fewest <span class="math inline">\(Y\)</span>
+values</li>
+<li>To find what <span class="math inline">\(X\)</span> values predict
+for the best <span class="math inline">\(Y\)</span> values</li>
 </ul></li>
-<li>initial label selection
+<li>Curently, we are stuck at at around 30-40 labels (have been for
+about a year). Can we get this down to 15-20?</li>
+</ul>
+<h2 data-number="2" id="more-specific-problems"><span
+class="header-section-number">2</span> More specific problems:</h2>
+<h3 data-number="2.1" id="acquisition-functions"><span
+class="header-section-number">2.1</span> Acquisition functions</h3>
 <ul>
-<li>random, diversity, rrp</li>
-</ul></li>
-<li>initial data selection
+<li>Explore? exploit? adaptive?</li>
+<li>Uncertainty (or not)</li>
+<li>Different for different kinds of data?</li>
+<li>Membership query synthesis</li>
+</ul>
+<h3 data-number="2.2" id="initial-label-selection"><span
+class="header-section-number">2.2</span> Initial label selection</h3>
 <ul>
-<li>full dendogram generation, then reflection across the whole
+<li>Random, diversity, rrp</li>
+</ul>
+<h3 data-number="2.3" id="initial-data-selection"><span
+class="header-section-number">2.3</span> Initial data selection</h3>
+<ul>
+<li>Full dendogram generation, then reflection across the whole
 structure.
 <ul>
 <li>e.g. sample rows at a frequency equal to leaf diversity</li>
 </ul></li>
-<li>divide larger data sets in two (at random)
+<li>Divide larger data sets in two (at random)
 <ul>
-<li>does a model learnt from first half part work for second part?</li>
-<li>how large must the first part be before we can learn a model stable
+<li>Does a model learnt from first half part work for second part?</li>
+<li>How large must the first part be before we can learn a model stable
 for the second part?</li>
 </ul></li>
-</ul></li>
-<li>clustering
+</ul>
+<h3 data-number="2.4" id="clustering"><span
+class="header-section-number">2.4</span> Clustering</h3>
 <ul>
-<li>anything better than twoFar?</li>
-</ul></li>
-<li>streaming
+<li>Anything better than twoFar?</li>
+</ul>
+<h3 data-number="2.5" id="streaming"><span
+class="header-section-number">2.5</span> Streaming</h3>
 <ul>
-<li>early stopping?</li>
-</ul></li>
-<li>oracle errors
+<li>Early stopping?</li>
+<li>Why does the faster heuristic work? can we use that to build a
+better algorithm?</li>
+</ul>
+<h3 data-number="2.6" id="oracle-errors"><span
+class="header-section-number">2.6</span> Oracle errors</h3>
 <ul>
-<li>assume X% wrong, try things with increasing X
+<li>Assume X% wrong, try things with increasing X
 (e.g. 0,10,20,40%)</li>
-</ul></li>
-<li>explanation
+</ul>
+<h3 data-number="2.7" id="explanation"><span
+class="header-section-number">2.7</span> Explanation</h3>
 <ul>
-<li>can we learn a stable symbolic model that predicts for better?</li>
-<li>what is the “explanation tax”; i.e. how much do we lose if we use
+<li>Can we learn a stable symbolic model that predicts for better?</li>
+<li>What is the “explanation tax”; i.e. how much do we lose if we use
 the rules?</li>
-</ul></li>
-<li>higher dimensional data
+</ul>
+<h3 data-number="2.8" id="higher-dimensional-data"><span
+class="header-section-number">2.8</span> Higher dimensional data</h3>
 <ul>
-<li>text mining</li>
-<li>audio data</li>
-<li>image data</li>
-</ul></li>
-<li>other data
+<li>Text mining</li>
+<li>Audio data</li>
+<li>Image data</li>
+</ul>
+<h3 data-number="2.9" id="other-data"><span
+class="header-section-number">2.9</span> Other data</h3>
 <ul>
-<li>Some of the goals we are exploring are a little dull. Can we do
+<li>How much of fig7 of
+https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/MSR-TR-2011-8.pdf
+can we cover?</li>
+<li>some of the goals we are exploring are a little dull. Can we do
 better?
 <ul>
 <li>For https://arxiv.org/pdf/2311.17483.pdf, fig 9, what support can
@@ -102,14 +184,16 @@ you add to support (say) 5 of the lefthand side requirements?</li>
 <li>But wait! we only need under 40 examples. Does that help us?</li>
 </ul></li>
 </ul></li>
-</ul></li>
-<li>benchmark against standard optimizers
+</ul>
+<h3 data-number="2.10" id="benchmark-against-standard-optimizers"><span
+class="header-section-number">2.10</span> Benchmark against standard
+optimizers</h3>
 <ul>
 <li>e.g. optuna, hyperplan (BOHB), DE
 <ul>
-<li>will need an oracle that can label any example (see “regression” or
+<li>Will need an oracle that can label any example (see “regression” or
 “data synthesis”, below)</li>
-<li>or, apply all this to known models
+<li>Or, apply all this to known models
 <ul>
 <li>e.g <a href="https://github.com/anyoptimization/pymoo">Pymoo</a> has
 hundreds of such models</li>
@@ -125,25 +209,32 @@ looks pretty cool.</li>
 relevant</li>
 </ul></li>
 </ul></li>
-</ul></li>
-<li>hyper-parameter optimization</li>
-<li>non-optimization
+</ul>
+<h3 data-number="2.11" id="hyper-parameter-optimization"><span
+class="header-section-number">2.11</span> Hyper-parameter
+optimization</h3>
 <ul>
-<li>classification</li>
-<li>regression</li>
-<li>anomaly detection</li>
-<li>data synthesis
+<li>Can ezr tune ezr?</li>
+<li>Can ezr tune other algorithms?</li>
+</ul>
+<h3 data-number="2.12" id="non-optimization"><span
+class="header-section-number">2.12</span> Non-optimization</h3>
 <ul>
-<li>need a measure of new data being the same as old</li>
-</ul></li>
-<li>data de-biasing</li>
-</ul></li>
-<li>LLMs
+<li>Classification</li>
+<li>Regression</li>
+<li>Anomaly detection</li>
+<li>Data synthesis
 <ul>
-<li>better than LLM?</li>
-<li>use to select for questions in few shot learning?</li>
-<li>use to select prompts for case based reasoning?</li>
+<li>Need a measure of new data being the same as old</li>
 </ul></li>
+<li>Data de-biasing</li>
+</ul>
+<h3 data-number="2.13" id="llms"><span
+class="header-section-number">2.13</span> LLMs</h3>
+<ul>
+<li>Better than LLM?</li>
+<li>Use to select for questions in few shot learning?</li>
+<li>Use to select prompts for case based reasoning?</li>
 </ul>
 </body>
 </html>

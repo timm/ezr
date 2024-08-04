@@ -43,13 +43,17 @@ $(Top)/docs/%.pdf: %.py  ## make doco: .py ==> .pdf
 #	echo 1
 
 docs/%.html : docs/%.md ## make doco: md -> html
+	echo "$^ ... "
 	pandoc -s  -f markdown --number-sections --toc  \
+					-B etc/b4.html --mathjax \
   		     --css ezr.css --highlight-style tango \
 	  			 -o $@  $^
 
 docs/%.html : %.py ## make doco: md -> html
+	echo "$^ ... "
 	gawk -f etc/py2html.awk $^ \
 	| pandoc -s  -f markdown --number-sections --toc \
+					-B etc/b4.html --mathjax \
   		     --css ezr.css --highlight-style tango \
 					 --metadata title="$^" \
 	  			 -o $@ 

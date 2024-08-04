@@ -5,7 +5,8 @@
 &copy;  2024 Tim Menzies (timm@ieee.org). BSD-2 license
 
 ### USAGE:   
-  python3 ezr.py [OPTIONS]
+
+python3 ezr.py [OPTIONS]
 
 This code explores multi-objective optimization; i.e. what
 predicts for the better goal values? This code also explores
@@ -28,7 +29,8 @@ the fewest number of goal values?
     -S --Stop   int    min size of tree leaves      = 30   
     -t --train  str    training csv file. row1 has names = data/misc/auto93.csv
 
-### Data Format
+### Data File Format
+
 Training data consists of csv files where "?" denotes missing values.
 Row one  list the columns names, defining the roles of the columns:
 
@@ -41,7 +43,7 @@ For example, here is data where the goals are `Lbs-,Acc+,Mpg+`
 i.e. we want to minimize car weight and maximize acceleration
 and maximize fuel consumption.
 
-     {Clndrs  Volume  HpX  Model  origin  Lbs-  Acc+  Mpg+}
+     Clndrs   Volume  HpX  Model  origin  Lbs-  Acc+  Mpg+
      -------  ------  ---  -----  ------  ----  ----  ----
       4       90      48   78     2       1985  21.5   40
       4       98      79   76     1       2255  17.7   30
@@ -57,7 +59,8 @@ Note that the top rows are
 better than the bottom ones (lighter, faster cars that are
 more economical).
 """
-# ## Imports
+# ## Setting-up
+# ### Imports
 from __future__ import annotations
 from typing import Any as any
 from typing import List, Dict, Type, Callable, Generator
@@ -71,7 +74,7 @@ import stats
 R = random.random
 one = random.choice
 #
-# ##  Types
+# ###  Types and Classes
 #
 # Some misc types:
 number  = float  | int   #
@@ -148,7 +151,7 @@ class DATA:
   def clone(self:DATA, rows:rows=[]) -> DATA:
     return DATA().add(self.cols.names).adds(rows)
 #
-# ## Decorators
+# ### Decorators
 # I like how JULIA and CLOS lets you define all your data types
 # before anything else. Also, you can group together related methods
 # from different classes. I think that really simplifies explaining the
@@ -162,8 +165,25 @@ def of(doc):
     setattr(globals()[self], fun.__name__, fun)
   return doit
 #
-# ## MiscMethods
+# ## Methods
+# ### Misc
 #
+@of("Return central tendency of a DATA.")
+def mid(self:DATA) -> row: 
+  return [col.mid() for col in self.cols.all]
+
+@of("Return central tendency of NUMs.")
+def mid(self:NUM) -> number: return self.mu
+
+@of("Return central tendency of SYMs.")
+def mid(self:SYM) -> number: return self.mode
+
+@of("Return diversity of a NUM.")
+def div(self:NUM) -> number: return self.sd
+
+@of("Return diversity of a SYM.")
+def div(self:SYM) -> number: return self.ent()
+
 @of("Returns 0..1 for min..max.")
 def norm(self:NUM, x) -> number:
   return x if x=="?" else  ((x - self.lo) / (self.hi - self.lo + 1E-32))
@@ -172,7 +192,7 @@ def norm(self:NUM, x) -> number:
 def ent(self:SYM) -> number:
   return - sum(n/self.n * log(n/self.n,2) for n in self.has.values())
 
-# ## add 
+# ### Add 
 @of("add COL with many values.")
 def adds(self:COL,  src) -> COL:
   [self.add(row) for row in src]; return self
@@ -214,7 +234,7 @@ def add1(self:NUM, x:any) -> number:
   self.m2 += d * (x -  self.mu)
   self.sd  = 0 if self.n <2 else (self.m2/(self.n-1))**.5
 #
-# ## Guessing 
+# ### Guessing 
 @of("Guess values at same frequency of `has`.")
 def guess(self:SYM) -> any:
   r = R()
@@ -318,24 +338,24 @@ def d2h(self:DATA,row:row) -> number:
   d = sum(abs(c.goal - c.norm(row[c.at]))**2 for c in self.cols.y)
   return (d/len(self.cols.y)) ** (1/the.p)
 #
-# ## Nearest Neighbor
+# ### Nearest Neighbor
 @of("Sort `rows` by their distance to `row1`'s x values.")
 def neighbors(self:DATA, row1:row, rows:rows=None) -> rows:
   return sorted(rows or self.rows, key=lambda row2: self.dist(row1, row2))
 
 @of("Return predictions for `cols` (defaults to klass column).")
 def predict(self:DATA, row1:row, rows:rows, cols=None, k=2):
-  cols = cols or [self.cols.klass]
-  got = {col : [] for col in cols}
+  cols = cols or self.cols.y
+  got = {col.at : [] for col in cols}
   for row2 in self.neighbors(row1, rows)[:k]:
-    d = 1E-32 + self.dist(row1,row2)
-    [lst.append((d, row2[col.at])) for col,lst in got.items()]
-  return {col.at : col.predict(lst) for col,lst in got.items()}
+    d =  1E-32 + self.dist(row1,row2)
+    [got[col.at].append( (d, row2[col.at]) )  for col in cols]
+  return {col.at : col.predict( got[col.at] ) for col in cols}
  
 @of("Find weighted sum of numbers (weighted by distance).")
 def predict(self:NUM, pairs:list[tuple[float,number]]) -> number:
   ws,tmp = 0,0
-  for d,num in pairs: 
+  for d,num in pairs:
     w    = 1/d**2
     ws  += w
     tmp += w*num
@@ -348,7 +368,7 @@ def predict(self:SYM, pairs:list[tuple[float,any]]) -> number:
     votes[x] = votes.get(x,0) + 1/d**2
   return max(votes, key=votes.get)
 #
-# ## Cluster
+# ### Cluster
 @dataclass
 class CLUSTER:
   data :DATA
@@ -423,7 +443,8 @@ def like(self:NUM, x:number, _) -> float:
   nom   = exp(-1*(x - self.mu)**2/(2*v)) + 1E-30
   denom = (2*pi*v) **0.5
   return min(1, nom/(denom + 1E-30))
-
+#
+# ### Active Learning
 @of("active learning")
 def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True ):
   def ranked(rows): return self.clone(rows).chebyshevs().rows
@@ -460,7 +481,51 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
 #
 # ## Utils
 
-# Generate options from a string.
+# ### One-Liners
+
+# Return a function that returns the `n`-th idem.
+def nth(n): return lambda a:a[n]
+
+# Rounding off
+def r2(x): return round(x,2)
+def r3(x): return round(x,3)
+
+# Pring to standard error
+def dot(s="."): print(s, file=sys.stderr, flush=True, end="")
+
+# Timing
+def timing(fun) -> number:
+  start = time()
+  fun()
+  return time() - start
+
+# M-by-N cross val
+def xval(lst:list, m:int=5, n:int=5, some:int=10**6) -> Generator[rows,rows]:
+  for _ in range(m):
+    random.shuffle(lst)
+    for n1 in range (n):
+      lo = len(lst)/n * n1
+      hi = len(lst)/n * (n1+1)
+      train, test = [],[]
+      for i,x in enumerate(lst):
+        (test if i >= lo and i < hi else train).append(x)
+      train = random.choices(train, k=min(len(train),some))
+      yield train,test
+
+# ### Strings to Things
+
+def coerce(s:str) -> atom:
+  "Coerces strings to atoms."
+  try: return ast.literal_eval(s)
+  except Exception:  return s
+
+def csv(file) -> Generator[row]:
+  with file_or_stdin(None if file=="-" else file) as src:
+    for line in src:
+      line = re.sub(r'([\n\t\r ]|#.*)', '', line)
+      if line: yield [coerce(s.strip()) for s in line.split(",")]
+
+# ### Settings and CLI
 class SETTINGS:
   def __init__(self,s:str) -> None:
     "Make one slot for any line  `--slot ... = value`"
@@ -491,43 +556,8 @@ class SETTINGS:
     if d.get("help",False):
       sys.exit(print(self._help))
 #
-def dot(s="."): print(s, file=sys.stderr, flush=True, end="")
 
-def xval(lst:list, m:int=5, n:int=5, some:int=10**6) -> Generator[rows,rows]:
-  for _ in range(m):
-    random.shuffle(lst)
-    for n1 in range (n):
-      lo = len(lst)/n * n1
-      hi = len(lst)/n * (n1+1)
-      train, test = [],[]
-      for i,x in enumerate(lst):
-        (test if i >= lo and i < hi else train).append(x)
-      train = random.choices(train, k=min(len(train),some))
-      yield train,test
-
-def timing(fun) -> number:
-  start = time()
-  fun()
-  return time() - start
-
-def nth(n): return lambda a:a[n]
-
-def coerce(s:str) -> atom:
-  "Coerces strings to atoms."
-  try: return ast.literal_eval(s)
-  except Exception:  return s
-
-def r2(x): return round(x,2)
-def r3(x): return round(x,3)
-
-def csv(file) -> Generator[row]:
-  with file_or_stdin(None if file=="-" else file) as src:
-    for line in src:
-      line = re.sub(r'([\n\t\r ]|#.*)', '', line)
-      if line: yield [coerce(s.strip()) for s in line.split(",")]
-
-
-# ## Examples
+# ## Tests
 class egs: 
   def all():
    for s in dir(egs):
@@ -626,13 +656,31 @@ class egs:
     for node,leafp in cluster.nodes(): 
       print(r2(d.chebyshev(node.left)) if node.left else "", node,sep="\t")
 
-  def predict(file=None):
-    d = DATA().adds(csv(file or the.train))
+  def clusters2():
+    d = DATA().adds(csv(the.train))
+    somes = []
     for train,test in xval(d.rows):
-      trained = d.clone(train)
-      cluster = trained.cluster()
-      for row in test:
-        trained.predict(row, cluster.leaf(row,d).data.rows)
+      for k in [1,2,3,5]:
+        cluster = d.cluster(train)
+        for want in test:
+          leaf = cluster.leaf(d, want)
+          rows = leaf.data.rows
+          got  = d.predict(want, rows, k=k) 
+          mid  = leaf.data.mid()
+          for at,got1 in got.items():
+            sd = d.cols.all[at].div()
+            want1 = want[at]
+            want2 = mid[at]
+            print("k3 ",f"{(want1 - got1)/sd:.3f}")
+            print("mid",f"{(want2 - got1)/sd:.3f}")
+
+  def predicts(file=None):
+    d = DATA().adds(csv(file or the.train)).shuffle()
+    tests, train = d.rows[:10], d.rows[10:]
+    for test in tests:
+      for at, got in d.predict(test, train,  cols=d.cols.y, k=5).items():
+        want = test[at]
+        print(at, r3(abs(got - want)/d.cols.all[at].div()))
 
   def mqs():
     print("\n"+the.train)
@@ -663,7 +711,7 @@ class egs:
                   stats.SOME(mqs4,"mqs4"),
                   stats.SOME(mqs1000,"mqs1000")])
 #
-# ## Start
+# ## Main
 the = SETTINGS(__doc__)
 if __name__ == "__main__" and len(sys.argv)> 1:
   the.cli()
