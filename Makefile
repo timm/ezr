@@ -9,7 +9,7 @@ MAKEFLAGS += --warn-undefined-variables
 .SILENT:
 
 Top=$(shell git rev-parse --show-toplevel)
-Data=$(Top)/../data
+Data=$(Top)/../data/optimize
 
 help      :  ## show help
 	gawk -f $(Top)/etc/help.awk $(MAKEFILE_LIST) 
@@ -59,4 +59,4 @@ docs/%.html : %.py etc/py2html.awk etc/b4.html docs/ezr.css Makefile ## make doc
 mqs: ## experiment: mqs
 	$(foreach d, config hpo misc process,        \
     $(foreach f, $(wildcard $(Data)/$d/*.csv),  \
-      ls $f; ))
+      ./ezr.py -t $f -e mqs ; ))
