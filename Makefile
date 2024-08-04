@@ -39,9 +39,6 @@ $(Top)/docs/%.pdf: %.py  ## make doco: .py ==> .pdf
 	ps2pdf $@.ps $@; rm $@.ps
 	open $@
 
-#~/tmp/%.md : %.py ## make doco: py -> md
-#	echo 1
-
 docs/%.html : docs/%.md etc/b4.html docs/ezr.css Makefile ## make doco: md -> html
 	echo "$< ... "
 	pandoc -s  -f markdown --number-sections --toc  \
