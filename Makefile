@@ -42,20 +42,20 @@ $(Top)/docs/%.pdf: %.py  ## make doco: .py ==> .pdf
 #~/tmp/%.md : %.py ## make doco: py -> md
 #	echo 1
 
-docs/%.html : docs/%.md ## make doco: md -> html
-	echo "$^ ... "
+docs/%.html : docs/%.md etc/b4.html docs/ezr.css Makefile ## make doco: md -> html
+	echo "$< ... "
 	pandoc -s  -f markdown --number-sections --toc  \
 					-B etc/b4.html --mathjax \
   		     --css ezr.css --highlight-style tango \
-	  			 -o $@  $^
+	  			 -o $@  $<
 
-docs/%.html : %.py ## make doco: md -> html
-	echo "$^ ... "
-	gawk -f etc/py2html.awk $^ \
+docs/%.html : %.py etc/b4.html docs/ezr.css Makefile ## make doco: md -> html
+	echo "$< ... "
+	gawk -f etc/py2html.awk $< \
 	| pandoc -s  -f markdown --number-sections --toc \
 					-B etc/b4.html --mathjax \
   		     --css ezr.css --highlight-style tango \
-					 --metadata title="$^" \
+					 --metadata title="$<" \
 	  			 -o $@ 
 
 mqs: ## experiment: mqs
