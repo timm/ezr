@@ -19,6 +19,7 @@
   - test suites, watch
   - formal, whitebox, blackbox, fuzzing
   - TDD
+  - massive scale up, the Google story
 - [ ] Heuristics: bob's ruleof5, sven's rule (config cris),
 - [ ] Documentation: markdown, type hints, doc generation, dpc strings
 - [ ] Little languages
@@ -26,23 +27,25 @@
 - [ ] Makefiles, dependanceies, build structures, automate workflows
 - [ ] LLMs (won't replace programmers). Link: IEEE Software article.
 - [ ] License
+- [ ] Open source, project health,
 - [ ] Version Control:
    - github: readme.md, .gitignore
    - branching methods (github flow, commit to main). Feature models.
    -  auto-generated files
 - [ ] Patterns
   - Idioms, patterns, architectural patterns
+  - pipes, pipe filter
 - [ ] Abstraction
+  - LSP
   - Error handling
   - Iterators
 - [ ] Programmng paradigms; logic, function, object 
 ### SE Code
+- [ ] regular expressions, sed, awk
+- [ ]  Makefile
 ### SE Sys
 
-cross-val
-- order effects
-- overfitting, hold-out sets
-- temporaol validation
+_________
 
 # coding101
 
