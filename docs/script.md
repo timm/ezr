@@ -14,8 +14,17 @@
 - [ ] Bayes, SMO, 
 ## SE
 ### SE Tut
+- [ ] Heuristics: bob's ruleof5, sven's rule (config cris),
+- [ ] Documentation: markdown, type hints, doc generation, dpc strings
+- [ ] Little languages
+  - csv headers, regular expressions, makefiles
+- [ ] Makefiles, dependanceies, build structures.
 - [ ] LLMs (won't replace programmers). Link: IEEE Software article.
+- [ ] License
 - [ ] Version Control:
+   - github: readme.md, .gitignore
+   - branching methods (github flow, commit to main). Feature models.
+   -  auto-generated files
 - [ ] Patterns
   - Idioms, patterns, architectural patterns
 ### SE Code
