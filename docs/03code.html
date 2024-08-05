@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Tim Menzies" />
+  <meta name="dcterms.date" content="2024-08-05" />
+  <title>A quick peek at exr.py</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {  background-color: #f8f8f8; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ef2929; } /* Alert */
+    code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #204a87; } /* Attribute */
+    code span.bn { color: #0000cf; } /* BaseN */
+    code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4e9a06; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #8f5902; font-style: italic; } /* Comment */
+    code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+    code span.dt { color: #204a87; } /* DataType */
+    code span.dv { color: #0000cf; } /* DecVal */
+    code span.er { color: #a40000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #0000cf; } /* Float */
+    code span.fu { color: #204a87; font-weight: bold; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+    code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+    code span.ot { color: #8f5902; } /* Other */
+    code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+    code span.sc { color: #ce5c00; font-weight: bold; } /* SpecialChar */
+    code span.ss { color: #4e9a06; } /* SpecialString */
+    code span.st { color: #4e9a06; } /* String */
+    code span.va { color: #000000; } /* Variable */
+    code span.vs { color: #4e9a06; } /* VerbatimString */
+    code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="ezr.css" />
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<a href="https://github.com/timm/ezr"> <img
+alt="Home" src="https://img.shields.io/badge/home-black"></a> <a href="https://raw.githubusercontent.com/timm/ezr/main/ezr.py"> <img
+alt="Download" src="https://img.shields.io/badge/download-gold"></a> <a 
+href="https://github.com/timm/ezr/issues"> <img
+alt="Issues" src="https://img.shields.io/badge/issues-red"></a> <a 
+href="https://github.com/timm/ezr/blob/main/LICENSE.md"> <img
+alt="License" src="https://img.shields.io/badge/license-bsd2-green"></a> <img 
+src="https://img.shields.io/badge/purpose-ai%20,%20se-blueviolet"> <img
+alt="Purpose" src="https://img.shields.io/badge/language-python3-blue">
+
+<p><em>20-40 samples can find significant improvements in 10,000+ examples. Wanna know how?</em><hr>
+<header id="title-block-header">
+<h1 class="title">A quick peek at exr.py</h1>
+<p class="author">Tim Menzies</p>
+<p class="date">August 5, 2024</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#what-is-active-learning"
+id="toc-what-is-active-learning"><span
+class="toc-section-number">1</span> What is active learning?</a>
+<ul>
+<li><a href="#words-to-watch-for" id="toc-words-to-watch-for"><span
+class="toc-section-number">1.1</span> Words to watch for:</a></li>
+</ul></li>
+<li><a href="#training-data" id="toc-training-data"><span
+class="toc-section-number">2</span> Training Data</a>
+<ul>
+<li><a href="#classes" id="toc-classes"><span
+class="toc-section-number">2.1</span> Classes</a></li>
+<li><a href="#decorators" id="toc-decorators"><span
+class="toc-section-number">2.2</span> Decorators</a></li>
+</ul></li>
+<li><a href="#se-notes" id="toc-se-notes"><span
+class="toc-section-number">3</span> SE notes:</a></li>
+</ul>
+</nav>
+<h2 data-number="1" id="what-is-active-learning"><span
+class="header-section-number">1</span> What is active learning?</h2>
+<p>The human condition is that we have to make it up as we go along. We
+are always acting with partial knowledge, before all the facts are
+in.</p>
+<p>For example, if we want to buy a used car then a single glance at a
+car lot tells us much about hundreds of car make, model, color, number
+of doors, ages of cars, etc. But it takes much longer to work out know
+acceleration or miles per hour (you have to drive each car around for
+the afternoon). So the question becomes, what is the best strategy for
+exploring the fast-to-find features (e.g. car color) in order to build
+predictors from the slower-to-find features (e.g. car acceleration)</p>
+<p>Active learners say that we learn better if we can select our own
+training data. Given what we have seen so far, active learners guess
+what is be the next more informative question. Active learners spend
+much time reasoning about the independent variables (which are cheap to
+collect) before deciding which dependent variables to collect next. A
+repeated result is that this tactic can produce good models, with
+minimal information about the dependent variables..</p>
+<h3 data-number="1.1" id="words-to-watch-for"><span
+class="header-section-number">1.1</span> Words to watch for:</h3>
+<ul>
+<li>Terms: <em>dependent, independent, goals, accusation
+function</em></li>
+<li>Classes: <em>DATA, COLS, NUM, SYM</em></li>
+<li>Variables: <em>row</em>, <em>rows</em>, <em>done</em> (which divides
+into <em>best</em> and <em>rest</em>); <em>todo</em></li>
+<li>Synonyms: <em>features</em>, <em>attributes</em>,
+<em>goals</em></li>
+</ul>
+<h2 data-number="2" id="training-data"><span
+class="header-section-number">2</span> Training Data</h2>
+<p>For training purposes we explore all this using consists of csv files
+where “?” denotes missing values. Row one list the columns names,
+defining the roles of the columns:</p>
+<ul>
+<li>NUMeric column names start with an upper case letter.</li>
+<li>All other columns are SYMbolic.</li>
+<li>Names ending with “+” or “-” are goals to maximize/minimize</li>
+<li>Anything ending in “X” is a column we should ignore.</li>
+</ul>
+<p>For example, here is data where the goals are
+<code>Lbs-,Acc+,Mpg+</code> i.e. we want to minimize car weight and
+maximize acceleration and maximize fuel consumption.</p>
+<pre><code> Clndrs   Volume  HpX  Model  origin  Lbs-  Acc+  Mpg+
+ -------  ------  ---  -----  ------  ----  ----  ----
+  4       90      48   78     2       1985  21.5   40
+  4       98      79   76     1       2255  17.7   30
+  4       98      68   77     3       2045  18.5   30
+  4       79      67   74     2       2000  16     30
+  ...
+  4      151      85   78     1       2855  17.6   20
+  6      168      132  80     3       2910  11.4   30
+  8      350      165  72     1       4274  12     10
+  8      304      150  73     1       3672  11.5   10
+  ------------------------------      ----------------
+    independent features (x)          dependent goals (y)</code></pre>
+<p>Note that the top rows are better than the bottom ones (lighter,
+faster cars that are more economical).</p>
+<ul>
+<li>Multi-objective learners find a model that selects for the best
+rows.</li>
+<li>Active learning, applied to the same task, does the same thing but
+does so with very few peeks at the goal y values.
+<ul>
+<li>Why? Since it usually very cheap to get <code>x</code> but very
+expensive to get <code>y</code>.</li>
+</ul></li>
+</ul>
+<h3 data-number="2.1" id="classes"><span
+class="header-section-number">2.1</span> Classes</h3>
+<p>This code has four main classes:</p>
+<ul>
+<li>NUM, SYM, COL (the super class of NUM,SYM). These classes summarize
+each column.
+<ul>
+<li>NUMs know mean and standard deviation (a measure of average distance
+of numbers to the mean)
+<ul>
+<li><span class="math inline">\(\sigma=\sqrt{\frac{1}{N-1} \sum_{i=1}^N
+(x_i-\overline{x})^2}\)</span></li>
+</ul></li>
+<li>SYMs know mode (most common symbol) and entropy (a measure of how
+often we see different symbols)
+<ul>
+<li>entropy = <span class="math inline">\(-\sum_{i=1}^n p(x_i) \log_2
+p(x_i)\)</span></li>
+</ul></li>
+<li>Mean and mode are both measures of central tendency</li>
+<li>Entropy and standard deviation are measures of confusion.
+<ul>
+<li>The lower their values, the more likely we can believe in the
+central tendency</li>
+</ul></li>
+</ul></li>
+<li>DATA which stores <code>rows</code>, summarized in <code>cols</code>
+(columns).</li>
+<li>COLS is a factory that takes a list of names and creates the
+columns. All the columns are stored in <code>all</code> (and some are
+also stored in <code>x</code> and <code>y</code>).</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> COLS:</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  names: <span class="bu">list</span>[<span class="bu">str</span>]   <span class="co"># column names</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="bu">all</span>  : <span class="bu">list</span>[COL] <span class="op">=</span> LIST()  <span class="co"># all NUMS and SYMS</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  x    : <span class="bu">list</span>[COL] <span class="op">=</span> LIST()  <span class="co"># independent COLums</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  y    : <span class="bu">list</span>[COL] <span class="op">=</span> LIST()  <span class="co"># dependent COLumns</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  klass: COL <span class="op">=</span> <span class="va">None</span></span></code></pre></div>
+<p>To build the columns, COLS looks at each name’s <code>a,z</code>
+(first and last letter):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> __post_init__(<span class="va">self</span>:COLS) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> at,txt <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="va">self</span>.names):</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>      a,z <span class="op">=</span> txt[<span class="dv">0</span>],txt[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>      col <span class="op">=</span> (NUM <span class="cf">if</span> a.isupper() <span class="cf">else</span> SYM)(at<span class="op">=</span>at, txt<span class="op">=</span>txt)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.<span class="bu">all</span>.append(col)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> z <span class="op">!=</span> <span class="st">&quot;X&quot;</span>:</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        (<span class="va">self</span>.y <span class="cf">if</span> z <span class="kw">in</span> <span class="st">&quot;!+-&quot;</span> <span class="cf">else</span> <span class="va">self</span>.x).append(col)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> z<span class="op">==</span><span class="st">&quot;!&quot;</span>: <span class="va">self</span>.klass <span class="op">=</span> col</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> z<span class="op">==</span><span class="st">&quot;-&quot;</span>: col.goal <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<h3 data-number="2.2" id="decorators"><span
+class="header-section-number">2.2</span> Decorators</h3>
+<ul>
+<li>Decorated are functions called at load time that manipulate other
+functions.</li>
+<li>E.g. the <code>of</code> decorator lets you define methods outside
+of a function. Here it is used to group together the <code>mid</code>
+(middle) and <code>div</code> (diversity) functions.
+<ul>
+<li>The <code>mid</code>(ddle) of a NUMeric and a SYMbol column are
+their means and modes.</li>
+<li>As to <code>DATA</code>, thsee hold rows which are summarized in
+<code>cols</code>. The <code>mid</code> of those rows is the
+<code>mid</code> of the summary for each column.</li>
+</ul></li>
+</ul>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> of(doc):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> doit(fun):</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    fun.__doc__ <span class="op">=</span> doc</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span> <span class="op">=</span> inspect.getfullargspec(fun).annotations[<span class="st">&#39;self&#39;</span>]</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">setattr</span>(<span class="bu">globals</span>()[<span class="va">self</span>], fun.<span class="va">__name__</span>, fun)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> doit</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of a DATA.&quot;</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> row:</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [col.mid() <span class="cf">for</span> col <span class="kw">in</span> <span class="va">self</span>.cols.<span class="bu">all</span>]</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of NUMs.&quot;</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mu</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of SYMs.&quot;</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mode</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a NUM.&quot;</span>)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.sd</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a SYM.&quot;</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.ent()</span></code></pre></div>
+<h2 data-number="3" id="se-notes"><span
+class="header-section-number">3</span> SE notes:</h2>
+<ul>
+<li>Code has doco : functions have type hints and doc strings; help
+string at front, worked examples (at back)</li>
+<li>Code has tests (worked examples at back); about a quarter of the
+code base</li>
+<li>My code is function-oriented: methods are grouped via method name.
+Many language are function-oriented; e.g. Julia, CLOS.## Python
+notes</li>
+</ul>
+</body>
+</html>
