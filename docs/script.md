@@ -1,3 +1,26 @@
+# Contents
+
+## Why
+- [ ] Why 101
+## Maths
+- [ ] pdf, cdf, Gaussians, approximations to cdf
+- [ ] information theory, shannon, shannon entropy, mutual information
+- [ ] discretization
+## AI
+### AI Tut
+### AI Code
+- [ ] Xval. Order effects. Overfitting. Expected relationship train or error, train on test. Train/test. Temporal validation
+- [ ] Distance, KNN, clustering, rrp
+- [ ] Bayes, SMO, 
+## SE
+### SE Tut
+- [ ] LLMs (won't replace programmers). Link: IEEE Software article.
+- [ ] Version Control:
+- [ ] Patterns
+  - Idioms, patterns, architectural patterns
+### SE Code
+### SE Sys
+
 cross-val
 - order effects
 - overfitting, hold-out sets
