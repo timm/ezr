@@ -14,11 +14,16 @@
 - [ ] Bayes, SMO, 
 ## SE
 ### SE Tut
+- [ ] Programms don't just program. Where does the time go.
+- [ ] Testing
+  - test suites, watch
+  - formal, whitebox, blackbox, fuzzing
+  - TDD
 - [ ] Heuristics: bob's ruleof5, sven's rule (config cris),
 - [ ] Documentation: markdown, type hints, doc generation, dpc strings
 - [ ] Little languages
   - csv headers, regular expressions, makefiles
-- [ ] Makefiles, dependanceies, build structures.
+- [ ] Makefiles, dependanceies, build structures, automate workflows
 - [ ] LLMs (won't replace programmers). Link: IEEE Software article.
 - [ ] License
 - [ ] Version Control:
@@ -27,6 +32,10 @@
    -  auto-generated files
 - [ ] Patterns
   - Idioms, patterns, architectural patterns
+- [ ] Abstraction
+  - Error handling
+  - Iterators
+- [ ] Programmng paradigms; logic, function, object 
 ### SE Code
 ### SE Sys
 
