@@ -10,8 +10,8 @@
 ### AI Tut
 ### AI Code
 - [ ] Xval. Order effects. Overfitting. Expected relationship train or error, train on test. Train/test. Temporal validation
-- [ ] Distance, KNN, clustering, rrp
-- [ ] Bayes, SMO, 
+- [ ] Distance, euclidean, chebyshev, KNN, clustering, rrp
+- [ ] Bayes, SMO, feature weighting
 ## SE
 ### SE Tut
 - [ ] Programms don't just program. Where does the time go.
