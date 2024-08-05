@@ -16,6 +16,6 @@ h1::first-letter{ color:#ff8A00; }
 h1 { color: #658291; padding-top:0px; 
      margin-top:0px; font-size: 90px; font-family: "Delicious Handrawn", cursive;}
 
-pre {  padding-left: 10px; border-left: solid 2px #CCC; font-size: x-small; }
+pre {  padding-left: 10px; border-left: solid 2px #CCC; font-size: small; }
 
 h2 { padding: 3px; color:white; background-color:  #658291; }
