@@ -114,7 +114,7 @@ class NUM(COL):
 
   # A minus sign at end of a NUM's name says "this is a column to minimize"
   # (all other goals are to be maximizes).
-  def __post_init__(self:COLS) -> None:  
+  def __post_init__(self:NUM) -> None:-  
     if  self.txt and self.txt[-1] == "-": self.goal=0
 #
 # COLS are a factory that reads some `names` from the first
@@ -427,6 +427,19 @@ gt = lambda x,y: x >  y
 
 #
 # ## Bayes
+# def cdf(klasses:classes, x:Callable):
+#    lst = sorted([(x(r), y) for y,rows in klasses.items() for r in rows if x1(r) != "?"],
+#                 key = nth(0))
+#    lo,hi = lst[0][0], lst[-1][0]
+#    symp = not isinstance(lo,(inf,float)) 
+#    for x,y  in lst
+#      b =  x if symp else floor(((x-lo)/(hi-lo+1-32) *20))
+#      bin[b] = bin.get(b,None) or  SYM(at=b)
+#      bin[b].add(y)
+#     if nump: return max(bin,key=
+   
+
+
 @of("How much DATA likes a `row`.")
 def loglike(self:DATA, r:row, nall:int, nh:int) -> float:
   prior = (len(self.rows) + the.k) / (nall + the.k*nh)
