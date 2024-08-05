@@ -16,6 +16,7 @@
 ### SE Tut
 - [ ] Programms don't just program. Where does the time go.
 - [ ] Testing
+  - debugging: break points, tracing
   - test suites, watch
   - formal, whitebox, blackbox, fuzzing
   - TDD
@@ -43,6 +44,7 @@
 ### SE Code
 - [ ] regular expressions, sed, awk
 - [ ]  Makefile
+- [ ]  Python idioms
 ### SE Sys
 
 _________
