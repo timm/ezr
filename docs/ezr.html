@@ -653,32 +653,33 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb54-1"><a h
 <span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> ranked(rows): <span class="cf">return</span> <span class="va">self</span>.clone(rows).chebyshevs().rows</span>
 <span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> todos(todo):</span>
-<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> faster: <span class="co"># rotate back half of buffer to end of list, fill the gap with later items</span></span>
-<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>       n <span class="op">=</span> the.<span class="bu">buffer</span><span class="op">//</span><span class="dv">2</span></span>
-<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>       <span class="cf">return</span> todo[:n] <span class="op">+</span> todo[<span class="dv">2</span><span class="op">*</span>n: <span class="dv">3</span><span class="op">*</span>n],  todo[<span class="dv">3</span><span class="op">*</span>n:] <span class="op">+</span> todo[n:<span class="dv">2</span><span class="op">*</span>n]</span>
-<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> todo,[]</span>
-<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> guess(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
-<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a>    cut  <span class="op">=</span> <span class="bu">int</span>(<span class="fl">.5</span> <span class="op">+</span> <span class="bu">len</span>(done) <span class="op">**</span> the.cut)</span>
-<span id="cb54-13"><a href="#cb54-13" aria-hidden="true" tabindex="-1"></a>    best <span class="op">=</span> <span class="va">self</span>.clone(done[:cut])</span>
-<span id="cb54-14"><a href="#cb54-14" aria-hidden="true" tabindex="-1"></a>    rest <span class="op">=</span> <span class="va">self</span>.clone(done[cut:])</span>
-<span id="cb54-15"><a href="#cb54-15" aria-hidden="true" tabindex="-1"></a>    a,b  <span class="op">=</span> todos(todo)</span>
-<span id="cb54-16"><a href="#cb54-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> generate:</span>
-<span id="cb54-17"><a href="#cb54-17" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="va">self</span>.neighbors(generate(best,rest), a) <span class="op">+</span> b </span>
-<span id="cb54-18"><a href="#cb54-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb54-19"><a href="#cb54-19" aria-hidden="true" tabindex="-1"></a>      key  <span class="op">=</span> <span class="kw">lambda</span> r: score(best.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>), rest.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>))</span>
-<span id="cb54-20"><a href="#cb54-20" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span>  <span class="bu">sorted</span>(a, key<span class="op">=</span>key, reverse<span class="op">=</span><span class="va">True</span>) <span class="op">+</span> b</span>
-<span id="cb54-21"><a href="#cb54-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-22"><a href="#cb54-22" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> loop(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
-<span id="cb54-23"><a href="#cb54-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(the.Last <span class="op">-</span> the.label):</span>
-<span id="cb54-24"><a href="#cb54-24" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="bu">len</span>(todo) <span class="op">&lt;</span> <span class="dv">3</span> : <span class="cf">break</span></span>
-<span id="cb54-25"><a href="#cb54-25" aria-hidden="true" tabindex="-1"></a>      top,<span class="op">*</span>todo <span class="op">=</span> guess(todo, done)</span>
-<span id="cb54-26"><a href="#cb54-26" aria-hidden="true" tabindex="-1"></a>      done     <span class="op">+=</span> [top]</span>
-<span id="cb54-27"><a href="#cb54-27" aria-hidden="true" tabindex="-1"></a>      done      <span class="op">=</span> ranked(done)</span>
-<span id="cb54-28"><a href="#cb54-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> done</span>
-<span id="cb54-29"><a href="#cb54-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-30"><a href="#cb54-30" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> loop(<span class="va">self</span>.rows[the.label:], ranked(<span class="va">self</span>.rows[:the.label]))</span></code></pre></div>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> faster: <span class="co"># Apply our sorting heuristics to just a small buffer at start of &quot;todo&quot;</span></span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>      <span class="co"># rotate back half of buffer to end of list, fill the gap with later items</span></span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>       n <span class="op">=</span> the.<span class="bu">buffer</span><span class="op">//</span><span class="dv">2</span></span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>       <span class="cf">return</span> todo[:n] <span class="op">+</span> todo[<span class="dv">2</span><span class="op">*</span>n: <span class="dv">3</span><span class="op">*</span>n],  todo[<span class="dv">3</span><span class="op">*</span>n:] <span class="op">+</span> todo[n:<span class="dv">2</span><span class="op">*</span>n]</span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>: <span class="co"># Apply our sorting heuristics to all of todo.</span></span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> todo,[]</span>
+<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> guess(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
+<span id="cb54-13"><a href="#cb54-13" aria-hidden="true" tabindex="-1"></a>    cut  <span class="op">=</span> <span class="bu">int</span>(<span class="fl">.5</span> <span class="op">+</span> <span class="bu">len</span>(done) <span class="op">**</span> the.cut)</span>
+<span id="cb54-14"><a href="#cb54-14" aria-hidden="true" tabindex="-1"></a>    best <span class="op">=</span> <span class="va">self</span>.clone(done[:cut])</span>
+<span id="cb54-15"><a href="#cb54-15" aria-hidden="true" tabindex="-1"></a>    rest <span class="op">=</span> <span class="va">self</span>.clone(done[cut:])</span>
+<span id="cb54-16"><a href="#cb54-16" aria-hidden="true" tabindex="-1"></a>    a,b  <span class="op">=</span> todos(todo)</span>
+<span id="cb54-17"><a href="#cb54-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> generate:</span>
+<span id="cb54-18"><a href="#cb54-18" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="va">self</span>.neighbors(generate(best,rest), a) <span class="op">+</span> b </span>
+<span id="cb54-19"><a href="#cb54-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb54-20"><a href="#cb54-20" aria-hidden="true" tabindex="-1"></a>      key  <span class="op">=</span> <span class="kw">lambda</span> r: score(best.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>), rest.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>))</span>
+<span id="cb54-21"><a href="#cb54-21" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span>  <span class="bu">sorted</span>(a, key<span class="op">=</span>key, reverse<span class="op">=</span><span class="va">True</span>) <span class="op">+</span> b</span>
+<span id="cb54-22"><a href="#cb54-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-23"><a href="#cb54-23" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> loop(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
+<span id="cb54-24"><a href="#cb54-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(the.Last <span class="op">-</span> the.label):</span>
+<span id="cb54-25"><a href="#cb54-25" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="bu">len</span>(todo) <span class="op">&lt;</span> <span class="dv">3</span> : <span class="cf">break</span></span>
+<span id="cb54-26"><a href="#cb54-26" aria-hidden="true" tabindex="-1"></a>      top,<span class="op">*</span>todo <span class="op">=</span> guess(todo, done)</span>
+<span id="cb54-27"><a href="#cb54-27" aria-hidden="true" tabindex="-1"></a>      done     <span class="op">+=</span> [top]</span>
+<span id="cb54-28"><a href="#cb54-28" aria-hidden="true" tabindex="-1"></a>      done      <span class="op">=</span> ranked(done)</span>
+<span id="cb54-29"><a href="#cb54-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> done</span>
+<span id="cb54-30"><a href="#cb54-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-31"><a href="#cb54-31" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> loop(<span class="va">self</span>.rows[the.label:], ranked(<span class="va">self</span>.rows[:the.label]))</span></code></pre></div>
 <h2 data-number="5" id="utils"><span
 class="header-section-number">5</span> Utils</h2>
 <div class="sourceCode" id="cb55"><pre

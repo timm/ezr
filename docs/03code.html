@@ -144,13 +144,17 @@ class="toc-section-number">3.4.2</span> Active Learner</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#se-notes" id="toc-se-notes"><span
-class="toc-section-number">4</span> SE notes:</a>
+class="toc-section-number">4</span> SE notes:</a></li>
+<li><a href="#python-notes" id="toc-python-notes"><span
+class="toc-section-number">5</span> Python Notes</a>
 <ul>
+<li><a href="#comprehensions" id="toc-comprehensions"><span
+class="toc-section-number">5.1</span> Comprehensions</a></li>
 <li><a href="#decorators" id="toc-decorators"><span
-class="toc-section-number">4.1</span> Decorators</a></li>
+class="toc-section-number">5.2</span> Decorators</a></li>
 </ul></li>
 <li><a href="#try-it-for-your-self" id="toc-try-it-for-your-self"><span
-class="toc-section-number">5</span> Try it for your self</a></li>
+class="toc-section-number">6</span> Try it for your self</a></li>
 </ul>
 </nav>
 <h2 data-number="1" id="introduction"><span
@@ -158,7 +162,8 @@ class="header-section-number">1</span> Introduction</h2>
 <h3 data-number="1.1" id="words-to-watch-for"><span
 class="header-section-number">1.1</span> Words to watch for</h3>
 <ul>
-<li>SE Terms: <em>DRY, WET, function-oriented, decorators</em>,</li>
+<li>SE Terms: <em>DRY, WET, refactoring, function-oriented,
+object-oirented, decorators, little languages</em>,</li>
 <li>AI Terms: <em>active learning, Y, dependent, X, independent, goals,
 labeling, aggregation function, chebyshev, multi-objective regression,
 classification, Bayes classifier, entropy, standard deviation</em></li>
@@ -180,7 +185,7 @@ href="https://github.com/timm/ezr/blob/main/ezr.py">ezr</a></li>
 <li>Down sample 60+ example dadta files: <a
 href="https://github.com/timm/moot">moot</a> (MOOT= Multi-Objective
 Optimization Tests)</li>
-<li>This code:
+<li>Macro structure of this code:
 <ul>
 <li>Starts with <strong>doc</strong> string, from which we parse out the
 control settings.</li>
@@ -444,13 +449,14 @@ small, real fast)</p>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">sum</span>(log(x) <span class="cf">for</span> x <span class="kw">in</span> likes <span class="op">+</span> [prior] <span class="cf">if</span> x<span class="op">&gt;</span><span class="dv">0</span>)</span></code></pre></div>
 <h4 data-number="3.4.2" id="active-learner"><span
 class="header-section-number">3.4.2</span> Active Learner</h4>
-<p>The active learner uses a Bayes classifier.</p>
+<p>The active learner uses a Bayes classifier to guess the likelihood
+that an unlabeled example should be labeled next.</p>
 <ul>
-<li>AlL the unlabeled data is split into a tiny <code>done</code> set
+<li>ALl the unlabeled data is split into a tiny <code>done</code> set
 and a much larger <code>todo</code> set</li>
-<li>All the <code>done</code>s are labeled and ranked and divided into
-<span class="math inline">\(\sqrt{N}\)</span> <em>best</em> and <span
-class="math inline">\(1-\sqrt{N}\)</span> <em>rest</em>.</li>
+<li>All the <code>done</code>s are labeled, then ranked, then divided
+into <span class="math inline">\(\sqrt{N}\)</span> <em>best</em> and
+<span class="math inline">\(1-\sqrt{N}\)</span> <em>rest</em>.</li>
 <li>Some sample of the <code>todo</code>s are the sorted by their
 probabilities of being <em>best</em> (B), not <em>rest</em> (R)
 <ul>
@@ -467,36 +473,36 @@ class="math inline">\(B/R\)</span>.</li>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> ranked(rows): <span class="cf">return</span> <span class="va">self</span>.clone(rows).chebyshevs().rows</span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> todos(todo):</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> faster: <span class="co"># swap back half of the buffer with later items</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>       n<span class="op">=</span> the.<span class="bu">buffer</span><span class="op">//</span><span class="dv">2</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>       a1,a2 <span class="op">=</span> todo[:n], todo[n:<span class="dv">2</span><span class="op">*</span>n]</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>       b1,b2 <span class="op">=</span> todo[<span class="dv">2</span><span class="op">*</span>n:<span class="dv">3</span><span class="op">*</span>n], todo[<span class="dv">3</span><span class="op">*</span>n:]</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>       <span class="cf">return</span> a1 <span class="op">+</span> b1, b2 <span class="op">+</span> a2</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> todo,[]</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> guess(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    cut  <span class="op">=</span> <span class="bu">int</span>(<span class="fl">.5</span> <span class="op">+</span> <span class="bu">len</span>(done) <span class="op">**</span> the.cut)</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    best <span class="op">=</span> <span class="va">self</span>.clone(done[:cut])</span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    rest <span class="op">=</span> <span class="va">self</span>.clone(done[cut:])</span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    a,b  <span class="op">=</span> todos(todo)</span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> generate: <span class="co"># don&#39;t worry about this bit</span></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="va">self</span>.neighbors(generate(best,rest), a) <span class="op">+</span> b </span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>      key  <span class="op">=</span> <span class="kw">lambda</span> r: score(best.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>), rest.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>))</span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span>  <span class="bu">sorted</span>(a, key<span class="op">=</span>key, reverse<span class="op">=</span><span class="va">True</span>) <span class="op">+</span> b</span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> loop(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(the.Last <span class="op">-</span> the.label):</span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="bu">len</span>(todo) <span class="op">&lt;</span> <span class="dv">3</span> : <span class="cf">break</span></span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>      top,<span class="op">*</span>todo <span class="op">=</span> guess(todo, done)</span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>      done     <span class="op">+=</span> [top]</span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>      done      <span class="op">=</span> ranked(done)</span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> done</span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> loop(<span class="va">self</span>.rows[the.label:], ranked(<span class="va">self</span>.rows[:the.label]))</span></code></pre></div>
-<p>The default configs here are the.label=4 and the.Last=30; i.e. four
-initial evaluations, then 26 evals after that.</p>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> faster: <span class="co"># Apply our sorting heuristics to just a small buffer at start of &quot;todo&quot;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>       <span class="co"># Rotate back half of the buffer to end of list. Shift left to fill in the gap.</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>       n <span class="op">=</span> the.<span class="bu">buffer</span><span class="op">//</span><span class="dv">2</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>       <span class="cf">return</span> todo[:n] <span class="op">+</span> todo[<span class="dv">2</span><span class="op">*</span>n: <span class="dv">3</span><span class="op">*</span>n],  todo[<span class="dv">3</span><span class="op">*</span>n:] <span class="op">+</span> todo[n:<span class="dv">2</span><span class="op">*</span>n]</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>: <span class="co"># Apply our sorting heustics to all of todo.</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> todo,[]</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> guess(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    cut  <span class="op">=</span> <span class="bu">int</span>(<span class="fl">.5</span> <span class="op">+</span> <span class="bu">len</span>(done) <span class="op">**</span> the.cut)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    best <span class="op">=</span> <span class="va">self</span>.clone(done[:cut])</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    rest <span class="op">=</span> <span class="va">self</span>.clone(done[cut:])</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    a,b  <span class="op">=</span> todos(todo)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> generate: <span class="co"># don&#39;t worry about this bit</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="va">self</span>.neighbors(generate(best,rest), a) <span class="op">+</span> b </span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>      key  <span class="op">=</span> <span class="kw">lambda</span> r: score(best.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>), rest.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>))</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span>  <span class="bu">sorted</span>(a, key<span class="op">=</span>key, reverse<span class="op">=</span><span class="va">True</span>) <span class="op">+</span> b</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> loop(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(the.Last <span class="op">-</span> the.label):</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="bu">len</span>(todo) <span class="op">&lt;</span> <span class="dv">3</span> : <span class="cf">break</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>      top,<span class="op">*</span>todo <span class="op">=</span> guess(todo, done)</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>      done     <span class="op">+=</span> [top]</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>      done      <span class="op">=</span> ranked(done)</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> done</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> loop(<span class="va">self</span>.rows[the.label:], ranked(<span class="va">self</span>.rows[:the.label]))</span></code></pre></div>
+<p>The default configs here is <code>the.label=4</code> and
+<code>the.Last=30</code>; i.e. four initial evaluations, then 26 evals
+after that.</p>
 <p>TL;DR: to explore better methods for active learning:</p>
 <ul>
 <li>change the <code>guess()</code> function</li>
@@ -519,6 +525,31 @@ e.g. to call egs.mqs:
 <li>python3 ezr.py -e mqs</li>
 </ul></li>
 </ul></li>
+<li>This code is poorly structured for team work:
+<ul>
+<li>For teams, better to have tests in separate file(s)
+<ul>
+<li>If multiple test files, then many people can write their own special
+tests</li>
+<li>When tests are platform-dependent, it is good to be able to modify
+the tests without modifying the main thing;</li>
+</ul></li>
+<li>For teams, better to have code in multiple files:
+<ul>
+<li>so different people can work in separate files (less chance of edit
+conclusions)</li>
+</ul></li>
+<li>This code violates known <a
+href="https://peps.python.org/pep-0008/">Python formatting standards
+(PEP 8)</a> which is supported by so many tools; e.g. <a
+href="https://github.com/psf/black">Black</a> and <a
+href="https://code.visualstudio.com/docs/python/formatting">various
+tools in VScode</a>
+<ul>
+<li>Better to have commit hooks to re-format the code to something more
+usual</li>
+</ul></li>
+</ul></li>
 <li>My settings are DRY, not WET
 <ul>
 <li>WET = Write everything twice.
@@ -533,6 +564,13 @@ settings.<br />
 <li>This code parses the settings from the <strong>doc</strong> string
 (see the SETTINGS class)</li>
 <li>That is, my settings options are DRY.</li>
+</ul></li>
+<li>When to be DRY
+<ul>
+<li>If it only occurs once, ignore</li>
+<li>If you see it write, just chill. You can be a little WET</li>
+<li>if you see it thrice, refactor so “it” is defined only once, then
+reused elsewhere</li>
 </ul></li>
 </ul></li>
 <li>Little languages
@@ -554,6 +592,36 @@ language defining setting options.</li>
 dependencies and updates</li>
 </ul></li>
 </ul></li>
+<li>REgualr Expressions
+<ul>
+<li>Examples:
+<ul>
+<li>leading white space <code>^[ \t\n]*</code> (spare brackets means one
+or more characters; star means zero or more)</li>
+<li>trailing white space <code>[ \t\n]*$</code> (dollar sign means end
+of line)</li>
+<li>IEEE format number
+<code>^[+-]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][+-]?[0-9]+)?$</code>
+(round brackets group expressions; vertical bar denotes “or”; “?” means
+zero or one)</li>
+<li>Beautuful example, <a
+href="https://github.com/timm/ezr/blob/main/docs/pdf/pakin1991.pdf">guessing
+North Amererican Names using regualr epxressions</a>
+<ul>
+<li>For a cheat sheet on regular expressions, see p64 of that
+article)</li>
+</ul></li>
+<li>For other articles on regular expressions:
+<ul>
+<li>At their core, they can be <a
+href="http://genius.cat-v.org/brian-kernighan/articles/beautiful">surprisingly
+simple</a></li>
+<li>Fantastic article: <a
+href="https://swtch.com/~rsc/regexp/regexp1.html">Regular Expression
+Matching Can Be Simple And Fast</a>,</li>
+</ul></li>
+</ul></li>
+</ul></li>
 <li>Configuration
 <ul>
 <li>All code has config settings. Magic numbers should not be buried in
@@ -566,8 +634,13 @@ role="doc-noteref"><sup>2</sup></a>. Need active learning To explore
 that exponentially large sapce!</li>
 </ul></li>
 </ul>
-<h3 data-number="4.1" id="decorators"><span
-class="header-section-number">4.1</span> Decorators</h3>
+<h2 data-number="5" id="python-notes"><span
+class="header-section-number">5</span> Python Notes</h2>
+<h3 data-number="5.1" id="comprehensions"><span
+class="header-section-number">5.1</span> Comprehensions</h3>
+<p>Thcode makes extensive</p>
+<h3 data-number="5.2" id="decorators"><span
+class="header-section-number">5.2</span> Decorators</h3>
 <ul>
 <li>Decorated are functions called at load time that manipulate other
 functions.</li>
@@ -605,8 +678,8 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a hr
 <span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a SYM.&quot;</span>)</span>
 <span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.ent()</span></code></pre></div>
-<h2 data-number="5" id="try-it-for-your-self"><span
-class="header-section-number">5</span> Try it for your self</h2>
+<h2 data-number="6" id="try-it-for-your-self"><span
+class="header-section-number">6</span> Try it for your self</h2>
 <p>Install test data. Open up a bash shell prompt (e.g. got to Github
 and open a codespaces)</p>
 <pre><code>git clone https://github.com/timm/moot

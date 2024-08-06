@@ -340,10 +340,12 @@ TL;DR: to explore better methods for active learning:
     - leading white space `^[ \t\n]*` (spare brackets means one or more characters; star means zero or more)
     - trailing white space `[ \t\n]*$` (dollar  sign means end of line)
     - IEEE format number `^[+-]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][+-]?[0-9]+)?$` (round brackets group expressions;
-      vertical bar denotes "or"; ">" means zero or one)
-    - Beautuful example, guessed North Amererican Names
-  - Scott Pakin. Regular Expressions and Gender Guessing. In Computer Language Magazine, 8(12):pp. 59-68, December 1991.
-  - Do you know what this is?
+      vertical bar denotes "or"; "?" means zero or one)
+    - Beautuful example, [guessing North Amererican Names using regualr epxressions](https://github.com/timm/ezr/blob/main/docs/pdf/pakin1991.pdf)
+      - For a cheat sheet on regular expressions, see p64 of that article)
+    - For other articles on regular expressions:
+      - At their core, they can be [surprisingly simple](http://genius.cat-v.org/brian-kernighan/articles/beautiful)
+      - Fantastic article: [Regular Expression Matching Can Be Simple And Fast](https://swtch.com/~rsc/regexp/regexp1.html),
 
 
 - Configuration
@@ -351,6 +353,13 @@ TL;DR: to explore better methods for active learning:
       from the command line (allows for easier experimentation).
   - BTW, handling the config gap is a real challenge. Rate of new config grows much faser than rate of people's
       understanding those options[^Takwal]. Need active learning  To explore that exponentially large sapce!
+
+## Python Notes
+
+### Comprehensions
+
+Thcode makes extensive 
+
 
 ### Decorators
 
