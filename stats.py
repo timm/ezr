@@ -42,7 +42,7 @@ class SOME:
 
     def __eq__(i,j):
       "True if all of cohen/cliffs/bootstrap say you are the same."
-      return i.cliffs(j) and i.bootstrap(j) ## ordered slowest to fastest
+      return  i.cliffs(j) and i.bootstrap(j) ## ordered slowest to fastest
 
     def has(i) :
       "Return the numbers, sorted."
@@ -115,7 +115,7 @@ class SOME:
       return n / samples >= (confidence or the.stats.confidence or 0.05)
 
 # ---------------------------------------------------------------------------------------
-def sk(somes):
+def sk(somes,epsilon=0.01):
   "Sort nums on mid. give adjacent nums the same rank if they are statistically the same"
   def sk1(somes, rank, cut=None):
     most, b4 = -1, SOME(somes)
@@ -123,11 +123,11 @@ def sk(somes):
       lhs = SOME(somes[:j])
       rhs = SOME(somes[j:])
       tmp = (lhs.n*abs(lhs.mid() - b4.mid()) + rhs.n*abs(rhs.mid() - b4.mid())) / b4.n
-      if tmp > most:
+      if tmp > most and (somes[j].mid() - somes[j-1].mid()) > epsilon:
          most,cut = tmp,j
     if cut:
       some1,some2 = SOME(somes[:cut]), SOME(somes[cut:])
-      if not some1.cohen(some2):
+      if True: #not some1.cohen(some2): # and abs(some1.div() - some2.div()) > 0.0001: 
         if some1 != some2:
           rank = sk1(somes[:cut], rank) + 1
           rank = sk1(somes[cut:], rank)
@@ -150,23 +150,23 @@ def file2somes(file):
       else                   : some.add(word)    
   return somes
 
-def bars(somes, width=40):
+def bars(somes, width=40,epsilon=0.01,fmt="%5.2f"):
   "Prints multiple `somes` on the same scale."
   all = SOME(somes)
   last = None
-  for some in sk(some):
+  for some in sk(some, epsilon):
     if some.rank != last: print("#")
     last=some.rank
-    print(all.bar(some.has(), width=width, word="%20s", fmt="%5.2f"))
+    print(all.bar(some.has(), width=width, word="%20s", fmt=fmt))
  
-def report(somes):
+def report(somes,epsilon=0.01,fmt="%5.2f"):
   all = SOME(somes)
   last = None
   #print(SOME(inits=[x for some in somes for x in some._has]).div()*the.stats.cohen)
-  for some in sk(somes):
+  for some in sk(somes,epsilon):
     if some.rank != last: print("#")
     last=some.rank
-    print(all.bar(some,width=40,word="%20s", fmt="%5.2f"))
+    print(all.bar(some,width=40,word="%20s", fmt=fmt))
 
 # ---------------------------------------------------------------------------------------
 def some1(n=5):

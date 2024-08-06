@@ -751,7 +751,7 @@ class egs:
     b4      = [d.chebyshev(row) for row in d.rows]
     base    = NUM().adds(b4)
     trivial = base.div()*the.Cohen
-    rnd     = lambda z: math.floor(z/trivial)*trivial  
+    rnd     = lambda z:math.floor(z/trivial)*trivial 
 
     print(f"trivial\t: {trivial:.3f}")
     print(f"rows\t: {len(d.rows)}")
