@@ -335,6 +335,17 @@ TL;DR: to explore better methods for active learning:
     - The SETTINGS class uses regular expressions to extract the settings
       - regular expressions are other "little languages"
     - Another "not-so-little" little language: Makefiles, handles dependencies and updates
+- REgualr Expressions
+  - Examples:
+    - leading white space `^[ \t\n]*` (spare brackets means one or more characters; star means zero or more)
+    - trailing white space `[ \t\n]*$` (dollar  sign means end of line)
+    - IEEE format number `^[+-]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][+-]?[0-9]+)?$` (round brackets group expressions;
+      vertical bar denotes "or"; ">" means zero or one)
+    - Beautuful example, guessed North Amererican Names
+  - Scott Pakin. Regular Expressions and Gender Guessing. In Computer Language Magazine, 8(12):pp. 59-68, December 1991.
+  - Do you know what this is?
+
+
 - Configuration
   - All code has config settings. Magic numbers should not be buried in the code. They should be adjustable
       from the command line (allows for easier experimentation).
