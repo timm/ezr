@@ -750,8 +750,8 @@ class egs:
     d       = DATA().adds(csv(the.train))
     b4      = [d.chebyshev(row) for row in d.rows]
     base    = NUM().adds(b4)
-    trivial = base.div()*the.Cohen
-    rnd     = lambda z:math.floor(z/trivial)*trivial 
+    #trivial = base.div()*0.2 #the.Cohen
+    rnd     = lambda z:z #math.floor(z/trivial)*trivial 
 
     print(f"trivial\t: {trivial:.3f}")
     print(f"rows\t: {len(d.rows)}")
@@ -760,7 +760,7 @@ class egs:
 
     somes = [stats.SOME(b4,f"baseline,{len(d.rows)}")]
 
-    for n in [20,30,40,50,100]:
+    for n in [20,25,30,50,100]:
       the.Last = n
       rand     = []
       for _ in range(repeats):
@@ -791,7 +791,7 @@ class egs:
                   stats.SOME(mqs4,    f"mqs4,{n}"),
                   stats.SOME(mqs1000, f"mqs1000,{n}")]
 
-    stats.report(somes)
+    stats.report(somes, 0.01)
 #
 # ## Main
 the = SETTINGS(__doc__)
