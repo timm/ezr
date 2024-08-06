@@ -427,9 +427,55 @@ gt = lambda x,y: x >  y
 
 #
 # ## Bayes
+# of("discretieze.")
+# def bin(self:SYM,x): return x
+#
+# of("discretieze.")
+# def bin(self:NUM,x): return math.floor( self.norm(x) * 20 )
+#
+# of("Return get bins.")
+# def bins(self:COL, goal, klasses:classes):
+#   tmp = {}
+#   lst = sorted([(r[self.at], y) for y,rows in klasses.items() 
+#                 for r in rows if r[self.t] != "?"], key=nth(0))
+#   for x,y in lst:
+#     b      = self.bin(x)
+#     tmp[b] = tmp.get(b,None) or SYM(at=self.at)
+#     tmp[b].add(y)
+#   return self.bins1(tmp, goal,len(lst))
+#
+# def bins1(self:SYM, tmp, goal, n):
+#   return max(tmp, key=lambda sym: sym.power(goal,n))
+#
+# def bins1(self.NUM, tmp,goal, n):
+#
+# klasses lst = [out[b] for b in  out.keys.sorted()]
+#   for i,sym in enumerate(lst);
+#     if i > 0              : sym.last = lst[i-1] 
+#     if i < length(lst) -1 : sym.next = lst[i+1]
+#   sorted(lst, key=lambda sym: sym.has.powerful
+#   return most, out, len(lst)
+#
+# of("Return useful symbolic range.")
+# def powerful(self:SYM, goal, klasses:classes):
+#   most ,_, __ = self.bins(goal, klasses)
+#   return most
+#
+# of("Return useful numeric range.")
+# def powerful(self:NUM, goal, klasses:classes):
+#   most, out, all = self.bins(goal, klasses)
+#   return max(bins, max=lambda sym: sym.has.power(goal,all))
+#
+# of("Return useful ranges.")
+# def power(self:SYM,goal,all):
+#   b,r = 0,0
+#   for k,n in self.has.items():
+#     if k==goal: b += n/all
+#     else      : r += n/all
+#   return b*b/(b + r)
+#
+#
 # def cdf(klasses:classes, x:Callable):
-#    lst = sorted([(x(r), y) for y,rows in klasses.items() for r in rows if x1(r) != "?"],
-#                 key = nth(0))
 #    lo,hi = lst[0][0], lst[-1][0]
 #    symp = not isinstance(lo,(inf,float)) 
 #    for x,y  in lst
