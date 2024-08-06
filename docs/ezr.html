@@ -727,10 +727,11 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb62-1"><a h
 <span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">except</span> <span class="pp">Exception</span>:  <span class="cf">return</span> s</span>
 <span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> csv(<span class="bu">file</span>) <span class="op">-&gt;</span> Generator[row]:</span>
-<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">with</span> file_or_stdin(<span class="va">None</span> <span class="cf">if</span> <span class="bu">file</span><span class="op">==</span><span class="st">&quot;-&quot;</span> <span class="cf">else</span> <span class="bu">file</span>) <span class="im">as</span> src:</span>
-<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> line <span class="kw">in</span> src:</span>
-<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a>      line <span class="op">=</span> re.sub(<span class="vs">r&#39;([\n\t\r ]|#.*)&#39;</span>, <span class="st">&#39;&#39;</span>, line)</span>
-<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> line: <span class="cf">yield</span> [<span class="bu">coerce</span>(s.strip()) <span class="cf">for</span> s <span class="kw">in</span> line.split(<span class="st">&quot;,&quot;</span>)]</span></code></pre></div>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>  infile <span class="op">=</span> sys.stdin <span class="cf">if</span> <span class="bu">file</span><span class="op">==</span><span class="st">&quot;-&quot;</span> <span class="cf">else</span> <span class="bu">open</span>(<span class="bu">file</span>)</span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">with</span> infile <span class="im">as</span> src:</span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> line <span class="kw">in</span> src:</span>
+<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a>      line <span class="op">=</span> re.sub(<span class="vs">r&#39;([\n\t\r ]|#.*)&#39;</span>, <span class="st">&#39;&#39;</span>, line)</span>
+<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> line: <span class="cf">yield</span> [<span class="bu">coerce</span>(s.strip()) <span class="cf">for</span> s <span class="kw">in</span> line.split(<span class="st">&quot;,&quot;</span>)]</span></code></pre></div>
 <h3 data-number="5.3" id="settings-and-cli"><span
 class="header-section-number">5.3</span> Settings and CLI</h3>
 <div class="sourceCode" id="cb63"><pre

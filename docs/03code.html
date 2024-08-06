@@ -124,8 +124,8 @@ class="toc-section-number">1.3</span> EZR is an active learning</a></li>
 </ul></li>
 <li><a href="#training-data" id="toc-training-data"><span
 class="toc-section-number">2</span> Training Data</a></li>
-<li><a href="#ai-code" id="toc-ai-code"><span
-class="toc-section-number">3</span> AI Code</a>
+<li><a href="#ai-notes" id="toc-ai-notes"><span
+class="toc-section-number">3</span> AI Notes</a>
 <ul>
 <li><a href="#aggregation-functions"
 id="toc-aggregation-functions"><span
@@ -146,47 +146,60 @@ class="toc-section-number">3.4.2</span> Active Learner</a></li>
 <li><a href="#se-notes" id="toc-se-notes"><span
 class="toc-section-number">4</span> SE notes:</a>
 <ul>
-<li><a href="#all-code-need-doco" id="toc-all-code-need-doco"><span
-class="toc-section-number">4.1</span> All code need doco</a></li>
-<li><a href="#all-code-needs-tests" id="toc-all-code-needs-tests"><span
-class="toc-section-number">4.2</span> All code needs tests</a></li>
-<li><a href="#function-vs-object-oriented"
-id="toc-function-vs-object-oriented"><span
-class="toc-section-number">4.3</span> Function vs
+<li><a href="#patterns" id="toc-patterns"><span
+class="toc-section-number">4.1</span> Patterns</a>
+<ul>
+<li><a href="#pattern-all-code-need-doco"
+id="toc-pattern-all-code-need-doco"><span
+class="toc-section-number">4.1.1</span> Pattern: All code need
+doco</a></li>
+<li><a href="#pattern-all-code-needs-tests"
+id="toc-pattern-all-code-needs-tests"><span
+class="toc-section-number">4.1.2</span> Pattern: All code needs
+tests</a></li>
+<li><a href="#pattern-function-vs-object-oriented"
+id="toc-pattern-function-vs-object-oriented"><span
+class="toc-section-number">4.1.3</span> Pattern: Function vs
 Object-Oriented</a></li>
-<li><a href="#coding-for-teams" id="toc-coding-for-teams"><span
-class="toc-section-number">4.4</span> Coding for Teams</a></li>
-<li><a href="#my-settings-are-dry-not-wet"
-id="toc-my-settings-are-dry-not-wet"><span
-class="toc-section-number">4.5</span> My settings are DRY, not
-WET</a></li>
-<li><a href="#little-languages" id="toc-little-languages"><span
-class="toc-section-number">4.6</span> Little Languages</a></li>
-<li><a href="#regular-expressions" id="toc-regular-expressions"><span
-class="toc-section-number">4.7</span> Regular Expressions</a></li>
-<li><a href="#configuration-1" id="toc-configuration-1"><span
-class="toc-section-number">4.8</span> Configuration</a></li>
+<li><a href="#social-patterns-coding-for-teams"
+id="toc-social-patterns-coding-for-teams"><span
+class="toc-section-number">4.1.4</span> Social patterns: Coding for
+Teams</a></li>
+<li><a href="#pattern-dry-not-wet" id="toc-pattern-dry-not-wet"><span
+class="toc-section-number">4.1.5</span> Pattern: DRY, not WET</a></li>
+<li><a href="#pattern-little-languages"
+id="toc-pattern-little-languages"><span
+class="toc-section-number">4.1.6</span> Pattern: Little
+Languages</a></li>
+<li><a href="#pattern-regular-expressions"
+id="toc-pattern-regular-expressions"><span
+class="toc-section-number">4.1.7</span> Pattern: Regular
+Expressions</a></li>
+<li><a href="#pattern-configuration"
+id="toc-pattern-configuration"><span
+class="toc-section-number">4.1.8</span> Pattern: Configuration</a></li>
 </ul></li>
-<li><a href="#python-notes" id="toc-python-notes"><span
-class="toc-section-number">5</span> Python Notes</a>
+<li><a href="#idioms" id="toc-idioms"><span
+class="toc-section-number">4.2</span> Idioms</a>
 <ul>
 <li><a href="#comprehensions" id="toc-comprehensions"><span
-class="toc-section-number">5.1</span> Comprehensions</a></li>
+class="toc-section-number">4.2.1</span> Comprehensions</a></li>
 <li><a href="#decorators" id="toc-decorators"><span
-class="toc-section-number">5.2</span> Decorators</a></li>
+class="toc-section-number">4.2.2</span> Decorators</a></li>
+</ul></li>
 </ul></li>
 <li><a href="#try-it-for-yourself" id="toc-try-it-for-yourself"><span
-class="toc-section-number">6</span> Try it for yourself</a>
+class="toc-section-number">5</span> Try it for yourself</a>
 <ul>
 <li><a href="#get-python3.13" id="toc-get-python3.13"><span
-class="toc-section-number">6.1</span> Get Python3.13</a></li>
+class="toc-section-number">5.1</span> Get Python3.13</a></li>
 <li><a href="#try-one-run" id="toc-try-one-run"><span
-class="toc-section-number">6.2</span> Try one run</a></li>
+class="toc-section-number">5.2</span> Try one run</a></li>
 <li><a href="#try-a-longer-run" id="toc-try-a-longer-run"><span
-class="toc-section-number">6.3</span> Try a longer run</a></li>
+class="toc-section-number">5.3</span> Try a longer run</a></li>
 <li><a href="#write-your-own-extensions"
 id="toc-write-your-own-extensions"><span
-class="toc-section-number">6.4</span> Write your own extensions</a></li>
+class="toc-section-number">5.4</span> Write your own extensions</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -341,8 +354,8 @@ all their <span class="math inline">\(Y\)</span> values.</p>
 <li>We just take great care in the code to record how many rows we use
 to look up <span class="math inline">\(Y\)</span> labels.</li>
 </ul>
-<h2 data-number="3" id="ai-code"><span
-class="header-section-number">3</span> AI Code</h2>
+<h2 data-number="3" id="ai-notes"><span
+class="header-section-number">3</span> AI Notes</h2>
 <h3 data-number="3.1" id="aggregation-functions"><span
 class="header-section-number">3.1</span> Aggregation Functions</h3>
 <p>To sort the data, all the goals have to be aggregated into one
@@ -544,13 +557,31 @@ items (looking only at the x values, not the y values).</li>
 </ul>
 <h2 data-number="4" id="se-notes"><span
 class="header-section-number">4</span> SE notes:</h2>
-<h3 data-number="4.1" id="all-code-need-doco"><span
-class="header-section-number">4.1</span> All code need doco</h3>
+<h3 data-number="4.1" id="patterns"><span
+class="header-section-number">4.1</span> Patterns</h3>
+<p>An <em>architectural style</em> is a high-level conceptual view of
+how the system will be created, organised and/or operated. This code is
+<code>pipe and filter</code>. It can accept code from some prior process
+or if can read a file directly. These two calls are equivalent (since
+“-” denotes standard input)</p>
+<pre><code>python3.13 -B ezr.py -t ../moot/optimize/misc/auto93.csv -e _mqs
+cat ../moot/optimize/misc/auto93.csv | python3.13 -B ezr.py -t -  -e _mqs</code></pre>
+<p>(Aside to see how to read from standard input or a file, see
+<code>def csv</code> in the source code.)</p>
+<p>A <em>pattern</em> is an elegant solution to a recurring problem.
+This code uses many patterns (see below).</p>
+<p>Programming <em>idioms</em> are low-level patterns specific to a
+particular programming language. For example, see <a
+href="#decorators">decorators</a> which are a Python construct</p>
+<h4 data-number="4.1.1" id="pattern-all-code-need-doco"><span
+class="header-section-number">4.1.1</span> Pattern: All code need
+doco</h4>
 <p>Code has much auto-documentation - functions have type hints and doc
 strings - help string at front (from which we parse out the config) -
 worked examples (at back)</p>
-<h3 data-number="4.2" id="all-code-needs-tests"><span
-class="header-section-number">4.2</span> All code needs tests</h3>
+<h4 data-number="4.1.2" id="pattern-all-code-needs-tests"><span
+class="header-section-number">4.1.2</span> Pattern: All code needs
+tests</h4>
 <blockquote>
 <p>Maurice Wilkes recalled the exact moment he realized the importance
 of debugging: <em>“By June 1949, people had begun to realize that it was
@@ -569,9 +600,9 @@ e.g. to call egs.mqs:
 <li>python3 ezr.py -e mqs</li>
 </ul></li>
 </ul>
-<h3 data-number="4.3" id="function-vs-object-oriented"><span
-class="header-section-number">4.3</span> Function vs
-Object-Oriented</h3>
+<h4 data-number="4.1.3" id="pattern-function-vs-object-oriented"><span
+class="header-section-number">4.1.3</span> Pattern: Function vs
+Object-Oriented</h4>
 <p>Object-oriented code is groups by class. But some folks doubt that
 approach:</p>
 <ul>
@@ -591,8 +622,9 @@ the samas the order needed by the compiler. So he wrote a “tangle”
 system where code, ordered for expalanation, was rejigged at load time
 into what the compiler needs. I found I could do much the same like with
 a <a href="#decorator">5 line decorator</a>.</p>
-<h3 data-number="4.4" id="coding-for-teams"><span
-class="header-section-number">4.4</span> Coding for Teams</h3>
+<h4 data-number="4.1.4" id="social-patterns-coding-for-teams"><span
+class="header-section-number">4.1.4</span> Social patterns: Coding for
+Teams</h4>
 <p>This code is poorly structured for team work:</p>
 <ul>
 <li>For teams, better to have tests in separate file(s)
@@ -618,9 +650,8 @@ tools in VScode</a>
 usual</li>
 </ul></li>
 </ul>
-<h3 data-number="4.5" id="my-settings-are-dry-not-wet"><span
-class="header-section-number">4.5</span> My settings are DRY, not
-WET</h3>
+<h4 data-number="4.1.5" id="pattern-dry-not-wet"><span
+class="header-section-number">4.1.5</span> Pattern: DRY, not WET</h4>
 <ul>
 <li>WET = Write everything twice.
 <ul>
@@ -643,8 +674,9 @@ settings.<br />
 reused elsewhere</li>
 </ul></li>
 </ul>
-<h3 data-number="4.6" id="little-languages"><span
-class="header-section-number">4.6</span> Little Languages</h3>
+<h4 data-number="4.1.6" id="pattern-little-languages"><span
+class="header-section-number">4.1.6</span> Pattern: Little
+Languages</h4>
 <ul>
 <li>Operate policy from mechanisms; i.e. the spec from the machinery
 that uses the spec</li>
@@ -664,8 +696,9 @@ href="https://learnxinyminutes.com/docs/make/">Makefiles</a> handles
 dependencies and updates</li>
 </ul></li>
 </ul>
-<h3 data-number="4.7" id="regular-expressions"><span
-class="header-section-number">4.7</span> Regular Expressions</h3>
+<h4 data-number="4.1.7" id="pattern-regular-expressions"><span
+class="header-section-number">4.1.7</span> Pattern: Regular
+Expressions</h4>
 <ul>
 <li>Example of a “little language”</li>
 <li>Used here to extract settings and their defaults from the
@@ -704,8 +737,8 @@ Matching Can Be Simple And Fast</a>,</li>
 </ul></li>
 </ul></li>
 </ul>
-<h3 data-number="4.8" id="configuration-1"><span
-class="header-section-number">4.8</span> Configuration</h3>
+<h4 data-number="4.1.8" id="pattern-configuration"><span
+class="header-section-number">4.1.8</span> Pattern: Configuration</h4>
 <ul>
 <li>All code has config settings. Magic numbers should not be buried in
 the code. They should be adjustable from the command line (allows for
@@ -716,13 +749,22 @@ href="#fn2" class="footnote-ref" id="fnref2"
 role="doc-noteref"><sup>2</sup></a>. Need active learning To explore
 that exponentially large sapce!</li>
 </ul>
-<h2 data-number="5" id="python-notes"><span
-class="header-section-number">5</span> Python Notes</h2>
-<h3 data-number="5.1" id="comprehensions"><span
-class="header-section-number">5.1</span> Comprehensions</h3>
-<p>This code makes extensive use of comprehensions . E.g. for all rows,
-collect some the Chebyshev distance</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>b4 <span class="op">=</span> [d.chebyshev(row) <span class="cf">for</span> row <span class="kw">in</span> d.rows]</span></code></pre></div>
+<h3 data-number="4.2" id="idioms"><span
+class="header-section-number">4.2</span> Idioms</h3>
+<h4 data-number="4.2.1" id="comprehensions"><span
+class="header-section-number">4.2.1</span> Comprehensions</h4>
+<p>This code makes extensive use of comprehensions . E.g. to find the
+middle of a cluster, ask each column for its middle point.</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode py"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of a DATA.&quot;</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> row:</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [col.mid() <span class="cf">for</span> col <span class="kw">in</span> <span class="va">self</span>.cols.<span class="bu">all</span>]</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of NUMs.&quot;</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mu</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of SYMs.&quot;</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mode</span></code></pre></div>
 <p>Here’s one for loading tab-separated files with optional comment
 lines starting with a hash mark:</p>
 <pre><code>data = [line.strip().split(&quot;\t&quot;) for line in open(&quot;my_file.tab&quot;) \
@@ -732,15 +774,15 @@ lines starting with a hash mark:</p>
 [0, 2, 4, 6, 8]</code></pre>
 <p>e.g. here are two examples of an implicit iterator in the argument to
 <code>sum</code>:</p>
-<div class="sourceCode" id="cb12"><pre
-class="sourceCode py"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Entropy = measure of disorder.&quot;</span>)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ent(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number:</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="op">-</span> <span class="bu">sum</span>(n<span class="op">/</span><span class="va">self</span>.n <span class="op">*</span> log(n<span class="op">/</span><span class="va">self</span>.n,<span class="dv">2</span>) <span class="cf">for</span> n <span class="kw">in</span> <span class="va">self</span>.has.values())</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Euclidean distance between two rows.&quot;</span>)</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> dist(<span class="va">self</span>:DATA, r1:row, r2:row) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  n <span class="op">=</span> <span class="bu">sum</span>(c.dist(r1[c.at], r2[c.at])<span class="op">**</span>the.p <span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.cols.x)</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (n <span class="op">/</span> <span class="bu">len</span>(<span class="va">self</span>.cols.x))<span class="op">**</span>(<span class="dv">1</span><span class="op">/</span>the.p)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode py"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Entropy = measure of disorder.&quot;</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ent(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number:</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="op">-</span> <span class="bu">sum</span>(n<span class="op">/</span><span class="va">self</span>.n <span class="op">*</span> log(n<span class="op">/</span><span class="va">self</span>.n,<span class="dv">2</span>) <span class="cf">for</span> n <span class="kw">in</span> <span class="va">self</span>.has.values())</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Euclidean distance between two rows.&quot;</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> dist(<span class="va">self</span>:DATA, r1:row, r2:row) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  n <span class="op">=</span> <span class="bu">sum</span>(c.dist(r1[c.at], r2[c.at])<span class="op">**</span>the.p <span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.cols.x)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (n <span class="op">/</span> <span class="bu">len</span>(<span class="va">self</span>.cols.x))<span class="op">**</span>(<span class="dv">1</span><span class="op">/</span>the.p)</span></code></pre></div>
 <p>E.g here we</p>
 <ol type="1">
 <li>Use dictionary comprehensions, make a dictionary with one emery list
@@ -749,17 +791,17 @@ per key,</li>
 <li>Finally, using dictionary comprehensions, return a dictionary with
 one prediction per col.</li>
 </ol>
-<div class="sourceCode" id="cb13"><pre
-class="sourceCode py"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return predictions for `cols` (defaults to klass column).&quot;</span>)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict(<span class="va">self</span>:DATA, row1:row, rows:rows, cols<span class="op">=</span><span class="va">None</span>, k<span class="op">=</span><span class="dv">2</span>):</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  cols <span class="op">=</span> cols <span class="kw">or</span> <span class="va">self</span>.cols.y</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  got <span class="op">=</span> {col.at : [] <span class="cf">for</span> col <span class="kw">in</span> cols}                           <span class="op">--</span> [<span class="dv">1</span>]</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row2 <span class="kw">in</span> <span class="va">self</span>.neighbors(row1, rows)[:k]:</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span>  <span class="fl">1E-32</span> <span class="op">+</span> <span class="va">self</span>.dist(row1,row2)</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    [got[col.at].append( (d, row2[col.at]) )  <span class="cf">for</span> col <span class="kw">in</span> cols]  <span class="op">--</span> [<span class="dv">2</span>]</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {col.at : col.predict( got[col.at] ) <span class="cf">for</span> col <span class="kw">in</span> cols}  <span class="op">--</span> [<span class="dv">3</span>]</span></code></pre></div>
-<h3 data-number="5.2" id="decorators"><span
-class="header-section-number">5.2</span> Decorators</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode py"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return predictions for `cols` (defaults to klass column).&quot;</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict(<span class="va">self</span>:DATA, row1:row, rows:rows, cols<span class="op">=</span><span class="va">None</span>, k<span class="op">=</span><span class="dv">2</span>):</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  cols <span class="op">=</span> cols <span class="kw">or</span> <span class="va">self</span>.cols.y</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  got <span class="op">=</span> {col.at : [] <span class="cf">for</span> col <span class="kw">in</span> cols}                           <span class="op">--</span> [<span class="dv">1</span>]</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row2 <span class="kw">in</span> <span class="va">self</span>.neighbors(row1, rows)[:k]:</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span>  <span class="fl">1E-32</span> <span class="op">+</span> <span class="va">self</span>.dist(row1,row2)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    [got[col.at].append( (d, row2[col.at]) )  <span class="cf">for</span> col <span class="kw">in</span> cols]  <span class="op">--</span> [<span class="dv">2</span>]</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {col.at : col.predict( got[col.at] ) <span class="cf">for</span> col <span class="kw">in</span> cols}  <span class="op">--</span> [<span class="dv">3</span>]</span></code></pre></div>
+<h4 data-number="4.2.2" id="decorators"><span
+class="header-section-number">4.2.2</span> Decorators</h4>
 <ul>
 <li>Decorated are functions called at load time that manipulate other
 functions.</li>
@@ -774,33 +816,33 @@ their means and modes.</li>
 <code>mid</code> of the summary for each column.</li>
 </ul></li>
 </ul>
-<div class="sourceCode" id="cb14"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> of(doc):</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> doit(fun):</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    fun.__doc__ <span class="op">=</span> doc</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span> <span class="op">=</span> inspect.getfullargspec(fun).annotations[<span class="st">&#39;self&#39;</span>]</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">setattr</span>(<span class="bu">globals</span>()[<span class="va">self</span>], fun.<span class="va">__name__</span>, fun)</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> doit</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of a DATA.&quot;</span>)</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> row:</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [col.mid() <span class="cf">for</span> col <span class="kw">in</span> <span class="va">self</span>.cols.<span class="bu">all</span>]</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of NUMs.&quot;</span>)</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mu</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of SYMs.&quot;</span>)</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mode</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a NUM.&quot;</span>)</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.sd</span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a SYM.&quot;</span>)</span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.ent()</span></code></pre></div>
-<h2 data-number="6" id="try-it-for-yourself"><span
-class="header-section-number">6</span> Try it for yourself</h2>
-<h3 data-number="6.1" id="get-python3.13"><span
-class="header-section-number">6.1</span> Get Python3.13</h3>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> of(doc):</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> doit(fun):</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    fun.__doc__ <span class="op">=</span> doc</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span> <span class="op">=</span> inspect.getfullargspec(fun).annotations[<span class="st">&#39;self&#39;</span>]</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">setattr</span>(<span class="bu">globals</span>()[<span class="va">self</span>], fun.<span class="va">__name__</span>, fun)</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> doit</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of a DATA.&quot;</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> row:</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [col.mid() <span class="cf">for</span> col <span class="kw">in</span> <span class="va">self</span>.cols.<span class="bu">all</span>]</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of NUMs.&quot;</span>)</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mu</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of SYMs.&quot;</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mode</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a NUM.&quot;</span>)</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.sd</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a SYM.&quot;</span>)</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.ent()</span></code></pre></div>
+<h2 data-number="5" id="try-it-for-yourself"><span
+class="header-section-number">5</span> Try it for yourself</h2>
+<h3 data-number="5.1" id="get-python3.13"><span
+class="header-section-number">5.1</span> Get Python3.13</h3>
 <p>Make sure you are running Python3.13. On Linux and Github code
 spaces, that command is</p>
 <pre><code>sudo apt update
@@ -810,42 +852,42 @@ sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt update
 sudo apt install python3.13
 python3.13 -B --verion</code></pre>
-<h3 data-number="6.2" id="try-one-run"><span
-class="header-section-number">6.2</span> Try one run</h3>
+<h3 data-number="5.2" id="try-one-run"><span
+class="header-section-number">5.2</span> Try one run</h3>
 <pre><code>git clone https://github.com/timm/moot
 git clone https://github.com/timm/ezr
 cd ezr
 python3.13 -B erz.py -t ../moot/optimize/misc/auto93.csv -e _mqs</code></pre>
-<h3 data-number="6.3" id="try-a-longer-run"><span
-class="header-section-number">6.3</span> Try a longer run</h3>
+<h3 data-number="5.3" id="try-a-longer-run"><span
+class="header-section-number">5.3</span> Try a longer run</h3>
 <p>Do a large run (takes a few minutes: output will appear in
 ~/tmp/mqs.out; assumes a BASH shell):</p>
 <pre><code>python3.13 -B ezr.py -e _MQS ../moot/optimize/[chmp]*/*.csv | tee ~/tmp/mqs.out</code></pre>
-<h3 data-number="6.4" id="write-your-own-extensions"><span
-class="header-section-number">6.4</span> Write your own extensions</h3>
+<h3 data-number="5.4" id="write-your-own-extensions"><span
+class="header-section-number">5.4</span> Write your own extensions</h3>
 <p>Here’s a file <code>extend.py</code> in the same directory as
 ezr.py</p>
-<div class="sourceCode" id="cb18"><pre
-class="sourceCode py"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys,random</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ezr <span class="im">import</span> the, DATA, csv</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nth(k): <span class="cf">return</span> <span class="kw">lambda</span> z: z[k]</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> myfun(i,train):</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  random.seed(the.seed) <span class="co">#  not needed here, bt good practice to always take care of seeds</span></span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  d    <span class="op">=</span> DATA().adds(csv(train))</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  x    <span class="op">=</span> <span class="bu">len</span>(d.cols.x)</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>  size <span class="op">=</span> <span class="bu">len</span>(d.rows)</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  dim  <span class="op">=</span> <span class="st">&quot;lo&quot;</span>     <span class="cf">if</span> x <span class="op">&lt;</span> <span class="dv">5</span>     <span class="cf">else</span> (<span class="st">&quot;med&quot;</span> <span class="cf">if</span> x <span class="op">&lt;</span> <span class="dv">10</span>    <span class="cf">else</span> <span class="st">&quot;hi&quot;</span>)</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  size <span class="op">=</span> <span class="st">&quot;small&quot;</span> <span class="cf">if</span> size<span class="op">&lt;</span> <span class="dv">500</span> <span class="cf">else</span> (<span class="st">&quot;med&quot;</span> <span class="cf">if</span> size<span class="op">&lt;</span><span class="dv">5000</span> <span class="cf">else</span> <span class="st">&quot;hi&quot;</span>)</span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [i,dim, size, x, <span class="bu">len</span>(d.cols.y), <span class="bu">len</span>(d.rows), train]</span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;dim&quot;</span>, <span class="st">&quot;size&quot;</span>,<span class="st">&quot;xcols&quot;</span>,<span class="st">&quot;ycols&quot;</span>,<span class="st">&quot;rows&quot;</span>,<span class="st">&quot;file&quot;</span>,sep<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)</span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="op">*</span>[<span class="st">&quot;----&quot;</span>] <span class="op">*</span> <span class="dv">7</span>,sep<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)</span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>[<span class="bu">print</span>(<span class="op">*</span>myfun(i,arg),sep<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>) <span class="cf">for</span> i,arg <span class="kw">in</span> <span class="bu">enumerate</span>(sys.argv)  <span class="cf">if</span> arg[<span class="op">-</span><span class="dv">4</span>:] <span class="op">==</span> <span class="st">&quot;.csv&quot;</span>]</span></code></pre></div>
-<p>On my machine, when I run</p>
 <div class="sourceCode" id="cb19"><pre
-class="sourceCode py"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>python3<span class="fl">.13</span> <span class="op">-</span>B extend.py ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>[comp]<span class="op">*/*</span>.csv</span></code></pre></div>
+class="sourceCode py"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys,random</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ezr <span class="im">import</span> the, DATA, csv</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nth(k): <span class="cf">return</span> <span class="kw">lambda</span> z: z[k]</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> myfun(i,train):</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  random.seed(the.seed) <span class="co">#  not needed here, bt good practice to always take care of seeds</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  d    <span class="op">=</span> DATA().adds(csv(train))</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  x    <span class="op">=</span> <span class="bu">len</span>(d.cols.x)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  size <span class="op">=</span> <span class="bu">len</span>(d.rows)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  dim  <span class="op">=</span> <span class="st">&quot;lo&quot;</span>     <span class="cf">if</span> x <span class="op">&lt;</span> <span class="dv">5</span>     <span class="cf">else</span> (<span class="st">&quot;med&quot;</span> <span class="cf">if</span> x <span class="op">&lt;</span> <span class="dv">10</span>    <span class="cf">else</span> <span class="st">&quot;hi&quot;</span>)</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  size <span class="op">=</span> <span class="st">&quot;small&quot;</span> <span class="cf">if</span> size<span class="op">&lt;</span> <span class="dv">500</span> <span class="cf">else</span> (<span class="st">&quot;med&quot;</span> <span class="cf">if</span> size<span class="op">&lt;</span><span class="dv">5000</span> <span class="cf">else</span> <span class="st">&quot;hi&quot;</span>)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [i,dim, size, x, <span class="bu">len</span>(d.cols.y), <span class="bu">len</span>(d.rows), train]</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;dim&quot;</span>, <span class="st">&quot;size&quot;</span>,<span class="st">&quot;xcols&quot;</span>,<span class="st">&quot;ycols&quot;</span>,<span class="st">&quot;rows&quot;</span>,<span class="st">&quot;file&quot;</span>,sep<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="op">*</span>[<span class="st">&quot;----&quot;</span>] <span class="op">*</span> <span class="dv">7</span>,sep<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>[<span class="bu">print</span>(<span class="op">*</span>myfun(i,arg),sep<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>) <span class="cf">for</span> i,arg <span class="kw">in</span> <span class="bu">enumerate</span>(sys.argv)  <span class="cf">if</span> arg[<span class="op">-</span><span class="dv">4</span>:] <span class="op">==</span> <span class="st">&quot;.csv&quot;</span>]</span></code></pre></div>
+<p>On my machine, when I run</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode py"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>python3<span class="fl">.13</span> <span class="op">-</span>B extend.py ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>[comp]<span class="op">*/*</span>.csv</span></code></pre></div>
 <p>This prints some stats on the data files:</p>
 <pre><code>n   dim    size    xcols  ycols    rows    file
 ---  ----  ----    ----   ----    ----    ----

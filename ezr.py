@@ -579,7 +579,8 @@ def coerce(s:str) -> atom:
   except Exception:  return s
 
 def csv(file) -> Generator[row]:
-  with file_or_stdin(None if file=="-" else file) as src:
+  infile = sys.stdin if file=="-" else open(file)
+  with infile as src:
     for line in src:
       line = re.sub(r'([\n\t\r ]|#.*)', '', line)
       if line: yield [coerce(s.strip()) for s in line.split(",")]

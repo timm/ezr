@@ -117,7 +117,7 @@ For testing  purposes here, all the examples explored here come with  all their 
 
 - We just take great care in the code to record  how many rows we use to look up $Y$ labels.
 
-## AI Code
+## AI Notes
 
 ### Aggregation Functions
 To sort the data, all the goals have to be aggregated into one function. Inspired by the MOEA/D algorithm[^zhang07],
@@ -300,14 +300,32 @@ TL;DR: to explore better methods for active learning:
 
 ## SE notes:
 
-### All code need doco
+### Patterns 
+
+An _architectural style_ is a high-level conceptual view of how the system will be created, organised and/or operated.
+This code is `pipe and filter`. It can accept code from some prior process or if can read a file directly. These
+two calls are equivalent (since "-" denotes standard input)
+
+```
+python3.13 -B ezr.py -t ../moot/optimize/misc/auto93.csv -e _mqs
+cat ../moot/optimize/misc/auto93.csv | python3.13 -B ezr.py -t -  -e _mqs
+```
+(Aside to see how to read from standard input or a file, see `def csv` in the source code.)
+
+A _pattern_ is an elegant solution to a recurring problem. This code uses many patterns (see below).
+
+Programming _idioms_ are low-level patterns specific to a particular programming language. For example,
+see [decorators](#decorators) which are a Python construct
+
+
+#### Pattern: All code need doco
 
 Code has much auto-documentation
 - functions have type hints and doc strings
 - help string at front (from which we parse out the config)
 - worked examples (at back)
 
-### All code needs tests
+#### Pattern: All code needs tests
 
 > Maurice Wilkes recalled the exact moment he realized the importance of debugging: 
 <em>“By June 1949, people had begun to realize that it was not so easy to get a program right as 
@@ -320,7 +338,7 @@ Code has tests (worked examples at back); about a quarter of the code base
 - any method eg.method can be called from the command line using. e.g. to call egs.mqs:
   - python3 ezr.py -e mqs
 
-### Function vs Object-Oriented
+#### Pattern: Function vs Object-Oriented
 
 Object-oriented code is groups by class. But some folks doubt that approach:
 
@@ -335,7 +353,7 @@ So he wrote a "tangle" system where code, ordered for expalanation, was rejigged
 what the compiler needs. I found I could do much the same like with a [5 line decorator](#decorator).
 
 
-### Coding for Teams
+#### Social patterns: Coding for Teams
 
 This code is poorly structured for team work:
 
@@ -346,9 +364,9 @@ This code is poorly structured for team work:
   - so different people can work in separate files (less chance of edit conclusions)
 - This code violates known [Python formatting standards (PEP 8)](https://peps.python.org/pep-0008/) which
   is supported by so many tools; e.g. [Black](https://github.com/psf/black) and [various tools in VScode](https://code.visualstudio.com/docs/python/formatting)
-  - Better to have commit hooks to re-format the code to something more usual
+  - Consider to have commit hooks to re-format the code to something more usual
 
-###  My settings are  DRY, not WET
+####  Pattern: DRY, not WET
 - WET = Write everything twice. 
   - Other people define their command line options separate to the settings.  
   - That is they have to define all those settings twice
@@ -360,7 +378,7 @@ This code is poorly structured for team work:
   - If you see it twice, just chill. You can be a little WET
   - if you see it thrice, refactor so "it" is defined only once, then reused elsewhere
 
-### Little Languages
+#### Pattern: Little Languages
 
 - Operate policy from mechanisms; i.e. the spec from the machinery that uses the spec
 - Allows for faster adaption
@@ -371,7 +389,7 @@ This code is poorly structured for team work:
     - regular expressions are other "little languages"
   - Another "not-so-little" little language: [Makefiles](https://learnxinyminutes.com/docs/make/) handles dependencies and updates
 
-### Regular Expressions
+#### Pattern: Regular Expressions
 
 - Example of a "little language"
 - Used here to extract settings and their defaults from the `__doc__` string
@@ -389,20 +407,29 @@ This code is poorly structured for team work:
     - Fantastic article: [Regular Expression Matching Can Be Simple And Fast](https://swtch.com/~rsc/regexp/regexp1.html),
 
 
-###  Configuration
+####  Pattern: Configuration
 - All code has config settings. Magic numbers should not be buried in the code. They should be adjustable
       from the command line (allows for easier experimentation).
 - BTW, handling the config gap is a real challenge. Rate of new config grows much faser than rate of people's
       understanding those options[^Takwal]. Need active learning  To explore that exponentially large sapce!
 
-## Python Notes
+### Idioms
 
-### Comprehensions
+#### Comprehensions
 
-This code  makes extensive use of comprehensions . E.g. for all rows, collect some the Chebyshev distance
+This code  makes extensive use of comprehensions . E.g. to find the middle of a cluster,
+ask each column for its middle point.
 
 ```py
-b4 = [d.chebyshev(row) for row in d.rows]
+@of("Return central tendency of a DATA.")
+def mid(self:DATA) -> row:
+  return [col.mid() for col in self.cols.all]
+
+@of("Return central tendency of NUMs.")
+def mid(self:NUM) -> number: return self.mu
+
+@of("Return central tendency of SYMs.")
+def mid(self:SYM) -> number: return self.mode
 ```
 
 Here's one for loading tab-separated files with optional comment lines starting with a hash mark:
@@ -450,7 +477,7 @@ def predict(self:DATA, row1:row, rows:rows, cols=None, k=2):
 
 
 
-### Decorators
+#### Decorators
 
 - Decorated are functions called at load time that manipulate other functions.
 - E.g. the `of` decorator  lets you define methods outside of a function. Here it is used to 
