@@ -112,55 +112,49 @@ class="toc-section-number">1.1</span> USAGE:</a></li>
 class="toc-section-number">1.2</span> OPTIONS:</a></li>
 <li><a href="#data-file-format" id="toc-data-file-format"><span
 class="toc-section-number">1.3</span> Data File Format</a></li>
-</ul></li>
-<li><a href="#setting-up" id="toc-setting-up"><span
-class="toc-section-number">2</span> Setting-up</a>
-<ul>
-<li><a href="#imports" id="toc-imports"><span
-class="toc-section-number">2.1</span> Imports</a></li>
 <li><a href="#types-and-classes" id="toc-types-and-classes"><span
-class="toc-section-number">2.2</span> Types and Classes</a></li>
+class="toc-section-number">1.4</span> Types and Classes</a></li>
 <li><a href="#decorators" id="toc-decorators"><span
-class="toc-section-number">2.3</span> Decorators</a></li>
+class="toc-section-number">1.5</span> Decorators</a></li>
 </ul></li>
 <li><a href="#methods" id="toc-methods"><span
-class="toc-section-number">3</span> Methods</a>
+class="toc-section-number">2</span> Methods</a>
 <ul>
 <li><a href="#misc" id="toc-misc"><span
-class="toc-section-number">3.1</span> Misc</a></li>
+class="toc-section-number">2.1</span> Misc</a></li>
 <li><a href="#add" id="toc-add"><span
-class="toc-section-number">3.2</span> Add</a></li>
+class="toc-section-number">2.2</span> Add</a></li>
 <li><a href="#guessing" id="toc-guessing"><span
-class="toc-section-number">3.3</span> Guessing</a></li>
+class="toc-section-number">2.3</span> Guessing</a></li>
 </ul></li>
 <li><a href="#distance" id="toc-distance"><span
-class="toc-section-number">4</span> Distance</a>
+class="toc-section-number">3</span> Distance</a>
 <ul>
 <li><a href="#nearest-neighbor" id="toc-nearest-neighbor"><span
-class="toc-section-number">4.1</span> Nearest Neighbor</a></li>
+class="toc-section-number">3.1</span> Nearest Neighbor</a></li>
 <li><a href="#cluster" id="toc-cluster"><span
-class="toc-section-number">4.2</span> Cluster</a></li>
+class="toc-section-number">3.2</span> Cluster</a></li>
 </ul></li>
 <li><a href="#bayes" id="toc-bayes"><span
-class="toc-section-number">5</span> Bayes</a>
+class="toc-section-number">4</span> Bayes</a>
 <ul>
 <li><a href="#active-learning" id="toc-active-learning"><span
-class="toc-section-number">5.1</span> Active Learning</a></li>
+class="toc-section-number">4.1</span> Active Learning</a></li>
 </ul></li>
 <li><a href="#utils" id="toc-utils"><span
-class="toc-section-number">6</span> Utils</a>
+class="toc-section-number">5</span> Utils</a>
 <ul>
 <li><a href="#one-liners" id="toc-one-liners"><span
-class="toc-section-number">6.1</span> One-Liners</a></li>
+class="toc-section-number">5.1</span> One-Liners</a></li>
 <li><a href="#strings-to-things" id="toc-strings-to-things"><span
-class="toc-section-number">6.2</span> Strings to Things</a></li>
+class="toc-section-number">5.2</span> Strings to Things</a></li>
 <li><a href="#settings-and-cli" id="toc-settings-and-cli"><span
-class="toc-section-number">6.3</span> Settings and CLI</a></li>
+class="toc-section-number">5.3</span> Settings and CLI</a></li>
 </ul></li>
 <li><a href="#tests" id="toc-tests"><span
-class="toc-section-number">7</span> Tests</a></li>
+class="toc-section-number">6</span> Tests</a></li>
 <li><a href="#main" id="toc-main"><span
-class="toc-section-number">8</span> Main</a></li>
+class="toc-section-number">7</span> Main</a></li>
 </ul>
 </nav>
 <h2 data-number="1" id="ezr.py"><span
@@ -178,6 +172,7 @@ class="header-section-number">1.2</span> OPTIONS:</h3>
 <pre><code>-b --buffer int    chunk size, when streaming   = 100  
 -L --Last   int    max number of labels         = 30  
 -c --cut    float  borderline best:rest         = 0.5  
+-C --Cohen  float  pragmatically small          = 0.35
 -e --eg     str    start up action              = mqs   
 -f --fars   int    number of times to look far  = 20   
 -h --help          show help                    = False   
@@ -216,10 +211,7 @@ maximize acceleration and maximize fuel consumption.</p>
 faster cars that are more economical).</p>
 <div class="sourceCode" id="cb3"><pre
 class="sourceCode python"><code class="sourceCode python"></code></pre></div>
-<h2 data-number="2" id="setting-up"><span
-class="header-section-number">2</span> Setting-up</h2>
-<h3 data-number="2.1" id="imports"><span
-class="header-section-number">2.1</span> Imports</h3>
+<p>todo: labelling via clustering. ## Setting-up ### Imports</p>
 <div class="sourceCode" id="cb4"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> __future__ <span class="im">import</span> annotations</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> Any <span class="im">as</span> <span class="bu">any</span></span>
@@ -228,13 +220,13 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a hr
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dataclasses <span class="im">import</span> dataclass, field, fields</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> datetime</span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> math <span class="im">import</span> exp,log,cos,sqrt,pi</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re,sys,ast,random,inspect</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re,sys,ast,math,random,inspect</span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> time <span class="im">import</span> time</span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> stats</span>
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>R <span class="op">=</span> random.random</span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>one <span class="op">=</span> random.choice</span></code></pre></div>
-<h3 data-number="2.2" id="types-and-classes"><span
-class="header-section-number">2.2</span> Types and Classes</h3>
+<h3 data-number="1.4" id="types-and-classes"><span
+class="header-section-number">1.4</span> Types and Classes</h3>
 <p>Some misc types:</p>
 <div class="sourceCode" id="cb5"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>number  <span class="op">=</span> <span class="bu">float</span>  <span class="op">|</span> <span class="bu">int</span>   <span class="co">#</span></span>
@@ -277,7 +269,7 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a hr
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># A minus sign at end of a NUM&#39;s name says &quot;this is a column to minimize&quot;</span></span>
 <span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># (all other goals are to be maximizes).</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> __post_init__(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> <span class="va">None</span>:<span class="op">-</span>  </span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> __post_init__(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> <span class="va">None</span>:  </span>
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>  <span class="va">self</span>.txt <span class="kw">and</span> <span class="va">self</span>.txt[<span class="op">-</span><span class="dv">1</span>] <span class="op">==</span> <span class="st">&quot;-&quot;</span>: <span class="va">self</span>.goal<span class="op">=</span><span class="dv">0</span></span></code></pre></div>
 <p>COLS are a factory that reads some <code>names</code> from the first
 row , the creates the appropriate columns.</p>
@@ -314,8 +306,8 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a h
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># an existing DATA, then maybe load in some rows to that new DATA.</span></span>
 <span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> clone(<span class="va">self</span>:DATA, rows:rows<span class="op">=</span>[]) <span class="op">-&gt;</span> DATA:</span>
 <span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> DATA().add(<span class="va">self</span>.cols.names).adds(rows)</span></code></pre></div>
-<h3 data-number="2.3" id="decorators"><span
-class="header-section-number">2.3</span> Decorators</h3>
+<h3 data-number="1.5" id="decorators"><span
+class="header-section-number">1.5</span> Decorators</h3>
 <p>I like how JULIA and CLOS lets you define all your data types before
 anything else. Also, you can group together related methods from
 different classes. I think that really simplifies explaining the code.
@@ -328,10 +320,10 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a h
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span> <span class="op">=</span> inspect.getfullargspec(fun).annotations[<span class="st">&#39;self&#39;</span>]</span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">setattr</span>(<span class="bu">globals</span>()[<span class="va">self</span>], fun.<span class="va">__name__</span>, fun)</span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> doit</span></code></pre></div>
-<h2 data-number="3" id="methods"><span
-class="header-section-number">3</span> Methods</h2>
-<h3 data-number="3.1" id="misc"><span
-class="header-section-number">3.1</span> Misc</h3>
+<h2 data-number="2" id="methods"><span
+class="header-section-number">2</span> Methods</h2>
+<h3 data-number="2.1" id="misc"><span
+class="header-section-number">2.1</span> Misc</h3>
 <p>Return central tendency of a DATA.</p>
 <div class="sourceCode" id="cb12"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> row: </span>
@@ -356,8 +348,8 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a h
 <div class="sourceCode" id="cb18"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ent(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number:</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="op">-</span> <span class="bu">sum</span>(n<span class="op">/</span><span class="va">self</span>.n <span class="op">*</span> log(n<span class="op">/</span><span class="va">self</span>.n,<span class="dv">2</span>) <span class="cf">for</span> n <span class="kw">in</span> <span class="va">self</span>.has.values())</span></code></pre></div>
-<h3 data-number="3.2" id="add"><span
-class="header-section-number">3.2</span> Add</h3>
+<h3 data-number="2.2" id="add"><span
+class="header-section-number">2.2</span> Add</h3>
 <p>add COL with many values.</p>
 <div class="sourceCode" id="cb19"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> adds(<span class="va">self</span>:COL,  src) <span class="op">-&gt;</span> COL:</span>
@@ -394,15 +386,14 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb24-1"><a h
 <code>hi</code>). If <code>x</code> is a string, coerce to a number.</p>
 <div class="sourceCode" id="cb25"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add1(<span class="va">self</span>:NUM, x:<span class="bu">any</span>) <span class="op">-&gt;</span> number:</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="bu">isinstance</span>(x,<span class="bu">str</span>): x <span class="op">=</span> <span class="bu">coerce</span>(x)</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.lo  <span class="op">=</span> <span class="bu">min</span>(x, <span class="va">self</span>.lo)</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.hi  <span class="op">=</span> <span class="bu">max</span>(x, <span class="va">self</span>.hi)</span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  d        <span class="op">=</span> x <span class="op">-</span> <span class="va">self</span>.mu</span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.mu <span class="op">+=</span> d <span class="op">/</span> <span class="va">self</span>.n</span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.m2 <span class="op">+=</span> d <span class="op">*</span> (x <span class="op">-</span>  <span class="va">self</span>.mu)</span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.sd  <span class="op">=</span> <span class="dv">0</span> <span class="cf">if</span> <span class="va">self</span>.n <span class="op">&lt;</span><span class="dv">2</span> <span class="cf">else</span> (<span class="va">self</span>.m2<span class="op">/</span>(<span class="va">self</span>.n<span class="op">-</span><span class="dv">1</span>))<span class="op">**</span><span class="fl">.5</span></span></code></pre></div>
-<h3 data-number="3.3" id="guessing"><span
-class="header-section-number">3.3</span> Guessing</h3>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.lo  <span class="op">=</span> <span class="bu">min</span>(x, <span class="va">self</span>.lo)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.hi  <span class="op">=</span> <span class="bu">max</span>(x, <span class="va">self</span>.hi)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  d        <span class="op">=</span> x <span class="op">-</span> <span class="va">self</span>.mu</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.mu <span class="op">+=</span> d <span class="op">/</span> <span class="va">self</span>.n</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.m2 <span class="op">+=</span> d <span class="op">*</span> (x <span class="op">-</span>  <span class="va">self</span>.mu)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.sd  <span class="op">=</span> <span class="dv">0</span> <span class="cf">if</span> <span class="va">self</span>.n <span class="op">&lt;</span><span class="dv">2</span> <span class="cf">else</span> (<span class="va">self</span>.m2<span class="op">/</span>(<span class="va">self</span>.n<span class="op">-</span><span class="dv">1</span>))<span class="op">**</span><span class="fl">.5</span></span></code></pre></div>
+<h3 data-number="2.3" id="guessing"><span
+class="header-section-number">2.3</span> Guessing</h3>
 <p>Guess values at same frequency of <code>has</code>.</p>
 <div class="sourceCode" id="cb26"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> guess(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> <span class="bu">any</span>:</span>
@@ -466,8 +457,8 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb32-1"><a h
 <span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  pr1,pr2 <span class="op">=</span> (<span class="va">self</span>.n <span class="op">+</span> the.k) <span class="op">/</span> n, (other.n <span class="op">+</span> the.k) <span class="op">/</span> n</span>
 <span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  key     <span class="op">=</span> <span class="kw">lambda</span> x: <span class="bu">abs</span>(<span class="va">self</span>.like(x,pr1) <span class="op">-</span> other.like(x,pr2))</span>
 <span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">min</span>([<span class="va">self</span>.guess() <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(n)], key<span class="op">=</span>key)</span></code></pre></div>
-<h2 data-number="4" id="distance"><span
-class="header-section-number">4</span> Distance</h2>
+<h2 data-number="3" id="distance"><span
+class="header-section-number">3</span> Distance</h2>
 <p>Between two values (Aha’s algorithm).</p>
 <div class="sourceCode" id="cb33"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> dist(<span class="va">self</span>:COL, x:<span class="bu">any</span>, y:<span class="bu">any</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
@@ -513,8 +504,8 @@ values.</p>
 class="sourceCode python"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> d2h(<span class="va">self</span>:DATA,row:row) <span class="op">-&gt;</span> number:</span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  d <span class="op">=</span> <span class="bu">sum</span>(<span class="bu">abs</span>(c.goal <span class="op">-</span> c.norm(row[c.at]))<span class="op">**</span><span class="dv">2</span> <span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.cols.y)</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (d<span class="op">/</span><span class="bu">len</span>(<span class="va">self</span>.cols.y)) <span class="op">**</span> (<span class="dv">1</span><span class="op">/</span>the.p)</span></code></pre></div>
-<h3 data-number="4.1" id="nearest-neighbor"><span
-class="header-section-number">4.1</span> Nearest Neighbor</h3>
+<h3 data-number="3.1" id="nearest-neighbor"><span
+class="header-section-number">3.1</span> Nearest Neighbor</h3>
 <p>Sort <code>rows</code> by their distance to <code>row1</code>’s x
 values.</p>
 <div class="sourceCode" id="cb42"><pre
@@ -547,8 +538,8 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb45-1"><a h
 <span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> d,x <span class="kw">in</span> pairs:</span>
 <span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    votes[x] <span class="op">=</span> votes.get(x,<span class="dv">0</span>) <span class="op">+</span> <span class="dv">1</span><span class="op">/</span>d<span class="op">**</span><span class="dv">2</span></span>
 <span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">max</span>(votes, key<span class="op">=</span>votes.get)</span></code></pre></div>
-<h3 data-number="4.2" id="cluster"><span
-class="header-section-number">4.2</span> Cluster</h3>
+<h3 data-number="3.2" id="cluster"><span
+class="header-section-number">3.2</span> Cluster</h3>
 <div class="sourceCode" id="cb46"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CLUSTER:</span>
@@ -605,14 +596,35 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb49-1"><a h
 <span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>le <span class="op">=</span> <span class="kw">lambda</span> x,y: x <span class="op">&lt;=</span> y</span>
 <span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>gt <span class="op">=</span> <span class="kw">lambda</span> x,y: x <span class="op">&gt;</span>  y</span></code></pre></div>
-<h2 data-number="5" id="bayes"><span
-class="header-section-number">5</span> Bayes</h2>
-<p>def cdf(klasses:classes, x:Callable): lst = sorted([(x(r), y) for
-y,rows in klasses.items() for r in rows if x1(r) != “?”], key = nth(0))
-lo,hi = lst[0][0], lst[-1][0] symp = not isinstance(lo,(inf,float)) for
-x,y in lst b = x if symp else floor(((x-lo)/(hi-lo+1-32) *20)) bin[b] =
-bin.get(b,None) or SYM(at=b) bin[b].add(y) if nump: return
-max(bin,key=</p>
+<h2 data-number="4" id="bayes"><span
+class="header-section-number">4</span> Bayes</h2>
+<p>of(“discretieze.”) def bin(self:SYM,x): return x</p>
+<p>of(“discretieze.”) def bin(self:NUM,x): return math.floor(
+self.norm(x) * 20 )</p>
+<p>of(“Return get bins.”) def bins(self:COL, goal, klasses:classes): tmp
+= {} lst = sorted([(r[self.at], y) for y,rows in klasses.items() for r
+in rows if r[self.t] != “?”], key=nth(0)) for x,y in lst: b =
+self.bin(x) tmp[b] = tmp.get(b,None) or SYM(at=self.at) tmp[b].add(y)
+return self.bins1(tmp, goal,len(lst))</p>
+<p>def bins1(self:SYM, tmp, goal, n): return max(tmp, key=lambda sym:
+sym.power(goal,n))</p>
+<p>def bins1(self.NUM, tmp,goal, n):</p>
+<p>klasses lst = [out[b] for b in out.keys.sorted()] for i,sym in
+enumerate(lst); if i &gt; 0 : sym.last = lst[i-1] if i &lt; length(lst)
+-1 : sym.next = lst[i+1] sorted(lst, key=lambda sym: sym.has.powerful
+return most, out, len(lst)</p>
+<p>of(“Return useful symbolic range.”) def powerful(self:SYM, goal,
+klasses:classes): most ,_, __ = self.bins(goal, klasses) return most</p>
+<p>of(“Return useful numeric range.”) def powerful(self:NUM, goal,
+klasses:classes): most, out, all = self.bins(goal, klasses) return
+max(bins, max=lambda sym: sym.has.power(goal,all))</p>
+<p>of(“Return useful ranges.”) def power(self:SYM,goal,all): b,r = 0,0
+for k,n in self.has.items(): if k==goal: b += n/all else : r += n/all
+return b*b/(b + r)</p>
+<p>def cdf(klasses:classes, x:Callable): lo,hi = lst[0][0], lst[-1][0]
+symp = not isinstance(lo,(inf,float)) for x,y in lst b = x if symp else
+floor(((x-lo)/(hi-lo+1-32) *20)) bin[b] = bin.get(b,None) or SYM(at=b)
+bin[b].add(y) if nump: return max(bin,key=</p>
 <div class="sourceCode" id="cb50"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>   </span>
 <span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a></span></code></pre></div>
@@ -633,8 +645,8 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb53-1"><a h
 <span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>  nom   <span class="op">=</span> exp(<span class="op">-</span><span class="dv">1</span><span class="op">*</span>(x <span class="op">-</span> <span class="va">self</span>.mu)<span class="op">**</span><span class="dv">2</span><span class="op">/</span>(<span class="dv">2</span><span class="op">*</span>v)) <span class="op">+</span> <span class="fl">1E-30</span></span>
 <span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>  denom <span class="op">=</span> (<span class="dv">2</span><span class="op">*</span>pi<span class="op">*</span>v) <span class="op">**</span><span class="fl">0.5</span></span>
 <span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">min</span>(<span class="dv">1</span>, nom<span class="op">/</span>(denom <span class="op">+</span> <span class="fl">1E-30</span>))</span></code></pre></div>
-<h3 data-number="5.1" id="active-learning"><span
-class="header-section-number">5.1</span> Active Learning</h3>
+<h3 data-number="4.1" id="active-learning"><span
+class="header-section-number">4.1</span> Active Learning</h3>
 <p>active learning</p>
 <div class="sourceCode" id="cb54"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> activeLearning(<span class="va">self</span>:DATA, score<span class="op">=</span><span class="kw">lambda</span> B,R: B<span class="op">-</span>R, generate<span class="op">=</span><span class="va">None</span>, faster<span class="op">=</span><span class="va">True</span> ):</span>
@@ -642,39 +654,37 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb54-1"><a h
 <span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> todos(todo):</span>
 <span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> faster: <span class="co"># rotate back half of buffer to end of list, fill the gap with later items</span></span>
-<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>       n     <span class="op">=</span> the.<span class="bu">buffer</span><span class="op">//</span><span class="dv">2</span></span>
-<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>       a1,a2 <span class="op">=</span> todo[:n], todo[n:<span class="dv">2</span><span class="op">*</span>n]</span>
-<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>       b1,b2 <span class="op">=</span> todo[<span class="dv">2</span><span class="op">*</span>n:<span class="dv">3</span><span class="op">*</span>n], todo[<span class="dv">3</span><span class="op">*</span>n:]</span>
-<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>       <span class="cf">return</span> a1 <span class="op">+</span> b1, b2 <span class="op">+</span> a2</span>
-<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> todo,[]</span>
-<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-13"><a href="#cb54-13" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> guess(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
-<span id="cb54-14"><a href="#cb54-14" aria-hidden="true" tabindex="-1"></a>    cut  <span class="op">=</span> <span class="bu">int</span>(<span class="fl">.5</span> <span class="op">+</span> <span class="bu">len</span>(done) <span class="op">**</span> the.cut)</span>
-<span id="cb54-15"><a href="#cb54-15" aria-hidden="true" tabindex="-1"></a>    best <span class="op">=</span> <span class="va">self</span>.clone(done[:cut])</span>
-<span id="cb54-16"><a href="#cb54-16" aria-hidden="true" tabindex="-1"></a>    rest <span class="op">=</span> <span class="va">self</span>.clone(done[cut:])</span>
-<span id="cb54-17"><a href="#cb54-17" aria-hidden="true" tabindex="-1"></a>    a,b  <span class="op">=</span> todos(todo)</span>
-<span id="cb54-18"><a href="#cb54-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> generate:</span>
-<span id="cb54-19"><a href="#cb54-19" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="va">self</span>.neighbors(generate(best,rest), a) <span class="op">+</span> b </span>
-<span id="cb54-20"><a href="#cb54-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb54-21"><a href="#cb54-21" aria-hidden="true" tabindex="-1"></a>      key  <span class="op">=</span> <span class="kw">lambda</span> r: score(best.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>), rest.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>))</span>
-<span id="cb54-22"><a href="#cb54-22" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span>  <span class="bu">sorted</span>(a, key<span class="op">=</span>key, reverse<span class="op">=</span><span class="va">True</span>) <span class="op">+</span> b</span>
-<span id="cb54-23"><a href="#cb54-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-24"><a href="#cb54-24" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> loop(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
-<span id="cb54-25"><a href="#cb54-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(the.Last <span class="op">-</span> the.label):</span>
-<span id="cb54-26"><a href="#cb54-26" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="bu">len</span>(todo) <span class="op">&lt;</span> <span class="dv">3</span> : <span class="cf">break</span></span>
-<span id="cb54-27"><a href="#cb54-27" aria-hidden="true" tabindex="-1"></a>      top,<span class="op">*</span>todo <span class="op">=</span> guess(todo, done)</span>
-<span id="cb54-28"><a href="#cb54-28" aria-hidden="true" tabindex="-1"></a>      done     <span class="op">+=</span> [top]</span>
-<span id="cb54-29"><a href="#cb54-29" aria-hidden="true" tabindex="-1"></a>      done      <span class="op">=</span> ranked(done)</span>
-<span id="cb54-30"><a href="#cb54-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> done</span>
-<span id="cb54-31"><a href="#cb54-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-32"><a href="#cb54-32" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> loop(<span class="va">self</span>.rows[the.label:], ranked(<span class="va">self</span>.rows[:the.label]))</span></code></pre></div>
-<h2 data-number="6" id="utils"><span
-class="header-section-number">6</span> Utils</h2>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>       n <span class="op">=</span> the.<span class="bu">buffer</span><span class="op">//</span><span class="dv">2</span></span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>       <span class="cf">return</span> todo[:n] <span class="op">+</span> todo[<span class="dv">2</span><span class="op">*</span>n: <span class="dv">3</span><span class="op">*</span>n],  todo[<span class="dv">3</span><span class="op">*</span>n:] <span class="op">+</span> todo[n:<span class="dv">2</span><span class="op">*</span>n]</span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> todo,[]</span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> guess(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
+<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a>    cut  <span class="op">=</span> <span class="bu">int</span>(<span class="fl">.5</span> <span class="op">+</span> <span class="bu">len</span>(done) <span class="op">**</span> the.cut)</span>
+<span id="cb54-13"><a href="#cb54-13" aria-hidden="true" tabindex="-1"></a>    best <span class="op">=</span> <span class="va">self</span>.clone(done[:cut])</span>
+<span id="cb54-14"><a href="#cb54-14" aria-hidden="true" tabindex="-1"></a>    rest <span class="op">=</span> <span class="va">self</span>.clone(done[cut:])</span>
+<span id="cb54-15"><a href="#cb54-15" aria-hidden="true" tabindex="-1"></a>    a,b  <span class="op">=</span> todos(todo)</span>
+<span id="cb54-16"><a href="#cb54-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> generate:</span>
+<span id="cb54-17"><a href="#cb54-17" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="va">self</span>.neighbors(generate(best,rest), a) <span class="op">+</span> b </span>
+<span id="cb54-18"><a href="#cb54-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb54-19"><a href="#cb54-19" aria-hidden="true" tabindex="-1"></a>      key  <span class="op">=</span> <span class="kw">lambda</span> r: score(best.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>), rest.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>))</span>
+<span id="cb54-20"><a href="#cb54-20" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span>  <span class="bu">sorted</span>(a, key<span class="op">=</span>key, reverse<span class="op">=</span><span class="va">True</span>) <span class="op">+</span> b</span>
+<span id="cb54-21"><a href="#cb54-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-22"><a href="#cb54-22" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> loop(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
+<span id="cb54-23"><a href="#cb54-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(the.Last <span class="op">-</span> the.label):</span>
+<span id="cb54-24"><a href="#cb54-24" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="bu">len</span>(todo) <span class="op">&lt;</span> <span class="dv">3</span> : <span class="cf">break</span></span>
+<span id="cb54-25"><a href="#cb54-25" aria-hidden="true" tabindex="-1"></a>      top,<span class="op">*</span>todo <span class="op">=</span> guess(todo, done)</span>
+<span id="cb54-26"><a href="#cb54-26" aria-hidden="true" tabindex="-1"></a>      done     <span class="op">+=</span> [top]</span>
+<span id="cb54-27"><a href="#cb54-27" aria-hidden="true" tabindex="-1"></a>      done      <span class="op">=</span> ranked(done)</span>
+<span id="cb54-28"><a href="#cb54-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> done</span>
+<span id="cb54-29"><a href="#cb54-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-30"><a href="#cb54-30" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> loop(<span class="va">self</span>.rows[the.label:], ranked(<span class="va">self</span>.rows[:the.label]))</span></code></pre></div>
+<h2 data-number="5" id="utils"><span
+class="header-section-number">5</span> Utils</h2>
 <div class="sourceCode" id="cb55"><pre
 class="sourceCode python"><code class="sourceCode python"></code></pre></div>
-<h3 data-number="6.1" id="one-liners"><span
-class="header-section-number">6.1</span> One-Liners</h3>
+<h3 data-number="5.1" id="one-liners"><span
+class="header-section-number">5.1</span> One-Liners</h3>
 <div class="sourceCode" id="cb56"><pre
 class="sourceCode python"><code class="sourceCode python"></code></pre></div>
 <p>Return a function that returns the <code>n</code>-th idem.</p>
@@ -706,8 +716,8 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb61-1"><a h
 <span id="cb61-9"><a href="#cb61-9" aria-hidden="true" tabindex="-1"></a>        (test <span class="cf">if</span> i <span class="op">&gt;=</span> lo <span class="kw">and</span> i <span class="op">&lt;</span> hi <span class="cf">else</span> train).append(x)</span>
 <span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a>      train <span class="op">=</span> random.choices(train, k<span class="op">=</span><span class="bu">min</span>(<span class="bu">len</span>(train),some))</span>
 <span id="cb61-11"><a href="#cb61-11" aria-hidden="true" tabindex="-1"></a>      <span class="cf">yield</span> train,test</span></code></pre></div>
-<h3 data-number="6.2" id="strings-to-things"><span
-class="header-section-number">6.2</span> Strings to Things</h3>
+<h3 data-number="5.2" id="strings-to-things"><span
+class="header-section-number">5.2</span> Strings to Things</h3>
 <div class="sourceCode" id="cb62"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> <span class="bu">coerce</span>(s:<span class="bu">str</span>) <span class="op">-&gt;</span> atom:</span>
@@ -720,8 +730,8 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb62-1"><a h
 <span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> line <span class="kw">in</span> src:</span>
 <span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a>      line <span class="op">=</span> re.sub(<span class="vs">r&#39;([\n\t\r ]|#.*)&#39;</span>, <span class="st">&#39;&#39;</span>, line)</span>
 <span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> line: <span class="cf">yield</span> [<span class="bu">coerce</span>(s.strip()) <span class="cf">for</span> s <span class="kw">in</span> line.split(<span class="st">&quot;,&quot;</span>)]</span></code></pre></div>
-<h3 data-number="6.3" id="settings-and-cli"><span
-class="header-section-number">6.3</span> Settings and CLI</h3>
+<h3 data-number="5.3" id="settings-and-cli"><span
+class="header-section-number">5.3</span> Settings and CLI</h3>
 <div class="sourceCode" id="cb63"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SETTINGS:</span>
 <span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>,s:<span class="bu">str</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
@@ -754,8 +764,8 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb63-1"><a h
 <span id="cb63-29"><a href="#cb63-29" aria-hidden="true" tabindex="-1"></a>      sys.exit(<span class="bu">print</span>(<span class="va">self</span>._help))</span></code></pre></div>
 <div class="sourceCode" id="cb64"><pre
 class="sourceCode python"><code class="sourceCode python"></code></pre></div>
-<h2 data-number="7" id="tests"><span
-class="header-section-number">7</span> Tests</h2>
+<h2 data-number="6" id="tests"><span
+class="header-section-number">6</span> Tests</h2>
 <div class="sourceCode" id="cb65"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> egs: </span>
 <span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> <span class="bu">all</span>():</span>
@@ -886,34 +896,54 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb65-1"><a h
 <span id="cb65-127"><a href="#cb65-127" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb65-128"><a href="#cb65-128" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> mqs():</span>
 <span id="cb65-129"><a href="#cb65-129" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span><span class="op">+</span>the.train)</span>
-<span id="cb65-130"><a href="#cb65-130" aria-hidden="true" tabindex="-1"></a>    repeats<span class="op">=</span><span class="dv">20</span></span>
-<span id="cb65-131"><a href="#cb65-131" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span> DATA().adds(csv(the.train))</span>
-<span id="cb65-132"><a href="#cb65-132" aria-hidden="true" tabindex="-1"></a>    b4 <span class="op">=</span> [d.chebyshev(row) <span class="cf">for</span> row <span class="kw">in</span> d.rows]</span>
-<span id="cb65-133"><a href="#cb65-133" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;rows</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.rows)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
-<span id="cb65-134"><a href="#cb65-134" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;xcols</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.cols.x)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
-<span id="cb65-135"><a href="#cb65-135" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;ycols</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.cols.y)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb65-130"><a href="#cb65-130" aria-hidden="true" tabindex="-1"></a>    repeats <span class="op">=</span> <span class="dv">20</span></span>
+<span id="cb65-131"><a href="#cb65-131" aria-hidden="true" tabindex="-1"></a>    d       <span class="op">=</span> DATA().adds(csv(the.train))</span>
+<span id="cb65-132"><a href="#cb65-132" aria-hidden="true" tabindex="-1"></a>    b4      <span class="op">=</span> [d.chebyshev(row) <span class="cf">for</span> row <span class="kw">in</span> d.rows]</span>
+<span id="cb65-133"><a href="#cb65-133" aria-hidden="true" tabindex="-1"></a>    base    <span class="op">=</span> NUM().adds(b4)</span>
+<span id="cb65-134"><a href="#cb65-134" aria-hidden="true" tabindex="-1"></a>    trivial <span class="op">=</span> base.div()<span class="op">*</span><span class="fl">0.2</span>  <span class="co">#  small amount</span></span>
+<span id="cb65-135"><a href="#cb65-135" aria-hidden="true" tabindex="-1"></a>    rnd     <span class="op">=</span> <span class="kw">lambda</span> z: math.floor(z<span class="op">/</span>trivial)<span class="op">*</span>trivial <span class="co"># rounded to a small amount</span></span>
 <span id="cb65-136"><a href="#cb65-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-137"><a href="#cb65-137" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time()</span>
-<span id="cb65-138"><a href="#cb65-138" aria-hidden="true" tabindex="-1"></a>    pool <span class="op">=</span> [d.chebyshev(d.shuffle().activeLearning()[<span class="dv">0</span>]) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats)]</span>
-<span id="cb65-139"><a href="#cb65-139" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;pool</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start) <span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> secs&quot;</span>)</span>
-<span id="cb65-140"><a href="#cb65-140" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-141"><a href="#cb65-141" aria-hidden="true" tabindex="-1"></a>    generate1 <span class="op">=</span><span class="kw">lambda</span> best,rest: best.exploit(rest,<span class="dv">1000</span>)</span>
-<span id="cb65-142"><a href="#cb65-142" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time()</span>
-<span id="cb65-143"><a href="#cb65-143" aria-hidden="true" tabindex="-1"></a>    mqs1000 <span class="op">=</span> [d.chebyshev(d.shuffle().activeLearning(generate<span class="op">=</span>generate1)[<span class="dv">0</span>]) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats)]</span>
-<span id="cb65-144"><a href="#cb65-144" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;mqs1K</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start)<span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> secs&quot;</span>)</span>
-<span id="cb65-145"><a href="#cb65-145" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-146"><a href="#cb65-146" aria-hidden="true" tabindex="-1"></a>    used<span class="op">=</span>{}</span>
-<span id="cb65-147"><a href="#cb65-147" aria-hidden="true" tabindex="-1"></a>    generate2 <span class="op">=</span><span class="kw">lambda</span> best,rest: best.exploit(rest,top<span class="op">=</span><span class="dv">4</span>,used<span class="op">=</span>used)</span>
-<span id="cb65-148"><a href="#cb65-148" aria-hidden="true" tabindex="-1"></a>    start <span class="op">=</span> time()</span>
-<span id="cb65-149"><a href="#cb65-149" aria-hidden="true" tabindex="-1"></a>    mqs4 <span class="op">=</span> [d.chebyshev(d.shuffle().activeLearning(generate<span class="op">=</span>generate2)[<span class="dv">0</span>]) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">20</span>)]</span>
-<span id="cb65-150"><a href="#cb65-150" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;mqs4</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start)<span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> secs&quot;</span>)</span>
+<span id="cb65-137"><a href="#cb65-137" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;trivial</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span>trivial<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb65-138"><a href="#cb65-138" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;rows</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.rows)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb65-139"><a href="#cb65-139" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;xcols</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.cols.x)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb65-140"><a href="#cb65-140" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;ycols</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.cols.y)<span class="sc">}</span><span class="ch">\n</span><span class="ss">&quot;</span>)</span>
+<span id="cb65-141"><a href="#cb65-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-142"><a href="#cb65-142" aria-hidden="true" tabindex="-1"></a>    somes <span class="op">=</span> [stats.SOME(b4,<span class="ss">f&quot;baseline,</span><span class="sc">{</span><span class="bu">len</span>(d.rows)<span class="sc">}</span><span class="ss">&quot;</span>)]</span>
+<span id="cb65-143"><a href="#cb65-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-144"><a href="#cb65-144" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> [<span class="dv">20</span>,<span class="dv">25</span>,<span class="dv">30</span>,<span class="dv">50</span>,<span class="dv">100</span>]:</span>
+<span id="cb65-145"><a href="#cb65-145" aria-hidden="true" tabindex="-1"></a>      the.Last <span class="op">=</span> n</span>
+<span id="cb65-146"><a href="#cb65-146" aria-hidden="true" tabindex="-1"></a>      rand     <span class="op">=</span> []</span>
+<span id="cb65-147"><a href="#cb65-147" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats):</span>
+<span id="cb65-148"><a href="#cb65-148" aria-hidden="true" tabindex="-1"></a>         some  <span class="op">=</span> d.shuffle().rows[:n]</span>
+<span id="cb65-149"><a href="#cb65-149" aria-hidden="true" tabindex="-1"></a>         d1    <span class="op">=</span> d.clone().adds(some).chebyshevs()</span>
+<span id="cb65-150"><a href="#cb65-150" aria-hidden="true" tabindex="-1"></a>         rand <span class="op">+=</span> [rnd(d.chebyshev(d1.rows[<span class="dv">0</span>]))]</span>
 <span id="cb65-151"><a href="#cb65-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-152"><a href="#cb65-152" aria-hidden="true" tabindex="-1"></a>    stats.report([ stats.SOME(b4,<span class="st">&quot;baseline&quot;</span>),</span>
-<span id="cb65-153"><a href="#cb65-153" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(pool,<span class="st">&quot;pool&quot;</span>),</span>
-<span id="cb65-154"><a href="#cb65-154" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(mqs4,<span class="st">&quot;mqs4&quot;</span>),</span>
-<span id="cb65-155"><a href="#cb65-155" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(mqs1000,<span class="st">&quot;mqs1000&quot;</span>)])</span></code></pre></div>
-<h2 data-number="8" id="main"><span
-class="header-section-number">8</span> Main</h2>
+<span id="cb65-152"><a href="#cb65-152" aria-hidden="true" tabindex="-1"></a>      start <span class="op">=</span> time()</span>
+<span id="cb65-153"><a href="#cb65-153" aria-hidden="true" tabindex="-1"></a>      pool <span class="op">=</span> [rnd(d.chebyshev(d.shuffle().activeLearning()[<span class="dv">0</span>]))</span>
+<span id="cb65-154"><a href="#cb65-154" aria-hidden="true" tabindex="-1"></a>              <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats)]</span>
+<span id="cb65-155"><a href="#cb65-155" aria-hidden="true" tabindex="-1"></a>      <span class="bu">print</span>(<span class="ss">f&quot;pool.</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start) <span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> secs&quot;</span>)</span>
+<span id="cb65-156"><a href="#cb65-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-157"><a href="#cb65-157" aria-hidden="true" tabindex="-1"></a>      generate1 <span class="op">=</span><span class="kw">lambda</span> best,rest: best.exploit(rest,<span class="dv">1000</span>)</span>
+<span id="cb65-158"><a href="#cb65-158" aria-hidden="true" tabindex="-1"></a>      start <span class="op">=</span> time()</span>
+<span id="cb65-159"><a href="#cb65-159" aria-hidden="true" tabindex="-1"></a>      mqs1000 <span class="op">=</span> [rnd(d.chebyshev(d.shuffle().activeLearning(generate<span class="op">=</span>generate1)[<span class="dv">0</span>]))</span>
+<span id="cb65-160"><a href="#cb65-160" aria-hidden="true" tabindex="-1"></a>                 <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats)]</span>
+<span id="cb65-161"><a href="#cb65-161" aria-hidden="true" tabindex="-1"></a>      <span class="bu">print</span>(<span class="ss">f&quot;mqs1K.</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start)<span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> secs&quot;</span>)</span>
+<span id="cb65-162"><a href="#cb65-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-163"><a href="#cb65-163" aria-hidden="true" tabindex="-1"></a>      used<span class="op">=</span>{}</span>
+<span id="cb65-164"><a href="#cb65-164" aria-hidden="true" tabindex="-1"></a>      generate2 <span class="op">=</span><span class="kw">lambda</span> best,rest: best.exploit(rest,top<span class="op">=</span><span class="dv">4</span>,used<span class="op">=</span>used)</span>
+<span id="cb65-165"><a href="#cb65-165" aria-hidden="true" tabindex="-1"></a>      start <span class="op">=</span> time()</span>
+<span id="cb65-166"><a href="#cb65-166" aria-hidden="true" tabindex="-1"></a>      mqs4 <span class="op">=</span> [rnd(d.chebyshev(d.shuffle().activeLearning(generate<span class="op">=</span>generate2)[<span class="dv">0</span>])) </span>
+<span id="cb65-167"><a href="#cb65-167" aria-hidden="true" tabindex="-1"></a>              <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">20</span>)]</span>
+<span id="cb65-168"><a href="#cb65-168" aria-hidden="true" tabindex="-1"></a>      <span class="bu">print</span>(<span class="ss">f&quot;mqs4.</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start)<span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> secs&quot;</span>)</span>
+<span id="cb65-169"><a href="#cb65-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-170"><a href="#cb65-170" aria-hidden="true" tabindex="-1"></a>      somes <span class="op">+=</span>   [stats.SOME(rand,    <span class="ss">f&quot;random,</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">&quot;</span>),</span>
+<span id="cb65-171"><a href="#cb65-171" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(pool,    <span class="ss">f&quot;pool,</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">&quot;</span>),</span>
+<span id="cb65-172"><a href="#cb65-172" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(mqs4,    <span class="ss">f&quot;mqs4,</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">&quot;</span>),</span>
+<span id="cb65-173"><a href="#cb65-173" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(mqs1000, <span class="ss">f&quot;mqs1000,</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">&quot;</span>)]</span>
+<span id="cb65-174"><a href="#cb65-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-175"><a href="#cb65-175" aria-hidden="true" tabindex="-1"></a>    stats.report(somes, <span class="fl">0.01</span>)</span></code></pre></div>
+<h2 data-number="7" id="main"><span
+class="header-section-number">7</span> Main</h2>
 <div class="sourceCode" id="cb66"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>the <span class="op">=</span> SETTINGS(__doc__)</span>
 <span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">&quot;__main__&quot;</span> <span class="kw">and</span> <span class="bu">len</span>(sys.argv)<span class="op">&gt;</span> <span class="dv">1</span>:</span>

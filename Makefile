@@ -43,7 +43,7 @@ $(Top)/docs/%.pdf: %.py  ## make doco: .py ==> .pdf
 
 docs/%.html : docs/%.md etc/b4.html docs/ezr.css Makefile ## make doco: md -> html
 	echo "$< ... "
-	pandoc -s  -f markdown --number-sections --toc  \
+	pandoc -s  -f markdown --number-sections --toc  --toc-depth=5 \
 					-B etc/b4.html --mathjax \
   		     --css ezr.css --highlight-style tango \
 	  			 -o $@  $<
@@ -51,7 +51,7 @@ docs/%.html : docs/%.md etc/b4.html docs/ezr.css Makefile ## make doco: md -> ht
 docs/%.html : %.py etc/py2html.awk etc/b4.html docs/ezr.css Makefile ## make doco: md -> html
 	echo "$< ... "
 	gawk -f etc/py2html.awk $< \
-	| pandoc -s  -f markdown --number-sections --toc \
+	| pandoc -s  -f markdown --number-sections --toc --toc-depth=5 \
 					-B etc/b4.html --mathjax \
   		     --css ezr.css --highlight-style tango \
 					 --metadata title="$<" \

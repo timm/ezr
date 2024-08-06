@@ -111,71 +111,154 @@ alt="Purpose" src="https://img.shields.io/badge/language-python3-blue">
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
-<li><a href="#what-is-active-learning"
-id="toc-what-is-active-learning"><span
-class="toc-section-number">1</span> What is active learning?</a>
+<li><a href="#introduction" id="toc-introduction"><span
+class="toc-section-number">1</span> Introduction</a>
 <ul>
 <li><a href="#words-to-watch-for" id="toc-words-to-watch-for"><span
-class="toc-section-number">1.1</span> Words to watch for:</a></li>
+class="toc-section-number">1.1</span> Words to watch for</a></li>
+<li><a href="#quick-notes" id="toc-quick-notes"><span
+class="toc-section-number">1.2</span> Quick notes:</a></li>
+<li><a href="#ezr-is-an-active-learning"
+id="toc-ezr-is-an-active-learning"><span
+class="toc-section-number">1.3</span> EZR is an active learning</a></li>
 </ul></li>
 <li><a href="#training-data" id="toc-training-data"><span
-class="toc-section-number">2</span> Training Data</a>
+class="toc-section-number">2</span> Training Data</a></li>
+<li><a href="#ai-code" id="toc-ai-code"><span
+class="toc-section-number">3</span> AI Code</a>
 <ul>
 <li><a href="#aggregation-functions"
 id="toc-aggregation-functions"><span
-class="toc-section-number">2.1</span> Aggregation Functions</a></li>
+class="toc-section-number">3.1</span> Aggregation Functions</a></li>
 <li><a href="#classes" id="toc-classes"><span
-class="toc-section-number">2.2</span> Classes</a></li>
+class="toc-section-number">3.2</span> Classes</a></li>
 <li><a href="#configuraion" id="toc-configuraion"><span
-class="toc-section-number">2.3</span> Configuraion</a></li>
-<li><a href="#decorators" id="toc-decorators"><span
-class="toc-section-number">2.4</span> Decorators</a></li>
+class="toc-section-number">3.3</span> Configuraion</a></li>
 <li><a href="#smarts" id="toc-smarts"><span
-class="toc-section-number">2.5</span> Smarts</a></li>
+class="toc-section-number">3.4</span> Smarts</a>
+<ul>
+<li><a href="#bayes-classifier" id="toc-bayes-classifier"><span
+class="toc-section-number">3.4.1</span> Bayes classifier</a></li>
 <li><a href="#active-learner" id="toc-active-learner"><span
-class="toc-section-number">2.6</span> Active Learner</a></li>
+class="toc-section-number">3.4.2</span> Active Learner</a></li>
+</ul></li>
 </ul></li>
 <li><a href="#se-notes" id="toc-se-notes"><span
-class="toc-section-number">3</span> SE notes:</a></li>
+class="toc-section-number">4</span> SE notes:</a>
+<ul>
+<li><a href="#decorators" id="toc-decorators"><span
+class="toc-section-number">4.1</span> Decorators</a></li>
+</ul></li>
 <li><a href="#try-it-for-your-self" id="toc-try-it-for-your-self"><span
-class="toc-section-number">4</span> Try it for your self</a></li>
+class="toc-section-number">5</span> Try it for your self</a></li>
 </ul>
 </nav>
-<h2 data-number="1" id="what-is-active-learning"><span
-class="header-section-number">1</span> What is active learning?</h2>
-<p>The human condition is that we have to make it up as we go along. We
-are always acting with partial knowledge, before all the facts are
-in.</p>
-<p>For example, if we want to buy a used car then a single glance at a
-car lot tells us much about hundreds of car make, model, color, number
-of doors, ages of cars, etc. But it takes much longer to work out know
-acceleration or miles per hour (you have to drive each car around for
-the afternoon). So the question becomes, what is the best strategy for
-exploring the fast-to-find features (e.g. car color) in order to build
-predictors from the slower-to-find features (e.g. car acceleration)</p>
-<p>Active learners say that we learn better if we can select our own
-training data. Given what we have seen so far, active learners guess
-what is be the next more informative question. Active learners spend
-much time reasoning about the independent variables (which are cheap to
-collect) before deciding which dependent variables to collect next. A
-repeated result is that this tactic can produce good models, with
-minimal information about the dependent variables..</p>
+<h2 data-number="1" id="introduction"><span
+class="header-section-number">1</span> Introduction</h2>
 <h3 data-number="1.1" id="words-to-watch-for"><span
-class="header-section-number">1.1</span> Words to watch for:</h3>
+class="header-section-number">1.1</span> Words to watch for</h3>
 <ul>
-<li>Terms: <em>dependent, independent, goals, aggregation function,
-chebyshev</em></li>
+<li>SE Terms: <em>DRY, WET, function-oriented, decorators</em>,</li>
+<li>AI Terms: <em>active learning, Y, dependent, X, independent, goals,
+labeling, aggregation function, chebyshev, multi-objective regression,
+classification, Bayes classifier, entropy, standard deviation</em></li>
 <li>Classes: <em>DATA, COLS, NUM, SYM</em></li>
 <li>Variables: <em>row</em>, <em>rows</em>, <em>done</em> (which divides
 into <em>best</em> and <em>rest</em>); <em>todo</em></li>
-<li>Synonyms: <em>features</em>, <em>attributes</em>,
-<em>goals</em></li>
+<li>Synonyms:
+<ul>
+<li><em>features</em>, <em>attributes</em>, <em>goals</em></li>
+<li><em>Y goals dependent</em></li>
+<li><em>X independent</em></li>
+</ul></li>
 </ul>
+<h3 data-number="1.2" id="quick-notes"><span
+class="header-section-number">1.2</span> Quick notes:</h3>
+<ul>
+<li>Download this code: <a
+href="https://github.com/timm/ezr/blob/main/ezr.py">ezr</a></li>
+<li>Down sample 60+ example dadta files: <a
+href="https://github.com/timm/moot">moot</a> (MOOT= Multi-Objective
+Optimization Tests)</li>
+<li>This code:
+<ul>
+<li>Starts with <strong>doc</strong> string, from which we parse out the
+control settings.</li>
+<li>Ends with a set of examples in the <code>egs</code> class which can
+be called from the command line. E.g. <code>-e mqs</code> called
+<code>egs.mqs()</code>.</li>
+<li>Uses a <a href="#decorators">a function-oriented style</a>, where
+methods are grouped by name, not class.</li>
+</ul></li>
+</ul>
+<h3 data-number="1.3" id="ezr-is-an-active-learning"><span
+class="header-section-number">1.3</span> EZR is an active learning</h3>
+<p>The human condition is that we have to make it up as we go along.
+Active learning is a strategy for acting with partial knowledge, before
+all the facts are in.</p>
+<p>To understand this, suppose we wanted to learn some model <span
+class="math inline">\(f\)</span></p>
+<p><span
+class="math display">\[Y_1,Y_2,...\;=\;f(X_1,X_2,X_3....)\]</span></p>
+<p>Any example contains zero or more <span
+class="math inline">\(X\)</span> and <span
+class="math inline">\(Y\)</span> values</p>
+<ul>
+<li>If there are no <span class="math inline">\(Y\)</span> values, we
+say the example is <em>unlabeled</em>.</li>
+<li>If the model is any good then there must be some connection between
+the <span class="math inline">\(X\)</span>s and the <span
+class="math inline">\(Y\)</span>.
+<ul>
+<li>This means we can explore the <span class="math inline">\(X\)</span>
+space to build a loosey-goosey approximate of the <span
+class="math inline">\(Y\)</span> space.</li>
+</ul></li>
+<li>It is usually harder (slower, more expensive) to find the <span
+class="math inline">\(Y\)</span>s than the <span
+class="math inline">\(X\)</span>s. For example,
+<ul>
+<li>If we want to buy a used car then a single glance at a car lot tells
+us much about hundreds of car make, model, color, number of doors, ages
+of cars, etc (these are the <span class="math inline">\(X\)</span>
+values)</li>
+<li>But it takes much longer to work out acceleration or miles per hour
+(these are the <span class="math inline">\(Y\)</span> values) since that
+requires you have to drive the car around for a few hours.</li>
+</ul></li>
+<li><em>Labeling</em> is the process of finding the <span
+class="math inline">\(Y\)</span> values, before we know the <span
+class="math inline">\(f\)</span> function
+<ul>
+<li>So we have to do something slow and/or expensive to find the
+label;s; e.g. ask an expert, go hunt for them in the real world.</li>
+<li>The first time we find the <span class="math inline">\(Y\)</span>
+values, that incurs a one-time cost</li>
+<li>After that, the labels can be access for free.</li>
+</ul></li>
+</ul>
+<p>So, an active learner try to learn <span
+class="math inline">\(f\)</span> using a lot of cheap <span
+class="math inline">\(X\)</span> values, but very few <span
+class="math inline">\(Y\)</span> values– since they are more expensive
+to access. Active learners know that they can learn better (faster, with
+fewer <span class="math inline">\(Y\)</span> values) if they can select
+their own training data:</p>
+<ul>
+<li>Given what we have seen so far…</li>
+<li>Active learners guess what is be the next more informative <span
+class="math inline">\(Y\)</span> labels to collect..</li>
+</ul>
+<p>Active learners spend much time reasoning about the <span
+class="math inline">\(X\)</span> values (which are cheap to collect)
+before deciding which dependent variables to collect next. A repeated
+result is that this tactic can produce good models, with minimal
+information about the dependent variables.</p>
 <h2 data-number="2" id="training-data"><span
 class="header-section-number">2</span> Training Data</h2>
-<p>For training purposes we explore all this using consists of csv files
-where “?” denotes missing values. Row one list the columns names,
-defining the roles of the columns:</p>
+<p>For training purposes we explore all this using csv files where “?”
+denotes missing values. Row one list the columns names, defining the
+roles of the columns:</p>
 <ul>
 <li>NUMeric column names start with an upper case letter.</li>
 <li>All other columns are SYMbolic.</li>
@@ -202,42 +285,62 @@ maximize acceleration and maximize fuel consumption.</p>
 faster cars that are more economical).</p>
 <ul>
 <li>Multi-objective learners find a model that selects for the best
-rows.</li>
-<li>Active learning, applied to the same task, does the same thing but
-does so with very few peeks at the goal y values.
+rows, based on multiple goal.s
 <ul>
-<li>Why? Since it usually very cheap to get <code>x</code> but very
-expensive to get <code>y</code>.</li>
+<li>Aside: most learners support single objective classifiers (for one
+symbolic column) or regression (for one numeric column).</li>
+</ul></li>
+<li>EZR’s active learner, does the same multi-objective task, but with
+very few peeks at the goal y values.
+<ul>
+<li>Why? Since it usually very cheap to get <code>X</code> but very
+expensive to get <code>Y</code>.</li>
 </ul></li>
 </ul>
-<h3 data-number="2.1" id="aggregation-functions"><span
-class="header-section-number">2.1</span> Aggregation Functions</h3>
+<p>For testing purposes here, all the examples explored here come with
+all their <span class="math inline">\(Y\)</span> values.</p>
+<ul>
+<li>We just take great care in the code to record how many rows we use
+to look up <span class="math inline">\(Y\)</span> labels.</li>
+</ul>
+<h2 data-number="3" id="ai-code"><span
+class="header-section-number">3</span> AI Code</h2>
+<h3 data-number="3.1" id="aggregation-functions"><span
+class="header-section-number">3.1</span> Aggregation Functions</h3>
 <p>To sort the data, all the goals have to be aggregated into one
-function. THis code uses the Chebyshev function that returns the max
-difference between the goal values and the best possible values.</p>
+function. Inspired by the MOEA/D algorithm<a href="#fn1"
+class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>,
+EZR uses the Chebyshev function that returns the max difference between
+the goal values and the best possible values. The rows shown above are
+sorted top to bottom, least to most Chebyshev values (so the best rows,
+with smallest Chebyshev, are shown at top).</p>
+<p>Chebyshev is very simple to code. We assume a lost of goal columns
+<code>self.cols.y</code> each of which knows:</p>
+<ul>
+<li>its column index <code>col.at</code></li>
+<li>How to <code>norm</code>alize values 0..1, min..max using
+<code>col.norm(x)</code></li>
+<li>What is the best value <code>col.goal</code>:
+<ul>
+<li>For goals to minimize, like “Lbs-”, <code>goal=0</code>.</li>
+<li>For goals to maximize, like “Mpg+”, <code>goal=1</code>.</li>
+</ul></li>
+</ul>
 <div class="sourceCode" id="cb2"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Compute Chebyshev distance of one row to the best `y` values.&quot;</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> chebyshev(<span class="va">self</span>:DATA,row:row) <span class="op">-&gt;</span> number:</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span>  <span class="bu">max</span>(<span class="bu">abs</span>(col.goal <span class="op">-</span> col.norm(row[col.at])) <span class="cf">for</span> col <span class="kw">in</span> <span class="va">self</span>.cols.y)</span></code></pre></div>
-<p>Note that</p>
-<ul>
-<li><code>goal</code> is set to 0,1 for goals we want to minimize or
-maximize.</li>
-<li><code>abs(col.goal - col.norm(row[col.at]))</code> returns a
-distance in the range 0..1 for distance to best.</li>
-<li><code>norm</code> is short form “normalization” and makes goals 0..1
-for lo…hi. So</li>
-</ul>
-<div class="sourceCode" id="cb3"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Returns 0..1 for min..max.&quot;</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> norm(<span class="va">self</span>:NUM, x) <span class="op">-&gt;</span> number:</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> x <span class="cf">if</span> x<span class="op">==</span><span class="st">&quot;?&quot;</span> <span class="cf">else</span>  ((x <span class="op">-</span> <span class="va">self</span>.lo) <span class="op">/</span> (<span class="va">self</span>.hi <span class="op">-</span> <span class="va">self</span>.lo <span class="op">+</span> <span class="fl">1E-32</span>))</span></code></pre></div>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span>  <span class="bu">max</span>(<span class="bu">abs</span>(col.goal <span class="op">-</span> col.norm(row[col.at])) <span class="cf">for</span> col <span class="kw">in</span> <span class="va">self</span>.cols.y)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Returns 0..1 for min..max.&quot;</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> norm(<span class="va">self</span>:NUM, x) <span class="op">-&gt;</span> number:</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> x <span class="cf">if</span> x<span class="op">==</span><span class="st">&quot;?&quot;</span> <span class="cf">else</span>  ((x <span class="op">-</span> <span class="va">self</span>.lo) <span class="op">/</span> (<span class="va">self</span>.hi <span class="op">-</span> <span class="va">self</span>.lo <span class="op">+</span> <span class="fl">1E-32</span>))</span></code></pre></div>
 <p>When we say “rank DATA”, we mean sort all the rows by their Chebyshev
 distance:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Sort rows by the Euclidean distance of the goals to heaven.&quot;</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> chebyshevs(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> DATA:</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.rows <span class="op">=</span> <span class="bu">sorted</span>(<span class="va">self</span>.rows, key<span class="op">=</span><span class="kw">lambda</span> r: <span class="va">self</span>.chebyshev(r))</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">self</span></span></code></pre></div>
-<h3 data-number="2.2" id="classes"><span
-class="header-section-number">2.2</span> Classes</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Sort rows by the Euclidean distance of the goals to heaven.&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> chebyshevs(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> DATA:</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="va">self</span>.rows <span class="op">=</span> <span class="bu">sorted</span>(<span class="va">self</span>.rows, key<span class="op">=</span><span class="kw">lambda</span> r: <span class="va">self</span>.chebyshev(r))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">self</span></span></code></pre></div>
+<h3 data-number="3.2" id="classes"><span
+class="header-section-number">3.2</span> Classes</h3>
 <p>This code has only a few main classes: DATA, COLS, NUM, SYM</p>
 <ul>
 <li>NUM, SYM, COL (the super class of NUM,SYM). These classes summarize
@@ -271,77 +374,38 @@ columns.
 stored in <code>x</code> and <code>y</code>).</li>
 </ul></li>
 </ul>
-<div class="sourceCode" id="cb5"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> COLS:</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  names: <span class="bu">list</span>[<span class="bu">str</span>]   <span class="co"># column names</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="bu">all</span>  : <span class="bu">list</span>[COL] <span class="op">=</span> LIST()  <span class="co"># all NUMS and SYMS</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  x    : <span class="bu">list</span>[COL] <span class="op">=</span> LIST()  <span class="co"># independent COLums</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  y    : <span class="bu">list</span>[COL] <span class="op">=</span> LIST()  <span class="co"># dependent COLumns</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  klass: COL <span class="op">=</span> <span class="va">None</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> COLS:</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  names: <span class="bu">list</span>[<span class="bu">str</span>]   <span class="co"># column names</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="bu">all</span>  : <span class="bu">list</span>[COL] <span class="op">=</span> LIST()  <span class="co"># all NUMS and SYMS</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  x    : <span class="bu">list</span>[COL] <span class="op">=</span> LIST()  <span class="co"># independent COLums</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  y    : <span class="bu">list</span>[COL] <span class="op">=</span> LIST()  <span class="co"># dependent COLumns</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  klass: COL <span class="op">=</span> <span class="va">None</span></span></code></pre></div>
 <p>To build the columns, COLS looks at each name’s <code>a,z</code>
 (first and last letter).</p>
 <ul>
 <li>e.g. <code>['Clndrs', 'Volume', 'HpX', 'Model','origin', 'Lbs-', 'Acc+',  'Mpg+']</code></li>
 </ul>
-<div class="sourceCode" id="cb6"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> __post_init__(<span class="va">self</span>:COLS) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> at,txt <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="va">self</span>.names):</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>      a,z <span class="op">=</span> txt[<span class="dv">0</span>],txt[<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>      col <span class="op">=</span> (NUM <span class="cf">if</span> a.isupper() <span class="cf">else</span> SYM)(at<span class="op">=</span>at, txt<span class="op">=</span>txt)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.<span class="bu">all</span>.append(col)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> z <span class="op">!=</span> <span class="st">&quot;X&quot;</span>:</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        (<span class="va">self</span>.y <span class="cf">if</span> z <span class="kw">in</span> <span class="st">&quot;!+-&quot;</span> <span class="cf">else</span> <span class="va">self</span>.x).append(col)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> z<span class="op">==</span><span class="st">&quot;!&quot;</span>: <span class="va">self</span>.klass <span class="op">=</span> col</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> z<span class="op">==</span><span class="st">&quot;-&quot;</span>: col.goal <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
-<h3 data-number="2.3" id="configuraion"><span
-class="header-section-number">2.3</span> Configuraion</h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> __post_init__(<span class="va">self</span>:COLS) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> at,txt <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="va">self</span>.names):</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>      a,z <span class="op">=</span> txt[<span class="dv">0</span>],txt[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>      col <span class="op">=</span> (NUM <span class="cf">if</span> a.isupper() <span class="cf">else</span> SYM)(at<span class="op">=</span>at, txt<span class="op">=</span>txt)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>      <span class="va">self</span>.<span class="bu">all</span>.append(col)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> z <span class="op">!=</span> <span class="st">&quot;X&quot;</span>:</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        (<span class="va">self</span>.y <span class="cf">if</span> z <span class="kw">in</span> <span class="st">&quot;!+-&quot;</span> <span class="cf">else</span> <span class="va">self</span>.x).append(col)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> z<span class="op">==</span><span class="st">&quot;!&quot;</span>: <span class="va">self</span>.klass <span class="op">=</span> col</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> z<span class="op">==</span><span class="st">&quot;-&quot;</span>: col.goal <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<h3 data-number="3.3" id="configuraion"><span
+class="header-section-number">3.3</span> Configuraion</h3>
 <p>Other people define their command line options separate to the
 settings. That is they have to define all those settings twice</p>
 <p>This code parses the settings from the <strong>doc</strong> string
 (see the SETTINGS class). So the help text and the definitions of the
 options can never go out of sync.</p>
-<h3 data-number="2.4" id="decorators"><span
-class="header-section-number">2.4</span> Decorators</h3>
-<ul>
-<li>Decorated are functions called at load time that manipulate other
-functions.</li>
-<li>E.g. the <code>of</code> decorator lets you define methods outside
-of a function. Here it is used to group together the <code>mid</code>
-(middle) and <code>div</code> (diversity) functions.
-<ul>
-<li>The <code>mid</code>(ddle) of a NUMeric and a SYMbol column are
-their means and modes.</li>
-<li>As to <code>DATA</code>, thsee hold rows which are summarized in
-<code>cols</code>. The <code>mid</code> of those rows is the
-<code>mid</code> of the summary for each column.</li>
-</ul></li>
-</ul>
-<div class="sourceCode" id="cb7"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> of(doc):</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> doit(fun):</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    fun.__doc__ <span class="op">=</span> doc</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span> <span class="op">=</span> inspect.getfullargspec(fun).annotations[<span class="st">&#39;self&#39;</span>]</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">setattr</span>(<span class="bu">globals</span>()[<span class="va">self</span>], fun.<span class="va">__name__</span>, fun)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> doit</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of a DATA.&quot;</span>)</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> row:</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [col.mid() <span class="cf">for</span> col <span class="kw">in</span> <span class="va">self</span>.cols.<span class="bu">all</span>]</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of NUMs.&quot;</span>)</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mu</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of SYMs.&quot;</span>)</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mode</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a NUM.&quot;</span>)</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.sd</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a SYM.&quot;</span>)</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.ent()</span></code></pre></div>
-<h3 data-number="2.5" id="smarts"><span
-class="header-section-number">2.5</span> Smarts</h3>
-<h4 data-number="2.5.1" id="bayes-classifier"><span
-class="header-section-number">2.5.1</span> Bayes classifier</h4>
+<h3 data-number="3.4" id="smarts"><span
+class="header-section-number">3.4</span> Smarts</h3>
+<h4 data-number="3.4.1" id="bayes-classifier"><span
+class="header-section-number">3.4.1</span> Bayes classifier</h4>
 <p>When you have labels, a simple and fast technique is:</p>
 <ul>
 <li>Divide the rows into different labels,</li>
@@ -355,34 +419,34 @@ to belong to each <em>x</em> column of the data</li>
 </ul>
 <p>The probability of <code>x</code> belong to a column is pretty
 simple:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;How much a SYM likes a value `x`.&quot;</span>)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> like(<span class="va">self</span>:SYM, x:<span class="bu">any</span>, prior:<span class="bu">float</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (<span class="va">self</span>.has.get(x,<span class="dv">0</span>) <span class="op">+</span> the.m<span class="op">*</span>prior) <span class="op">/</span> (<span class="va">self</span>.n <span class="op">+</span> the.m)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;How much a NUM likes a value `x`.&quot;</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> like(<span class="va">self</span>:NUM, x:number, _) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  v     <span class="op">=</span> <span class="va">self</span>.sd<span class="op">**</span><span class="dv">2</span> <span class="op">+</span> <span class="fl">1E-30</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  nom   <span class="op">=</span> exp(<span class="op">-</span><span class="dv">1</span><span class="op">*</span>(x <span class="op">-</span> <span class="va">self</span>.mu)<span class="op">**</span><span class="dv">2</span><span class="op">/</span>(<span class="dv">2</span><span class="op">*</span>v)) <span class="op">+</span> <span class="fl">1E-30</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  denom <span class="op">=</span> (<span class="dv">2</span><span class="op">*</span>pi<span class="op">*</span>v) <span class="op">**</span><span class="fl">0.5</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">min</span>(<span class="dv">1</span>, nom<span class="op">/</span>(denom <span class="op">+</span> <span class="fl">1E-30</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;How much a SYM likes a value `x`.&quot;</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> like(<span class="va">self</span>:SYM, x:<span class="bu">any</span>, prior:<span class="bu">float</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (<span class="va">self</span>.has.get(x,<span class="dv">0</span>) <span class="op">+</span> the.m<span class="op">*</span>prior) <span class="op">/</span> (<span class="va">self</span>.n <span class="op">+</span> the.m)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;How much a NUM likes a value `x`.&quot;</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> like(<span class="va">self</span>:NUM, x:number, _) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  v     <span class="op">=</span> <span class="va">self</span>.sd<span class="op">**</span><span class="dv">2</span> <span class="op">+</span> <span class="fl">1E-30</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  nom   <span class="op">=</span> exp(<span class="op">-</span><span class="dv">1</span><span class="op">*</span>(x <span class="op">-</span> <span class="va">self</span>.mu)<span class="op">**</span><span class="dv">2</span><span class="op">/</span>(<span class="dv">2</span><span class="op">*</span>v)) <span class="op">+</span> <span class="fl">1E-30</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  denom <span class="op">=</span> (<span class="dv">2</span><span class="op">*</span>pi<span class="op">*</span>v) <span class="op">**</span><span class="fl">0.5</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">min</span>(<span class="dv">1</span>, nom<span class="op">/</span>(denom <span class="op">+</span> <span class="fl">1E-30</span>))</span></code></pre></div>
 <p>The likelihood of a row belonging to a label, given new evidence, is
 the prior probability of the label times the probability of the
-evidence. For numerical methods reasons, I add tiny counts to the
-attribute and class frequencies (<span
-class="math inline">\(k=2,m=1\)</span>) and treat all the values as
-logarithms (since these values can get real small, real fast)</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;How much a NUM likes a value `x`.&quot;</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> like(<span class="va">self</span>:NUM, x:number, _) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  v     <span class="op">=</span> <span class="va">self</span>.sd<span class="op">**</span><span class="dv">2</span> <span class="op">+</span> <span class="fl">1E-30</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  nom   <span class="op">=</span> exp(<span class="op">-</span><span class="dv">1</span><span class="op">*</span>(x <span class="op">-</span> <span class="va">self</span>.mu)<span class="op">**</span><span class="dv">2</span><span class="op">/</span>(<span class="dv">2</span><span class="op">*</span>v)) <span class="op">+</span> <span class="fl">1E-30</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  denom <span class="op">=</span> (<span class="dv">2</span><span class="op">*</span>pi<span class="op">*</span>v) <span class="op">**</span><span class="fl">0.5</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">min</span>(<span class="dv">1</span>, nom<span class="op">/</span>(denom <span class="op">+</span> <span class="fl">1E-30</span>))</span></code></pre></div>
-<p>Note that these calcs are very fast.</p>
-<h3 data-number="2.6" id="active-learner"><span
-class="header-section-number">2.6</span> Active Learner</h3>
+evidence. For example, if we have three oranges and six apples, then the
+prior on oranges is 33%.</p>
+<p>For numerical methods reasons, we add tiny counts to the attribute
+and class frequencies (<span class="math inline">\(k=1,m=2\)</span>) and
+treat all the values as logarithms (since these values can get real
+small, real fast)</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;How much DATA likes a `row`.&quot;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> loglike(<span class="va">self</span>:DATA, r:row, nall:<span class="bu">int</span>, nh:<span class="bu">int</span>) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  prior <span class="op">=</span> (<span class="bu">len</span>(<span class="va">self</span>.rows) <span class="op">+</span> the.k) <span class="op">/</span> (nall <span class="op">+</span> the.k<span class="op">*</span>nh)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  likes <span class="op">=</span> [c.like(r[c.at], prior) <span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.cols.x <span class="cf">if</span> r[c.at] <span class="op">!=</span> <span class="st">&quot;?&quot;</span>]</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="bu">sum</span>(log(x) <span class="cf">for</span> x <span class="kw">in</span> likes <span class="op">+</span> [prior] <span class="cf">if</span> x<span class="op">&gt;</span><span class="dv">0</span>)</span></code></pre></div>
+<h4 data-number="3.4.2" id="active-learner"><span
+class="header-section-number">3.4.2</span> Active Learner</h4>
 <p>The active learner uses a Bayes classifier.</p>
 <ul>
-<li>ALl the unlabeled data is split into a tiny <code>done</code> set
+<li>AlL the unlabeled data is split into a tiny <code>done</code> set
 and a much larger <code>todo</code> set</li>
 <li>All the <code>done</code>s are labeled and ranked and divided into
 <span class="math inline">\(\sqrt{N}\)</span> <em>best</em> and <span
@@ -398,50 +462,49 @@ class="math inline">\(B/R\)</span>.</li>
 <li>The top item in that sort is then labelled.</li>
 <li>And the cycle repeats</li>
 </ul>
-<div class="sourceCode" id="cb10"><pre
-class="sourceCode py"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;active learning&quot;</span>)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> activeLearning(<span class="va">self</span>:DATA, score<span class="op">=</span><span class="kw">lambda</span> B,R: B<span class="op">-</span>R, generate<span class="op">=</span><span class="va">None</span>, faster<span class="op">=</span><span class="va">True</span> ):</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> ranked(rows): <span class="cf">return</span> <span class="va">self</span>.clone(rows).chebyshevs().rows</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> todos(todo):</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> faster: <span class="co"># swap back half of the buffer with later items</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>       n<span class="op">=</span> the.<span class="bu">buffer</span><span class="op">//</span><span class="dv">2</span></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>       a1,a2 <span class="op">=</span> todo[:n], todo[n:<span class="dv">2</span><span class="op">*</span>n]</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>       b1,b2 <span class="op">=</span> todo[<span class="dv">2</span><span class="op">*</span>n:<span class="dv">3</span><span class="op">*</span>n], todo[<span class="dv">3</span><span class="op">*</span>n:]</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>       <span class="cf">return</span> a1 <span class="op">+</span> b1, b2 <span class="op">+</span> a2</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> todo,[]</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> guess(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    cut  <span class="op">=</span> <span class="bu">int</span>(<span class="fl">.5</span> <span class="op">+</span> <span class="bu">len</span>(done) <span class="op">**</span> the.cut)</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    best <span class="op">=</span> <span class="va">self</span>.clone(done[:cut])</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    rest <span class="op">=</span> <span class="va">self</span>.clone(done[cut:])</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    a,b  <span class="op">=</span> todos(todo)</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> generate: <span class="co"># don&#39;t worry about this bit</span></span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="va">self</span>.neighbors(generate(best,rest), a) <span class="op">+</span> b <span class="co"># todo[:some]) + todo[some:] </span></span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>      key  <span class="op">=</span> <span class="kw">lambda</span> r: score(best.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>), rest.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>))</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span>  <span class="bu">sorted</span>(a, key<span class="op">=</span>key, reverse<span class="op">=</span><span class="va">True</span>) <span class="op">+</span> b</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> loop(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(the.Last <span class="op">-</span> the.label):</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="bu">len</span>(todo) <span class="op">&lt;</span> <span class="dv">3</span> : <span class="cf">break</span></span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>      top,<span class="op">*</span>todo <span class="op">=</span> guess(todo, done)</span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>      done     <span class="op">+=</span> [top]</span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>      done      <span class="op">=</span> ranked(done)</span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> done</span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> loop(<span class="va">self</span>.rows[the.label:], ranked(<span class="va">self</span>.rows[:the.label]))</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;active learning&quot;</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> activeLearning(<span class="va">self</span>:DATA, score<span class="op">=</span><span class="kw">lambda</span> B,R: B<span class="op">-</span>R, generate<span class="op">=</span><span class="va">None</span>, faster<span class="op">=</span><span class="va">True</span> ):</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> ranked(rows): <span class="cf">return</span> <span class="va">self</span>.clone(rows).chebyshevs().rows</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> todos(todo):</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> faster: <span class="co"># swap back half of the buffer with later items</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>       n<span class="op">=</span> the.<span class="bu">buffer</span><span class="op">//</span><span class="dv">2</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>       a1,a2 <span class="op">=</span> todo[:n], todo[n:<span class="dv">2</span><span class="op">*</span>n]</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>       b1,b2 <span class="op">=</span> todo[<span class="dv">2</span><span class="op">*</span>n:<span class="dv">3</span><span class="op">*</span>n], todo[<span class="dv">3</span><span class="op">*</span>n:]</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>       <span class="cf">return</span> a1 <span class="op">+</span> b1, b2 <span class="op">+</span> a2</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> todo,[]</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> guess(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    cut  <span class="op">=</span> <span class="bu">int</span>(<span class="fl">.5</span> <span class="op">+</span> <span class="bu">len</span>(done) <span class="op">**</span> the.cut)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    best <span class="op">=</span> <span class="va">self</span>.clone(done[:cut])</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    rest <span class="op">=</span> <span class="va">self</span>.clone(done[cut:])</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    a,b  <span class="op">=</span> todos(todo)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> generate: <span class="co"># don&#39;t worry about this bit</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="va">self</span>.neighbors(generate(best,rest), a) <span class="op">+</span> b </span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>      key  <span class="op">=</span> <span class="kw">lambda</span> r: score(best.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>), rest.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>))</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span>  <span class="bu">sorted</span>(a, key<span class="op">=</span>key, reverse<span class="op">=</span><span class="va">True</span>) <span class="op">+</span> b</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> loop(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(the.Last <span class="op">-</span> the.label):</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="bu">len</span>(todo) <span class="op">&lt;</span> <span class="dv">3</span> : <span class="cf">break</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>      top,<span class="op">*</span>todo <span class="op">=</span> guess(todo, done)</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>      done     <span class="op">+=</span> [top]</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>      done      <span class="op">=</span> ranked(done)</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> done</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> loop(<span class="va">self</span>.rows[the.label:], ranked(<span class="va">self</span>.rows[:the.label]))</span></code></pre></div>
 <p>The default configs here are the.label=4 and the.Last=30; i.e. four
 initial evaluations, then 26 evals after that.</p>
 <p>TL;DR: to explore better methods for active learning:</p>
 <ul>
 <li>change the <code>guess()</code> function</li>
-<li>and do something, anything with the unlabelled <code>todo</code>
+<li>and do something, anything with the unlabeled <code>todo</code>
 items (looking only at the x values, not the y values).</li>
 </ul>
-<h2 data-number="3" id="se-notes"><span
-class="header-section-number">3</span> SE notes:</h2>
+<h2 data-number="4" id="se-notes"><span
+class="header-section-number">4</span> SE notes:</h2>
 <ul>
 <li>Code has doco : functions have type hints and doc strings; help
 string at front, worked examples (at back)</li>
@@ -498,13 +561,52 @@ the code. They should be adjustable from the command line (allows for
 easier experimentation).</li>
 <li>BTW, handling the config gap is a real challenge. Rate of new config
 grows much faser than rate of people’s understanding those options<a
-href="#fn1" class="footnote-ref" id="fnref1"
-role="doc-noteref"><sup>1</sup></a>. Need active learning To explore
+href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a>. Need active learning To explore
 that exponentially large sapce!</li>
 </ul></li>
 </ul>
-<h2 data-number="4" id="try-it-for-your-self"><span
-class="header-section-number">4</span> Try it for your self</h2>
+<h3 data-number="4.1" id="decorators"><span
+class="header-section-number">4.1</span> Decorators</h3>
+<ul>
+<li>Decorated are functions called at load time that manipulate other
+functions.</li>
+<li>E.g. the <code>of</code> decorator lets you define methods outside
+of a function. Here it is used to group together the <code>mid</code>
+(middle) and <code>div</code> (diversity) functions.
+<ul>
+<li>The <code>mid</code>(ddle) of a NUMeric and a SYMbol column are
+their means and modes.</li>
+<li>As to <code>DATA</code>, thsee hold rows which are summarized in
+<code>cols</code>. The <code>mid</code> of those rows is the
+<code>mid</code> of the summary for each column.</li>
+</ul></li>
+</ul>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> of(doc):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> doit(fun):</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    fun.__doc__ <span class="op">=</span> doc</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span> <span class="op">=</span> inspect.getfullargspec(fun).annotations[<span class="st">&#39;self&#39;</span>]</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">setattr</span>(<span class="bu">globals</span>()[<span class="va">self</span>], fun.<span class="va">__name__</span>, fun)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> doit</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of a DATA.&quot;</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> row:</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [col.mid() <span class="cf">for</span> col <span class="kw">in</span> <span class="va">self</span>.cols.<span class="bu">all</span>]</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of NUMs.&quot;</span>)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mu</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of SYMs.&quot;</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mode</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a NUM.&quot;</span>)</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.sd</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a SYM.&quot;</span>)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.ent()</span></code></pre></div>
+<h2 data-number="5" id="try-it-for-your-self"><span
+class="header-section-number">5</span> Try it for your self</h2>
 <p>Install test data. Open up a bash shell prompt (e.g. got to Github
 and open a codespaces)</p>
 <pre><code>git clone https://github.com/timm/moot
@@ -519,9 +621,14 @@ chmod +x ezr
 role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1"><p><a
+<li id="fn1"><p>Q. Zhang and H. Li, “MOEA/D: A Multiobjective
+Evolutionary Algorithm Based on Decomposition,” in IEEE Transactions on
+Evolutionary Computation, vol. 11, no. 6, pp. 712-731, Dec. 2007, doi:
+10.1109/TEVC.2007.892759.<a href="#fnref1" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p><a
 href="https://www.researchgate.net/publication/299868537_Hey_you_have_given_me_too_many_knobs_understanding_and_dealing_with_over-designed_configuration_in_system_software">Hey
-you have given me too many knobs</a>, FSE’15<a href="#fnref1"
+you have given me too many knobs</a>, FSE’15<a href="#fnref2"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>

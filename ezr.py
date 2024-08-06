@@ -60,6 +60,7 @@ Note that the top rows are
 better than the bottom ones (lighter, faster cars that are
 more economical).
 """
+# todo: labelling via clustering.
 # ## Setting-up
 # ### Imports
 from __future__ import annotations
@@ -509,12 +510,11 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
   def ranked(rows): return self.clone(rows).chebyshevs().rows
 
   def todos(todo):
-    if faster: # rotate back half of buffer to end of list, fill the gap with later items
-       n     = the.buffer//2
-       a1,a2 = todo[:n], todo[n:2*n]
-       b1,b2 = todo[2*n:3*n], todo[3*n:]
-       return a1 + b1, b2 + a2
-    else:
+    if faster: # Apply our sorting heuristics to just a small buffer at start of "todo"
+      # rotate back half of buffer to end of list, fill the gap with later items
+       n = the.buffer//2
+       return todo[:n] + todo[2*n: 3*n],  todo[3*n:] + todo[n:2*n]
+    else: # Apply our sorting heuristics to all of todo.
       return todo,[]
 
   def guess(todo:rows, done:rows) -> rows:
@@ -750,8 +750,8 @@ class egs:
     d       = DATA().adds(csv(the.train))
     b4      = [d.chebyshev(row) for row in d.rows]
     base    = NUM().adds(b4)
-    #trivial = base.div()*0.2 #the.Cohen
-    rnd     = lambda z:z #math.floor(z/trivial)*trivial 
+    trivial = base.div()*0.2  #  small amount
+    rnd     = lambda z: math.floor(z/trivial)*trivial # rounded to a small amount
 
     print(f"trivial\t: {trivial:.3f}")
     print(f"rows\t: {len(d.rows)}")
@@ -767,18 +767,18 @@ class egs:
          some  = d.shuffle().rows[:n]
          d1    = d.clone().adds(some).chebyshevs()
          rand += [rnd(d.chebyshev(d1.rows[0]))]
-  
+
       start = time()
-      pool = [rnd(d.chebyshev(d.shuffle().activeLearning()[0])) 
+      pool = [rnd(d.chebyshev(d.shuffle().activeLearning()[0]))
               for _ in range(repeats)]
       print(f"pool.{n}: {(time() - start) /repeats:.2f} secs")
-  
+
       generate1 =lambda best,rest: best.exploit(rest,1000)
       start = time()
-      mqs1000 = [rnd(d.chebyshev(d.shuffle().activeLearning(generate=generate1)[0])) 
+      mqs1000 = [rnd(d.chebyshev(d.shuffle().activeLearning(generate=generate1)[0]))
                  for _ in range(repeats)]
       print(f"mqs1K.{n}: {(time() - start)/repeats:.2f} secs")
-  
+
       used={}
       generate2 =lambda best,rest: best.exploit(rest,top=4,used=used)
       start = time()
