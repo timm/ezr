@@ -33,7 +33,12 @@
 - Anything better than twoFar?
 
 ### Streaming
-- Early stopping?
+- Early stopping? Track progress to date then stop early
+- Pool learning:
+  - Current tool is a "pool" learner that can access all the unlabelled examples.
+  - An alternate approach is a "stream" learner that eats the data in "eras" of size (say) 1000
+  - So instead of starting from zero all the time
+    - Restart each era with the model learned from era[-1] 
 - Why does the faster heuristic work? can we use that to build a better algorithm?
 
 ### Oracle errors

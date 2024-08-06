@@ -162,6 +162,7 @@ def bars(somes, width=40):
 def report(somes):
   all = SOME(somes)
   last = None
+  #print(SOME(inits=[x for some in somes for x in some._has]).div()*the.stats.cohen)
   for some in sk(somes):
     if some.rank != last: print("#")
     last=some.rank

@@ -18,6 +18,7 @@ the fewest number of goal values?
     -b --buffer int    chunk size, when streaming   = 100  
     -L --Last   int    max number of labels         = 30  
     -c --cut    float  borderline best:rest         = 0.5  
+    -C --Cohen  float  pragmatically small          = 0.35
     -e --eg     str    start up action              = mqs   
     -f --fars   int    number of times to look far  = 20   
     -h --help          show help                    = False   
@@ -68,7 +69,7 @@ from fileinput import FileInput as file_or_stdin
 from dataclasses import dataclass, field, fields
 import datetime
 from math import exp,log,cos,sqrt,pi
-import re,sys,ast,random,inspect
+import re,sys,ast,math,random,inspect
 from time import time
 import stats
 R = random.random
@@ -114,7 +115,7 @@ class NUM(COL):
 
   # A minus sign at end of a NUM's name says "this is a column to minimize"
   # (all other goals are to be maximizes).
-  def __post_init__(self:NUM) -> None:-  
+  def __post_init__(self:NUM) -> None:  
     if  self.txt and self.txt[-1] == "-": self.goal=0
 #
 # COLS are a factory that reads some `names` from the first
@@ -226,7 +227,6 @@ def add1(self:SYM, x:any) -> any:
 
 @of("add `mu` and `sd` (and `lo` and `hi`). If `x` is a string, coerce to a number.")
 def add1(self:NUM, x:any) -> number:
-  if isinstance(x,str): x = coerce(x)
   self.lo  = min(x, self.lo)
   self.hi  = max(x, self.hi)
   d        = x - self.mu
@@ -463,8 +463,8 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
   def ranked(rows): return self.clone(rows).chebyshevs().rows
 
   def todos(todo):
-    if faster: # swap back half of the buffer with later items
-       n= the.buffer//2
+    if faster: # rotate back half of buffer to end of list, fill the gap with later items
+       n     = the.buffer//2
        a1,a2 = todo[:n], todo[n:2*n]
        b1,b2 = todo[2*n:3*n], todo[3*n:]
        return a1 + b1, b2 + a2
@@ -477,7 +477,7 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
     rest = self.clone(done[cut:])
     a,b  = todos(todo)
     if generate:
-      return self.neighbors(generate(best,rest), a) + b # todo[:some]) + todo[some:] 
+      return self.neighbors(generate(best,rest), a) + b 
     else:
       key  = lambda r: score(best.loglike(r, len(done), 2), rest.loglike(r, len(done), 2))
       return  sorted(a, key=key, reverse=True) + b
@@ -700,32 +700,52 @@ class egs:
 
   def mqs():
     print("\n"+the.train)
-    repeats=20
-    d = DATA().adds(csv(the.train))
-    b4 = [d.chebyshev(row) for row in d.rows]
+    repeats = 20
+    d       = DATA().adds(csv(the.train))
+    b4      = [d.chebyshev(row) for row in d.rows]
+    base    = NUM().adds(b4)
+    trivial = base.div()*the.Cohen
+    rnd     = lambda z: math.floor(z/trivial)*trivial  
+
+    print(f"trivial\t: {trivial:.3f}")
     print(f"rows\t: {len(d.rows)}")
     print(f"xcols\t: {len(d.cols.x)}")
-    print(f"ycols\t: {len(d.cols.y)}")
+    print(f"ycols\t: {len(d.cols.y)}\n")
 
-    start = time()
-    pool = [d.chebyshev(d.shuffle().activeLearning()[0]) for _ in range(repeats)]
-    print(f"pool\t: {(time() - start) /repeats:.2f} secs")
+    somes = [stats.SOME(b4,f"baseline,{len(d.rows)}")]
 
-    generate1 =lambda best,rest: best.exploit(rest,1000)
-    start = time()
-    mqs1000 = [d.chebyshev(d.shuffle().activeLearning(generate=generate1)[0]) for _ in range(repeats)]
-    print(f"mqs1K\t: {(time() - start)/repeats:.2f} secs")
+    for n in [20,30,40,50,100]:
+      the.Last = n
+      rand     = []
+      for _ in range(repeats):
+         some  = d.shuffle().rows[:n]
+         d1    = d.clone().adds(some).chebyshevs()
+         rand += [rnd(d.chebyshev(d1.rows[0]))]
+  
+      start = time()
+      pool = [rnd(d.chebyshev(d.shuffle().activeLearning()[0])) 
+              for _ in range(repeats)]
+      print(f"pool.{n}: {(time() - start) /repeats:.2f} secs")
+  
+      generate1 =lambda best,rest: best.exploit(rest,1000)
+      start = time()
+      mqs1000 = [rnd(d.chebyshev(d.shuffle().activeLearning(generate=generate1)[0])) 
+                 for _ in range(repeats)]
+      print(f"mqs1K.{n}: {(time() - start)/repeats:.2f} secs")
+  
+      used={}
+      generate2 =lambda best,rest: best.exploit(rest,top=4,used=used)
+      start = time()
+      mqs4 = [rnd(d.chebyshev(d.shuffle().activeLearning(generate=generate2)[0])) 
+              for _ in range(20)]
+      print(f"mqs4.{n}: {(time() - start)/repeats:.2f} secs")
 
-    used={}
-    generate2 =lambda best,rest: best.exploit(rest,top=4,used=used)
-    start = time()
-    mqs4 = [d.chebyshev(d.shuffle().activeLearning(generate=generate2)[0]) for _ in range(20)]
-    print(f"mqs4\t: {(time() - start)/repeats:.2f} secs")
+      somes +=   [stats.SOME(rand,    f"random,{n}"),
+                  stats.SOME(pool,    f"pool,{n}"),
+                  stats.SOME(mqs4,    f"mqs4,{n}"),
+                  stats.SOME(mqs1000, f"mqs1000,{n}")]
 
-    stats.report([ stats.SOME(b4,"baseline"),
-                  stats.SOME(pool,"pool"),
-                  stats.SOME(mqs4,"mqs4"),
-                  stats.SOME(mqs1000,"mqs1000")])
+    stats.report(somes)
 #
 # ## Main
 the = SETTINGS(__doc__)

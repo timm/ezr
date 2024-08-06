@@ -146,7 +146,18 @@ class="header-section-number">2.4</span> Clustering</h3>
 <h3 data-number="2.5" id="streaming"><span
 class="header-section-number">2.5</span> Streaming</h3>
 <ul>
-<li>Early stopping?</li>
+<li>Early stopping? Track progress to date then stop early</li>
+<li>Pool learning:
+<ul>
+<li>Current tool is a “pool” learner that can access all the unlabelled
+examples.</li>
+<li>An alternate approach is a “stream” learner that eats the data in
+“eras” of size (say) 1000</li>
+<li>So instead of starting from zero all the time
+<ul>
+<li>Restart each era with the model learned from era[-1]</li>
+</ul></li>
+</ul></li>
 <li>Why does the faster heuristic work? can we use that to build a
 better algorithm?</li>
 </ul>

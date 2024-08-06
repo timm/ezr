@@ -81,6 +81,7 @@ def chebyshev(self:DATA,row:row) -> number:
   return  max(abs(col.goal - col.norm(row[col.at])) for col in self.cols.y)
 ```
 Note that
+
 - `goal` is set to 0,1 for goals we want to minimize or maximize.
 - `abs(col.goal - col.norm(row[col.at]))` returns a distance in the range 0..1 for  distance to best. 
 - `norm` is short form "normalization" and makes goals 0..1 for lo...hi. So
@@ -100,7 +101,7 @@ def chebyshevs(self:DATA) -> DATA:
 ```
 
 ### Classes
-This  code has only a few main classes: 
+This  code has only a few main classes:  DATA, COLS, NUM, SYM
 
 - NUM, SYM, COL (the super class of NUM,SYM). These classes summarize each column.
   - NUMs know mean and standard deviation (a measure of average distance of numbers to the mean)
@@ -110,10 +111,10 @@ This  code has only a few main classes:
   - Mean and mode are both measures of central tendency
   - Entropy and standard deviation are measures of confusion.
     - The lower their values, the more likely we can believe in the central tendency
-- DATA which stores `rows`, summarized  in `cols` (columns).
+- DATA stores `rows`, summarized  in `cols` (columns).
 - COLS is a factory that takes a list of names and creates the columns. 
-  All the columns are stored in `all` (and some are also stored
-  in `x` and `y`).
+  - All the columns are stored in `all` (and some are also stored
+    in `x` and `y`).
 
 ```py
 @dataclass
@@ -124,7 +125,11 @@ class COLS:
   y    : list[COL] = LIST()  # dependent COLumns
   klass: COL = None
 ```
-To build the columns, COLS looks at each name's  `a,z` (first and last letter):
+To build the columns, COLS looks at each name's  `a,z` (first and last letter).
+
+- e.g. `['Clndrs', 'Volume', 'HpX', 'Model','origin', 'Lbs-', 'Acc+',  'Mpg+']`
+
+
 ```py
   def __post_init__(self:COLS) -> None:
     for at,txt in enumerate(self.names):
@@ -201,17 +206,19 @@ def like(self:NUM, x:number, _) -> float:
   return min(1, nom/(denom + 1E-30))
 ```
 The likelihood of a row belonging to a label, given new evidence, is the prior probability of the label times the probability of
-the evidence. For numerical methods reasons, I add tiny counts to the attribute and class frequencies ($k=2,m=1$)
+the evidence. 
+For example, if we have three oranges and six apples, then the prior on oranges is 33\%.
+
+For numerical methods reasons, we add tiny counts to the attribute and class frequencies ($k=1,m=2$)
 and treat all the values as logarithms (since these values can get real small, real fast)
 ```py
-@of("How much a NUM likes a value `x`.")
-def like(self:NUM, x:number, _) -> float:
-  v     = self.sd**2 + 1E-30
-  nom   = exp(-1*(x - self.mu)**2/(2*v)) + 1E-30
-  denom = (2*pi*v) **0.5
-  return min(1, nom/(denom + 1E-30))
+@of("How much DATA likes a `row`.")
+def loglike(self:DATA, r:row, nall:int, nh:int) -> float:
+  prior = (len(self.rows) + the.k) / (nall + the.k*nh)
+  likes = [c.like(r[c.at], prior) for c in self.cols.x if r[c.at] != "?"]
+  return sum(log(x) for x in likes + [prior] if x>0)
 ```
-Note that these calcs are very fast. 
+
 
 ### Active Learner
 
@@ -260,10 +267,13 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
 
   return loop(self.rows[the.label:], ranked(self.rows[:the.label]))
 ```
-The default configs here are the.label=4 and the.Last=30; i.e. XXX
+The default configs here are the.label=4 and the.Last=30; i.e. four initial evaluations, then 26
+evals after that.
 
-TL;DR: if you want to play this game, change the `guess()` function and do something, anything with the
-unlabelled `todo` items (looking only at the x values, not the y values).
+TL;DR: to explore better methods for active learning:
+
+- change the `guess()` function 
+- and  do something, anything with the unlabelled `todo` items (looking only at the x values, not the y values).
 
 ## SE notes:
 
@@ -295,7 +305,7 @@ unlabelled `todo` items (looking only at the x values, not the y values).
   - BTW, handling the config gap is a real challenge. Rate of new config grows much faser than rate of people's
       understanding those options[^Takwal]. Need active learning  To explore that exponentially large sapce!
 
-[^Takwal]: https://www.researchgate.net/publication/299868537_Hey_you_have_given_me_too_many_knobs_understanding_and_dealing_with_over-designed_configuration_in_system_software
+[^Takwal]: [Hey you have given me too many knobs](https://www.researchgate.net/publication/299868537_Hey_you_have_given_me_too_many_knobs_understanding_and_dealing_with_over-designed_configuration_in_system_software), FSE'15
 
 ## Try it for your self
 
