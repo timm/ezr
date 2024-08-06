@@ -744,7 +744,14 @@ class egs:
         want = test[at]
         print(at, r3(abs(got - want)/d.cols.all[at].div()))
 
-  def mqs():
+  def _MQS():
+    for i,arg in enumerate(sys.argv):
+      if arg[-4:] == ".csv":
+        the.train=arg
+        random.seed(the.seed)
+        egs._mqs()
+
+  def _mqs():
     print("\n"+the.train)
     repeats = 20
     d       = DATA().adds(csv(the.train))

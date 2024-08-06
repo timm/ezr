@@ -59,7 +59,7 @@ for a few hours.
 
 
 So, an active learner
-try to learn $f$ using a lot of cheap  $X$ values, but very few
+tries to learn $f$ using a lot of cheap  $X$ values, but very few
 $Y$ values-- since they are more expensive to access.
 Active learners know that they can learn better (faster, with fewer $Y$ values)
 if they can select their own training data:
@@ -197,7 +197,7 @@ To build the columns, COLS looks at each name's  `a,z` (first and last letter).
         if z=="!": self.klass = col
         if z=="-": col.goal = 0
 ```
-### Configuraion
+### Configuration
 Other people define their command line options separate to the settings.
 That is they have to define all those settings twice
 
@@ -300,65 +300,154 @@ TL;DR: to explore better methods for active learning:
 
 ## SE notes:
 
-- Code has doco : functions have type hints and doc strings;  help string at front, worked examples (at back)
-- My code is function-oriented: methods are grouped via method name. Many language are function-oriented; e.g.
-  Julia, CLOS.
-- Code has tests (worked examples at back); about a quarter of the code base
-  - any method eg.method can be called from the command line using. e.g. to call egs.mqs:
-      - python3 ezr.py -e mqs
-- This code is poorly structured for team work:
-  - For teams, better to have tests in  separate file(s) 
-    - If multiple test files, then many people can write their own special tests
-    - When  tests are platform-dependent, it is good to be able to modify the tests without modifying the main thing;
-  - For teams,  better to have code in multiple files:
-    - so different people can work in separate files (less chance of edit conclusions)
-  - This code violates known [Python formatting standards (PEP 8)](https://peps.python.org/pep-0008/) which
-    is supported by so many tools; e.g. [Black](https://github.com/psf/black) and [various tools in VScode](https://code.visualstudio.com/docs/python/formatting)
-    - Better to have commit hooks to re-format the code to something more usual
-- My settings are  DRY, not WET
-  - WET = Write everything twice. 
-    - Other people define their command line options separate to the settings.  
-    - That is they have to define all those settings twice
-  - DRY = Dont' repeat yourself. 
-    - This code parses the settings from the __doc__ string (see the SETTINGS class)
-    - That is, my settings options are DRY.
-  - When to be DRY
-    - If it only occurs once, ignore
-    - If you see it write, just chill. You can be a little WET
-    - if you see it thrice, refactor so "it" is defined only once, then reused elsewhere
-- Little languages
-  - Operate policy from mechanisms; i.e. the spec from the machinery that uses the spec
-  - Allows for faster adaption
-  - In this code:
-    - The column names is a "little language" defining objective problems.
-    - Parsing __doc__ string makes that string a little language defining setting options.
-    - The SETTINGS class uses regular expressions to extract the settings
-      - regular expressions are other "little languages"
-    - Another "not-so-little" little language: Makefiles, handles dependencies and updates
-- REgualr Expressions
-  - Examples:
-    - leading white space `^[ \t\n]*` (spare brackets means one or more characters; star means zero or more)
-    - trailing white space `[ \t\n]*$` (dollar  sign means end of line)
-    - IEEE format number `^[+-]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][+-]?[0-9]+)?$` (round brackets group expressions;
-      vertical bar denotes "or"; "?" means zero or one)
-    - Beautuful example, [guessing North Amererican Names using regualr epxressions](https://github.com/timm/ezr/blob/main/docs/pdf/pakin1991.pdf)
-      - For a cheat sheet on regular expressions, see p64 of that article)
-    - For other articles on regular expressions:
-      - At their core, they can be [surprisingly simple](http://genius.cat-v.org/brian-kernighan/articles/beautiful)
-      - Fantastic article: [Regular Expression Matching Can Be Simple And Fast](https://swtch.com/~rsc/regexp/regexp1.html),
+### All code need doco
+
+Code has much auto-documentation
+- functions have type hints and doc strings
+- help string at front (from which we parse out the config)
+- worked examples (at back)
+
+### All code needs tests
+
+> Maurice Wilkes recalled the exact moment he realized the importance of debugging: 
+<em>“By June 1949, people had begun to realize that it was not so easy to get a program right as 
+had at one time appeared. It was on one of my journeys between the EDSAC room and the 
+punching equipment that the realization came over me with full force that a good part of the 
+remainder of my life was going to be spent in finding errors in my own programs.”</em>
+
+Code has tests (worked examples at back); about a quarter of the code base
+
+- any method eg.method can be called from the command line using. e.g. to call egs.mqs:
+  - python3 ezr.py -e mqs
+
+### Function vs Object-Oriented
+
+Object-oriented code is groups by class. But some folks doubt that approach:
+
+- [Does OO Sync With the Way we Think?](https://www.researchgate.net/publication/3247400_Does_OO_sync_with_how_we_think)
+- [Stop writing classes](https://www.youtube.com/watch?v=o9pEzgHorH0)
+
+My code is function-oriented: methods are grouped via method name (see the [of](#decorator) decorator).
+This makes it easier to teach retlated concepts (since the concepts are together in the code). 
+
+Me doing this way was insrued by some words of Donal Knth who pointed out that the order with which we want to explains omce code may not be the samas the order needed by the compiler.
+So he wrote a "tangle" system where code, ordered for expalanation, was rejigged at load time into
+what the compiler needs. I found I could do much the same like with a [5 line decorator](#decorator).
 
 
-- Configuration
-  - All code has config settings. Magic numbers should not be buried in the code. They should be adjustable
+### Coding for Teams
+
+This code is poorly structured for team work:
+
+- For teams, better to have tests in  separate file(s) 
+  - If multiple test files, then many people can write their own special tests
+  - When  tests are platform-dependent, it is good to be able to modify the tests without modifying the main thing;
+- For teams,  better to have code in multiple files:
+  - so different people can work in separate files (less chance of edit conclusions)
+- This code violates known [Python formatting standards (PEP 8)](https://peps.python.org/pep-0008/) which
+  is supported by so many tools; e.g. [Black](https://github.com/psf/black) and [various tools in VScode](https://code.visualstudio.com/docs/python/formatting)
+  - Better to have commit hooks to re-format the code to something more usual
+
+###  My settings are  DRY, not WET
+- WET = Write everything twice. 
+  - Other people define their command line options separate to the settings.  
+  - That is they have to define all those settings twice
+- DRY = Dont' repeat yourself. 
+  - This code parses the settings from the __doc__ string (see the SETTINGS class)
+  - That is, my settings options are DRY.
+- When to be DRY
+  - If it only occurs once, then ok.
+  - If you see it twice, just chill. You can be a little WET
+  - if you see it thrice, refactor so "it" is defined only once, then reused elsewhere
+
+### Little Languages
+
+- Operate policy from mechanisms; i.e. the spec from the machinery that uses the spec
+- Allows for faster adaption
+- In this code:
+  - The column names is a "little language" defining objective problems.
+  - Parsing __doc__ string makes that string a little language defining setting options.
+  - The SETTINGS class uses regular expressions to extract the settings
+    - regular expressions are other "little languages"
+  - Another "not-so-little" little language: [Makefiles](https://learnxinyminutes.com/docs/make/) handles dependencies and updates
+
+### Regular Expressions
+
+- Example of a "little language"
+- Used here to extract settings and their defaults from the `__doc__` string
+  - in SETTINGS, using `r"\n\s*-\w+\s*--(\w+).*=\s*(\S+)` (a leading "r" tells Python to define a regular expression)
+- Other, simpler Examples:
+  - leading white space `^[ \t\n]*` (spare brackets means one or more characters; star means zero or more)
+  - trailing white space `[ \t\n]*$` (dollar  sign means end of line)
+  - IEEE format number `^[+-]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][+-]?[0-9]+)?$` (round brackets group expressions;
+    vertical bar denotes "or"; "?" means zero or one)
+  - Beautiful example, [guessing North Amererican Names using regualr epxressions](https://github.com/timm/ezr/blob/main/docs/pdf/pakin1991.pdf)
+    - For a cheat sheet on regular expressions, see p64 of that article)
+    - For source code, see [gender.awk](https://github.com/timm/ezr/blob/main/etc/gender.awk)
+  - For other articles on regular expressions:
+    - At their core, they can be [surprisingly simple](http://genius.cat-v.org/brian-kernighan/articles/beautiful)
+    - Fantastic article: [Regular Expression Matching Can Be Simple And Fast](https://swtch.com/~rsc/regexp/regexp1.html),
+
+
+###  Configuration
+- All code has config settings. Magic numbers should not be buried in the code. They should be adjustable
       from the command line (allows for easier experimentation).
-  - BTW, handling the config gap is a real challenge. Rate of new config grows much faser than rate of people's
+- BTW, handling the config gap is a real challenge. Rate of new config grows much faser than rate of people's
       understanding those options[^Takwal]. Need active learning  To explore that exponentially large sapce!
 
 ## Python Notes
 
 ### Comprehensions
 
-Thcode makes extensive 
+This code  makes extensive use of comprehensions . E.g. for all rows, collect some the Chebyshev distance
+
+```py
+b4 = [d.chebyshev(row) for row in d.rows]
+```
+
+Here's one for loading tab-separated files with optional comment lines starting with a hash mark:
+
+```
+data = [line.strip().split("\t") for line in open("my_file.tab") \
+        if not line.startswith('#')]
+```
+
+Comprehensions can be to filter data:
+```
+>>> [i for i in range(10) if i % 2 == 0]
+[0, 2, 4, 6, 8]
+```
+
+e.g. here are two examples of an  implicit iterator in the argument to `sum`:
+
+```py
+@of("Entropy = measure of disorder.")
+def ent(self:SYM) -> number:
+  return - sum(n/self.n * log(n/self.n,2) for n in self.has.values())
+
+@of("Euclidean distance between two rows.")
+def dist(self:DATA, r1:row, r2:row) -> float:
+  n = sum(c.dist(r1[c.at], r2[c.at])**the.p for c in self.cols.x)
+  return (n / len(self.cols.x))**(1/the.p)
+```
+
+E.g here we
+
+1. Use dictionary comprehensions, make a dictionary with one emery list per key,
+2. Using list comprehensions, add items into those lists
+3. Finally, using dictionary comprehensions, return a  dictionary with one prediction per col.
+
+```py
+@of("Return predictions for `cols` (defaults to klass column).")
+def predict(self:DATA, row1:row, rows:rows, cols=None, k=2):
+  cols = cols or self.cols.y
+  got = {col.at : [] for col in cols}                           -- [1]
+  for row2 in self.neighbors(row1, rows)[:k]:
+    d =  1E-32 + self.dist(row1,row2)
+    [got[col.at].append( (d, row2[col.at]) )  for col in cols]  -- [2]
+  return {col.at : col.predict( got[col.at] ) for col in cols}  -- [3]
+``` 
+
 
 
 ### Decorators
@@ -396,20 +485,78 @@ def div(self:SYM) -> number: return self.ent()
 ```
 [^Takwal]: [Hey you have given me too many knobs](https://www.researchgate.net/publication/299868537_Hey_you_have_given_me_too_many_knobs_understanding_and_dealing_with_over-designed_configuration_in_system_software), FSE'15
 
-## Try it for your self
+## Try it for yourself
 
-Install test data. Open up a bash shell prompt (e.g. got to Github and open a  codespaces)
+### Get Python3.13
+
+Make sure you are running Python3.13. On Linux and Github code spaces, that command is
+
+```
+sudo apt update
+sudo  apt upgrade
+sudo apt install software-properties-common -y
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.13
+python3.13 -B --verion
+```
+
+### Try one run
 
 ```
 git clone https://github.com/timm/moot
 git clone https://github.com/timm/ezr
 cd ezr
-chmod +x ezr
-./erz -t ../moot/optimize/misc/auto93.csv -e mqs
+python3.13 -B erz.py -t ../moot/optimize/misc/auto93.csv -e _mqs
 ```
+
+### Try a longer run
+
 Do a large run (takes a few minutes: output will appear in ~/tmp/mqs.out; assumes a BASH shell):
 
 ```
-for i in  `ls  ../moot/optimize/[chmp]*/*.csv` ; do python3 ./ezr.py  -t  $i -e mqs ; done  | tee ~/tmp/mqs.out
+python3.13 -B ezr.py -e _MQS ../moot/optimize/[chmp]*/*.csv | tee ~/tmp/mqs.out
 ```
 
+### Write your own extensions
+
+Here's a file `extend.py` in the same directory as ezr.py
+
+```py
+import sys,random
+from ezr import the, DATA, csv
+
+def nth(k): return lambda z: z[k]
+
+def myfun(i,train):
+  random.seed(the.seed) #  not needed here, bt good practice to always take care of seeds
+  d    = DATA().adds(csv(train))
+  x    = len(d.cols.x)
+  size = len(d.rows)
+  dim  = "lo"     if x < 5     else ("med" if x < 10    else "hi")
+  size = "small" if size< 500 else ("med" if size<5000 else "hi")
+  return [i,dim, size, x, len(d.cols.y), len(d.rows), train]
+
+print("n", "dim", "size","xcols","ycols","rows","file",sep="\t")
+print(*["----"] * 7,sep="\t")
+[print(*myfun(i,arg),sep="\t") for i,arg in enumerate(sys.argv)  if arg[-4:] == ".csv"]
+```
+On my machine, when I run
+
+```py
+python3.13 -B extend.py ../moot/optimize/[comp]*/*.csv
+```
+This prints some stats on the data files: 
+```
+n   dim    size    xcols  ycols    rows    file
+---  ----  ----    ----   ----    ----    ----
+1    med    small  9      1       192    ../moot/optimize/config/Apache_AllMeasurements.csv
+2    hi     med    14     1       3456    ../moot/optimize/config/HSMGP_num.csv
+3    hi     med    38     1       4653    ../moot/optimize/config/SQL_AllMeasurements.csv
+4    lo     med    3      2       1343    ../moot/optimize/config/SS-A.csv
+5    lo     small  3      2       206    ../moot/optimize/config/SS-B.csv
+6    lo     med    3      2       1512    ../moot/optimize/config/SS-C.csv
+```
+
+Try modifying the output to add columns to report counts of
+the number of symbolic and numeric columns.

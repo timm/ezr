@@ -895,54 +895,61 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb65-1"><a h
 <span id="cb65-125"><a href="#cb65-125" aria-hidden="true" tabindex="-1"></a>        want <span class="op">=</span> test[at]</span>
 <span id="cb65-126"><a href="#cb65-126" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(at, r3(<span class="bu">abs</span>(got <span class="op">-</span> want)<span class="op">/</span>d.cols.<span class="bu">all</span>[at].div()))</span>
 <span id="cb65-127"><a href="#cb65-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-128"><a href="#cb65-128" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> mqs():</span>
-<span id="cb65-129"><a href="#cb65-129" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span><span class="op">+</span>the.train)</span>
-<span id="cb65-130"><a href="#cb65-130" aria-hidden="true" tabindex="-1"></a>    repeats <span class="op">=</span> <span class="dv">20</span></span>
-<span id="cb65-131"><a href="#cb65-131" aria-hidden="true" tabindex="-1"></a>    d       <span class="op">=</span> DATA().adds(csv(the.train))</span>
-<span id="cb65-132"><a href="#cb65-132" aria-hidden="true" tabindex="-1"></a>    b4      <span class="op">=</span> [d.chebyshev(row) <span class="cf">for</span> row <span class="kw">in</span> d.rows]</span>
-<span id="cb65-133"><a href="#cb65-133" aria-hidden="true" tabindex="-1"></a>    base    <span class="op">=</span> NUM().adds(b4)</span>
-<span id="cb65-134"><a href="#cb65-134" aria-hidden="true" tabindex="-1"></a>    trivial <span class="op">=</span> base.div()<span class="op">*</span><span class="fl">0.2</span>  <span class="co">#  small amount</span></span>
-<span id="cb65-135"><a href="#cb65-135" aria-hidden="true" tabindex="-1"></a>    rnd     <span class="op">=</span> <span class="kw">lambda</span> z: math.floor(z<span class="op">/</span>trivial)<span class="op">*</span>trivial <span class="co"># rounded to a small amount</span></span>
-<span id="cb65-136"><a href="#cb65-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-137"><a href="#cb65-137" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;trivial</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span>trivial<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span>
-<span id="cb65-138"><a href="#cb65-138" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;rows</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.rows)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
-<span id="cb65-139"><a href="#cb65-139" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;xcols</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.cols.x)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
-<span id="cb65-140"><a href="#cb65-140" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;ycols</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.cols.y)<span class="sc">}</span><span class="ch">\n</span><span class="ss">&quot;</span>)</span>
-<span id="cb65-141"><a href="#cb65-141" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-142"><a href="#cb65-142" aria-hidden="true" tabindex="-1"></a>    somes <span class="op">=</span> [stats.SOME(b4,<span class="ss">f&quot;baseline,</span><span class="sc">{</span><span class="bu">len</span>(d.rows)<span class="sc">}</span><span class="ss">&quot;</span>)]</span>
+<span id="cb65-128"><a href="#cb65-128" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _MQS():</span>
+<span id="cb65-129"><a href="#cb65-129" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i,arg <span class="kw">in</span> <span class="bu">enumerate</span>(sys.argv):</span>
+<span id="cb65-130"><a href="#cb65-130" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> arg[<span class="op">-</span><span class="dv">4</span>:] <span class="op">==</span> <span class="st">&quot;.csv&quot;</span>:</span>
+<span id="cb65-131"><a href="#cb65-131" aria-hidden="true" tabindex="-1"></a>        the.train<span class="op">=</span>arg</span>
+<span id="cb65-132"><a href="#cb65-132" aria-hidden="true" tabindex="-1"></a>        random.seed(the.seed)</span>
+<span id="cb65-133"><a href="#cb65-133" aria-hidden="true" tabindex="-1"></a>        egs._mqs()</span>
+<span id="cb65-134"><a href="#cb65-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-135"><a href="#cb65-135" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _mqs():</span>
+<span id="cb65-136"><a href="#cb65-136" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span><span class="op">+</span>the.train)</span>
+<span id="cb65-137"><a href="#cb65-137" aria-hidden="true" tabindex="-1"></a>    repeats <span class="op">=</span> <span class="dv">20</span></span>
+<span id="cb65-138"><a href="#cb65-138" aria-hidden="true" tabindex="-1"></a>    d       <span class="op">=</span> DATA().adds(csv(the.train))</span>
+<span id="cb65-139"><a href="#cb65-139" aria-hidden="true" tabindex="-1"></a>    b4      <span class="op">=</span> [d.chebyshev(row) <span class="cf">for</span> row <span class="kw">in</span> d.rows]</span>
+<span id="cb65-140"><a href="#cb65-140" aria-hidden="true" tabindex="-1"></a>    base    <span class="op">=</span> NUM().adds(b4)</span>
+<span id="cb65-141"><a href="#cb65-141" aria-hidden="true" tabindex="-1"></a>    trivial <span class="op">=</span> base.div()<span class="op">*</span><span class="fl">0.2</span>  <span class="co">#  small amount</span></span>
+<span id="cb65-142"><a href="#cb65-142" aria-hidden="true" tabindex="-1"></a>    rnd     <span class="op">=</span> <span class="kw">lambda</span> z: math.floor(z<span class="op">/</span>trivial)<span class="op">*</span>trivial <span class="co"># rounded to a small amount</span></span>
 <span id="cb65-143"><a href="#cb65-143" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-144"><a href="#cb65-144" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> [<span class="dv">20</span>,<span class="dv">25</span>,<span class="dv">30</span>,<span class="dv">50</span>,<span class="dv">100</span>]:</span>
-<span id="cb65-145"><a href="#cb65-145" aria-hidden="true" tabindex="-1"></a>      the.Last <span class="op">=</span> n</span>
-<span id="cb65-146"><a href="#cb65-146" aria-hidden="true" tabindex="-1"></a>      rand     <span class="op">=</span> []</span>
-<span id="cb65-147"><a href="#cb65-147" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats):</span>
-<span id="cb65-148"><a href="#cb65-148" aria-hidden="true" tabindex="-1"></a>         some  <span class="op">=</span> d.shuffle().rows[:n]</span>
-<span id="cb65-149"><a href="#cb65-149" aria-hidden="true" tabindex="-1"></a>         d1    <span class="op">=</span> d.clone().adds(some).chebyshevs()</span>
-<span id="cb65-150"><a href="#cb65-150" aria-hidden="true" tabindex="-1"></a>         rand <span class="op">+=</span> [rnd(d.chebyshev(d1.rows[<span class="dv">0</span>]))]</span>
-<span id="cb65-151"><a href="#cb65-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-152"><a href="#cb65-152" aria-hidden="true" tabindex="-1"></a>      start <span class="op">=</span> time()</span>
-<span id="cb65-153"><a href="#cb65-153" aria-hidden="true" tabindex="-1"></a>      pool <span class="op">=</span> [rnd(d.chebyshev(d.shuffle().activeLearning()[<span class="dv">0</span>]))</span>
-<span id="cb65-154"><a href="#cb65-154" aria-hidden="true" tabindex="-1"></a>              <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats)]</span>
-<span id="cb65-155"><a href="#cb65-155" aria-hidden="true" tabindex="-1"></a>      <span class="bu">print</span>(<span class="ss">f&quot;pool.</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start) <span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> secs&quot;</span>)</span>
-<span id="cb65-156"><a href="#cb65-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-157"><a href="#cb65-157" aria-hidden="true" tabindex="-1"></a>      generate1 <span class="op">=</span><span class="kw">lambda</span> best,rest: best.exploit(rest,<span class="dv">1000</span>)</span>
-<span id="cb65-158"><a href="#cb65-158" aria-hidden="true" tabindex="-1"></a>      start <span class="op">=</span> time()</span>
-<span id="cb65-159"><a href="#cb65-159" aria-hidden="true" tabindex="-1"></a>      mqs1000 <span class="op">=</span> [rnd(d.chebyshev(d.shuffle().activeLearning(generate<span class="op">=</span>generate1)[<span class="dv">0</span>]))</span>
-<span id="cb65-160"><a href="#cb65-160" aria-hidden="true" tabindex="-1"></a>                 <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats)]</span>
-<span id="cb65-161"><a href="#cb65-161" aria-hidden="true" tabindex="-1"></a>      <span class="bu">print</span>(<span class="ss">f&quot;mqs1K.</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start)<span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> secs&quot;</span>)</span>
-<span id="cb65-162"><a href="#cb65-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-163"><a href="#cb65-163" aria-hidden="true" tabindex="-1"></a>      used<span class="op">=</span>{}</span>
-<span id="cb65-164"><a href="#cb65-164" aria-hidden="true" tabindex="-1"></a>      generate2 <span class="op">=</span><span class="kw">lambda</span> best,rest: best.exploit(rest,top<span class="op">=</span><span class="dv">4</span>,used<span class="op">=</span>used)</span>
+<span id="cb65-144"><a href="#cb65-144" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;trivial</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span>trivial<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span>
+<span id="cb65-145"><a href="#cb65-145" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;rows</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.rows)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb65-146"><a href="#cb65-146" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;xcols</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.cols.x)<span class="sc">}</span><span class="ss">&quot;</span>)</span>
+<span id="cb65-147"><a href="#cb65-147" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;ycols</span><span class="ch">\t</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(d.cols.y)<span class="sc">}</span><span class="ch">\n</span><span class="ss">&quot;</span>)</span>
+<span id="cb65-148"><a href="#cb65-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-149"><a href="#cb65-149" aria-hidden="true" tabindex="-1"></a>    somes <span class="op">=</span> [stats.SOME(b4,<span class="ss">f&quot;baseline,</span><span class="sc">{</span><span class="bu">len</span>(d.rows)<span class="sc">}</span><span class="ss">&quot;</span>)]</span>
+<span id="cb65-150"><a href="#cb65-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-151"><a href="#cb65-151" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> [<span class="dv">20</span>,<span class="dv">25</span>,<span class="dv">30</span>,<span class="dv">50</span>,<span class="dv">100</span>]:</span>
+<span id="cb65-152"><a href="#cb65-152" aria-hidden="true" tabindex="-1"></a>      the.Last <span class="op">=</span> n</span>
+<span id="cb65-153"><a href="#cb65-153" aria-hidden="true" tabindex="-1"></a>      rand     <span class="op">=</span> []</span>
+<span id="cb65-154"><a href="#cb65-154" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats):</span>
+<span id="cb65-155"><a href="#cb65-155" aria-hidden="true" tabindex="-1"></a>         some  <span class="op">=</span> d.shuffle().rows[:n]</span>
+<span id="cb65-156"><a href="#cb65-156" aria-hidden="true" tabindex="-1"></a>         d1    <span class="op">=</span> d.clone().adds(some).chebyshevs()</span>
+<span id="cb65-157"><a href="#cb65-157" aria-hidden="true" tabindex="-1"></a>         rand <span class="op">+=</span> [rnd(d.chebyshev(d1.rows[<span class="dv">0</span>]))]</span>
+<span id="cb65-158"><a href="#cb65-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-159"><a href="#cb65-159" aria-hidden="true" tabindex="-1"></a>      start <span class="op">=</span> time()</span>
+<span id="cb65-160"><a href="#cb65-160" aria-hidden="true" tabindex="-1"></a>      pool <span class="op">=</span> [rnd(d.chebyshev(d.shuffle().activeLearning()[<span class="dv">0</span>]))</span>
+<span id="cb65-161"><a href="#cb65-161" aria-hidden="true" tabindex="-1"></a>              <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats)]</span>
+<span id="cb65-162"><a href="#cb65-162" aria-hidden="true" tabindex="-1"></a>      <span class="bu">print</span>(<span class="ss">f&quot;pool.</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start) <span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> secs&quot;</span>)</span>
+<span id="cb65-163"><a href="#cb65-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-164"><a href="#cb65-164" aria-hidden="true" tabindex="-1"></a>      generate1 <span class="op">=</span><span class="kw">lambda</span> best,rest: best.exploit(rest,<span class="dv">1000</span>)</span>
 <span id="cb65-165"><a href="#cb65-165" aria-hidden="true" tabindex="-1"></a>      start <span class="op">=</span> time()</span>
-<span id="cb65-166"><a href="#cb65-166" aria-hidden="true" tabindex="-1"></a>      mqs4 <span class="op">=</span> [rnd(d.chebyshev(d.shuffle().activeLearning(generate<span class="op">=</span>generate2)[<span class="dv">0</span>])) </span>
-<span id="cb65-167"><a href="#cb65-167" aria-hidden="true" tabindex="-1"></a>              <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">20</span>)]</span>
-<span id="cb65-168"><a href="#cb65-168" aria-hidden="true" tabindex="-1"></a>      <span class="bu">print</span>(<span class="ss">f&quot;mqs4.</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start)<span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> secs&quot;</span>)</span>
+<span id="cb65-166"><a href="#cb65-166" aria-hidden="true" tabindex="-1"></a>      mqs1000 <span class="op">=</span> [rnd(d.chebyshev(d.shuffle().activeLearning(generate<span class="op">=</span>generate1)[<span class="dv">0</span>]))</span>
+<span id="cb65-167"><a href="#cb65-167" aria-hidden="true" tabindex="-1"></a>                 <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(repeats)]</span>
+<span id="cb65-168"><a href="#cb65-168" aria-hidden="true" tabindex="-1"></a>      <span class="bu">print</span>(<span class="ss">f&quot;mqs1K.</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start)<span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> secs&quot;</span>)</span>
 <span id="cb65-169"><a href="#cb65-169" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-170"><a href="#cb65-170" aria-hidden="true" tabindex="-1"></a>      somes <span class="op">+=</span>   [stats.SOME(rand,    <span class="ss">f&quot;random,</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">&quot;</span>),</span>
-<span id="cb65-171"><a href="#cb65-171" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(pool,    <span class="ss">f&quot;pool,</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">&quot;</span>),</span>
-<span id="cb65-172"><a href="#cb65-172" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(mqs4,    <span class="ss">f&quot;mqs4,</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">&quot;</span>),</span>
-<span id="cb65-173"><a href="#cb65-173" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(mqs1000, <span class="ss">f&quot;mqs1000,</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">&quot;</span>)]</span>
-<span id="cb65-174"><a href="#cb65-174" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-175"><a href="#cb65-175" aria-hidden="true" tabindex="-1"></a>    stats.report(somes, <span class="fl">0.01</span>)</span></code></pre></div>
+<span id="cb65-170"><a href="#cb65-170" aria-hidden="true" tabindex="-1"></a>      used<span class="op">=</span>{}</span>
+<span id="cb65-171"><a href="#cb65-171" aria-hidden="true" tabindex="-1"></a>      generate2 <span class="op">=</span><span class="kw">lambda</span> best,rest: best.exploit(rest,top<span class="op">=</span><span class="dv">4</span>,used<span class="op">=</span>used)</span>
+<span id="cb65-172"><a href="#cb65-172" aria-hidden="true" tabindex="-1"></a>      start <span class="op">=</span> time()</span>
+<span id="cb65-173"><a href="#cb65-173" aria-hidden="true" tabindex="-1"></a>      mqs4 <span class="op">=</span> [rnd(d.chebyshev(d.shuffle().activeLearning(generate<span class="op">=</span>generate2)[<span class="dv">0</span>])) </span>
+<span id="cb65-174"><a href="#cb65-174" aria-hidden="true" tabindex="-1"></a>              <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">20</span>)]</span>
+<span id="cb65-175"><a href="#cb65-175" aria-hidden="true" tabindex="-1"></a>      <span class="bu">print</span>(<span class="ss">f&quot;mqs4.</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>(time() <span class="op">-</span> start)<span class="op">/</span>repeats<span class="sc">:.2f}</span><span class="ss"> secs&quot;</span>)</span>
+<span id="cb65-176"><a href="#cb65-176" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-177"><a href="#cb65-177" aria-hidden="true" tabindex="-1"></a>      somes <span class="op">+=</span>   [stats.SOME(rand,    <span class="ss">f&quot;random,</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">&quot;</span>),</span>
+<span id="cb65-178"><a href="#cb65-178" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(pool,    <span class="ss">f&quot;pool,</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">&quot;</span>),</span>
+<span id="cb65-179"><a href="#cb65-179" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(mqs4,    <span class="ss">f&quot;mqs4,</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">&quot;</span>),</span>
+<span id="cb65-180"><a href="#cb65-180" aria-hidden="true" tabindex="-1"></a>                  stats.SOME(mqs1000, <span class="ss">f&quot;mqs1000,</span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">&quot;</span>)]</span>
+<span id="cb65-181"><a href="#cb65-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-182"><a href="#cb65-182" aria-hidden="true" tabindex="-1"></a>    stats.report(somes, <span class="fl">0.01</span>)</span></code></pre></div>
 <h2 data-number="7" id="main"><span
 class="header-section-number">7</span> Main</h2>
 <div class="sourceCode" id="cb66"><pre
