@@ -372,13 +372,14 @@ def predict(self:SYM, pairs:list[tuple[float,any]]) -> number:
 # ### Cluster
 @dataclass
 class CLUSTER:
-  data :DATA
-  right : row
-  left  : row
-  cut  : number
-  fun  : Callable
-  lvl : int = 0
-  lefts : CLUSTER = None
+  data   : DATA
+  right  : row
+  left   : row
+  mid    : row
+  cut    : number
+  fun    : Callable
+  lvl    : int = 0
+  lefts  : CLUSTER = None
   rights : CLUSTER = None
 
   def __repr__(self:CLUSTER) -> str:
@@ -391,7 +392,7 @@ class CLUSTER:
     return self
 
   def nodes(self:CLUSTER):
-    def leafp(x): return x.lefts==None and x.rights==None
+    def leafp(x): return x.lefts==None or x.rights==None
     yield self, leafp(self)
     for node in [self.lefts,self.rights]:
       if node:
@@ -414,17 +415,25 @@ def half(self:DATA, rows:rows, sortp=False) -> tuple[rows,rows,row,row,float]:
   return self.dist(left,lefts[-1]),lefts, rights, left, right
 
 @of("recursive divide rows using distance to two far points")
-def cluster(self:DATA, rows:rows=None,  sortp=False, stop=None, cut=None, fun=None,lvl=0):
+def cluster(self:DATA, rows:rows=None,  sortp=False, stop=None, cut=None, fun=None, lvl=0):
   stop = stop or the.Stop
   rows = rows or self.rows
   cut1, ls, rs, left, right = self.half(rows,sortp=sortp)
-  it = CLUSTER(data=self.clone(rows), cut=cut, fun=fun, left=left, right=right, lvl=lvl)
-  if len(ls)>stop and len(ls)<len(rows): it.lefts  = self.cluster(ls, sortp, stop, cut1, le,lvl+1)
-  if len(rs)>stop and len(rs)<len(rows): it.rights = self.cluster(rs, sortp, stop, cut1, gt,lvl+1)
+  it = CLUSTER(data=self.clone(rows), cut=cut, fun=fun, left=left, right=right, mid=rs[0], lvl=lvl)
+  if len(ls)>stop and len(ls)<len(rows): it.lefts  = self.cluster(ls, sortp, stop, cut1, le, lvl+1)
+  if len(rs)>stop and len(rs)<len(rows): it.rights = self.cluster(rs, sortp, stop, cut1, gt, lvl+1)
   return it
 
 le = lambda x,y: x <= y
 gt = lambda x,y: x >  y
+
+@of("Diversity sampling (one per items).")
+def diversity(self:DATA, rows:rows=None, stop=None):
+  rows = rows or self.rows
+  cluster = self.cluster(rows, stop=stop or math.floor(len(rows)**0.5))
+  for node,leafp in cluster.nodes(): 
+    if leafp:
+        yield node.mid
 
 #
 # ## Bayes
@@ -715,6 +724,12 @@ class egs:
     cluster = d.cluster(d.rows,sortp=True)
     for node,leafp in cluster.nodes(): 
       print(r2(d.chebyshev(node.left)) if node.left else "", node,sep="\t")
+
+  def diversities(d=None):
+    d = d or  DATA().adds(csv(the.train))
+    #leafs = random.choices(leafs, k=min(50, len(leafs)))
+    print(d.chebyshev(d.clone([row for row in d.diversity(stop=10)]).chebyshevs().rows[0]))
+    #print(len([d.clone([row for row in d.diversity(stop=stop)]).chebyshevs().rows[0] for _ in range(20)]))
 
   def clusters2():
     d = DATA().adds(csv(the.train))
