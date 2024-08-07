@@ -51,12 +51,40 @@ car make, model, color, number of doors, ages of cars, etc (these are the $X$ va
   - But it takes much longer to work out  acceleration or
 miles per hour (these are the $Y$ values) since that requires you have to drive  the car around
 for a few hours.
+
+### SE Examples where finding $X$ is  cheaper than $Y$
+
+- $X$,$Y$ are our independent and dependent variables.
+- Quick to mine $X$ GitHub to get code size, dependencies per function,  
+  - Slow to get $Y$ (a) development time, (b) what people will pay for it
+- Quick to count $X$ the number of classes in a system. 
+  - Slow to get  $Y$ an organization to tell you human effort to build and maintain that code.
+- Quick to enumerate $X$ many  design options (20 yes-no = $2^{20}$ options) 
+  - Slow to check $Y$ those options with   the human stakeholders.
+- Quick to list $X$ configuration parameters for  the  software. 
+  - Slow to find $X$ runtime and energy requirements for all configurations.
+- Quick to list $X$ data miner params (e.g. how many neighbors in knn?) 
+  - Slow to find  $Y$ best setting for local data. 
+- Quick to  make $X$ test case inputs using (e.g.) random input selection
+  - Slow to run all tests and  get $Y$ humans to check each output 
+
+#### Smart Labeling
+
+- Learning works better if the learner can pick its training data[^brochu].
 - _Labeling_ is the process of finding the $Y$ values, before we know the $f$ function 
    - So we have to do something slow and/or expensive to find the label;s; e.g.  ask an expert, go hunt for them in the real world.
    - The first time we find the $Y$ values, that incurs a one-time cost
    - After that, the labels can be access for free.
 
+- Just for simplicity, assume we a model can inputs $X$ values to predict for good $g$ or bad $b$:
 
+|n|Task | Notes|
+|-:|-----|------|
+|1|Sample a little  | Get a get a few $Y$ values (picked at random?) |
+|2|Learn a little   | Build a tiny model from that sample|
+|3| Reflect | Compute $b,r$|
+|4| Acquire         | Label an example that (e.g.) maximizes $b/r$. Add it to the sample|
+|5| Repeat          | Goto 2|
 
 So, an active learner
 tries to learn $f$ using a lot of cheap  $X$ values, but very few

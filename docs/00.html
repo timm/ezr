@@ -48,10 +48,10 @@ alt="Purpose" src="https://img.shields.io/badge/language-python3-blue">
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
-<li><a href="#am-i-or-you-a-good-engineer"
-id="toc-am-i-or-you-a-good-engineer"><span
-class="toc-section-number">1</span> Am I (or you) a good
-engineer?</a></li>
+<li><a href="#i-want-you-to-be-an-ai-brain-surgeon"
+id="toc-i-want-you-to-be-an-ai-brain-surgeon"><span
+class="toc-section-number">1</span> I want you… to be an (AI) brain
+surgeon</a></li>
 <li><a href="#can-we-engineering-an-ai-system-simply-quickly"
 id="toc-can-we-engineering-an-ai-system-simply-quickly"><span
 class="toc-section-number">2</span> Can we engineering an AI system?
@@ -78,43 +78,25 @@ Software Review</a></li>
 <li><a href="#more-on-software-review"
 id="toc-more-on-software-review"><span
 class="toc-section-number">9</span> More on Software Review</a></li>
-<li><a href="#what-isnt-softwar-revie1"
-id="toc-what-isnt-softwar-revie1"><span
-class="toc-section-number">10</span> What Isn’t Softwar Revie1</a></li>
-<li><a href="#q-how-few-questions-can-humans-answer"
-id="toc-q-how-few-questions-can-humans-answer"><span
-class="toc-section-number">11</span> Q: How few questions can humans
-answer?</a></li>
-<li><a href="#tricks-often-cheaper-faster-to-find-x-than-y"
-id="toc-tricks-often-cheaper-faster-to-find-x-than-y"><span
-class="toc-section-number">12</span> Tricks: Often cheaper, faster, to
-find “X” than “Y”</a></li>
-<li><a href="#se-examples-where-finding-x-is-cheaper-than-y"
-id="toc-se-examples-where-finding-x-is-cheaper-than-y"><span
-class="toc-section-number">13</span> SE Examples where finding <span
-class="math inline">\(X\)</span> is cheaper than <span
-class="math inline">\(Y\)</span></a></li>
-<li><a href="#this-is-called-active-learning"
-id="toc-this-is-called-active-learning"><span
-class="toc-section-number">14</span> This is called “Active
-Learning”</a></li>
-<li><a href="#an-active-learning-loop"
-id="toc-an-active-learning-loop"><span
-class="toc-section-number">15</span> An Active Learning Loop</a></li>
-<li><a href="#three-kinds-of-active-learning"
-id="toc-three-kinds-of-active-learning"><span
-class="toc-section-number">16</span> Three kinds of active
-learning</a></li>
 </ul>
 </nav>
-<h2 data-number="1" id="am-i-or-you-a-good-engineer"><span
-class="header-section-number">1</span> Am I (or you) a good
-engineer?</h2>
-<p>If you have been doing something for a while then can you or I:</p>
+<h2 data-number="1" id="i-want-you-to-be-an-ai-brain-surgeon"><span
+class="header-section-number">1</span> I want you… to be an (AI) brain
+surgeon</h2>
+<ul>
+<li>I want to make you the AI software engineers:
+<ul>
+<li>that know how to reach inside smart algorithms and make changes</li>
+</ul></li>
+<li>Surely, by now, we can do that:
+<ul>
+<li>If you have been doing something for a while then can you or I:
 <ul>
 <li>Do it simpler, faster. using fewer resources?</li>
 <li>Know how to combine things, such that you can more with less?</li>
 <li>Teach seemingly complex things to newbies?</li>
+</ul></li>
+</ul></li>
 </ul>
 <h2 data-number="2"
 id="can-we-engineering-an-ai-system-simply-quickly"><span
@@ -275,228 +257,6 @@ next example.</li>
 the examples. Afterwards, the models can handle new examples, while the
 panelists are busy, elsewhere</li>
 </ul>
-<h2 data-number="10" id="what-isnt-softwar-revie1"><span
-class="header-section-number">10</span> What Isn’t Softwar Revie1</h2>
-<p>(Aside: Origninally, I called in “peeking” but that didn’t sound very
-cool.)</p>
-<h2 data-number="11" id="q-how-few-questions-can-humans-answer"><span
-class="header-section-number">11</span> Q: How few questions can humans
-answer?</h2>
-<p>A: Not so many</p>
-<table>
-<colgroup>
-<col style="width: 38%" />
-<col style="width: 61%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">What</th>
-<th style="text-align: left;">N</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Standard theory</td>
-<td style="text-align: left;">more is always better</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Cognitive Science</td>
-<td style="text-align: left;">7 plus or minus 2</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">From human studies (cost estimation, rep
-grids)<a href="#fn6" class="footnote-ref" id="fnref6"
-role="doc-noteref"><sup>6</sup></a></td>
-<td style="text-align: left;">10 to 20 examples per 1-4 hours</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Regression <a href="#fn7"
-class="footnote-ref" id="fnref7"
-role="doc-noteref"><sup>7</sup></a></td>
-<td style="text-align: left;">10-20 examples per attribute</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Semi-supervised learning</td>
-<td style="text-align: left;"><span
-class="math inline">\(\sqrt{N}\)</span></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Zhu et al.<a href="#fn8"
-class="footnote-ref" id="fnref8"
-role="doc-noteref"><sup>8</sup></a></td>
-<td style="text-align: left;">100 images</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Menzies et al. 2008<a href="#fn9"
-class="footnote-ref" id="fnref9"
-role="doc-noteref"><sup>9</sup></a></td>
-<td style="text-align: left;">50 examples</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Chessboard model<a href="#fn10"
-class="footnote-ref" id="fnref10"
-role="doc-noteref"><sup>10</sup></a></td>
-<td style="text-align: left;">200 examples</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Probable Correctness theory<a href="#fn11"
-class="footnote-ref" id="fnref11"
-role="doc-noteref"><sup>11</sup></a></td>
-<td style="text-align: left;">simpler cases: 50 to 6 (if binary
-chop)</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"></td>
-<td style="text-align: left;">safety-critical cases: 272 to 8 (if binary
-chop)</td>
-</tr>
-</tbody>
-</table>
-<h2 data-number="12"
-id="tricks-often-cheaper-faster-to-find-x-than-y"><span
-class="header-section-number">12</span> Tricks: Often cheaper, faster,
-to find “X” than “Y”</h2>
-<ul>
-<li><span class="math inline">\(Y=f(X)\)</span>
-<ul>
-<li><span class="math inline">\(X\)</span>,<span
-class="math inline">\(Y\)</span> are our independent and dependent
-variables.</li>
-<li><span class="math inline">\(f\)</span> is the thing we are trying to
-find</li>
-</ul></li>
-<li>e.g. Fishing:
-<ul>
-<li>Glance up and down the river.</li>
-<li>That looks like a good spot.</li>
-<li>3 hours later: well, it was not</li>
-</ul></li>
-<li>e.g. Used car yard:
-<ul>
-<li>Glancing over 100 cars: count the cars and their colors and number
-of wheels and size of car.</li>
-<li>But to find gas mileage– got to take each out for a long drive.</li>
-</ul></li>
-</ul>
-<h2 data-number="13"
-id="se-examples-where-finding-x-is-cheaper-than-y"><span
-class="header-section-number">13</span> SE Examples where finding <span
-class="math inline">\(X\)</span> is cheaper than <span
-class="math inline">\(Y\)</span></h2>
-<ul>
-<li><span class="math inline">\(X\)</span>,<span
-class="math inline">\(Y\)</span> are our independent and dependent
-variables.</li>
-<li>Quick to mine <span class="math inline">\(X\)</span> GitHub to get
-code size, dependencies per function,
-<ul>
-<li>Slow to get <span class="math inline">\(Y\)</span> (a) development
-time, (b) what people will pay for it</li>
-</ul></li>
-<li>Quick to count <span class="math inline">\(X\)</span> the number of
-classes in a system.
-<ul>
-<li>Slow to get <span class="math inline">\(Y\)</span> an organization
-to tell you human effort to build and maintain that code.</li>
-</ul></li>
-<li>Quick to enumerate <span class="math inline">\(X\)</span> many
-design options (20 yes-no = <span class="math inline">\(2^{20}\)</span>
-options)
-<ul>
-<li>Slow to check <span class="math inline">\(Y\)</span> those options
-with the human stakeholders.</li>
-</ul></li>
-<li>Quick to list <span class="math inline">\(X\)</span> configuration
-parameters for the software.
-<ul>
-<li>Slow to find <span class="math inline">\(X\)</span> runtime and
-energy requirements for all configurations.</li>
-</ul></li>
-<li>Quick to list <span class="math inline">\(X\)</span> data miner
-params (e.g. how many neighbors in knn?)
-<ul>
-<li>Slow to find <span class="math inline">\(Y\)</span> best setting for
-local data.</li>
-</ul></li>
-<li>Quick to make <span class="math inline">\(X\)</span> test case
-inputs using (e.g.) random input selection
-<ul>
-<li>Slow to run all tests and get <span class="math inline">\(Y\)</span>
-humans to check each output</li>
-</ul></li>
-</ul>
-<h2 data-number="14" id="this-is-called-active-learning"><span
-class="header-section-number">14</span> This is called “Active
-Learning”</h2>
-<ul>
-<li>Learning works better if the learner can pick its training
-data[^brochu]. Given two models that predict for good <span
-class="math inline">\(g\)</span> or bad <span
-class="math inline">\(b\)</span>:</li>
-<li>An active learning loop:</li>
-</ul>
-<h2 data-number="15" id="an-active-learning-loop"><span
-class="header-section-number">15</span> An Active Learning Loop</h2>
-<ul>
-<li><em>Labelling</em>: given an example with <span
-class="math inline">\(X\)</span>, but not <span
-class="math inline">\(Y\)</span>, get the <span
-class="math inline">\(Y\)</span>.</li>
-<li>Just for simplicity, assume we a model can inputs <span
-class="math inline">\(X\)</span> values to predict for good <span
-class="math inline">\(g\)</span> or bad <span
-class="math inline">\(b\)</span>:</li>
-</ul>
-<table>
-<colgroup>
-<col style="width: 15%" />
-<col style="width: 38%" />
-<col style="width: 46%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: right;">n</th>
-<th>Task</th>
-<th>Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: right;">1</td>
-<td>Sample a little</td>
-<td>Get a get a few <span class="math inline">\(Y\)</span> values
-(picked at random?)</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">2</td>
-<td>Learn a little</td>
-<td>Build a tiny model from that sample</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">3</td>
-<td>Reflect</td>
-<td>Compute <span class="math inline">\(b,r\)</span></td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">4</td>
-<td>Acquire</td>
-<td>Label an example that (e.g.) maximizes <span
-class="math inline">\(b/r\)</span>. Add it to the sample</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">5</td>
-<td>Repeat</td>
-<td>Goto 2</td>
-</tr>
-</tbody>
-</table>
-<p>How to - Sample, once - Use reflection to find one unlabelled
-thingFind &amp;$ the <span class="math inline">\(X\)</span> variables, -
-guess what might be the next most informative example - get its <span
-class="math inline">\(Y\)</span> value, .</p>
-<h2 data-number="16" id="three-kinds-of-active-learning"><span
-class="header-section-number">16</span> Three kinds of active
-learning</h2>
 <section id="footnotes" class="footnotes footnotes-end-of-document"
 role="doc-endnotes">
 <hr />
@@ -518,28 +278,6 @@ href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn5"><p><a
 href="https://www.linkedin.com/pulse/data-centers-its-environmental-impacts-i%C5%9F%C4%B1l-durmu%C5%9F-q5xvf/">www.linkedin.com/pulse/data-centers-its-environmental-impacts-i%C5%9F%C4%B1l-durmu%C5%9F-q5xvf/</a><a
 href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>M. Easterby-Smith, Design, analysis and interpretation
-of repertory grids, International Journal of Man-Machine Studies, 13(1),
-1980, 3-24,<a href="#fnref6" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li
-id="fn7"><p>www.quora.com/How-many-data-points-are-enough-for-linear-regression<a
-href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn8"><p>Zhu, X., Vondrick, C., Fowlkes, C.C. et al. Do We Need
-More Training Data?. Int J Comput Vis 119, 76–92 (2016).
-https://doi-org.prox.lib.ncsu.edu/10.1007/s11263-015-0812-2<a
-href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>Menzies, T., Turhan, B., Bener, A., Gay, G., Cukic, B.,
-PROMISE workshop, 2008, (pp. 47-54).<a href="#fnref9"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p>J. Nam, W. Fu, S. Kim, T. Menzies and L. Tan,
-“Heterogeneous Defect Prediction,” in IEEE Transactions on Software
-Engineering, vol. 44, no. 9, pp. 874-896, 1 Sept. 2018, doi:<a
-href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn11"><p>My personnel reading of Richard G. Hamlet. 1987.
-Probable correctness theory. Inf. Process. Lett. 25, 1 (20 April 1987),
-17–25. https://doi.org/10.1016/0020-0190(87)90088-3<a href="#fnref11"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 </body>

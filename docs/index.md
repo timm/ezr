@@ -20,3 +20,14 @@ Micro models, offers several benefits:
 - Good micro models can replace failing general models.
 - Together, micro models can enhance the output of larger models.
 
+# Contents
+
+- [Motivation](00.html)
+- [Intro to the code](03code.html)
+- [Open issues[(what2do.html)
+
+Work in progress:
+
+- [Install instructions](02install.html)
+- [How Much Data Do we Need?](01.html)
+

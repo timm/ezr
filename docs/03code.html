@@ -121,6 +121,15 @@ class="toc-section-number">1.2</span> Quick notes:</a></li>
 <li><a href="#ezr-is-an-active-learning"
 id="toc-ezr-is-an-active-learning"><span
 class="toc-section-number">1.3</span> EZR is an active learning</a></li>
+<li><a href="#se-examples-where-finding-x-is-cheaper-than-y"
+id="toc-se-examples-where-finding-x-is-cheaper-than-y"><span
+class="toc-section-number">1.4</span> SE Examples where finding <span
+class="math inline">\(X\)</span> is cheaper than <span
+class="math inline">\(Y\)</span></a>
+<ul>
+<li><a href="#smart-labeling" id="toc-smart-labeling"><span
+class="toc-section-number">1.4.1</span> Smart Labeling</a></li>
+</ul></li>
 </ul></li>
 <li><a href="#training-data" id="toc-training-data"><span
 class="toc-section-number">2</span> Training Data</a></li>
@@ -277,6 +286,59 @@ values)</li>
 (these are the <span class="math inline">\(Y\)</span> values) since that
 requires you have to drive the car around for a few hours.</li>
 </ul></li>
+</ul>
+<h3 data-number="1.4"
+id="se-examples-where-finding-x-is-cheaper-than-y"><span
+class="header-section-number">1.4</span> SE Examples where finding <span
+class="math inline">\(X\)</span> is cheaper than <span
+class="math inline">\(Y\)</span></h3>
+<ul>
+<li><span class="math inline">\(X\)</span>,<span
+class="math inline">\(Y\)</span> are our independent and dependent
+variables.</li>
+<li>Quick to mine <span class="math inline">\(X\)</span> GitHub to get
+code size, dependencies per function,
+<ul>
+<li>Slow to get <span class="math inline">\(Y\)</span> (a) development
+time, (b) what people will pay for it</li>
+</ul></li>
+<li>Quick to count <span class="math inline">\(X\)</span> the number of
+classes in a system.
+<ul>
+<li>Slow to get <span class="math inline">\(Y\)</span> an organization
+to tell you human effort to build and maintain that code.</li>
+</ul></li>
+<li>Quick to enumerate <span class="math inline">\(X\)</span> many
+design options (20 yes-no = <span class="math inline">\(2^{20}\)</span>
+options)
+<ul>
+<li>Slow to check <span class="math inline">\(Y\)</span> those options
+with the human stakeholders.</li>
+</ul></li>
+<li>Quick to list <span class="math inline">\(X\)</span> configuration
+parameters for the software.
+<ul>
+<li>Slow to find <span class="math inline">\(X\)</span> runtime and
+energy requirements for all configurations.</li>
+</ul></li>
+<li>Quick to list <span class="math inline">\(X\)</span> data miner
+params (e.g. how many neighbors in knn?)
+<ul>
+<li>Slow to find <span class="math inline">\(Y\)</span> best setting for
+local data.</li>
+</ul></li>
+<li>Quick to make <span class="math inline">\(X\)</span> test case
+inputs using (e.g.) random input selection
+<ul>
+<li>Slow to run all tests and get <span class="math inline">\(Y\)</span>
+humans to check each output</li>
+</ul></li>
+</ul>
+<h4 data-number="1.4.1" id="smart-labeling"><span
+class="header-section-number">1.4.1</span> Smart Labeling</h4>
+<ul>
+<li>Learning works better if the learner can pick its training
+data[^brochu].</li>
 <li><em>Labeling</em> is the process of finding the <span
 class="math inline">\(Y\)</span> values, before we know the <span
 class="math inline">\(f\)</span> function
@@ -287,7 +349,54 @@ label;s; e.g. ask an expert, go hunt for them in the real world.</li>
 values, that incurs a one-time cost</li>
 <li>After that, the labels can be access for free.</li>
 </ul></li>
+<li>Just for simplicity, assume we a model can inputs <span
+class="math inline">\(X\)</span> values to predict for good <span
+class="math inline">\(g\)</span> or bad <span
+class="math inline">\(b\)</span>:</li>
 </ul>
+<table>
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 38%" />
+<col style="width: 46%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">n</th>
+<th>Task</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td>Sample a little</td>
+<td>Get a get a few <span class="math inline">\(Y\)</span> values
+(picked at random?)</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td>Learn a little</td>
+<td>Build a tiny model from that sample</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td>Reflect</td>
+<td>Compute <span class="math inline">\(b,r\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td>Acquire</td>
+<td>Label an example that (e.g.) maximizes <span
+class="math inline">\(b/r\)</span>. Add it to the sample</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td>Repeat</td>
+<td>Goto 2</td>
+</tr>
+</tbody>
+</table>
 <p>So, an active learner tries to learn <span
 class="math inline">\(f\)</span> using a lot of cheap <span
 class="math inline">\(X\)</span> values, but very few <span
@@ -561,26 +670,57 @@ items (looking only at the x values, not the y values).</li>
 class="header-section-number">4</span> SE notes:</h2>
 <h3 data-number="4.1" id="patterns"><span
 class="header-section-number">4.1</span> Patterns</h3>
-<p>An <em>architectural style</em> is a high-level conceptual view of
-how the system will be created, organised and/or operated. This code is
-<code>pipe and filter</code>. It can accept code from some prior process
-or if can read a file directly. These two calls are equivalent (since
-“-” denotes standard input)</p>
-<pre><code>python3.13 -B ezr.py -t ../moot/optimize/misc/auto93.csv -e _mqs
-cat ../moot/optimize/misc/auto93.csv | python3.13 -B ezr.py -t -  -e _mqs</code></pre>
-<p>(Aside to see how to read from standard input or a file, see
-<code>def csv</code> in the source code.)</p>
-<p>A <em>pattern</em> is an elegant solution to a recurring problem.
-This code uses many patterns (see below).</p>
 <p>Programming <em>idioms</em> are low-level patterns specific to a
 particular programming language. For example, see <a
 href="#decorators">decorators</a> which are a Python construct</p>
+<p>Idioms are small things. Bigger than idioms are <em>patterns</em> :
+elegant solution to a recurring problem. Some folks have proposed <a
+href="https://en.wikipedia.org/wiki/Software_design_pattern">extensive
+catalogs of patterns</a>. These are worth reading. As for me, patterns
+are things I reuse whenever I do development in any languages. This code
+uses many patterns (see below).</p>
+<p>An <em>architectural style</em> is a high-level conceptual view of
+how the system will be created, organized and/or operated. This code is
+<code>pipe and filter</code>. It can accept code from some prior process
+or if can read a file directly. These two calls are equivalent (since
+“-” denotes standard input). This pile-and-filter style is important
+since</p>
+<pre><code>python3.13 -B ezr.py -t ../moot/optimize/misc/auto93.csv -e _mqs
+cat ../moot/optimize/misc/auto93.csv | python3.13 -B ezr.py -t -  -e _mqs</code></pre>
+<p>(Aside: to see how to read from standard input or a file, see
+<code>def csv</code> in the source code.)</p>
+<p>Pipe-and-filters are a very famous artitectural style:</p>
+<blockquote>
+<p>Doug McIlroy, Bell Labs, 1986: <em>“We should have some ways of
+coupling programs like garden hose…. Let programmers screw in another
+segment when it becomes necessary to massage data in another way….
+Expect the output of every program to become the input to another, as
+yet unknown, program. Don’t clutter output with extraneous
+information.”</em></p>
+</blockquote>
+<p>Pipes changed the whole idea of UNIX: - Implemented in 1973 when (“in
+one feverish night”, wrote McIlroy) by Ken Thompson. - “It was clear to
+everyone, practically minutes after the system came up with pipes
+working, that it was a wonderful thing. Nobody would ever go back and
+give that up if they could.” - The next day”, McIlroy writes, “saw an
+unforgettable orgy of one-liners as everybody joined in the excitement
+of plumbing.”</p>
 <h4 data-number="4.1.1" id="pattern-all-code-need-doco"><span
 class="header-section-number">4.1.1</span> Pattern: All code need
 doco</h4>
 <p>Code has much auto-documentation - functions have type hints and doc
 strings - help string at front (from which we parse out the config) -
 worked examples (at back)</p>
+<p>Seen a ,ot in modern languges.e .g. in “R”. Cpmpare how many gallons
+of gas I would need for a 75 mile trip among 4-cylinder cars:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr) <span class="co"># load dplyr for the pipe and other tidy functions</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(mtcars) <span class="co"># load the mtcars dataset</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> mtcars <span class="sc">%&gt;%</span>               <span class="co"># take mtcars. AND THEN...</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(cyl <span class="sc">==</span> <span class="dv">4</span>) <span class="sc">%&gt;%</span>       <span class="co"># filter it to four-cylinder cars, AND THEN...</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(mpg) <span class="sc">%&gt;%</span>            <span class="co"># select only the mpg column, AND THEN...</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">car =</span> <span class="fu">row.names</span>(.), <span class="co"># add a column for car name and # gallons used on a 75 mile trip</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">gallons =</span> mpg<span class="sc">/</span><span class="dv">75</span>)</span></code></pre></div>
 <h4 data-number="4.1.2" id="pattern-all-code-needs-tests"><span
 class="header-section-number">4.1.2</span> Pattern: All code needs
 tests</h4>
@@ -757,16 +897,16 @@ class="header-section-number">4.2</span> Idioms</h3>
 class="header-section-number">4.2.1</span> Comprehensions</h4>
 <p>This code makes extensive use of comprehensions . E.g. to find the
 middle of a cluster, ask each column for its middle point.</p>
-<div class="sourceCode" id="cb10"><pre
-class="sourceCode py"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of a DATA.&quot;</span>)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> row:</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [col.mid() <span class="cf">for</span> col <span class="kw">in</span> <span class="va">self</span>.cols.<span class="bu">all</span>]</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of NUMs.&quot;</span>)</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mu</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of SYMs.&quot;</span>)</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mode</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode py"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of a DATA.&quot;</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> row:</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [col.mid() <span class="cf">for</span> col <span class="kw">in</span> <span class="va">self</span>.cols.<span class="bu">all</span>]</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of NUMs.&quot;</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mu</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of SYMs.&quot;</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mode</span></code></pre></div>
 <p>Here’s one for loading tab-separated files with optional comment
 lines starting with a hash mark:</p>
 <pre><code>data = [line.strip().split(&quot;\t&quot;) for line in open(&quot;my_file.tab&quot;) \
@@ -776,15 +916,15 @@ lines starting with a hash mark:</p>
 [0, 2, 4, 6, 8]</code></pre>
 <p>e.g. here are two examples of an implicit iterator in the argument to
 <code>sum</code>:</p>
-<div class="sourceCode" id="cb13"><pre
-class="sourceCode py"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Entropy = measure of disorder.&quot;</span>)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ent(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number:</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="op">-</span> <span class="bu">sum</span>(n<span class="op">/</span><span class="va">self</span>.n <span class="op">*</span> log(n<span class="op">/</span><span class="va">self</span>.n,<span class="dv">2</span>) <span class="cf">for</span> n <span class="kw">in</span> <span class="va">self</span>.has.values())</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Euclidean distance between two rows.&quot;</span>)</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> dist(<span class="va">self</span>:DATA, r1:row, r2:row) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  n <span class="op">=</span> <span class="bu">sum</span>(c.dist(r1[c.at], r2[c.at])<span class="op">**</span>the.p <span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.cols.x)</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (n <span class="op">/</span> <span class="bu">len</span>(<span class="va">self</span>.cols.x))<span class="op">**</span>(<span class="dv">1</span><span class="op">/</span>the.p)</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode py"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Entropy = measure of disorder.&quot;</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ent(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number:</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="op">-</span> <span class="bu">sum</span>(n<span class="op">/</span><span class="va">self</span>.n <span class="op">*</span> log(n<span class="op">/</span><span class="va">self</span>.n,<span class="dv">2</span>) <span class="cf">for</span> n <span class="kw">in</span> <span class="va">self</span>.has.values())</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Euclidean distance between two rows.&quot;</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> dist(<span class="va">self</span>:DATA, r1:row, r2:row) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  n <span class="op">=</span> <span class="bu">sum</span>(c.dist(r1[c.at], r2[c.at])<span class="op">**</span>the.p <span class="cf">for</span> c <span class="kw">in</span> <span class="va">self</span>.cols.x)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> (n <span class="op">/</span> <span class="bu">len</span>(<span class="va">self</span>.cols.x))<span class="op">**</span>(<span class="dv">1</span><span class="op">/</span>the.p)</span></code></pre></div>
 <p>E.g here we</p>
 <ol type="1">
 <li>Use dictionary comprehensions, make a dictionary with one emery list
@@ -793,15 +933,15 @@ per key,</li>
 <li>Finally, using dictionary comprehensions, return a dictionary with
 one prediction per col.</li>
 </ol>
-<div class="sourceCode" id="cb14"><pre
-class="sourceCode py"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return predictions for `cols` (defaults to klass column).&quot;</span>)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict(<span class="va">self</span>:DATA, row1:row, rows:rows, cols<span class="op">=</span><span class="va">None</span>, k<span class="op">=</span><span class="dv">2</span>):</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  cols <span class="op">=</span> cols <span class="kw">or</span> <span class="va">self</span>.cols.y</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  got <span class="op">=</span> {col.at : [] <span class="cf">for</span> col <span class="kw">in</span> cols}                           <span class="op">--</span> [<span class="dv">1</span>]</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row2 <span class="kw">in</span> <span class="va">self</span>.neighbors(row1, rows)[:k]:</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span>  <span class="fl">1E-32</span> <span class="op">+</span> <span class="va">self</span>.dist(row1,row2)</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    [got[col.at].append( (d, row2[col.at]) )  <span class="cf">for</span> col <span class="kw">in</span> cols]  <span class="op">--</span> [<span class="dv">2</span>]</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {col.at : col.predict( got[col.at] ) <span class="cf">for</span> col <span class="kw">in</span> cols}  <span class="op">--</span> [<span class="dv">3</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode py"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return predictions for `cols` (defaults to klass column).&quot;</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> predict(<span class="va">self</span>:DATA, row1:row, rows:rows, cols<span class="op">=</span><span class="va">None</span>, k<span class="op">=</span><span class="dv">2</span>):</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  cols <span class="op">=</span> cols <span class="kw">or</span> <span class="va">self</span>.cols.y</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  got <span class="op">=</span> {col.at : [] <span class="cf">for</span> col <span class="kw">in</span> cols}                           <span class="op">--</span> [<span class="dv">1</span>]</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row2 <span class="kw">in</span> <span class="va">self</span>.neighbors(row1, rows)[:k]:</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    d <span class="op">=</span>  <span class="fl">1E-32</span> <span class="op">+</span> <span class="va">self</span>.dist(row1,row2)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    [got[col.at].append( (d, row2[col.at]) )  <span class="cf">for</span> col <span class="kw">in</span> cols]  <span class="op">--</span> [<span class="dv">2</span>]</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> {col.at : col.predict( got[col.at] ) <span class="cf">for</span> col <span class="kw">in</span> cols}  <span class="op">--</span> [<span class="dv">3</span>]</span></code></pre></div>
 <h4 data-number="4.2.2" id="decorators"><span
 class="header-section-number">4.2.2</span> Decorators</h4>
 <ul>
@@ -818,29 +958,29 @@ their means and modes.</li>
 <code>mid</code> of the summary for each column.</li>
 </ul></li>
 </ul>
-<div class="sourceCode" id="cb15"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> of(doc):</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> doit(fun):</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    fun.__doc__ <span class="op">=</span> doc</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span> <span class="op">=</span> inspect.getfullargspec(fun).annotations[<span class="st">&#39;self&#39;</span>]</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">setattr</span>(<span class="bu">globals</span>()[<span class="va">self</span>], fun.<span class="va">__name__</span>, fun)</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> doit</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of a DATA.&quot;</span>)</span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> row:</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [col.mid() <span class="cf">for</span> col <span class="kw">in</span> <span class="va">self</span>.cols.<span class="bu">all</span>]</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of NUMs.&quot;</span>)</span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mu</span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of SYMs.&quot;</span>)</span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mode</span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a NUM.&quot;</span>)</span>
-<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.sd</span>
-<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a SYM.&quot;</span>)</span>
-<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.ent()</span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> of(doc):</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> doit(fun):</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    fun.__doc__ <span class="op">=</span> doc</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">self</span> <span class="op">=</span> inspect.getfullargspec(fun).annotations[<span class="st">&#39;self&#39;</span>]</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">setattr</span>(<span class="bu">globals</span>()[<span class="va">self</span>], fun.<span class="va">__name__</span>, fun)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> doit</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of a DATA.&quot;</span>)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:DATA) <span class="op">-&gt;</span> row:</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [col.mid() <span class="cf">for</span> col <span class="kw">in</span> <span class="va">self</span>.cols.<span class="bu">all</span>]</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of NUMs.&quot;</span>)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mu</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return central tendency of SYMs.&quot;</span>)</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mid(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.mode</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a NUM.&quot;</span>)</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:NUM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.sd</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;Return diversity of a SYM.&quot;</span>)</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> div(<span class="va">self</span>:SYM) <span class="op">-&gt;</span> number: <span class="cf">return</span> <span class="va">self</span>.ent()</span></code></pre></div>
 <h2 data-number="5" id="try-it-for-yourself"><span
 class="header-section-number">5</span> Try it for yourself</h2>
 <h3 data-number="5.1" id="get-python3.13"><span
@@ -869,27 +1009,27 @@ class="header-section-number">5.3</span> Try a longer run</h3>
 class="header-section-number">5.4</span> Write your own extensions</h3>
 <p>Here’s a file <code>extend.py</code> in the same directory as
 ezr.py</p>
-<div class="sourceCode" id="cb19"><pre
-class="sourceCode py"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys,random</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ezr <span class="im">import</span> the, DATA, csv</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nth(k): <span class="cf">return</span> <span class="kw">lambda</span> z: z[k]</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> myfun(i,train):</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  random.seed(the.seed) <span class="co">#  not needed here, bt good practice to always take care of seeds</span></span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  d    <span class="op">=</span> DATA().adds(csv(train))</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  x    <span class="op">=</span> <span class="bu">len</span>(d.cols.x)</span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  size <span class="op">=</span> <span class="bu">len</span>(d.rows)</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  dim  <span class="op">=</span> <span class="st">&quot;lo&quot;</span>     <span class="cf">if</span> x <span class="op">&lt;</span> <span class="dv">5</span>     <span class="cf">else</span> (<span class="st">&quot;med&quot;</span> <span class="cf">if</span> x <span class="op">&lt;</span> <span class="dv">10</span>    <span class="cf">else</span> <span class="st">&quot;hi&quot;</span>)</span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  size <span class="op">=</span> <span class="st">&quot;small&quot;</span> <span class="cf">if</span> size<span class="op">&lt;</span> <span class="dv">500</span> <span class="cf">else</span> (<span class="st">&quot;med&quot;</span> <span class="cf">if</span> size<span class="op">&lt;</span><span class="dv">5000</span> <span class="cf">else</span> <span class="st">&quot;hi&quot;</span>)</span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [i,dim, size, x, <span class="bu">len</span>(d.cols.y), <span class="bu">len</span>(d.rows), train]</span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;dim&quot;</span>, <span class="st">&quot;size&quot;</span>,<span class="st">&quot;xcols&quot;</span>,<span class="st">&quot;ycols&quot;</span>,<span class="st">&quot;rows&quot;</span>,<span class="st">&quot;file&quot;</span>,sep<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)</span>
-<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="op">*</span>[<span class="st">&quot;----&quot;</span>] <span class="op">*</span> <span class="dv">7</span>,sep<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)</span>
-<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>[<span class="bu">print</span>(<span class="op">*</span>myfun(i,arg),sep<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>) <span class="cf">for</span> i,arg <span class="kw">in</span> <span class="bu">enumerate</span>(sys.argv)  <span class="cf">if</span> arg[<span class="op">-</span><span class="dv">4</span>:] <span class="op">==</span> <span class="st">&quot;.csv&quot;</span>]</span></code></pre></div>
-<p>On my machine, when I run</p>
 <div class="sourceCode" id="cb20"><pre
-class="sourceCode py"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>python3<span class="fl">.13</span> <span class="op">-</span>B extend.py ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>[comp]<span class="op">*/*</span>.csv</span></code></pre></div>
+class="sourceCode py"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys,random</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ezr <span class="im">import</span> the, DATA, csv</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> nth(k): <span class="cf">return</span> <span class="kw">lambda</span> z: z[k]</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> myfun(i,train):</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  random.seed(the.seed) <span class="co">#  not needed here, bt good practice to always take care of seeds</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  d    <span class="op">=</span> DATA().adds(csv(train))</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  x    <span class="op">=</span> <span class="bu">len</span>(d.cols.x)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>  size <span class="op">=</span> <span class="bu">len</span>(d.rows)</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>  dim  <span class="op">=</span> <span class="st">&quot;lo&quot;</span>     <span class="cf">if</span> x <span class="op">&lt;</span> <span class="dv">5</span>     <span class="cf">else</span> (<span class="st">&quot;med&quot;</span> <span class="cf">if</span> x <span class="op">&lt;</span> <span class="dv">10</span>    <span class="cf">else</span> <span class="st">&quot;hi&quot;</span>)</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>  size <span class="op">=</span> <span class="st">&quot;small&quot;</span> <span class="cf">if</span> size<span class="op">&lt;</span> <span class="dv">500</span> <span class="cf">else</span> (<span class="st">&quot;med&quot;</span> <span class="cf">if</span> size<span class="op">&lt;</span><span class="dv">5000</span> <span class="cf">else</span> <span class="st">&quot;hi&quot;</span>)</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> [i,dim, size, x, <span class="bu">len</span>(d.cols.y), <span class="bu">len</span>(d.rows), train]</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;n&quot;</span>, <span class="st">&quot;dim&quot;</span>, <span class="st">&quot;size&quot;</span>,<span class="st">&quot;xcols&quot;</span>,<span class="st">&quot;ycols&quot;</span>,<span class="st">&quot;rows&quot;</span>,<span class="st">&quot;file&quot;</span>,sep<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="op">*</span>[<span class="st">&quot;----&quot;</span>] <span class="op">*</span> <span class="dv">7</span>,sep<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>)</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>[<span class="bu">print</span>(<span class="op">*</span>myfun(i,arg),sep<span class="op">=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>) <span class="cf">for</span> i,arg <span class="kw">in</span> <span class="bu">enumerate</span>(sys.argv)  <span class="cf">if</span> arg[<span class="op">-</span><span class="dv">4</span>:] <span class="op">==</span> <span class="st">&quot;.csv&quot;</span>]</span></code></pre></div>
+<p>On my machine, when I run</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode py"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>python3<span class="fl">.13</span> <span class="op">-</span>B extend.py ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>[comp]<span class="op">*/*</span>.csv</span></code></pre></div>
 <p>This prints some stats on the data files:</p>
 <pre><code>n   dim    size    xcols  ycols    rows    file
 ---  ----  ----    ----   ----    ----    ----
