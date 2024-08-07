@@ -6,8 +6,8 @@
 
 ### Words to watch for
 
-- SE Terms: _DRY, WET, refactoring, function-oriented, object-oirented, decorators, little languages_, 
-- AI Terms: _active learning, Y,  dependent, X,  independent, goals, labeling, aggregation function, chebyshev, multi-objective
+- SE Notes: _DRY, WET, refactoring, function-oriented, decorators, little languages, configuration_, 
+- AI Notes: _active learning, Y,  dependent, X,  independent, goals, labeling, aggregation function, chebyshev, multi-objective
              regression, classification, Bayes classifier, entropy, standard deviation_
 - Classes: _DATA, COLS, NUM, SYM_
 - Variables:  _row_, _rows_, _done_ (which divides into _best_ and _rest_); _todo_
@@ -248,13 +248,13 @@ def loglike(self:DATA, r:row, nall:int, nh:int) -> float:
 The active learner uses a Bayes classifier to guess the likelihood that an unlabeled example
 should be labeled next.
 
-- ALl the unlabeled data is split into a tiny `done` set and a much larger `todo` set
-- All the `done`s are labeled, then ranked, then divided into $\sqrt{N}$ _best_ and $1-\sqrt{N}$ _rest_.
-- Some sample of the `todo`s are the sorted by their probabilities of being _best_ (B), not _rest_ (R)
-  - The following code uses $B-R$
-  - But these values ore logs so this is really $B/R$.
-- The top item in that sort is then labelled.
-- And the cycle repeats
+1. All the unlabeled data is split into a tiny `done` set and a much larger `todo` set
+2. All the `done`s are labeled, then ranked, then divided into $\sqrt{N}$ _best_ and $1-\sqrt{N}$ _rest_.
+3. Some sample of the `todo`s are the sorted by their probabilities of being _best_ (B), not _rest_ (R)
+   - The following code uses $B-R$ 
+   - But these values ore logs so this is really $B/R$.
+4. The top item in that sort is then labelled and move to done.
+   - And the cycle repeats
 
 ```py
 @of("active learning")
@@ -271,24 +271,24 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
 
   def guess(todo:rows, done:rows) -> rows:
     cut  = int(.5 + len(done) ** the.cut)
-    best = self.clone(done[:cut])
+    best = self.clone(done[:cut])  # --------------------------------------------------- [2]
     rest = self.clone(done[cut:])
-    a,b  = todos(todo)
+    a,b  = todos(todo) 
     if generate: # don't worry about this bit
-      return self.neighbors(generate(best,rest), a) + b 
+      return self.neighbors(generate(best,rest), a) + b  # ----------------------------- [3]
     else:
       key  = lambda r: score(best.loglike(r, len(done), 2), rest.loglike(r, len(done), 2))
-      return  sorted(a, key=key, reverse=True) + b
+      return  sorted(a, key=key, reverse=True) + b # ----------------------------------- [3]
 
   def loop(todo:rows, done:rows) -> rows:
     for k in range(the.Last - the.label):
       if len(todo) < 3 : break
       top,*todo = guess(todo, done)
-      done     += [top]
+      done     += [top]   # ------------------------------------------------------------ [3]
       done      = ranked(done)
     return done
 
-  return loop(self.rows[the.label:], ranked(self.rows[:the.label]))
+  return loop(self.rows[the.label:], ranked(self.rows[:the.label])) #------------------- [1]
 ```
 The default configs here is  `the.label=4` and `the.Last=30`; i.e. four initial evaluations, then 26
 evals after that.
@@ -302,21 +302,41 @@ TL;DR: to explore better methods for active learning:
 
 ### Patterns 
 
-An _architectural style_ is a high-level conceptual view of how the system will be created, organised and/or operated.
+Programming _idioms_ are low-level patterns specific to a particular programming language. For example,
+see [decorators](#decorators) which are a Python construct
+
+Idioms are small things. Bigger than idioms are  _patterns_ : elegant solution to a recurring problem. 
+Some folks have proposed [extensive catalogs of patterns](https://en.wikipedia.org/wiki/Software_design_pattern). 
+These are worth reading. As for me, patterns are things I reuse whenever I do development in any languages.
+This code uses many patterns (see below). 
+
+An _architectural style_ is a high-level conceptual view of how the system will be created, organized and/or operated.
 This code is `pipe and filter`. It can accept code from some prior process or if can read a file directly. These
-two calls are equivalent (since "-" denotes standard input)
+two calls are equivalent (since "-" denotes standard input). This pile-and-filter style is important since
 
 ```
 python3.13 -B ezr.py -t ../moot/optimize/misc/auto93.csv -e _mqs
 cat ../moot/optimize/misc/auto93.csv | python3.13 -B ezr.py -t -  -e _mqs
 ```
-(Aside to see how to read from standard input or a file, see `def csv` in the source code.)
+(Aside: to see how to read from standard input or a file, see `def csv` in the source code.)
 
-A _pattern_ is an elegant solution to a recurring problem. This code uses many patterns (see below).
+Pipe-and-filters are a very famous artitectural style:
 
-Programming _idioms_ are low-level patterns specific to a particular programming language. For example,
-see [decorators](#decorators) which are a Python construct
+> Doug McIlroy, Bell Labs, 1986:
+<em>“We should have some ways of coupling programs like garden hose....
+Let programmers screw in another segment when it becomes necessary
+to massage data in another way....
+Expect the output of
+ every program to become the input to another, as yet unknown,
+ program. Don’t clutter output with extraneous information.”</em>
 
+Pipes changed the whole idea of UNIX:
+- Implemented in 1973 when ("in one feverish night", wrote McIlroy) by  Ken Thompson.
+- “It was clear to everyone, practically minutes after the system
+came up with pipes working, that it was a wonderful thing. Nobody
+would ever go back and give that up if they could.”
+- The next day", McIlroy writes, "saw an unforgettable orgy of one-liners
+as everybody joined in the excitement of plumbing."
 
 #### Pattern: All code need doco
 
@@ -324,6 +344,19 @@ Code has much auto-documentation
 - functions have type hints and doc strings
 - help string at front (from which we parse out the config)
 - worked examples (at back)
+
+Seen a ,ot in modern languges.e .g. in "R". Cpmpare how many gallons of gas I would need for a 75 mile trip among 4-cylinder cars:
+
+```r
+library(dplyr) # load dplyr for the pipe and other tidy functions
+data(mtcars) # load the mtcars dataset
+
+df <- mtcars %>%               # take mtcars. AND THEN...
+    filter(cyl == 4) %>%       # filter it to four-cylinder cars, AND THEN...
+    select(mpg) %>%            # select only the mpg column, AND THEN...
+    mutate(car = row.names(.), # add a column for car name and # gallons used on a 75 mile trip
+    gallons = mpg/75)
+```
 
 #### Pattern: All code needs tests
 
@@ -345,12 +378,12 @@ Object-oriented code is groups by class. But some folks doubt that approach:
 - [Does OO Sync With the Way we Think?](https://www.researchgate.net/publication/3247400_Does_OO_sync_with_how_we_think)
 - [Stop writing classes](https://www.youtube.com/watch?v=o9pEzgHorH0)
 
-My code is function-oriented: methods are grouped via method name (see the [of](#decorator) decorator).
+My code is function-oriented: methods are grouped via method name (see the [of](#decorators) decorator).
 This makes it easier to teach retlated concepts (since the concepts are together in the code). 
 
 Me doing this way was insrued by some words of Donal Knth who pointed out that the order with which we want to explains omce code may not be the samas the order needed by the compiler.
 So he wrote a "tangle" system where code, ordered for expalanation, was rejigged at load time into
-what the compiler needs. I found I could do much the same like with a [5 line decorator](#decorator).
+what the compiler needs. I found I could do much the same like with a [5 line decorator](#decorators).
 
 
 #### Social patterns: Coding for Teams

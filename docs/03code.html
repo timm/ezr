@@ -208,9 +208,9 @@ class="header-section-number">1</span> Introduction</h2>
 <h3 data-number="1.1" id="words-to-watch-for"><span
 class="header-section-number">1.1</span> Words to watch for</h3>
 <ul>
-<li>SE Terms: <em>DRY, WET, refactoring, function-oriented,
-object-oirented, decorators, little languages</em>,</li>
-<li>AI Terms: <em>active learning, Y, dependent, X, independent, goals,
+<li>SE Notes: <em>DRY, WET, refactoring, function-oriented, decorators,
+little languages, configuration</em>,</li>
+<li>AI Notes: <em>active learning, Y, dependent, X, independent, goals,
 labeling, aggregation function, chebyshev, multi-objective regression,
 classification, Bayes classifier, entropy, standard deviation</em></li>
 <li>Classes: <em>DATA, COLS, NUM, SYM</em></li>
@@ -497,8 +497,8 @@ small, real fast)</p>
 class="header-section-number">3.4.2</span> Active Learner</h4>
 <p>The active learner uses a Bayes classifier to guess the likelihood
 that an unlabeled example should be labeled next.</p>
-<ul>
-<li>ALl the unlabeled data is split into a tiny <code>done</code> set
+<ol type="1">
+<li>All the unlabeled data is split into a tiny <code>done</code> set
 and a much larger <code>todo</code> set</li>
 <li>All the <code>done</code>s are labeled, then ranked, then divided
 into <span class="math inline">\(\sqrt{N}\)</span> <em>best</em> and
@@ -511,9 +511,11 @@ class="math inline">\(B-R\)</span></li>
 <li>But these values ore logs so this is really <span
 class="math inline">\(B/R\)</span>.</li>
 </ul></li>
-<li>The top item in that sort is then labelled.</li>
+<li>The top item in that sort is then labelled and move to done.
+<ul>
 <li>And the cycle repeats</li>
-</ul>
+</ul></li>
+</ol>
 <div class="sourceCode" id="cb8"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="at">@of</span>(<span class="st">&quot;active learning&quot;</span>)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> activeLearning(<span class="va">self</span>:DATA, score<span class="op">=</span><span class="kw">lambda</span> B,R: B<span class="op">-</span>R, generate<span class="op">=</span><span class="va">None</span>, faster<span class="op">=</span><span class="va">True</span> ):</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> ranked(rows): <span class="cf">return</span> <span class="va">self</span>.clone(rows).chebyshevs().rows</span>
@@ -528,24 +530,24 @@ class="math inline">\(B/R\)</span>.</li>
 <span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> guess(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
 <span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    cut  <span class="op">=</span> <span class="bu">int</span>(<span class="fl">.5</span> <span class="op">+</span> <span class="bu">len</span>(done) <span class="op">**</span> the.cut)</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    best <span class="op">=</span> <span class="va">self</span>.clone(done[:cut])</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    best <span class="op">=</span> <span class="va">self</span>.clone(done[:cut])  <span class="co"># --------------------------------------------------- [2]</span></span>
 <span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    rest <span class="op">=</span> <span class="va">self</span>.clone(done[cut:])</span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    a,b  <span class="op">=</span> todos(todo)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    a,b  <span class="op">=</span> todos(todo) </span>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> generate: <span class="co"># don&#39;t worry about this bit</span></span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="va">self</span>.neighbors(generate(best,rest), a) <span class="op">+</span> b </span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span> <span class="va">self</span>.neighbors(generate(best,rest), a) <span class="op">+</span> b  <span class="co"># ----------------------------- [3]</span></span>
 <span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>      key  <span class="op">=</span> <span class="kw">lambda</span> r: score(best.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>), rest.loglike(r, <span class="bu">len</span>(done), <span class="dv">2</span>))</span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span>  <span class="bu">sorted</span>(a, key<span class="op">=</span>key, reverse<span class="op">=</span><span class="va">True</span>) <span class="op">+</span> b</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>      <span class="cf">return</span>  <span class="bu">sorted</span>(a, key<span class="op">=</span>key, reverse<span class="op">=</span><span class="va">True</span>) <span class="op">+</span> b <span class="co"># ----------------------------------- [3]</span></span>
 <span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> loop(todo:rows, done:rows) <span class="op">-&gt;</span> rows:</span>
 <span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(the.Last <span class="op">-</span> the.label):</span>
 <span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="bu">len</span>(todo) <span class="op">&lt;</span> <span class="dv">3</span> : <span class="cf">break</span></span>
 <span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>      top,<span class="op">*</span>todo <span class="op">=</span> guess(todo, done)</span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>      done     <span class="op">+=</span> [top]</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>      done     <span class="op">+=</span> [top]   <span class="co"># ------------------------------------------------------------ [3]</span></span>
 <span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>      done      <span class="op">=</span> ranked(done)</span>
 <span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> done</span>
 <span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> loop(<span class="va">self</span>.rows[the.label:], ranked(<span class="va">self</span>.rows[:the.label]))</span></code></pre></div>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> loop(<span class="va">self</span>.rows[the.label:], ranked(<span class="va">self</span>.rows[:the.label])) <span class="co">#------------------- [1]</span></span></code></pre></div>
 <p>The default configs here is <code>the.label=4</code> and
 <code>the.Last=30</code>; i.e. four initial evaluations, then 26 evals
 after that.</p>
@@ -613,15 +615,15 @@ OO Sync With the Way we Think?</a></li>
 classes</a></li>
 </ul>
 <p>My code is function-oriented: methods are grouped via method name
-(see the <a href="#decorator">of</a> decorator). This makes it easier to
-teach retlated concepts (since the concepts are together in the
+(see the <a href="#decorators">of</a> decorator). This makes it easier
+to teach retlated concepts (since the concepts are together in the
 code).</p>
 <p>Me doing this way was insrued by some words of Donal Knth who pointed
 out that the order with which we want to explains omce code may not be
 the samas the order needed by the compiler. So he wrote a “tangle”
 system where code, ordered for expalanation, was rejigged at load time
 into what the compiler needs. I found I could do much the same like with
-a <a href="#decorator">5 line decorator</a>.</p>
+a <a href="#decorators">5 line decorator</a>.</p>
 <h4 data-number="4.1.4" id="social-patterns-coding-for-teams"><span
 class="header-section-number">4.1.4</span> Social patterns: Coding for
 Teams</h4>
@@ -646,8 +648,8 @@ href="https://github.com/psf/black">Black</a> and <a
 href="https://code.visualstudio.com/docs/python/formatting">various
 tools in VScode</a>
 <ul>
-<li>Better to have commit hooks to re-format the code to something more
-usual</li>
+<li>Consider to have commit hooks to re-format the code to something
+more usual</li>
 </ul></li>
 </ul>
 <h4 data-number="4.1.5" id="pattern-dry-not-wet"><span
