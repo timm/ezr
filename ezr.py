@@ -551,6 +551,11 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
 
 # ### One-Liners
 
+# non parametric mid and div
+def medianSd(a: list[number]) -> tuple[number,number]:
+  a = sorted(a)
+  return a[int(0.5*len(a))], (a[int(0.9*len(a))] - a[int(0.1*len(a))])
+
 # Return a function that returns the `n`-th idem.
 def nth(n): return lambda a:a[n]
 
@@ -768,20 +773,21 @@ class egs:
         egs._mqs()
 
   def _mqs():
+    print(the.train,  flush=True, file=sys.stderr)
     print("\n"+the.train)
-    repeats = 20
-    d       = DATA().adds(csv(the.train))
-    b4      = [d.chebyshev(row) for row in d.rows]
-    base    = NUM().adds(b4)
-    trivial = base.div()*0.2  #  small amount
-    rnd     = lambda z: math.floor(z/trivial)*trivial # rounded to a small amount
+    repeats  = 20
+    d        = DATA().adds(csv(the.train))
+    b4       = [d.chebyshev(row) for row in d.rows]
+    asIs,div = medianSd(b4)
+    rnd      = lambda z: z 
 
-    print(f"trivial\t: {trivial:.3f}")
+    print(f"asIs\t: {asIs:.3f}")
+    print(f"div\t: {div:.3f}")
     print(f"rows\t: {len(d.rows)}")
     print(f"xcols\t: {len(d.cols.x)}")
     print(f"ycols\t: {len(d.cols.y)}\n")
 
-    somes = [stats.SOME(b4,f"baseline,{len(d.rows)}")]
+    somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
 
     for n in [20,25,30,50,100]:
       the.Last = n
