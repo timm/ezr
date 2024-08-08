@@ -774,7 +774,7 @@ class egs:
     b4      = [d.chebyshev(row) for row in d.rows]
     base    = NUM().adds(b4)
     trivial = base.div()*0.2  #  small amount
-    rnd     = lambda z: math.floor(z/trivial)*trivial # rounded to a small amount
+    rnd     = lambda z: z# math.floor(z/trivial)*trivial # rounded to a small amount
 
     print(f"trivial\t: {trivial:.3f}")
     print(f"rows\t: {len(d.rows)}")
