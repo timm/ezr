@@ -2,28 +2,39 @@
 % Tim Menzies
 % August 5, 2024
 
-## Introduction
+## Before We Start....
 
-### Words to watch for
+Macro structure of ezr.py:
 
-- SE Notes: _DRY, WET, refactoring, function-oriented, decorators, little languages, configuration_, 
-- AI Notes: _active learning, Y,  dependent, X,  independent, goals, labeling, aggregation function, chebyshev, multi-objective
-             regression, classification, Bayes classifier, entropy, standard deviation_
-- Classes: _DATA, COLS, NUM, SYM_
-- Variables:  _row_, _rows_, _done_ (which divides into _best_ and _rest_); _todo_
-- Synonyms: 
-    - _features_,  _attributes_, _goals_
-    - _Y goals dependent_
-    - _X independent_
+- Starts with __doc__ string, from which we parse out the control settings.
+- Ends with a set of examples in the `egs` class which can be called from the command line. E.g. `-e mqs` called `egs.mqs()`.
+- Uses a  [a function-oriented style](#decorators),  where methods are grouped by name, not class.
 
-### Quick notes: 
+Terminology (watch for these words):
 
-- Download this code: [ezr](https://github.com/timm/ezr/blob/main/ezr.py)
-- Down sample 60+ example dadta files: [moot](https://github.com/timm/moot) (MOOT= Multi-Objective Optimization Tests)
-- Macro structure of this code:
-  - Starts with __doc__ string, from which we parse out the control settings.
-  - Ends with a set of examples in the `egs` class which can be called from the command line. E.g. `-e mqs` called `egs.mqs()`.
-  - Uses a  [a function-oriented style](#decorators),  where methods are grouped by name, not class.
+- Classes: 
+  - SETTINGS, DATA, COLS, NUM, SYM
+- Variables:
+  - row, rows, done (which divides into best and rest); todo
+- SE Notes: 
+  - refactoring, DRY, WET
+  - styles, patterns, idioms, function-oriented 
+  - decorators, little languages, configuration, pipes, iterators, exception handling,
+  - make, regular expressions,
+  - decorators, type-hints, comprehensions,  dunder methods, 
+- AI Notes: 
+  - Y,  dependent, X,  independent, goals, 
+  - labelling, active learning, 
+  - multi-objective, aggregation function, chebyshev
+  - regression, classification, Bayes classifier, 
+  - entropy, standard deviation, cross-validation
+- Synonyms (conflations, to be aware of): 
+    - features,  attributes, goals
+    - Y goals dependent
+    - X independent
+    - styles, patterns, idioms
+
+## Overview
 
 ### EZR is an active learning
 
@@ -68,7 +79,7 @@ for a few hours.
 - Quick to  make $X$ test case inputs using (e.g.) random input selection
   - Slow to run all tests and  get $Y$ humans to check each output 
 
-#### Smart Labeling
+### Smart Labeling
 
 - Learning works better if the learner can pick its training data[^brochu].
 - _Labeling_ is the process of finding the $Y$ values, before we know the $f$ function 
@@ -79,11 +90,11 @@ for a few hours.
 - Just for simplicity, assume we a model can inputs $X$ values to predict for good $g$ or bad $b$:
 
 |n|Task | Notes|
-|-:|-----|------|
+|-:|:-----:|:------|
 |1|Sample a little  | Get a get a few $Y$ values (picked at random?) |
 |2|Learn a little   | Build a tiny model from that sample|
 |3| Reflect | Compute $b,r$|
-|4| Acquire         | Label an example that (e.g.) maximizes $b/r$. Add it to the sample|
+|4| Acquire         | Label an example that (e.g.) maximizes $b/r$ then it to the sample.|
 |5| Repeat          | Goto 2|
 
 So, an active learner
@@ -97,12 +108,12 @@ what we have seen so far...
 - Active learners  guess what is be the next more informative
 $Y$ labels to collect.. 
 
+### Training Data
+
 Active learners spend much time reasoning about the $X$  values (which are cheap
 to collect) before deciding which dependent variables to collect next.
 A repeated result is that this tactic can produce good models, with minimal
 information about the dependent variables.
-
-## Training Data
 
 For training purposes we explore all this using csv files where "?" denotes missing values.
 Row one  list the columns names, defining the roles of the columns:
@@ -184,9 +195,18 @@ def chebyshevs(self:DATA) -> DATA:
   return self
 ```
 
-### Classes
-This  code has only a few main classes:  DATA, COLS, NUM, SYM
+### Configuration
+Other people define their command line options separate to the settings.
+That is they have to define all those settings twice
 
+This code parses the settings from the __doc__ string (see the SETTINGS class). So  the help
+text and the definitions of the options can never go out of sync.
+
+### Classes
+This  code has only a few main classes:  SETTINGS, DATA, COLS, NUM, SYM
+
+- SETTINGS handles the config settings.
+  - The code can access these settings via the `the` variable (so `the = SETTINGS()`).
 - NUM, SYM, COL (the super class of NUM,SYM). These classes summarize each column.
   - NUMs know mean and standard deviation (a measure of average distance of numbers to the mean)
     - $\sigma=\sqrt{\frac{1}{N-1} \sum_{i=1}^N (x_i-\overline{x})^2}$
@@ -225,13 +245,6 @@ To build the columns, COLS looks at each name's  `a,z` (first and last letter).
         if z=="!": self.klass = col
         if z=="-": col.goal = 0
 ```
-### Configuration
-Other people define their command line options separate to the settings.
-That is they have to define all those settings twice
-
-This code parses the settings from the __doc__ string (see the SETTINGS class). So  the help
-text and the definitions of the options can never go out of sync.
-
 ### Smarts
 
 #### Bayes classifier
@@ -328,7 +341,6 @@ TL;DR: to explore better methods for active learning:
 
 ## SE notes:
 
-### Patterns 
 
 Programming _idioms_ are low-level patterns specific to a particular programming language. For example,
 see [decorators](#decorators) which are a Python construct
@@ -338,7 +350,10 @@ Some folks have proposed [extensive catalogs of patterns](https://en.wikipedia.o
 These are worth reading. As for me, patterns are things I reuse whenever I do development in any languages.
 This code uses many patterns (see below). 
 
-An _architectural style_ is a high-level conceptual view of how the system will be created, organized and/or operated.
+Even bigger than patterns are _architectural style_ is a high-level conceptual view of how the system will be created, organized and/or operated.
+
+### Architectural Styles
+
 This code is `pipe and filter`. It can accept code from some prior process or if can read a file directly. These
 two calls are equivalent (since "-" denotes standard input). This pile-and-filter style is important since
 
@@ -348,7 +363,7 @@ cat ../moot/optimize/misc/auto93.csv | python3.13 -B ezr.py -t -  -e _mqs
 ```
 (Aside: to see how to read from standard input or a file, see `def csv` in the source code.)
 
-Pipe-and-filters are a very famous artitectural style:
+Pipe-and-filters are a very famous architectural style:
 
 > Doug McIlroy, Bell Labs, 1986:
 <em>“We should have some ways of coupling programs like garden hose....
@@ -359,6 +374,7 @@ Expect the output of
  program. Don’t clutter output with extraneous information.”</em>
 
 Pipes changed the whole idea of UNIX:
+
 - Implemented in 1973 when ("in one feverish night", wrote McIlroy) by  Ken Thompson.
 - “It was clear to everyone, practically minutes after the system
 came up with pipes working, that it was a wonderful thing. Nobody
@@ -366,14 +382,36 @@ would ever go back and give that up if they could.”
 - The next day", McIlroy writes, "saw an unforgettable orgy of one-liners
 as everybody joined in the excitement of plumbing."
 
-#### Pattern: All code need doco
+For example, my build files have help text after a `##` symbol. The following script prints a little help text describing
+that build script. It is a pipe between grep, sort, and awk
+Note the separation of concerns (which means that now our task divides into tiny tasks, each of which can be optimized separately):
 
-Code has much auto-documentation
-- functions have type hints and doc strings
-- help string at front (from which we parse out the config)
-- worked examples (at back)
+- `grep` handles feature extraction from the build file;
+- `sort` rearranges the contents alphabetically 
+- `gawk` handles some formatting trivia.
 
-Seen a ,ot in modern languges.e .g. in "R". Cpmpare how many gallons of gas I would need for a 75 mile trip among 4-cylinder cars:
+```makefile
+help: ## print help
+	printf "\n#readme\nmake [OPTIONS]\n\nOPTIONS:\n"
+	grep -E '^[a-zA-Z_\.-]+:.*?## .*$$' $(MAKEFILE_LIST) \
+		| sort \
+		| awk 'BEGIN {FS = ":.*?## "}\
+	               {printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
+```
+This produces:
+```
+% make help
+
+#readme
+make [OPTIONS]
+
+OPTIONS:
+  README.md  update README.md, publish
+  help       print help
+  push       commit to Git. 
+```
+Pipes are seen in  scripting environments and are used a lot in
+modern languages.e .g. in "R". Compare how many gallons of gas I would need for a 75 mile trip among 4-cylinder cars:
 
 ```r
 library(dplyr) # load dplyr for the pipe and other tidy functions
@@ -385,35 +423,6 @@ df <- mtcars %>%               # take mtcars. AND THEN...
     mutate(car = row.names(.), # add a column for car name and # gallons used on a 75 mile trip
     gallons = mpg/75)
 ```
-
-#### Pattern: All code needs tests
-
-> Maurice Wilkes recalled the exact moment he realized the importance of debugging: 
-<em>“By June 1949, people had begun to realize that it was not so easy to get a program right as 
-had at one time appeared. It was on one of my journeys between the EDSAC room and the 
-punching equipment that the realization came over me with full force that a good part of the 
-remainder of my life was going to be spent in finding errors in my own programs.”</em>
-
-Code has tests (worked examples at back); about a quarter of the code base
-
-- any method eg.method can be called from the command line using. e.g. to call egs.mqs:
-  - python3 ezr.py -e mqs
-
-#### Pattern: Function vs Object-Oriented
-
-Object-oriented code is groups by class. But some folks doubt that approach:
-
-- [Does OO Sync With the Way we Think?](https://www.researchgate.net/publication/3247400_Does_OO_sync_with_how_we_think)
-- [Stop writing classes](https://www.youtube.com/watch?v=o9pEzgHorH0)
-
-My code is function-oriented: methods are grouped via method name (see the [of](#decorators) decorator).
-This makes it easier to teach retlated concepts (since the concepts are together in the code). 
-
-Me doing this way was insrued by some words of Donal Knth who pointed out that the order with which we want to explains omce code may not be the samas the order needed by the compiler.
-So he wrote a "tangle" system where code, ordered for expalanation, was rejigged at load time into
-what the compiler needs. I found I could do much the same like with a [5 line decorator](#decorators).
-
-
 #### Social patterns: Coding for Teams
 
 This code is poorly structured for team work:
@@ -426,6 +435,63 @@ This code is poorly structured for team work:
 - This code violates known [Python formatting standards (PEP 8)](https://peps.python.org/pep-0008/) which
   is supported by so many tools; e.g. [Black](https://github.com/psf/black) and [various tools in VScode](https://code.visualstudio.com/docs/python/formatting)
   - Consider to have commit hooks to re-format the code to something more usual
+- My use of the [of](#decorators) is highly non-standard. Teams would probably want to change that.
+
+#### Pattern: All code need doco
+
+Code has much auto-documentation
+- functions have type hints and doc strings
+- help string at front (from which we parse out the config)
+- worked examples (at back)
+
+For examples of methods for adding that doco, see `make help` command above.
+
+#### Pattern: All code needs tests
+
+> Maurice Wilkes recalled the exact moment he realized the importance of debugging: 
+<em>“By June 1949, people had begun to realize that it was not so easy to get a program right as 
+had at one time appeared. It was on one of my journeys between the EDSAC room and the 
+punching equipment that the realization came over me with full force that a good part of the 
+remainder of my life was going to be spent in finding errors in my own programs.”</em>
+
+Half the time of any system is spent in testing. Lesson: don't code it the night before.
+
+Testing is more than just "finding bugs". Test suites are a great way to communicate code and to offer
+continuous quality assurances.
+
+- Tests offer little lessons on how to use the code.
+- Teams sharing code can rerun the tests, all the time, to make sure their new code does not break old code.
+  - Caveat: that only works if the tests are fast unit tests.
+
+Exr.py has tests (worked examples at back); about a quarter of the code base
+
+- any method eg.method can be called from the command line using. e.g. to call egs.mqs:
+  - python3 ezr.py -e mqs
+
+There is much more to say about tests. That is another story and will be told another time.
+
+
+####  Pattern: Configuration
+- All code has config settings. Magic numbers should not be buried in the code. They should be adjustable
+      from the command line (allows for easier experimentation).
+- BTW, handling the config gap is a real challenge. Rate of new config grows much faser than rate that  people
+      understanding those options[^Takwal]. Need active learning  To explore that exponentially large sapce!
+
+#### Pattern: Function vs Object-Oriented
+
+Object-oriented code is groups by class. But some folks doubt that approach:
+
+- [Does OO Sync With the Way we Think?](https://www.researchgate.net/publication/3247400_Does_OO_sync_with_how_we_think)
+- [Stop writing classes](https://www.youtube.com/watch?v=o9pEzgHorH0)
+
+My code is function-oriented: methods are grouped via method name (see the [of](#decorators) decorator).
+This makes it easier to teach retlated concepts (since the concepts are together in the code). 
+
+Me doing this way was inspired by some words of Donald Knth who pointed out that the order with which we want to explains
+code may not be the same the order needed by the compiler.
+So he wrote a "tangle" system where code and comments, ordered for explaining, was rejigged at load time into
+what the compiler needs. I found I could do a small part of Knthu's tangle  with a [5 line decorator](#decorators).
+
 
 ####  Pattern: DRY, not WET
 - WET = Write everything twice. 
@@ -450,7 +516,60 @@ This code is poorly structured for team work:
     - regular expressions are other "little languages"
   - Another "not-so-little" little language: [Makefiles](https://learnxinyminutes.com/docs/make/) handles dependencies and updates
 
-#### Pattern: Regular Expressions
+##### Little Languages: Make
+
+Make files let us store all our little command line tricks in one convenient location.
+Make development was started by Stuart Feldman in 1977 as a Bell
+Labs summer intern (go interns!). It worthy of study since it is widely available on many environments.
+
+There are now many build tools available, for example Apache ANT,
+doit, and nmake for Windows. Which is best for you depends on your
+requirements, intended usage, and operating system. However, they
+all share the same fundamental concepts as Make.
+
+Make has "rules" and
+the rules have three parts: target, dependents (which can be empty), and code to build
+the target from the dependents.
+For example, the following two rules have code that
+simplifies our interaction with git. 
+
+- The command `make pull` updates the local files (no big win here)
+- The command `make push`  uses `read` to
+  collect a string explaining what a git commit is for, then stages the commit, then makes
+  the commit, then checks for things that are not committed.
+
+```makefile
+pull    : ## download
+   git pull
+
+push    : ## save
+  echo -en "\033[33mWhy this push? \033[0m"; read x; git commit -am "$$x"; git push; git status
+```
+
+For rules with dependents,  the target is not changed unless there are newer
+dependents. For example, here is the rule that made this file. Note that this process
+needs a bunch of scripts, a css file etc. Make will udpate `docs/%.html` if ever any 
+of those dependents change.
+
+```makefile
+docs/%.html : %.py etc/py2html.awk etc/b4.html docs/ezr.css Makefile ## make doco: md -> html
+	echo "$< ... "
+	gawk -f etc/py2html.awk $< \
+	| pandoc -s  -f markdown --number-sections --toc --toc-depth=5 \
+					-B etc/b4.html --mathjax \
+  		     --css ezr.css --highlight-style tango \
+					 --metadata title="$<" \
+	  			 -o $@ 
+```
+This means that `make docs/*.html` will  update all the html files at this site. And if we call
+this command twice, the second call will do nothing at all since `docs/%.html` is already up to date. This can save a lot of time during
+build procedures.
+
+The makefile for any particular project can get very big. Hence, it s good practice to add
+an auto document rule (see the `make help` command, above).
+Note that this is an example of the _all code needs doco_ pattern (also described above).
+
+##### Little Languages: Regular Expressions
 
 - Example of a "little language"
 - Used here to extract settings and their defaults from the `__doc__` string
@@ -460,21 +579,156 @@ This code is poorly structured for team work:
   - trailing white space `[ \t\n]*$` (dollar  sign means end of line)
   - IEEE format number `^[+-]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][+-]?[0-9]+)?$` (round brackets group expressions;
     vertical bar denotes "or"; "?" means zero or one)
-  - Beautiful example, [guessing North Amererican Names using regualr epxressions](https://github.com/timm/ezr/blob/main/docs/pdf/pakin1991.pdf)
-    - For a cheat sheet on regular expressions, see p64 of that article)
-    - For source code, see [gender.awk](https://github.com/timm/ezr/blob/main/etc/gender.awk)
-  - For other articles on regular expressions:
-    - At their core, they can be [surprisingly simple](http://genius.cat-v.org/brian-kernighan/articles/beautiful)
-    - Fantastic article: [Regular Expression Matching Can Be Simple And Fast](https://swtch.com/~rsc/regexp/regexp1.html),
+- Beautiful example, [guessing North Amererican Names using regualr expressions](https://github.com/timm/ezr/blob/main/docs/pdf/pakin1991.pdf)
+  - For a cheat sheet on regular expressions, see p64 of that article)
+  - For source code, see [gender.awk](https://github.com/timm/ezr/blob/main/etc/gender.awk)
+- For other articles on regular expressions:
+  - At their core, they can be [surprisingly simple](http://genius.cat-v.org/brian-kernighan/articles/beautiful)
+  - Fantastic article: [Regular Expression Matching Can Be Simple And Fast](https://swtch.com/~rsc/regexp/regexp1.html),
 
 
-####  Pattern: Configuration
-- All code has config settings. Magic numbers should not be buried in the code. They should be adjustable
-      from the command line (allows for easier experimentation).
-- BTW, handling the config gap is a real challenge. Rate of new config grows much faser than rate of people's
-      understanding those options[^Takwal]. Need active learning  To explore that exponentially large sapce!
+### Validation
 
-### Idioms
+xval
+temoral
+XXX
+
+### Python Idioms
+
+#### Magic Methods
+
+Dunder = double underscore = "__"
+
+XXX pos_init init repr
+
+#### Data classes
+This code uses dataclasses. These are a great shorthand method for defining classes. All dataclasses supply
+their own init and pretty-print methods. For example, here is a class with dataclasses
+
+```py
+class Person():
+    def __init__(self, name='Joe', age=30, height=1.85, email='joe@dataquest.io'):
+        self.name = name
+        self.age = age
+        self.height = height
+        self.email = email
+```
+Bt with data classes:
+
+```py
+from dataclasses import dataclass
+@dataclass
+class Person():
+    name: str = 'Joe'
+    age: int = 30
+    height: float = 1.85
+    email: str = 'joe@dataquest.io'
+
+print(Person(name='Tim', age=1000))
+==> Person(name='Tim', age=1000, height=1.85, email='joe@dataquest.io')
+```
+
+#### Type hints
+In other languages, types are taken very seriously and are the basis for computation.
+
+The Python type system was a bolt-on to later versions of the language. Hence, it is not so well-defined.
+
+But it is a great documentation tools since they let the programmer tell the reader
+what goes in and out of their function. 
+
+Firstly, you can define your own types. For example, `classes` stores rows of data about (e.g.) dogs and cats
+in a dictionary whose keys are "dogs" and "cats"
+
+```py
+data= dict(dogs=[['ralph','poodle',2021],['benhi','labrador',2022]]
+           cats=[['miss meow', 'ginger' 2020], etc])
+```
+We can define these `classes` as follows:
+
+```py
+from __future__ import annotations
+from typing import Any as any
+from typing import List, Dict, Type, Callable, Generator
+
+number  = float  | int   #
+atom    = number | bool | str # and sometimes "?"
+row     = list[atom]
+rows    = list[row]
+classes = dict[str,rows] # `str` is the class name
+```
+Then we can define a classifier as something that accepts `classes` and a new row and returns a guess
+as to what class it belongs to:
+```py
+def classifier(data: classes, example: row) -> str:
+  ...
+```
+Or, for a nearest neighbor classifier, we can define a function that sorts all the rows by the distance to
+some new row called `row1` as follows (and here, the nearest neighbor to `row1` is the first item in the returned row.
+```py
+def neighbors(self:DATA, row1:row, rows:rows=None) -> rows:
+  return sorted(rows, key=lambda row2: self.dist(row1, row2))
+```
+
+#### Abstraction
+(Note that the following abstractions are available in many languages. So are they a pattern? Or an idiom?
+I place them here since the examples are Python-specific.)
+
+##### Exception Handling
+
+XXX
+
+##### Iterators
+
+Iterators are things that do some set up, yield one thing, then wait till asked, then yield one other hing,
+then wait till asked, then yield another other thing, etc. They are offer a simle interface to some under-lying
+complex process.
+
+For example, my code's `csv` function opens a file, removes spaces from each line, skips empty lines,
+splits lines on a comma, then coerces each item in the row to some Python type. Note that this
+function does not `return`, but it `yields`.
+
+```py
+def csv(file) -> Generator[row]:
+  infile = sys.stdin if file=="-" else open(file)
+  with infile as src:
+    for line in src:
+      line = re.sub(r'([\n\t\r ]|#.*)', '', line)
+      if line: yield [coerce(s.strip()) for s in line.split(",")]
+
+def coerce(s:str) -> atom:
+  try: return ast.literal_eval(s)
+  except Exception:  return s
+```
+We can call it this way (note the simplicity of the interface)
+```py
+for row in csv(fileName): 
+   # row is now something like [4,86,65,80,3,2110,17.9,50]
+   doSomethhing(fileName)
+```
+Here's another that implements a cross validation test rig where learners train on
+some data, then test on some hold-out.
+
+1. To avoid learn things due to trivial orderings in the file, we shuffle the whole list
+2. The shuffled list is then split into `n` bins.
+3. For each bin, yield it as the `test` and all the other bins as `rest`.
+4. Optionally, only use some random sample of train, train
+
+The following is an m-by-n cross val. That is, from `m` shuffling, yield `n` train,test set pairs.
+For the default values (`m=n=5`) this yields 25 train,test set pairs.
+
+```py
+def xval(lst:list, m:int=5, n:int=5, some:int=10**6) -> Generator[rows,rows]:
+  for _ in range(m):
+    random.shuffle(lst)        # -------------------------------- [1]
+    for n1 in range (n):
+      lo = len(lst)/n * n1      # ------------------------------- [2]  
+      hi = len(lst)/n * (n1+1)
+      train, test = [],[]
+      for i,x in enumerate(lst):
+        (test if i >= lo and i < hi else train).append(x) 
+      train = random.choices(train, k=min(len(train),some)) # --- [4]
+      yield train,test  #---------------------------------------- [3]
+```
 
 #### Comprehensions
 
@@ -493,17 +747,17 @@ def mid(self:NUM) -> number: return self.mu
 def mid(self:SYM) -> number: return self.mode
 ```
 
+Comprehensions can be to filter data:
+```py
+>>> [i for i in range(10) if i % 2 == 0]
+[0, 2, 4, 6, 8]
+```
+
 Here's one for loading tab-separated files with optional comment lines starting with a hash mark:
 
 ```
 data = [line.strip().split("\t") for line in open("my_file.tab") \
         if not line.startswith('#')]
-```
-
-Comprehensions can be to filter data:
-```
->>> [i for i in range(10) if i % 2 == 0]
-[0, 2, 4, 6, 8]
 ```
 
 e.g. here are two examples of an  implicit iterator in the argument to `sum`:
@@ -579,7 +833,7 @@ def div(self:SYM) -> number: return self.ent()
 
 Make sure you are running Python3.13. On Linux and Github code spaces, that command is
 
-```
+```sh
 sudo apt update
 sudo  apt upgrade
 sudo apt install software-properties-common -y
@@ -591,7 +845,7 @@ python3.13 -B --verion
 
 ### Try one run
 
-```
+```sh
 git clone https://github.com/timm/moot
 git clone https://github.com/timm/ezr
 cd ezr
@@ -602,7 +856,7 @@ python3.13 -B erz.py -t ../moot/optimize/misc/auto93.csv -e _mqs
 
 Do a large run (takes a few minutes: output will appear in ~/tmp/mqs.out; assumes a BASH shell):
 
-```
+```sh
 python3.13 -B ezr.py -e _MQS ../moot/optimize/[chmp]*/*.csv | tee ~/tmp/mqs.out
 ```
 
@@ -612,38 +866,83 @@ Here's a file `extend.py` in the same directory as ezr.py
 
 ```py
 import sys,random
-from ezr import the, DATA, csv
+from ezr import the, DATA, csv, dot
 
-def nth(k): return lambda z: z[k]
+def show(lst):
+  return print(*[f"{word:6}" for word in lst], sep="\t")
 
-def myfun(i,train):
-  random.seed(the.seed) #  not needed here, bt good practice to always take care of seeds
+def myfun(train):
   d    = DATA().adds(csv(train))
   x    = len(d.cols.x)
   size = len(d.rows)
-  dim  = "lo"     if x < 5     else ("med" if x < 10    else "hi")
+  dim  = "small" if x <= 5 else ("med" if x < 12 else "hi")
   size = "small" if size< 500 else ("med" if size<5000 else "hi")
-  return [i,dim, size, x, len(d.cols.y), len(d.rows), train]
+  return [dim, size, x,len(d.cols.y), len(d.rows), train[17:]]
 
-print("n", "dim", "size","xcols","ycols","rows","file",sep="\t")
-print(*["----"] * 7,sep="\t")
-[print(*myfun(i,arg),sep="\t") for i,arg in enumerate(sys.argv)  if arg[-4:] == ".csv"]
+random.seed(the.seed) #  not needed here, but good practice to always take care of seeds
+show(["dim", "size","xcols","ycols","rows","file"])
+show(["------"] * 6)
+[show(myfun(arg)) for arg in sys.argv if arg[-4:] == ".csv"]
 ```
-On my machine, when I run
+On my machine, when I run ...
 
-```py
-python3.13 -B extend.py ../moot/optimize/[comp]*/*.csv
+```sh
+python3.13 -B extend.py ../moot/optimize/[chmp]*/*.csv > ~/tmp/tmp
+sort -r -k 1,2 ~/tmp/tmp
 ```
-This prints some stats on the data files: 
+... this prints some stats on the data files: 
 ```
-n   dim    size    xcols  ycols    rows    file
----  ----  ----    ----   ----    ----    ----
-1    med    small  9      1       192    ../moot/optimize/config/Apache_AllMeasurements.csv
-2    hi     med    14     1       3456    ../moot/optimize/config/HSMGP_num.csv
-3    hi     med    38     1       4653    ../moot/optimize/config/SQL_AllMeasurements.csv
-4    lo     med    3      2       1343    ../moot/optimize/config/SS-A.csv
-5    lo     small  3      2       206    ../moot/optimize/config/SS-B.csv
-6    lo     med    3      2       1512    ../moot/optimize/config/SS-C.csv
+dim   	size  	xcols 	ycols 	rows  	file
+------	------	------	------	------	------
+small 	small 	     4	     3	   398	misc/auto93.csv
+small 	small 	     4	     2	   259	config/SS-H.csv
+small 	small 	     3	     2	   206	config/SS-B.csv
+small 	small 	     3	     2	   196	config/SS-G.csv
+small 	small 	     3	     2	   196	config/SS-F.csv
+small 	small 	     3	     2	   196	config/SS-D.csv
+small 	small 	     3	     1	   196	config/wc+wc-3d-c4-obj1.csv
+small 	small 	     3	     1	   196	config/wc+sol-3d-c4-obj1.csv
+small 	small 	     3	     1	   196	config/wc+rs-3d-c4-obj1.csv
+small 	med   	     5	     2	  1080	config/SS-I.csv
+small 	med   	     3	     2	  1512	config/SS-C.csv
+small 	med   	     3	     2	  1343	config/SS-A.csv
+small 	med   	     3	     2	   756	config/SS-E.csv
+small 	hi    	     5	     3	 10000	hpo/healthCloseIsses12mths0011-easy.csv
+small 	hi    	     5	     3	 10000	hpo/healthCloseIsses12mths0001-hard.csv
+med   	small 	     9	     1	   192	config/Apache_AllMeasurements.csv
+med   	med   	    11	     2	  1023	config/SS-P.csv
+med   	med   	    11	     2	  1023	config/SS-L.csv
+med   	med   	    11	     2	   972	config/SS-O.csv
+med   	med   	    10	     2	  1599	misc/Wine_quality.csv
+med   	med   	     9	     3	   500	process/pom3d.csv
+med   	med   	     6	     2	  3840	config/SS-S.csv
+med   	med   	     6	     2	  3840	config/SS-J.csv
+med   	med   	     6	     2	  2880	config/SS-K.csv
+med   	med   	     6	     1	  3840	config/rs-6d-c3_obj2.csv
+med   	med   	     6	     1	  3840	config/rs-6d-c3_obj1.csv
+med   	med   	     6	     1	  2880	config/wc-6d-c1-obj1.csv
+med   	med   	     6	     1	  2866	config/sol-6d-c2-obj1.csv
+med   	hi    	    11	     2	 86058	config/SS-X.csv
+med   	hi    	     9	     3	 20000	process/pom3c.csv
+med   	hi    	     9	     3	 20000	process/pom3b.csv
+med   	hi    	     9	     3	 20000	process/pom3a.csv
+hi    	small 	    22	     4	    93	process/nasa93dem.csv
+hi    	med   	    38	     1	  4653	config/SQL_AllMeasurements.csv
+hi    	med   	    21	     2	  4608	config/SS-U.csv
+hi    	med   	    17	     5	  1000	process/coc1000.csv
+hi    	med   	    17	     3	   864	config/SS-M.csv
+hi    	med   	    16	     1	  1152	config/X264_AllMeasurements.csv
+hi    	med   	    14	     2	  3008	config/SS-R.csv
+hi    	med   	    14	     1	  3456	config/HSMGP_num.csv
+hi    	med   	    13	     3	  2736	config/SS-Q.csv
+hi    	hi    	    23	     4	 10000	process/xomo_osp2.csv
+hi    	hi    	    23	     4	 10000	process/xomo_osp.csv
+hi    	hi    	    23	     4	 10000	process/xomo_ground.csv
+hi    	hi    	    23	     4	 10000	process/xomo_flight.csv
+hi    	hi    	    17	     2	 53662	config/SS-N.csv
+hi    	hi    	    16	     2	 65536	config/SS-W.csv
+hi    	hi    	    16	     2	  6840	config/SS-V.csv
+hi    	hi    	    12	     2	  5184	config/SS-T.csv
 ```
 
 Try modifying the output to add columns to report counts of
