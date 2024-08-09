@@ -1,48 +1,45 @@
-
-
-
-
-
-
 DATA,CUT={},{}
 the={cohen=.35}
 pop=table.remove
 function new(klass,obj) klass.__index=klass; return setmetatable(obj,klass) end
 
-function COLS.new(i,names,rows)
+function COLS.new(i,names)
   i = new(COLS,{names=names, goals=goals, lo=lo, hi=hi}) 
   for at,s in pairs(i.names) do
     if s:find"-$"     then i.goals[at]=0 end
     if s:find"\+-$"   then i.goals[at]=1 end
     if s.find"^[A-Z]" then i.lo[at]=1E32; i.hi[at]=-1E32 end  end
-  i.adds(rows) 
   return i end
 
-function COLS.adds(i,rows)
-  for _,row in pairs(rows) do
-    for c,_ in pairs(i.lo) do
-      if row[c] != "?" then
-        i.lo[c] = math.min(i.lo[c], row[c])
-        i.hi[c] = math.min(i.hi[c], row[c]) end end end end
-    
+function COL.add(i,row)
+  for c,lo in pairs(i.lo) do
+    if row[c] != "?" then
+      i.lo[c] = math.min(lo,           row[c])
+      i.hi[c] = math.max(i.cols.hi[c], row[c]) end end 
+  return row end 
+   
 function COLS.chebyshev(i,row)
   for c,goal in pairs(i.goals) do
     x = (row[c] - i.lo[x]) / (i.hi[c] - i.lo[c])
     d = math.max(d, math.abs(x - goal)) end
   return d end
 
-function DATA.new(i,rows)
-  return new(DATA, {cols=COLS:new(pop(rows),rows), rows=rows}) end
+function DATA.new(i,names,rows)
+  return new(DATA, {cols=COLS:new(names), rows=rows or {}}) end
 
-function DATA.cuts(i,rows,xfun,yfun,     my,cuts)
+function DATA.add(i,row)
+  push(i.rows, i.cols.add(row)) end
+
+ function DATA.cuts(i,rows,xfun,yfun,     my,cuts)
   my, rows = i:my(i:sortedRows(rows,xfun), xfun, yfun)
   cuts = {CUT:new(xfun(rows[1]))}
   for r,row in pairs(rows) do
     if r > my.skip 
-    then i:cut(my,r,xfun(row),rows,cuts,xfun):add( yfun(row), my.seen) end end
+    then i:cut(my,r,xfun(row),rows,cuts,xfun)
+          :add( yfun(row), my.seen) end end
   return cuts end
 
-function DATA:cut(my,r,x,rows,cuts,xfun)
+function DATA.cut(i,my,r,x,rows,cuts,xfun)
   if r < #rows - my.gap then
     if x != xfun( rows[r+1] )  then
       if cuts[#cuts].n >= my.gap then  
