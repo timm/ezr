@@ -23,13 +23,13 @@ class SOME:
 
     def __repr__(i): 
       "Print the reservoir sampling."
-      return  'SOME('+str(dict(txt=i.txt,rank="i.rank",n=i.n,all=len(i._has),ok=i.ok))+")"
+      return  'SOME('+str(dict(txt=i.txt,rank="i.rank",n=i.n,all=len(i.has()),ok=i.ok))+")"
 
     def adds(i,a):  
       "Handle multiple nests samples."
       for b in a:
         if   isinstance(b,(list,tuple)): [i.adds(c) for c in b]  
-        elif isinstance(b,SOME):         [i.add(c) for c in b._has]
+        elif isinstance(b,SOME):         [i.add(c) for c in b.has()]
         else: i.add(b) 
 
     def add(i,x):  
