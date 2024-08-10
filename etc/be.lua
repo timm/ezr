@@ -103,8 +103,8 @@ function DATA.add(i,row)
 function DATA.sort(i,    f,n)
   f = function(row) return i.cols:chebyshev(row) end
   i.rows = sort(i.rows, function(a,b) return f(a) < f(b) end) 
-	for j,row in pairs(i.rows) do
-	  if j % 30 == 0 then print(j, o(row),f(row)) end end 
+  for j,row in pairs(i.rows) do
+    if j % 30 == 0 then print(j, o(row),f(row)) end end 
   n = (#i.rows)^the.Best // 1 
   return f( i.rows[n] ) end 
 
