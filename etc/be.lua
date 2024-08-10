@@ -8,7 +8,7 @@ USAGE:
   lua be.lua [-h] [-[bBcst] ARG] 
 
 OPTIONS:
-  -b int     max number of bins =  16
+  -b int     max number of bins =  10
   -B float   threshold for best =  .5
   -c float   cohen small effect =  .35
   -h         show help
@@ -20,7 +20,7 @@ local DATA,BIN,COLS,ROW,go = {},{},{},{},{}
 local cells, coerce, csv, fmt, new, o, oo, push, sort, the
 
 the = { cohen = .35
-      , bins  = 16
+      , bins  = 10
 			, Best  = .5
       , seed  = 1234567891
       , train = "../../moot/optimize/misc/auto93.csv"
@@ -57,9 +57,6 @@ function csv(sFilename,fun,      src,s,cells)
     s = io.read()
     if s then fun(cells(s)) else return io.close(src) end end end
 -- ----------------------------------------------------------------------------
-function ROW:new(t)
-  return new(ROW,{cells=t, score=nil}) end
--- ----------------------------------------------------------------------------
 function COLS.new(i,names)
   i = new(COLS,{names=names, x={}, y={}, lo={}, hi={}}) 
   for c,s in pairs(i.names) do
@@ -72,7 +69,7 @@ function COLS.new(i,names)
 
 function COLS.add(i,row,      z)
   for c,lo in pairs(i.lo) do
-    z = row.cells[c]
+    z = row[c]
     if z ~= "?" then
       i.lo[c] = math.min(lo,      z)
       i.hi[c] = math.max(i.hi[c], z) end end 
@@ -81,7 +78,7 @@ function COLS.add(i,row,      z)
 function COLS.chebyshev(i,row,    x,d)
   d=0
   for c,goal in pairs(i.y) do
-    x = (row.cells[c] - i.lo[c]) / (i.hi[c] - i.lo[c])
+    x = (row[c] - i.lo[c]) / (i.hi[c] - i.lo[c])
     d = math.max(d, math.abs(x - goal)) end 
   return d end 
 -- ----------------------------------------------------------------------------
@@ -92,32 +89,40 @@ function DATA.load(i,lst)
   return i end
 
 function DATA.read(i,file) 
-  csv(file, function(row) i:add(ROW:new(row)) end) 
+  csv(file, function(row) i:add(row) end) 
   return i end
 
 function DATA.add(i,row)
   if   i.cols
   then push(i.rows, i.cols:add(row)) 
-  else i.cols = COLS:new(row.cells) end end
+  else i.cols = COLS:new(row) end end
 
 function DATA.sort(i,    f,n)
   f = function(row) return i.cols:chebyshev(row) end
   i.rows = sort(i.rows, function(a,b) return f(a) < f(b) end) 
   for j,row in pairs(i.rows) do
-    if j % 30 == 0 then print(j, o(row.cells),o(f(row))) end end 
+    if j % 30 == 0 then print(j, o(row),o(f(row))) end end 
   n = (#i.rows)^the.Best // 1 
   return f( i.rows[n] ) end 
 
-function DATA.allBins(i)
+function DATA.allBins(i,      x,border)
+  f= function(row) return i.cols:chebyshev(row) end
+  border = i:sort()
+	for _,n in pairs{0.1,0.2,0.3,0.4,0.5,0.7,0.9} do
+	  print(n, f( i.rows[ (n*#i.rows)//1   ])) end
+	
   for c,_ in pairs(i.cols.x) do
-    i:bins(i.rows, function(row) return row.cells[c] end,
-		               function(row) return i.cols:chebyshev(row) end) end end
+    x =  i:bins(i.rows, function(row) return row[c] end,
+		               function(row) return i.cols:chebyshev(row) < border end)
+		print("")
+		for _,y in pairs(x) do print(c, y.lo,y.n,  o(y.seen)) end
+									 end end
 
 function DATA.bins(i,rows,xfun,yfun,     my,bins)
   my, rows = i:my(i:sortedRows(rows,xfun), xfun, yfun)
   bins = { BIN:new(xfun(rows[1])) }
   for r,row in pairs(rows) do
-    if r > my.skip 
+    if r >= my.start 
     then i:theCurrentBin(my,r,xfun(row),rows,bins,xfun)
           :add( yfun(row), my.seen) end end
   return bins end
@@ -134,19 +139,21 @@ function DATA.sortedRows(i,rows,xfun,       q)
   q = function(row) return xfun(row)=="?" and -1E32 or xfun(row)  end
   return sort(rows, function(row1,row2) return q(row1) < q(row2) end) end
 
-function DATA.my(i,rows,xfun,yfun,      seen,x,y,n,skip) 
+function DATA.my(i,rows,xfun,yfun,      seen,x,y,n,start) 
   seen={}
   for r,row in pairs(rows) do
     x,y = xfun(row), yfun(row)
-		print(x,y)
-    if   x == "?" 
-    then skip = r 
-    else seen[y] = 1 + (seen[y] or 0) end end 
-  n = #rows - skip + 1
-  return {skip= skip, 
+    if x ~= "?" then 
+      start = start or r
+      seen[y] = 1 + (seen[y] or 0) end end 
+	print("start",start)
+  n = #rows - start 
+  ninety = xfun(rows[(start+ .9*n)//1]) 
+	ten    = xfun(rows[(start+ .1*n)//1])
+  return {start= start, 
           seen = seen,
           gap  = (n / the.bins) //1,
-          sd   = (rows[(skip+1+ .9*n)//1] - rows[(skip+1+ .1*n)//1]) /2.58
+          sd   = (ninety - ten)/2.56
          }, rows end
 -- ----------------------------------------------------------------------------
 function BIN.new(i,x,b4)
