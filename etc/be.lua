@@ -104,14 +104,14 @@ function DATA.sort(i,    f,n)
   f = function(row) return i.cols:chebyshev(row) end
   i.rows = sort(i.rows, function(a,b) return f(a) < f(b) end) 
   for j,row in pairs(i.rows) do
-    if j % 30 == 0 then print(j, o(row),f(row)) end end 
+    if j % 30 == 0 then print(j, o(row.cells),o(f(row))) end end 
   n = (#i.rows)^the.Best // 1 
   return f( i.rows[n] ) end 
 
--- function DATA.allBins(i)
---   for c,_ in pairs(i.cols.x) do
--- 		i:bins(i.rows, function(row) return row.cells[c] end)
--- end
+function DATA.allBins(i)
+  for c,_ in pairs(i.cols.x) do
+    i:bins(i.rows, function(row) return row.cells[c] end,
+		               function(row) return i.cols:chebyshev(row) end) end end
 
 function DATA.bins(i,rows,xfun,yfun,     my,bins)
   my, rows = i:my(i:sortedRows(rows,xfun), xfun, yfun)
@@ -138,6 +138,7 @@ function DATA.my(i,rows,xfun,yfun,      seen,x,y,n,skip)
   seen={}
   for r,row in pairs(rows) do
     x,y = xfun(row), yfun(row)
+		print(x,y)
     if   x == "?" 
     then skip = r 
     else seen[y] = 1 + (seen[y] or 0) end end 
@@ -169,10 +170,11 @@ go.the = function(_) oo(the) end
 go.csv = function(_) csv(the.train, oo) end
 go.data= function(_) 
   d = DATA:new():read(the.train)
-	oo(d:sort())
-  -- for k,v in pairs(d.cols.lo) do 
-  --   print(k,d.cols.names[k],v, d.cols.hi[k]) end end
-	end
+  for k,v in pairs(d.cols.lo) do 
+     print(k,d.cols.names[k],v, d.cols.hi[k]) end end
+go.bins= function(_) 
+  d = DATA:new():read(the.train)
+  d:allBins() end
 
 for j,s in pairs(arg) do
   math.randomseed(the.seed)
