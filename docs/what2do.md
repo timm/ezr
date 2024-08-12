@@ -31,6 +31,8 @@
 
 ### Clustering
 - Anything better than twoFar?
+- Can we discover important clusters as we go (regions that need their own model). 
+  - If we fork a new cluster, what of the old model can we take to it?
 
 ### Streaming
 - Early stopping? Track progress to date then stop early
