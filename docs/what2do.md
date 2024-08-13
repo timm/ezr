@@ -13,14 +13,23 @@
 
 ## More specific problems:
 
+### Exploring Quirks with the Oracle 
+- Assume X% wrong, try things with increasing X (e.g. 0,10,20,40%)
+- Assuming N oracles all give different opinions,
+  is there value in  combining results from different sessions with different
+  oracles? Should we run such sessions in parrallel or in series (the latter is
+  attractive since it means experience from one expert could simplify into the 
+  experiernce of the next expert).
+
 ### Acquisition functions
 - Explore? exploit? adaptive?
 - Uncertainty (or not)
 - Different for different kinds of data?
 - Membership query synthesis
 
-### Initial label selection
-- Random, diversity, rrp
+### Initial label selection (avoiding the "cold start" problem)
+- Heuristics to intiialize the labeled set?
+- Random, diversity, rrp?
 
 ### Initial data selection
 - Full dendogram generation, then reflection across the whole structure.
@@ -42,9 +51,6 @@
   - So instead of starting from zero all the time
     - Restart each era with the model learned from era[-1] 
 - Why does the faster heuristic work? can we use that to build a better algorithm?
-
-### Oracle errors
-- Assume X% wrong, try things with increasing X (e.g. 0,10,20,40%)
 
 ### Explanation 
 - Can we learn a  stable symbolic model that predicts for better?
