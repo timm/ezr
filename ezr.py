@@ -15,13 +15,15 @@ the fewest number of goal values?
 
 ### OPTIONS:   
 
-    -b --buffer int    chunk size, when streaming   = 100  
+    -b --buffer int    chunk size, when streaming   = 100
+    -B --branch bool   set branch method            = False  
     -L --Last   int    max number of labels         = 30  
     -c --cut    float  borderline best:rest         = 0.5  
     -C --Cohen  float  pragmatically small          = 0.35
     -e --eg     str    start up action              = mqs   
     -f --fars   int    number of times to look far  = 20   
-    -h --help          show help                    = False   
+    -h --help          show help                    = False  
+    -i --iter   int    length of done minus label   = 0 
     -k --k      int    low frequency Bayes hack     = 1   
     -l --label  int    initial number of labels     = 4   
     -m --m      int    low frequency Bayes hack     = 2   
@@ -320,7 +322,7 @@ def shuffle(self:DATA) -> DATA:
   random.shuffle(self.rows)
   return self
 
-@of("Sort rows by the Euclidean distance of the goals to heaven.")
+@of("Sort rows by Chebyshev distance.")
 def chebyshevs(self:DATA) -> DATA:
   self.rows = sorted(self.rows, key=lambda r: self.chebyshev(r))
   return self
@@ -414,6 +416,25 @@ def half(self:DATA, rows:rows, sortp=False) -> tuple[rows,rows,row,row,float]:
     (lefts if self.dist(row,left) <= cut else rights).append(row)
   return self.dist(left,lefts[-1]),lefts, rights, left, right
 
+@of("Divide rows by distance to two faraway points")
+def half_mean(self:DATA, rows:rows, sortp=False) -> tuple[rows,rows,row,row,float]:
+  left,right = self.twoFar(rows, sortp=sortp)
+  C = self.dist(left,right)
+  lefts,rights = [],[]
+  project = lambda row: (self.dist(row,left)**2 + C**2 - self.dist(row,right)**2)/(2*C + 1E-30)
+  for row in rows: 
+    (lefts if project(row) <= C/2 else rights).append(row)
+  return self.dist(left,lefts[-1]),lefts, rights, left, right
+
+@of("Divide rows by distance to two faraway points")
+def half_median(self:DATA, rows:rows, sortp=False) -> tuple[rows,rows,row,row,float]:
+  mid = int(len(rows) // 2)
+  left,right = self.twoFar(rows, sortp=sortp)
+  C = self.dist(left,right)
+  project = lambda row: (self.dist(row,left)**2 + C**2 - self.dist(row,right)**2)/(2*C + 1E-30)
+  tmp = sorted(self.rows, key=project)
+  return self.dist(left,tmp[mid]), tmp[:mid], tmp[mid:], left, right
+
 @of("recursive divide rows using distance to two far points")
 def cluster(self:DATA, rows:rows=None,  sortp=False, stop=None, cut=None, fun=None, lvl=0):
   stop = stop or the.Stop
@@ -423,6 +444,23 @@ def cluster(self:DATA, rows:rows=None,  sortp=False, stop=None, cut=None, fun=No
   if len(ls)>stop and len(ls)<len(rows): it.lefts  = self.cluster(ls, sortp, stop, cut1, le, lvl+1)
   if len(rs)>stop and len(rs)<len(rows): it.rights = self.cluster(rs, sortp, stop, cut1, gt, lvl+1)
   return it
+
+@of("Recursively bi-cluster `region`, recurse only down the best half.")
+def branch(self:DATA, region:rows=None, stop=None, used=[], evals=1):
+    region = region or self.rows
+    if not stop: random.shuffle(region)
+    stop = stop or the.Stop
+
+    if len(region) > stop:
+        distance, lefts, rights, left, right = self.half_mean(region, True)
+        if left not in used:
+            used.append(left)
+        if right not in used:
+            used.append(right)
+
+        return self.branch(lefts, stop, used, evals + 1)
+    else:
+        return [r for r in self.rows if r not in used], used
 
 le = lambda x,y: x <= y
 gt = lambda x,y: x >  y
@@ -531,6 +569,7 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
     best = self.clone(done[:cut])
     rest = self.clone(done[cut:])
     a,b  = todos(todo)
+    the.iter = len(done) - the.label
     if generate:
       return self.neighbors(generate(best,rest), a) + b 
     else:
@@ -538,14 +577,21 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
       return  sorted(a, key=key, reverse=True) + b
 
   def loop(todo:rows, done:rows) -> rows:
-    for k in range(the.Last - the.label):
-      if len(todo) < 3 : break
+    while len(todo) > 2 and len(done) < the.Last:
       top,*todo = guess(todo, done)
       done     += [top]
       done      = ranked(done)
     return done
+  
+  todo, done = self.rows[the.label:], ranked(self.rows[:the.label])
 
-  return loop(self.rows[the.label:], ranked(self.rows[:the.label]))
+  if the.Branch == True:
+    todo, done = self.branch(used = [])
+  
+  if score == 'UCB_GPM':
+    return ranked(UCB_GPM(self, todo, done))
+  
+  return loop(todo, done)
 #
 # ## Utils
 
@@ -821,6 +867,153 @@ class egs:
                   stats.SOME(mqs1000, f"mqs1000,{n}")]
 
     stats.report(somes, 0.01)
+
+  def policies():
+    def normalized_exp(k, n, shift):
+        exp_values = [math.exp(0.25 * j) for j in range(n)]
+        min_exp, max_exp = min(exp_values), max(exp_values)
+        return (math.exp(0.25 * k) - min_exp) / (max_exp - min_exp) + shift
+    
+    def exploit(B, R):
+        return B
+    
+    def explore(B, R):
+        return (B + R) / (abs(B - R) + 10**-30)
+    
+    scoring_policies = [('exploit', lambda B, R,: exploit(B, R)),
+                        ('explore', lambda B, R: explore(B, R)),
+                        ('b2', lambda B, R: (B**2) / (R + 10**-30)),
+                        ('Random', lambda B, R: random.random()),
+                        ('SimAnneal', lambda B, R: ((exp(B) + 1) ** normalized_exp(the.iter, the.Last, 1) + (exp(R) + 1)) / (abs(exp(B) - exp(R)) + 10**-30)),
+                        ('ExpProgressive', lambda B, R: normalized_exp(the.iter, the.Last, 0) * exploit(B,R) + (1 - normalized_exp(the.iter, the.Last, 0)) * explore(B,R)),
+                        ('UCB_GPM', 'UCB_GPM')]
+    
+    print(the.train,  flush=True, file=sys.stderr)
+    print("\n"+the.train)
+    repeats  = 20
+    d        = DATA().adds(csv(the.train))
+    b4       = [d.chebyshev(row) for row in d.rows]
+    asIs,div = medianSd(b4)
+    rnd      = lambda z: z 
+
+    print(f"asIs\t: {asIs:.3f}")
+    print(f"div\t: {div:.3f}")
+    print(f"rows\t: {len(d.rows)}")
+    print(f"xcols\t: {len(d.cols.x)}")
+    print(f"ycols\t: {len(d.cols.y)}\n")
+
+    somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
+
+    for what,how in scoring_policies:
+      for the.Last in [20, 30, 40]:
+        start = time()
+        result = [rnd(d.chebyshev(d.shuffle().activeLearning(score=how)[0]))
+                for _ in range(repeats)]
+        print(f"{what}.{the.Last}: {(time() - start) /repeats:.2f} secs")
+        somes +=   [stats.SOME(result,    f"{what} ,{the.Last}")]
+
+    stats.report(somes, 0.01)
+
+  def branch():
+    scoring_policies = [('exploit', lambda B, R,: B),
+                        ('Random', lambda B, R: random.random()),
+                        ('UCB_GPM', 'UCB_GPM')]
+    
+    print(the.train,  flush=True, file=sys.stderr)
+    print("\n"+the.train)
+    repeats  = 20
+    d        = DATA().adds(csv(the.train))
+    b4       = [d.chebyshev(row) for row in d.rows]
+    asIs,div = medianSd(b4)
+    rnd      = lambda z: z 
+
+    print(f"asIs\t: {asIs:.3f}")
+    print(f"div\t: {div:.3f}")
+    print(f"rows\t: {len(d.rows)}")
+    print(f"xcols\t: {len(d.cols.x)}")
+    print(f"ycols\t: {len(d.cols.y)}\n")
+
+    somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
+
+    for what,how in scoring_policies:
+      for the.Branch in [False, True]:
+        for the.Last in [20, 30, 40]:
+          start = time()
+          result = [rnd(d.chebyshev(d.shuffle().activeLearning(score=how)[0]))
+                  for _ in range(repeats)]
+          print(f"{what}/branch={the.Branch}.{the.Last}: {(time() - start) /repeats:.2f} secs")
+          somes +=   [stats.SOME(result,    f"{what}/branch={the.Branch} ,{the.Last}")]
+
+    stats.report(somes, 0.01)
+
+#--------- --------- --------- --------- --------- --------- --------- --------- --------
+# ## Gaussian Process UCB (Sklearn)
+
+import numpy as np
+import random
+from scipy.optimize import fmin_l_bfgs_b
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
+
+import warnings
+from sklearn.exceptions import ConvergenceWarning
+warnings.filterwarnings("ignore", category=ConvergenceWarning)
+warnings.filterwarnings("ignore", message="Predicted variances smaller than 0. Setting those variances to 0.")
+
+def UCB_GPM(d, todo, done):
+    kernel = C(1.0, (1e-8, 1e8)) * RBF(1.0, (1e-8, 1e8))
+    gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10, optimizer=None)
+    
+    num_indexes = [col.at for col in d.cols.x if type(col) == NUM]
+    sym_indexes = [col.at for col in d.cols.x if type(col) == SYM]
+    
+    num_transformer = StandardScaler()
+    cat_transformer = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+    
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', num_transformer, num_indexes),
+            ('cat', cat_transformer, sym_indexes)])
+    
+    pipeline = Pipeline(steps=[('preprocessor', preprocessor)])
+
+    if sym_indexes:
+        cat_data = np.array([[str(row[idx]) for idx in sym_indexes] for row in done], dtype=object)
+        cat_transformer.fit(cat_data)
+    
+    def custom_optimizer(obj_func, initial_theta, bounds):
+        theta_opt, func_min, _ = fmin_l_bfgs_b(obj_func, initial_theta, bounds=bounds, maxiter=1000)
+        return theta_opt, func_min
+    
+    gp.optimizer = custom_optimizer
+    
+    def update_gp_model(done_set):
+        X_done = np.array([x for x in done_set], dtype=object)
+        y_done = np.array([-d.chebyshev(x) for x in done_set])
+        X_done_transformed = pipeline.fit_transform(X_done)
+        gp.fit(X_done_transformed, y_done)
+    
+    def ucb(x, kappa=2.576):
+        x = np.array(x).reshape(1, -1).astype(object)
+        x_transformed = pipeline.transform(x)
+        mean, std = gp.predict(x_transformed, return_std=True)
+        return mean + kappa * std
+    
+    while todo and len(done) < the.Last:
+        update_gp_model(done)
+        random.shuffle(todo)
+        todo_subset = todo[:the.buffer]
+
+        ucb_values = [ucb(row) for row in todo_subset]
+        best_idx = np.argmax(ucb_values)
+        best_candidate = todo.pop(best_idx)
+         
+        done.append(best_candidate)
+    
+    return done
 #
 # ## Main
 the = SETTINGS(__doc__)
