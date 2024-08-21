@@ -55,21 +55,24 @@ class="toc-section-number">1</span> The general problem:</a></li>
 id="toc-more-specific-problems"><span
 class="toc-section-number">2</span> More specific problems:</a>
 <ul>
+<li><a href="#exploring-quirks-with-the-oracle"
+id="toc-exploring-quirks-with-the-oracle"><span
+class="toc-section-number">2.1</span> Exploring Quirks with the
+Oracle</a></li>
 <li><a href="#acquisition-functions"
 id="toc-acquisition-functions"><span
-class="toc-section-number">2.1</span> Acquisition functions</a></li>
-<li><a href="#initial-label-selection"
-id="toc-initial-label-selection"><span
-class="toc-section-number">2.2</span> Initial label selection</a></li>
+class="toc-section-number">2.2</span> Acquisition functions</a></li>
+<li><a href="#initial-label-selection-avoiding-the-cold-start-problem"
+id="toc-initial-label-selection-avoiding-the-cold-start-problem"><span
+class="toc-section-number">2.3</span> Initial label selection (avoiding
+the “cold start” problem)</a></li>
 <li><a href="#initial-data-selection"
 id="toc-initial-data-selection"><span
-class="toc-section-number">2.3</span> Initial data selection</a></li>
+class="toc-section-number">2.4</span> Initial data selection</a></li>
 <li><a href="#clustering" id="toc-clustering"><span
-class="toc-section-number">2.4</span> Clustering</a></li>
+class="toc-section-number">2.5</span> Clustering</a></li>
 <li><a href="#streaming" id="toc-streaming"><span
-class="toc-section-number">2.5</span> Streaming</a></li>
-<li><a href="#oracle-errors" id="toc-oracle-errors"><span
-class="toc-section-number">2.6</span> Oracle errors</a></li>
+class="toc-section-number">2.6</span> Streaming</a></li>
 <li><a href="#explanation" id="toc-explanation"><span
 class="toc-section-number">2.7</span> Explanation</a></li>
 <li><a href="#higher-dimensional-data"
@@ -110,21 +113,36 @@ about a year). Can we get this down to 15-20?</li>
 </ul>
 <h2 data-number="2" id="more-specific-problems"><span
 class="header-section-number">2</span> More specific problems:</h2>
-<h3 data-number="2.1" id="acquisition-functions"><span
-class="header-section-number">2.1</span> Acquisition functions</h3>
+<h3 data-number="2.1" id="exploring-quirks-with-the-oracle"><span
+class="header-section-number">2.1</span> Exploring Quirks with the
+Oracle</h3>
+<ul>
+<li>Assume X% wrong, try things with increasing X
+(e.g. 0,10,20,40%)</li>
+<li>Assuming N oracles all give different opinions, is there value in
+combining results from different sessions with different oracles? Should
+we run such sessions in parrallel or in series (the latter is attractive
+since it means experience from one expert could simplify into the
+experiernce of the next expert).</li>
+</ul>
+<h3 data-number="2.2" id="acquisition-functions"><span
+class="header-section-number">2.2</span> Acquisition functions</h3>
 <ul>
 <li>Explore? exploit? adaptive?</li>
 <li>Uncertainty (or not)</li>
 <li>Different for different kinds of data?</li>
 <li>Membership query synthesis</li>
 </ul>
-<h3 data-number="2.2" id="initial-label-selection"><span
-class="header-section-number">2.2</span> Initial label selection</h3>
+<h3 data-number="2.3"
+id="initial-label-selection-avoiding-the-cold-start-problem"><span
+class="header-section-number">2.3</span> Initial label selection
+(avoiding the “cold start” problem)</h3>
 <ul>
-<li>Random, diversity, rrp</li>
+<li>Heuristics to intiialize the labeled set?</li>
+<li>Random, diversity, rrp?</li>
 </ul>
-<h3 data-number="2.3" id="initial-data-selection"><span
-class="header-section-number">2.3</span> Initial data selection</h3>
+<h3 data-number="2.4" id="initial-data-selection"><span
+class="header-section-number">2.4</span> Initial data selection</h3>
 <ul>
 <li>Full dendogram generation, then reflection across the whole
 structure.
@@ -138,13 +156,19 @@ structure.
 for the second part?</li>
 </ul></li>
 </ul>
-<h3 data-number="2.4" id="clustering"><span
-class="header-section-number">2.4</span> Clustering</h3>
+<h3 data-number="2.5" id="clustering"><span
+class="header-section-number">2.5</span> Clustering</h3>
 <ul>
 <li>Anything better than twoFar?</li>
+<li>Can we discover important clusters as we go (regions that need their
+own model).
+<ul>
+<li>If we fork a new cluster, what of the old model can we take to
+it?</li>
+</ul></li>
 </ul>
-<h3 data-number="2.5" id="streaming"><span
-class="header-section-number">2.5</span> Streaming</h3>
+<h3 data-number="2.6" id="streaming"><span
+class="header-section-number">2.6</span> Streaming</h3>
 <ul>
 <li>Early stopping? Track progress to date then stop early</li>
 <li>Pool learning:
@@ -160,12 +184,6 @@ examples.</li>
 </ul></li>
 <li>Why does the faster heuristic work? can we use that to build a
 better algorithm?</li>
-</ul>
-<h3 data-number="2.6" id="oracle-errors"><span
-class="header-section-number">2.6</span> Oracle errors</h3>
-<ul>
-<li>Assume X% wrong, try things with increasing X
-(e.g. 0,10,20,40%)</li>
 </ul>
 <h3 data-number="2.7" id="explanation"><span
 class="header-section-number">2.7</span> Explanation</h3>

@@ -18,6 +18,7 @@ the fewest number of goal values?
     -b --buffer int    chunk size, when streaming   = 100
     -B --branch bool   set branch method            = False  
     -d --divide int    half with mean or median     = 0
+    -D --Dull   bool   if true, round to cohen's d  = False
     -L --Last   int    max number of labels         = 30  
     -c --cut    float  borderline best:rest         = 0.5  
     -C --Cohen  float  pragmatically small          = 0.35
@@ -826,12 +827,16 @@ class egs:
     print("\n"+the.train)
     repeats  = 20
     d        = DATA().adds(csv(the.train))
-    b4       = [d.chebyshev(row) for row in d.rows]
+    b4       = sorted([d.chebyshev(row) for row in d.rows])
     asIs,div = medianSd(b4)
-    rnd      = lambda z: z 
+    dull = div*the.Cohen
+    rnd      = lambda z: ((int(z/dull) * dull) if the.Dull else z)
+    least    = sorted([rnd(x) for x in b4])[0]
 
     print(f"asIs\t: {asIs:.3f}")
     print(f"div\t: {div:.3f}")
+    print(f"dull\t: {dull:.3f}")
+    print(f"least\t: {least:.3f}")
     print(f"rows\t: {len(d.rows)}")
     print(f"xcols\t: {len(d.cols.x)}")
     print(f"ycols\t: {len(d.cols.y)}\n")

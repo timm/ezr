@@ -67,17 +67,6 @@ class="toc-section-number">5</span> Why study simplicity? (2)</a></li>
 <li><a href="#surfing-the-long-tail"
 id="toc-surfing-the-long-tail"><span class="toc-section-number">6</span>
 Surfing the long tail</a></li>
-<li><a href="#aside-q-what-is-software-engineering"
-id="toc-aside-q-what-is-software-engineering"><span
-class="toc-section-number">7</span> Aside: Q: What is Software
-Engineering?</a></li>
-<li><a href="#application-of-little-data-in-se-software-review"
-id="toc-application-of-little-data-in-se-software-review"><span
-class="toc-section-number">8</span> Application of Little Data in SE:
-Software Review</a></li>
-<li><a href="#more-on-software-review"
-id="toc-more-on-software-review"><span
-class="toc-section-number">9</span> More on Software Review</a></li>
 </ul>
 </nav>
 <h2 data-number="1" id="i-want-you-to-be-an-ai-brain-surgeon"><span
@@ -191,72 +180,6 @@ data already seen)</li>
 <li>Are their domain, were models need less, not more, data?</li>
 </ul></li>
 </ul>
-<h2 data-number="7" id="aside-q-what-is-software-engineering"><span
-class="header-section-number">7</span> Aside: Q: What is Software
-Engineering?</h2>
-<ul>
-<li>A: The delivery and maintainable of software products to an
-acceptable standard, built using current constraints.</li>
-<li>LLMs build “quality” solutions? That respect “current
-constraints”?</li>
-<li>Do LLMs work for all tasks?
-<ul>
-<li>Not really<a href="#fn3" class="footnote-ref" id="fnref3"
-role="doc-noteref"><sup>3</sup></a>. They often produce useful
-suggestions. But mixed in with the good is also the bad, the terrible,
-the misleading and the dangerous<a href="#fn4" class="footnote-ref"
-id="fnref4" role="doc-noteref"><sup>4</sup></a>.</li>
-</ul></li>
-<li>Are LLMs bad science?
-<ul>
-<li>Harder for research LLM papers to, say, run 20 times and report the
-variability in the results</li>
-<li>Harder for other researchers to check results from other
-people.</li>
-<li>AI needs 1% of world’s power, creating 4% of our carbon emissions<a
-href="#fn5" class="footnote-ref" id="fnref5"
-role="doc-noteref"><sup>5</sup></a></li>
-</ul></li>
-<li>Do they need too much data ? (above)</li>
-<li>Are there other options? That use less data? That can be
-tested?</li>
-</ul>
-<h2 data-number="8"
-id="application-of-little-data-in-se-software-review"><span
-class="header-section-number">8</span> Application of Little Data in SE:
-Software Review</h2>
-<p><img src="./img/review.png" width="300" /></p>
-<ul>
-<li>The more we use AI in SE, the more code will be auto-generated.</li>
-<li>The more we auto-generate code
-<ul>
-<li>the less time software engineers spend writing and reviewing new
-code, written by someone or something else (which internally, are a
-mystery)</li>
-</ul></li>
-<li>The less we understand code,
-<ul>
-<li>the more we will use black-boxes components, where, once a system is
-assembled, its control settings are tuned.</li>
-</ul></li>
-</ul>
-<p>In this scenario: we must reduce the effort (human and CPU) for that
-tuning.</p>
-<h2 data-number="9" id="more-on-software-review"><span
-class="header-section-number">9</span> More on Software Review</h2>
-<ul>
-<li>We define “software review” as a panel of SMEs (subject matter
-experts), looking at examples of behavior to recommend how to improve
-software.</li>
-<li>SME time is usually very limited so, such reviews must complete
-after looking at just a small number of very informative examples.</li>
-<li>To support the software review process, we explore methods that
-train a predictive model to guess if some oracle will like/dislike the
-next example.</li>
-<li>These predictive models work with SMEs to guide them as they explore
-the examples. Afterwards, the models can handle new examples, while the
-panelists are busy, elsewhere</li>
-</ul>
 <section id="footnotes" class="footnotes footnotes-end-of-document"
 role="doc-endnotes">
 <hr />
@@ -269,15 +192,6 @@ P.H., Bibi, A., Albanie, S. and Bethge, M., 2024. No” zero-shot” without
 exponential data: Pretraining concept frequency determines multimodal
 model performance. arXiv preprint arXiv:2404.04125.<a href="#fnref2"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p><a
-href="https://docs.google.com/document/d/1dF4GePCf04IW5uZnRSGQXRlzo5VyD5u0PQ3hfy-Zd6Q/edit">docs.google.com/document/d/1dF4GePCf04IW5uZnRSGQXRlzo5VyD5u0PQ3hfy-Zd6Q/edit</a>.<a
-href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p><a
-href="https://docs.google.com/document/d/1dF4GePCf04IW5uZnRSGQXRlzo5VyD5u0PQ3hfy-Zd6Q/edit">docs.google.com/document/d/1dF4GePCf04IW5uZnRSGQXRlzo5VyD5u0PQ3hfy-Zd6Q/edit</a>.<a
-href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p><a
-href="https://www.linkedin.com/pulse/data-centers-its-environmental-impacts-i%C5%9F%C4%B1l-durmu%C5%9F-q5xvf/">www.linkedin.com/pulse/data-centers-its-environmental-impacts-i%C5%9F%C4%B1l-durmu%C5%9F-q5xvf/</a><a
-href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 </body>

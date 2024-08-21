@@ -1297,10 +1297,11 @@ class="sourceCode py"><code class="sourceCode python"><span id="cb33-1"><a href=
 <span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>show([<span class="st">&quot;dim&quot;</span>, <span class="st">&quot;size&quot;</span>,<span class="st">&quot;xcols&quot;</span>,<span class="st">&quot;ycols&quot;</span>,<span class="st">&quot;rows&quot;</span>,<span class="st">&quot;file&quot;</span>])</span>
 <span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>show([<span class="st">&quot;------&quot;</span>] <span class="op">*</span> <span class="dv">6</span>)</span>
 <span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>[show(myfun(arg)) <span class="cf">for</span> arg <span class="kw">in</span> sys.argv <span class="cf">if</span> arg[<span class="op">-</span><span class="dv">4</span>:] <span class="op">==</span> <span class="st">&quot;.csv&quot;</span>]</span></code></pre></div>
-<p>On my machine, when I run</p>
+<p>On my machine, when I run …</p>
 <div class="sourceCode" id="cb34"><pre
-class="sourceCode py"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>python3<span class="fl">.13</span> <span class="op">-</span>B extend.py ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>[chmp]<span class="op">*/*</span>.csv</span></code></pre></div>
-<p>This prints some stats on the data files:</p>
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python3.13</span> <span class="at">-B</span> extend.py ../moot/optimize/<span class="pp">[</span><span class="ss">chmp</span><span class="pp">]*</span>/<span class="pp">*</span>.csv <span class="op">&gt;</span> ~/tmp/tmp</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sort</span> <span class="at">-r</span> <span class="at">-k</span> 1,2 ~/tmp/tmp</span></code></pre></div>
+<p>… this prints some stats on the data files:</p>
 <pre><code>dim     size    xcols   ycols   rows    file
 ------  ------  ------  ------  ------  ------
 small   small        4       3     398  misc/auto93.csv

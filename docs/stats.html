@@ -114,13 +114,13 @@ numbers.” i.txt,i.max,i.lo, i.hi = txt,max, 1E30, -1E30
 i.rank,i.n,i._has,i.ok = 0,0,[],True i.adds(inits)</p>
 <pre><code>def __repr__(i): 
   &quot;Print the reservoir sampling.&quot;
-  return  &#39;SOME(&#39;+str(dict(txt=i.txt,rank=&quot;i.rank&quot;,n=i.n,all=len(i._has),ok=i.ok))+&quot;)&quot;
+  return  &#39;SOME(&#39;+str(dict(txt=i.txt,rank=&quot;i.rank&quot;,n=i.n,all=len(i.has()),ok=i.ok))+&quot;)&quot;
 
 def adds(i,a):  
   &quot;Handle multiple nests samples.&quot;
   for b in a:
     if   isinstance(b,(list,tuple)): [i.adds(c) for c in b]  
-    elif isinstance(b,SOME):         [i.add(c) for c in b._has]
+    elif isinstance(b,SOME):         [i.add(c) for c in b.has()]
     else: i.add(b) 
 
 def add(i,x):  
@@ -171,8 +171,7 @@ def bar(i, some, fmt=&quot;%8.3f&quot;, word=&quot;%10s&quot;, width=50):
   for j in range(nd,ne): out[j] = &quot;-&quot;
   out[width//2] = &quot;|&quot;
   out[nc] = &quot;*&quot; 
-  return &#39;, &#39;.join([&quot;%2d&quot; % some.rank, word % some.txt, fmt%c, fmt%(d-b),
-                    &#39;&#39;.join(out),fmt%has[0],fmt%has[-1]])
+  return &#39;, &#39;.join([&quot;%2d&quot; % some.rank, word % some.txt, fmt%c, fmt%(d-b), &#39;&#39;.join(out)])
 
 def delta(i,j):
   &quot;Report distance between two SOMEs, modulated in terms of the standard deviation.&quot;
