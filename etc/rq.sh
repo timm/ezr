@@ -1,10 +1,10 @@
-for i in *.csv; do
+for i in $*; do
   echo "#"
   cat $i \
   | sed 's/[ \t]//g'  \
   | sort -t, -nk 1 -nk 3   \
   | gawk -F, 'NF> 1 && !($2 in a) { OFS=","; print $1,$2,$3,$4;  a[$2]}' \
-  | tac
+  | tail -r
 done | gawk -F, '
 /#/ { records++; next } 
 { if ( $1 > maxRank) maxRank=$1

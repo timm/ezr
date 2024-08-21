@@ -17,6 +17,7 @@ the fewest number of goal values?
 
     -b --buffer int    chunk size, when streaming   = 100
     -B --branch bool   set branch method            = False  
+    -d --divide int    half with mean or median     = 0
     -L --Last   int    max number of labels         = 30  
     -c --cut    float  borderline best:rest         = 0.5  
     -C --Cohen  float  pragmatically small          = 0.35
@@ -73,6 +74,7 @@ from dataclasses import dataclass, field, fields
 import datetime
 from math import exp,log,cos,sqrt,pi
 import re,sys,ast,math,random,inspect
+import traceback
 from time import time
 import stats
 R = random.random
@@ -409,12 +411,10 @@ def twoFar(self:DATA, rows:rows, sortp=False, samples:int=None) -> tuple[row,row
 
 @of("Divide rows by distance to two faraway points")
 def half(self:DATA, rows:rows, sortp=False) -> tuple[rows,rows,row,row,float]:
-  left,right = self.twoFar(rows, sortp=sortp)
-  cut = self.dist(left,right)/2
-  lefts,rights = [],[]
-  for row in rows: 
-    (lefts if self.dist(row,left) <= cut else rights).append(row)
-  return self.dist(left,lefts[-1]),lefts, rights, left, right
+  if the.divide == 0:
+    return self.half_mean(rows, True)
+  if the.divide == 1:
+    return self.half_median(rows, True)
 
 @of("Divide rows by distance to two faraway points")
 def half_mean(self:DATA, rows:rows, sortp=False) -> tuple[rows,rows,row,row,float]:
@@ -452,7 +452,7 @@ def branch(self:DATA, region:rows=None, stop=None, used=[], evals=1):
     stop = stop or the.Stop
 
     if len(region) > stop:
-        distance, lefts, rights, left, right = self.half_mean(region, True)
+        distance, lefts, rights, left, right = self.half(region, True)
         if left not in used:
             used.append(left)
         if right not in used:
@@ -585,7 +585,7 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
   
   todo, done = self.rows[the.label:], ranked(self.rows[:the.label])
 
-  if the.Branch == True:
+  if the.branch == True:
     todo, done = self.branch(used = [])
   
   if score == 'UCB_GPM':
@@ -816,7 +816,10 @@ class egs:
       if arg[-4:] == ".csv":
         the.train=arg
         random.seed(the.seed)
-        egs._mqs()
+        try:
+            egs._mqs()
+        except Exception:
+            traceback.print_stack()
 
   def _mqs():
     print(the.train,  flush=True, file=sys.stderr)
@@ -936,84 +939,131 @@ class egs:
     somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
 
     for what,how in scoring_policies:
-      for the.Branch in [False, True]:
+      for the.branch in [False, True]:
         for the.Last in [20, 30, 40]:
           start = time()
           result = [rnd(d.chebyshev(d.shuffle().activeLearning(score=how)[0]))
                   for _ in range(repeats)]
-          print(f"{what}/branch={the.Branch}.{the.Last}: {(time() - start) /repeats:.2f} secs")
-          somes +=   [stats.SOME(result,    f"{what}/branch={the.Branch} ,{the.Last}")]
+          print(f"{what}/branch={the.branch}.{the.Last}: {(time() - start) /repeats:.2f} secs")
+          somes +=   [stats.SOME(result,    f"{what}/branch={the.branch} ,{the.Last}")]
 
     stats.report(somes, 0.01)
 
-#--------- --------- --------- --------- --------- --------- --------- --------- --------
-# ## Gaussian Process UCB (Sklearn)
+  def mean_vs_median():
+    scoring_policies = [('exploit', lambda B, R,: B),
+                        ('Random', lambda B, R: random.random()),
+                        ('UCB_GPM', 'UCB_GPM')]
+    
+    print(the.train,  flush=True, file=sys.stderr)
+    print("\n"+the.train)
+    repeats  = 20
+    d        = DATA().adds(csv(the.train))
+    b4       = [d.chebyshev(row) for row in d.rows]
+    asIs,div = medianSd(b4)
+    rnd      = lambda z: z 
 
-import numpy as np
-import random
-from scipy.optimize import fmin_l_bfgs_b
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
+    print(f"asIs\t: {asIs:.3f}")
+    print(f"div\t: {div:.3f}")
+    print(f"rows\t: {len(d.rows)}")
+    print(f"xcols\t: {len(d.cols.x)}")
+    print(f"ycols\t: {len(d.cols.y)}\n")
 
-import warnings
-from sklearn.exceptions import ConvergenceWarning
-warnings.filterwarnings("ignore", category=ConvergenceWarning)
-warnings.filterwarnings("ignore", message="Predicted variances smaller than 0. Setting those variances to 0.")
+    somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
 
-def UCB_GPM(d, todo, done):
-    kernel = C(1.0, (1e-8, 1e8)) * RBF(1.0, (1e-8, 1e8))
-    gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10, optimizer=None)
-    
-    num_indexes = [col.at for col in d.cols.x if type(col) == NUM]
-    sym_indexes = [col.at for col in d.cols.x if type(col) == SYM]
-    
-    num_transformer = StandardScaler()
-    cat_transformer = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
-    
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', num_transformer, num_indexes),
-            ('cat', cat_transformer, sym_indexes)])
-    
-    pipeline = Pipeline(steps=[('preprocessor', preprocessor)])
+    the.branch == True
 
-    if sym_indexes:
-        cat_data = np.array([[str(row[idx]) for idx in sym_indexes] for row in done], dtype=object)
-        cat_transformer.fit(cat_data)
-    
-    def custom_optimizer(obj_func, initial_theta, bounds):
-        theta_opt, func_min, _ = fmin_l_bfgs_b(obj_func, initial_theta, bounds=bounds, maxiter=1000)
-        return theta_opt, func_min
-    
-    gp.optimizer = custom_optimizer
-    
-    def update_gp_model(done_set):
-        X_done = np.array([x for x in done_set], dtype=object)
-        y_done = np.array([-d.chebyshev(x) for x in done_set])
-        X_done_transformed = pipeline.fit_transform(X_done)
-        gp.fit(X_done_transformed, y_done)
-    
-    def ucb(x, kappa=2.576):
-        x = np.array(x).reshape(1, -1).astype(object)
-        x_transformed = pipeline.transform(x)
-        mean, std = gp.predict(x_transformed, return_std=True)
-        return mean + kappa * std
-    
-    while todo and len(done) < the.Last:
-        update_gp_model(done)
-        random.shuffle(todo)
-        todo_subset = todo[:the.buffer]
+    for what,how in scoring_policies:
+      for the.divide in [0, 1]:
+        divide = 'mean' if the.divide == 0 else 'median'
+        for the.Last in [20, 30, 40]:
+          start = time()
+          result = [rnd(d.chebyshev(d.shuffle().activeLearning(score=how)[0]))
+                  for _ in range(repeats)]
+          print(f"{what}/branch={divide}.{the.Last}: {(time() - start) /repeats:.2f} secs")
+          somes +=   [stats.SOME(result,    f"{what}/branch={divide} ,{the.Last}")]
 
-        ucb_values = [ucb(row) for row in todo_subset]
-        best_idx = np.argmax(ucb_values)
-        best_candidate = todo.pop(best_idx)
-         
-        done.append(best_candidate)
-    
-    return done
+    stats.report(somes, 0.01)
+
+# #--------- --------- --------- --------- --------- --------- --------- --------- --------
+# # ## Gaussian Process UCB (Sklearn)
+#
+# import numpy as np
+# from sklearn.preprocessing import StandardScaler, OneHotEncoder
+# from sklearn.compose import ColumnTransformer
+# from sklearn.pipeline import Pipeline
+# from sklearn.gaussian_process import GaussianProcessRegressor
+# from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
+#
+# import warnings
+# from sklearn.exceptions import ConvergenceWarning
+# warnings.filterwarnings("ignore", category=ConvergenceWarning)
+# warnings.filterwarnings("ignore", message="Predicted variances smaller than 0. Setting those variances to 0.")
+#
+# def UCB_GPM(d, todo, done):
+#     kernel = C(1.0, (1e-8, 1e8)) * RBF(1.0, (1e-8, 1e8))
+#     gp = GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10)
+#
+#     num_indexes = [col.at for col in d.cols.x if type(col) == NUM]
+#     sym_indexes = [col.at for col in d.cols.x if type(col) == SYM]
+#
+#     num_transformer = StandardScaler()
+#     cat_transformer = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+#
+#     preprocessor = ColumnTransformer(
+#         transformers=[
+#             ('num', num_transformer, num_indexes),
+#             ('cat', cat_transformer, sym_indexes)])
+#
+#     pipeline = Pipeline(steps=[('preprocessor', preprocessor)])
+#
+#     if sym_indexes:
+#         cat_data = np.array([[str(row[idx]) for idx in sym_indexes] for row in done], dtype=object)
+#         cat_transformer.fit(cat_data)
+#     
+#     def grid_search_optimizer(obj_func, initial_theta, bounds):
+#         best_theta = np.copy(initial_theta).flatten()
+#         best_value, _ = obj_func(best_theta)
+#         
+#         for i in range(10):
+#             candidate_theta = initial_theta + np.random.uniform(-0.1, 0.1, size=initial_theta.shape)
+#             candidate_theta = np.clip(candidate_theta, bounds[:, 0], bounds[:, 1])
+#             candidate_theta = candidate_theta.flatten()
+#             
+#             candidate_value, _ = obj_func(candidate_theta)
+#             
+#             if candidate_value < best_value:
+#                 best_theta = np.copy(candidate_theta)
+#                 best_value = candidate_value
+#         
+#         return best_theta, best_value
+#     
+#     gp.optimizer = grid_search_optimizer
+#
+#     def update_gp_model(done_set):
+#         X_done = np.array([x for x in done_set], dtype=object)
+#         y_done = np.array([-d.chebyshev(x) for x in done_set])
+#         X_done_transformed = pipeline.fit_transform(X_done)
+#         gp.fit(X_done_transformed, y_done)
+#     
+#     def ucb(x, kappa=2.576):
+#         x = np.array(x).reshape(1, -1).astype(object)
+#         x_transformed = pipeline.transform(x)
+#         mean, std = gp.predict(x_transformed, return_std=True)
+#         return mean + kappa * std
+#     
+#     while todo and len(done) < the.Last:
+#         update_gp_model(done)
+#         random.shuffle(todo)
+#         todo_subset = todo[:the.buffer]
+#
+#         ucb_values = [ucb(row) for row in todo_subset]
+#         best_idx = np.argmax(ucb_values)
+#         best_candidate = todo.pop(best_idx)
+#          
+#         done.append(best_candidate)
+#     
+#     return done
+#
 #
 # ## Main
 the = SETTINGS(__doc__)
