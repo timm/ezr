@@ -589,8 +589,6 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
   if the.branch == True:
     todo, done = self.branch(used = [])
   
-  if score == 'UCB_GPM':
-    return ranked(UCB_GPM(self, todo, done))
   
   return loop(todo, done)
 #
@@ -683,9 +681,12 @@ class egs:
   def all():
    for s in dir(egs):
      if s[0] != "_" and s != "all":
-        print(s)
+        print("\n---------------------------",s,"-------------------------------")
         random.seed(the.seed)
-        getattr(egs,s)()
+        try:
+            getattr(egs,s)()
+        except Exception:
+            print("FAIL!!!!!! ",s,Exception)
 
   def nums():
     r  = 256
@@ -893,8 +894,7 @@ class egs:
                         ('b2', lambda B, R: (B**2) / (R + 10**-30)),
                         ('Random', lambda B, R: random.random()),
                         ('SimAnneal', lambda B, R: ((exp(B) + 1) ** normalized_exp(the.iter, the.Last, 1) + (exp(R) + 1)) / (abs(exp(B) - exp(R)) + 10**-30)),
-                        ('ExpProgressive', lambda B, R: normalized_exp(the.iter, the.Last, 0) * exploit(B,R) + (1 - normalized_exp(the.iter, the.Last, 0)) * explore(B,R)),
-                        ('UCB_GPM', 'UCB_GPM')]
+                        ('ExpProgressive', lambda B, R: normalized_exp(the.iter, the.Last, 0) * exploit(B,R) + (1 - normalized_exp(the.iter, the.Last, 0)) * explore(B,R))]
     
     print(the.train,  flush=True, file=sys.stderr)
     print("\n"+the.train)
@@ -924,8 +924,7 @@ class egs:
 
   def branch():
     scoring_policies = [('exploit', lambda B, R,: B),
-                        ('Random', lambda B, R: random.random()),
-                        ('UCB_GPM', 'UCB_GPM')]
+                        ('Random', lambda B, R: random.random())]
     
     print(the.train,  flush=True, file=sys.stderr)
     print("\n"+the.train)
@@ -956,8 +955,7 @@ class egs:
 
   def mean_vs_median():
     scoring_policies = [('exploit', lambda B, R,: B),
-                        ('Random', lambda B, R: random.random()),
-                        ('UCB_GPM', 'UCB_GPM')]
+                        ('Random', lambda B, R: random.random())]
     
     print(the.train,  flush=True, file=sys.stderr)
     print("\n"+the.train)
