@@ -50,9 +50,9 @@ and maximize fuel consumption.
 
      Clndrs   Volume  HpX  Model  origin  Lbs-  Acc+  Mpg+
      -------  ------  ---  -----  ------  ----  ----  ----
-      4       90      48   78     2       1985  21.5   40
+      4       90      48   78     2       1985  21.4   40
       4       98      79   76     1       2255  17.7   30
-      4       98      68   77     3       2045  18.5   30
+      4       98      68   77     3       2045  18.6   30
       4       79      67   74     2       2000  16     30
       ...
       4      151      85   78     1       2855  17.6   20
@@ -616,6 +616,11 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
 
 # ### One-Liners
 
+def cdf(x,mu,sd):
+   def cdf1(z): return 1 - 0.5*2.718**(-0.717*z - 0.416*z*z)
+   z = (x - mu) / sd
+   return cdf1(z) if z >= 0 else 1 - cdf1(-z)
+
 # non parametric mid and div
 def medianSd(a: list[number]) -> tuple[number,number]:
   a = sorted(a)
@@ -804,24 +809,49 @@ class egs:
     print(d.chebyshev(d.clone([row for row in d.diversity(stop=10)]).chebyshevs().rows[0]))
     #print(len([d.clone([row for row in d.diversity(stop=stop)]).chebyshevs().rows[0] for _ in range(20)]))
 
+  def clusters1():
+    d = DATA().adds(csv(the.train))
+    mid = d.mid()
+    mids  = stats.SOME(txt="mid")
+    somes  = [mids]
+    for k in [1,2,3,5]:
+      ks   = stats.SOME(txt=f"k{k}")
+      somes += [ks]
+      for train,test in xval(d.rows): # 5 -by 5 cross-val
+        d1 = d.clone(train)
+        for want in test:
+          for col in d1.cols.y:
+            mids.add((mid[col.at] - want[col.at])/col.div())
+          rows = d1.neighbors(want, train)[:k]
+          got  = d.predict(want, rows, k=k) 
+          for at,got1 in got.items():
+            sd = d.cols.all[at].div()
+            ks.add(  (want[at] - got1   )/sd)
+    stats.report(somes)
+
   def clusters2():
     d = DATA().adds(csv(the.train))
     somes  = []
-    mids  = stats.SOME(txt="mid")
-    somes += [mids]
+    mid1s  = stats.SOME(txt="mid-leaf")
+    mid0s  = stats.SOME(txt="mid-all")
+    somes += [mid1s,mid0s]
     for k in [1,2,3,5]:
       ks   = stats.SOME(txt=f"k{k}")
       somes += [ks]
       for train,test in xval(d.rows):
         cluster = d.cluster(train)
+        d1 = d.clone(train)
+        mid0  = d1.mid()
         for want in test:
+          for col in d1.cols.y:
+            mid0s.add((mid0[col.at] - want[col.at])/col.div())
           leaf = cluster.leaf(d, want)
           rows = leaf.data.rows
           got  = d.predict(want, rows, k=k) 
-          mid  = leaf.data.mid()
+          mid1  = leaf.data.mid()
           for at,got1 in got.items():
             sd = d.cols.all[at].div()
-            mids.add((want[at] - mid[at])/sd)
+            mid1s.add((want[at] - mid1[at])/sd)
             ks.add(  (want[at] - got1   )/sd)
     stats.report(somes)
 
@@ -889,7 +919,7 @@ class egs:
       mqs4 = [rnd(d.chebyshev(d.shuffle().activeLearning(generate=generate2)[0])) 
               for _ in range(20)]
       for col in sorted(used.values(), key=lambda col: -col.n):
-         print(f"\t{col.n}\t{col.mid():.3f}\t{col.div():.3f}\t{col.txt}")
+         print(f"\tfeature,{col.n},\t{col.mid()},\t{col.div():.3f},\t{col.txt}")
 
       print(f"mqs4.{n}: {(time() - start)/repeats:.2f} secs")
 
@@ -946,8 +976,8 @@ class egs:
     stats.report(somes, 0.01)
 
   def branch():
-    scoring_policies = [('exploit', lambda B, R,: B),
-                        ('Random', lambda B, R: random.random())]
+    scoring_policies = [('exploit', lambda B, R,: B - R),
+                        ('explore', lambda B, R :  (exp(B) + exp(R))/ abs(exp(B) - exp(R)))]
     
     print(the.train,  flush=True, file=sys.stderr)
     print("\n"+the.train)
@@ -966,13 +996,13 @@ class egs:
     somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
 
     for what,how in scoring_policies:
-      for the.branch in [False, True]:
-        for the.Last in [20, 30, 40]:
+      for the.Last in [20, 30, 40]:
+        for the.branch in [False, True]:
           start = time()
           result = [rnd(d.chebyshev(d.shuffle().activeLearning(score=how)[0]))
                   for _ in range(repeats)]
-          print(f"{what}/branch={the.branch}.{the.Last}: {(time() - start) /repeats:.2f} secs")
-          somes +=   [stats.SOME(result,    f"{what}/branch={the.branch} ,{the.Last}")]
+          print(f"{what}/b={the.branch}.{the.Last}: {(time() - start) /repeats:.2f} secs")
+          somes +=   [stats.SOME(result,    f"{what}/b={the.branch} ,{the.Last}")]
 
     stats.report(somes, 0.01)
 
