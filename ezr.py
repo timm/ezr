@@ -100,14 +100,15 @@ class COL:
   n   : int = 0
   at  : int = 0
   txt : str = ""
-#
+
 # SYMs tracks  symbol counts  and tracks the `mode` (the most common frequent symbol).
 @dataclass
 class SYM(COL):
   has  : dict = DICT()
   mode : atom=None
   most : int=0
-#
+
+  def clone(self:SYM): return SYM(at=self.at,txt=self.txt)
 # NUMs tracks  `lo,hi` seen so far, as well the `mu` (mean) and `sd` (standard deviation),
 # using Welford's algorithm.
 @dataclass
@@ -118,6 +119,8 @@ class NUM(COL):
   lo : number =  1E32
   hi : number = -1E32
   goal : number = 1
+
+  def clone(self:NUM): return NUM(at=self.at,txt=self.txt)
 
   # A minus sign at end of a NUM's name says "this is a column to minimize"
   # (all other goals are to be maximizes).
@@ -266,25 +269,42 @@ def guess(self:DATA, fun:Callable=None) -> row:
   for col in self.cols.x: out[col.at] = fun(col)
   return out
 
+# @of("stochastic version of Guess. maybe too clever?")
+# def exploit(self:COL, other:COL, n=20):
+#   n       = (self.n + other.n + 2*the.k)
+#   pr1,pr2 = (self.n + the.k) / n, (other.n + the.k) / n
+#   key     = lambda x: 2*self.like(x,pr1) -  other.like(x,pr2)
+#   def trio():
+#     x=self.guess()
+#     return key(x),self.at,x
+#   return max([trio() for _ in range(n)], key=nth(0))
+#
 @of("Guess a value that is more like `self` than  `other`.")
-def exploit(self:COL, other:COL, n=20):
-  n       = (self.n + other.n + 2*the.k)
-  pr1,pr2 = (self.n + the.k) / n, (other.n + the.k) / n
-  key     = lambda x: 2*self.like(x,pr1) -  other.like(x,pr2)
-  def trio():
-    x=self.guess()
-    return key(x),self.at,x
-  return max([trio() for _ in range(n)], key=nth(0))
+def exploit(self:NUM, other:NUM):
+  a = self.like(self.mid())
+  b = other.like(self.mid())
+  c = (self.n*a - other.n*b)/(self.n + other.n) 
+  return c,self,self.mid()
+
+@of("Guess a value that is more like `self` than  `other`.")
+def exploit(self:SYM, other:SYM):
+  priora = self.n/(self.n + other.n)
+  priorb = other.n/(self.n + other.n)
+  a = self.like(self.mid(),  priora)
+  b = other.like(self.mid(), priorb)
+  c = a - b 
+  return c,self,self.mid(),
 
 @of("Guess a row more like `self` than `other`.")
 def exploit(self:DATA, other:DATA, top=1000,used=None):
   out = ["?" for _ in self.cols.all]
-  for _,at,x in sorted([coli.exploit(colj) for coli,colj in zip(self.cols.x, other.cols.x)],
+  for _,col,x in sorted([coli.exploit(colj) for coli,colj in zip(self.cols.x, other.cols.x)],
                        reverse=True,key=nth(0))[:top]:
-     out[at] = x
+     out[col.at] = x
+     # if used non-nil, keep stats on what is used
      if used != None:
-        used[at] = used.get(at,None) or NUM(at=at)
-        used[at].add(x)
+        used[col.at] = used.get(col.at,None) or col.clone()
+        used[col.at].add(x)
   return out
 
 @of("Guess a row in between the rows of `self` and `other`.")
@@ -546,7 +566,7 @@ def like(self:SYM, x:any, prior:float) -> float:
   return (self.has.get(x,0) + the.m*prior) / (self.n + the.m)
 
 @of("How much a NUM likes a value `x`.")
-def like(self:NUM, x:number, _) -> float:
+def like(self:NUM, x:number, prior=None) -> float:
   v     = self.sd**2 + 1E-30
   nom   = exp(-1*(x - self.mu)**2/(2*v)) + 1E-30
   denom = (2*pi*v) **0.5
@@ -868,6 +888,9 @@ class egs:
       start = time()
       mqs4 = [rnd(d.chebyshev(d.shuffle().activeLearning(generate=generate2)[0])) 
               for _ in range(20)]
+      for col in sorted(used.values(), key=lambda col: -col.n):
+         print(f"\t{col.n}\t{col.mid():.3f}\t{col.div():.3f}\t{col.txt}")
+
       print(f"mqs4.{n}: {(time() - start)/repeats:.2f} secs")
 
       somes +=   [stats.SOME(rand,    f"random,{n}"),
