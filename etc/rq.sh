@@ -1,18 +1,12 @@
-for i in $*; do
-  echo "#"
-  cat $i \
-  | sed 's/[ \t]//g'  \
-  | sort -t, -nk 1 -nk 3   \
-  | gawk -F, 'NF> 1 && !($2 in a) { OFS=","; print $1,$2,$3,$4;  a[$2]}' \
-  | tail -r
-done | gawk -F, '
+report() {
+  gawk -F, '
 /#/ { records++; next } 
 { if ( $1 > maxRank) maxRank=$1
   count[$2][$1]++
   evals[$2][$1][++x]=$3
-  if ($2 != "baseline") delta[$2][$1][++x]= (baseline - $4)/(baseline  + 1E-30) 
+  if ($2 != "asIs") delta[$2][$1][x]= (baseline - $4)/(baseline  + 1E-30) 
 }
-/baseline/ { baseline = $4 }
+/asIs/ { baseline = $4 }
 
 function mu(a,    i,sum) {
   if (length(a) <1) return ""
@@ -58,5 +52,17 @@ function ranks(   rank,rx) {
         printf(" ,%3s",  per(count[rx][rank])  )
      print("") }}
 
-END { ranks() ; print("");  evaluations();  improvement()}
-'  | column -s, -t
+END { ranks() ; print("");  evaluations();  improvement() }
+   ' - | column -s, -t
+}
+
+for i in *.csv; do
+  echo "#"
+  cat $i \
+  | sed 's/[ \t]//g'  \
+  | sort -t, -nk 1 -nk 3   \
+  | gawk -F, 'NF> 1 && !($2 in a) && NF > 5 { OFS=","; print $1,$2,$3,$4;  a[$2]}' \
+  | tail -r
+done | report
+
+

@@ -68,7 +68,7 @@ actb4: ## experiment: mqs
 	mkdir -p $(Out)/$(Act)
 	$(foreach d, config hpo misc process,         \
 		$(foreach f, $(wildcard $(Data)/$d/*.csv),   \
-				echo "python3 $(PWD)/ezr.py -D -t $f -e $(Act)  | tee $(Out)/$(Act)/$(shell basename $f) & "; ))
+				echo "python3 $(PWD)/ezr.py  -t $f -e $(Act)  | tee $(Out)/$(Act)/$(shell basename $f) & "; ))
 
 fred:
 	echo $x

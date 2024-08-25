@@ -608,8 +608,9 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
 
   if the.branch == True:
     todo, done = self.branch(used = [])
-  
-  
+    #print(len(done))
+    if the.Last==0: return done
+
   return loop(todo, done)
 #
 # ## Utils
@@ -894,7 +895,7 @@ class egs:
 
     somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
 
-    for n in [20,25,30,50,100]:
+    for n in [15,20,25,30,50,100]:
       the.Last = n
       rand     = []
       for _ in range(repeats):
@@ -916,8 +917,10 @@ class egs:
       used={}
       generate2 =lambda best,rest: best.exploit(rest,top=4,used=used)
       start = time()
-      mqs4 = [rnd(d.chebyshev(d.shuffle().activeLearning(generate=generate2)[0])) 
-              for _ in range(20)]
+      mqs4 = []
+      for _ in range(20):
+          tmp = d.shuffle().activeLearning(generate=generate2)
+          mqs4 += [rnd(d.chebyshev(tmp[0]))]
       for col in sorted(used.values(), key=lambda col: -col.n):
          print(f"\tfeature,{col.n},\t{col.mid()},\t{col.div():.3f},\t{col.txt}")
 
@@ -977,7 +980,7 @@ class egs:
 
   def branch():
     scoring_policies = [('exploit', lambda B, R,: B - R),
-                        ('explore', lambda B, R :  (exp(B) + exp(R))/ abs(exp(B) - exp(R)))]
+                        ('explore', lambda B, R :  (exp(B) + exp(R))/ (1E-30 + abs(exp(B) - exp(R))))]
     
     print(the.train,  flush=True, file=sys.stderr)
     print("\n"+the.train)
@@ -996,13 +999,20 @@ class egs:
     somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
 
     for what,how in scoring_policies:
-      for the.Last in [20, 30, 40]:
+      for the.Last in [0,20, 30, 40]:
         for the.branch in [False, True]:
           start = time()
-          result = [rnd(d.chebyshev(d.shuffle().activeLearning(score=how)[0]))
-                  for _ in range(repeats)]
-          print(f"{what}/b={the.branch}.{the.Last}: {(time() - start) /repeats:.2f} secs")
-          somes +=   [stats.SOME(result,    f"{what}/b={the.branch} ,{the.Last}")]
+          result = [] 
+          runs = 0
+          for _ in range(repeats):
+             tmp=d.shuffle().activeLearning(score=how)
+             runs += len(tmp)
+             result += [rnd(d.chebyshev(tmp[0]))]
+
+          pre=f"{what}/b={the.branch}" if the.Last >0 else "rrp"
+          tag = f"{pre},{int(runs/repeats)}"
+          print(tag, f": {(time() - start) /repeats:.2f} secs")
+          somes +=   [stats.SOME(result,    tag)]
 
     stats.report(somes, 0.01)
 
