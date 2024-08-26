@@ -834,8 +834,8 @@ class egs:
     d = DATA().adds(csv(the.train))
     somes  = []
     mid1s  = stats.SOME(txt="mid-leaf")
-    mid0s  = stats.SOME(txt="mid-all")
-    somes += [mid1s,mid0s]
+    #mid0s  = stats.SOME(txt="mid-all")
+    somes += [mid1s]
     for k in [1,2,3,5]:
       ks   = stats.SOME(txt=f"k{k}")
       somes += [ks]
@@ -844,8 +844,7 @@ class egs:
         d1 = d.clone(train)
         mid0  = d1.mid()
         for want in test:
-          for col in d1.cols.y:
-            mid0s.add((mid0[col.at] - want[col.at])/col.div())
+          #for col in d1.cols.y: mid0s.add((mid0[col.at] - want[col.at])/col.div())
           leaf = cluster.leaf(d, want)
           rows = leaf.data.rows
           got  = d.predict(want, rows, k=k) 

@@ -11,7 +11,6 @@ MAKEFLAGS += --warn-undefined-variables
 Top=$(shell git rev-parse --show-toplevel)
 Data ?= $(Top)/data/optimize
 Tmp  ?= $(HOME)/tmp
-Act  ?= _mqs
 
 help      :  ## show help
 	gawk -f $(Top)/etc/help.awk $(MAKEFILE_LIST) 
@@ -59,10 +58,11 @@ docs/%.html : %.py etc/py2html.awk etc/b4.html docs/ezr.css Makefile ## make doc
 
 # another commaned
 Out=$(HOME)/tmp
+Act ?= _mqs
 acts: ## experiment: mqs
 	mkdir -p ~/tmp
-	$(MAKE)  actb4  > $(Tmp)/acts.sh
-	bash $(Tmp)/acts.sh
+	$(MAKE)  actb4  > $(Tmp)/$(Act).sh
+	bash $(Tmp)/$(Act).sh
 
 actb4: ## experiment: mqs
 	mkdir -p $(Out)/$(Act)
