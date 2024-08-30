@@ -67,7 +67,7 @@ class SOME:
       "Normalize `n` to the range 0..1 for min..max"
       return (n-i.lo)/(i.hi - i.lo + 1E-30)
 
-    def bar(i, some, fmt="%8.3f", word="%10s", width=50):
+    def bar(i, some, fmt="%8.3f", word="%-50s ", width=50):
       "Pretty print `some.has`."
       has = some.has() 
       out = [' '] * width
@@ -80,7 +80,8 @@ class SOME:
       for j in range(nd,ne): out[j] = "-"
       out[width//2] = "|"
       out[nc] = "*" 
-      return ', '.join(["%2d" % some.rank, word % some.txt, fmt%c, fmt%(d-b), ''.join(out)])
+      #return ', '.join(["%2d" % some.rank, word % some.txt, fmt%c, fmt%(d-b), ''.join(out)])
+      return ', '.join(["%2d" % some.rank, some.txt.rjust(25," "), fmt%c, fmt%(d-b), ''.join(out)])
 
     def delta(i,j):
       "Report distance between two SOMEs, modulated in terms of the standard deviation."
