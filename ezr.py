@@ -836,10 +836,11 @@ class egs:
     mid1s  = stats.SOME(txt="mid-leaf")
     #mid0s  = stats.SOME(txt="mid-all")
     somes += [mid1s]
-    for k in [1,2,3,5]:
+    for k in [1,2,3,4,5]:
       ks   = stats.SOME(txt=f"k{k}")
       somes += [ks]
       for train,test in xval(d.rows):
+        all = d.clone(train)
         cluster = d.cluster(train)
         d1 = d.clone(train)
         mid0  = d1.mid()
