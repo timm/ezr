@@ -32,7 +32,7 @@ the fewest number of goal values?
     -p --p      int    distance formula exponent    = 2   
     -s --seed   int    random number seed           = 1234567891   
     -S --Stop   int    min size of tree leaves      = 30   
-    -t --train  str    training csv file. row1 has names = data/misc/auto93.csv
+    -t --train  str    training csv file. row1 has names = data/optimize/misc/auto93.csv
 
 ### Data File Format
 

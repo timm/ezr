@@ -59,16 +59,23 @@ docs/%.html : %.py etc/py2html.awk etc/b4.html docs/ezr.css Makefile ## make doc
 # another commaned
 Out=$(HOME)/tmp
 Act ?= _mqs
+Root=$(shell git rev-parse --show-toplevel)
+
 acts: ## experiment: mqs
-	mkdir -p ~/tmp
-	$(MAKE)  actb4  > $(Tmp)/$(Act).sh
+	mkdir -p $(Out)
+	$(MAKE) actb4 > $(Tmp)/$(Act).sh
 	bash $(Tmp)/$(Act).sh
+	bash $(Out)/$(Act)/run_all.sh
+	cd $(Out)/$(Act); bash $(Root)/etc/rq.sh | column -s, -t | tee $(Out)/$(Act).txt
 
 actb4: ## experiment: mqs
 	mkdir -p $(Out)/$(Act)
-	$(foreach d, config hpo misc process,         \
-		$(foreach f, $(wildcard $(Data)/$d/*.csv),   \
-				echo "python3 $(PWD)/ezr.py  -t $f -e $(Act)  | tee $(Out)/$(Act)/$(shell basename $f) & "; ))
+	@echo "#!/bin/bash" > $(Out)/$(Act)/run_all.sh
+	@$(foreach d, config hpo misc process, \
+		$(foreach f, $(wildcard $(Data)/$d/*.csv), \
+			echo "python3 $(PWD)/ezr.py -t $f -e $(Act) | tee $(Out)/$(Act)/$(shell basename $f) &" >> $(Out)/$(Act)/run_all.sh;))
+	@echo "wait" >> $(Out)/$(Act)/run_all.sh
+	@chmod +x $(Out)/$(Act)/run_all.sh
 
 fred:
 	echo $x

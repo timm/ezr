@@ -22,35 +22,57 @@ function sd(a,    n) {
 
 function per(x) {x= int(0.5+ 100*x/records) ; return x<1? "" : x}
 
-function evaluations(    rank,rx) {
+function evaluations(    rank,rx,r0_count) {
+   for(rx in evals) {
+     r0_count[rx] = length(evals[rx][0])
+   }
+   n = asorti(r0_count, sorted_rx, "@val_num_desc")
    printf("\n#\n#EVALS\nRANK")
    for(rank=0; rank<=maxRank;rank++) {printf(" ,%9s",rank)};
    print("");
-   for(rx in evals) { 
+
+   for(i = 1; i <= n; i++) {
+     rx = sorted_rx[i]
      printf(rx)
      for(rank=0; rank<=maxRank;rank++) 
-       printf(" ,%3s (%3s)",   int(0.5 + mu(evals[rx][rank])), int(0.5+sd(evals[rx][rank])) )
-     print("") }}
+       printf(" ,%3s (%3s)", int(0.5 + mu(evals[rx][rank])), int(0.5 + sd(evals[rx][rank])) )
+     print("")
+   }
+}
 
-function improvement(    rank,rx) {
+function improvement(    rank,rx,r0_count) {
+   for(rx in delta) {
+     r0_count[rx] = length(delta[rx][0])}
+   n = asorti(r0_count, sorted_rx, "@val_num_desc")
    printf("\n#\n#DELTAS\nRANK")
    for(rank=0; rank<=maxRank;rank++) {printf(" ,%9s",rank)};
    print("");
-   for(rx in evals) { 
+   
+   for(i = 1; i <= n; i++) {
+     rx = sorted_rx[i]
      printf(rx)
      for(rank=0; rank<=maxRank;rank++) 
-       printf(" ,%3s (%3s)",   int(0.5+100*mu(delta[rx][rank])), int(0.5+100*sd(delta[rx][rank])) )
-     print("") }}
+       printf(" ,%3s (%3s)", int(0.5 + 100 * mu(delta[rx][rank])), int(0.5 + 100 * sd(delta[rx][rank])) )
+     print("")
+   }
+}
 
-function ranks(   rank,rx) {
+function ranks(   rank,rx,r0_count) {
+   for(rx in count) {
+     r0_count[rx] = count[rx][0]}
+   n = asorti(r0_count, sorted_rx, "@val_num_desc")
    printf("RANK")
    for(rank=0; rank<=maxRank;rank++) printf(" ,%3s",rank)
    print("")
-   for(rx in count) { 
+   
+   for(i = 1; i <= n; i++) {
+     rx = sorted_rx[i]
      printf(rx)
      for(rank=0; rank<=maxRank;rank++) 
         printf(" ,%3s",  per(count[rx][rank])  )
-     print("") }}
+     print("")
+     }
+}
 
 END { ranks() ; print("");  evaluations();  improvement() }
    ' - | column -s, -t
