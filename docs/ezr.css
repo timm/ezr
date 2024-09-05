@@ -8,14 +8,18 @@ body {
   color: #2d;  
   max-width: 80ch;
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-family: monospace;
+   font-family: font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace;
   padding: 2em 1em;
 }
 
-h1::first-letter{ color:#ff8A00; }
+xh1::first-letter{ color:#ff8A00; }
 
-h1 { color: #658291; padding-top:0px; 
+xh1 { color: #658291; padding-top:0px; 
      margin-top:0px; font-size: 90px; font-family: "Delicious Handrawn", cursive;}
 
-pre {  padding-left: 10px; border-left: solid 2px #CCC; font-size: small; }
+pre {  background-color: #EEEEEE; padding: 10px; 
+       xborder-left: solid 2px #CCC; font-size: small;
+ }
 
-h2 { padding: 3px; color:white; background-color:  #658291; }
+xh2 { padding: 3px; color:white; background-color:  #658291; }

@@ -52,7 +52,7 @@ docs/%.html : %.py etc/py2html.awk etc/b4.html docs/ezr.css Makefile ## make doc
 	gawk -f etc/py2html.awk $< \
 	| pandoc -s  -f markdown --number-sections --toc --toc-depth=5 \
 					-B etc/b4.html --mathjax \
-  		     --css ezr.css --highlight-style tango \
+  		     --css ezr.css --highlight-style monochrome \
 					 --metadata title="$<" \
 	  			 -o $@ 
 
