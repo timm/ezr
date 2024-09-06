@@ -81,7 +81,9 @@ class SOME:
       out[width//2] = "|"
       out[nc] = "*" 
       #return ', '.join(["%2d" % some.rank, word % some.txt, fmt%c, fmt%(d-b), ''.join(out)])
-      return ', '.join(["%2d" % some.rank, some.txt.rjust(25," "), fmt%c, fmt%(d-b), ''.join(out)])
+      return ', '.join(["%2d" % some.rank, some.txt.rjust(25," "), fmt%c, fmt%(d-b), ''.join(out),
+                        ', '.join([fmt % x for x in 
+                                      [a,b,c,d,e]])])
 
     def delta(i,j):
       "Report distance between two SOMEs, modulated in terms of the standard deviation."
