@@ -862,13 +862,13 @@ class egs:
     d = DATA().adds(csv(the.train))
     print(len(d.rows))
     somes  = []
-    for stop in [10,20,30]:
-     for k in [2,4]:
+    for stop in [30]:
+     for k in [4]:
       stops  = stats.SOME(txt=f"stop,{stop},{k}")
       somes.append(stops)
       #ks   = stats.SOME(txt=f"k{k}")
       #somes += [ks]
-      for train,test in xval(d.rows,m=5,n=2,some=256):
+      for train,test in xval(d.rows,m=5,n=5,some=256):
         print(len(train), len(test))
         all = d.clone(train)
         cluster = d.cluster(train,stop=stop)
