@@ -78,7 +78,7 @@ END { ranks() ; print("");  evaluations();  improvement() }
    ' - | column -s, -t
 }
 
-for i in *; do
+for i in *.csv; do
   echo "#"
   cat $i \
   | sed 's/[ \t]//g'  \
