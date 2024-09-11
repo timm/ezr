@@ -860,9 +860,9 @@ class egs:
 
   def clusters12():
     d = DATA().adds(csv(the.train))
-    for k in [1,2,4]:
+    for k in [1]:
       for stop in [12,24,48]:
-        for some in [64,128,256,512]:
+        for some in [64,128,256,512,10000000000]:
           for train,test in xval(d.rows,m=5,n=5,some=some):
             all = d.clone(train)
             cluster = d.cluster(train,stop=stop)
