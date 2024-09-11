@@ -1,0 +1,45 @@
+
+/Users/timm/gits/timm/ezr/data/optimize/config/wc+wc-3d-c4-obj1.csv
+asIs	: 0.264
+div	: 0.448
+rows	: 196
+xcols	: 3
+ycols	: 1
+
+rrp,4 : 0.00 secs
+rrp,7 : 0.02 secs
+exploit/b=False,20 : 0.06 secs
+exploit/b=True,20 : 0.08 secs
+exploit/b=False,30 : 0.13 secs
+exploit/b=True,30 : 0.13 secs
+exploit/b=False,40 : 0.19 secs
+exploit/b=True,40 : 0.21 secs
+rrp,4 : 0.00 secs
+rrp,8 : 0.02 secs
+explore/b=False,20 : 0.08 secs
+explore/b=True,20 : 0.09 secs
+explore/b=False,30 : 0.13 secs
+explore/b=True,30 : 0.14 secs
+explore/b=False,40 : 0.20 secs
+explore/b=True,40 : 0.21 secs
+#
+ 0,        exploit/b=False,20,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.01
+ 0,         exploit/b=True,20,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,        exploit/b=False,30,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.01
+ 0,         exploit/b=True,30,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.01
+ 0,        exploit/b=False,40,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,         exploit/b=True,40,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,         explore/b=True,30,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,        explore/b=False,40,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,         explore/b=True,40,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,        explore/b=False,30,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,        explore/b=False,20,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.01
+ 0,         explore/b=True,20,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.01,  0.01
+#
+ 1,                     rrp,4,  0.07,  0.19,   *     --          |                   ,  0.00,  0.02,  0.07,  0.21,  0.26
+ 1,                     rrp,4,  0.17,  0.18, --    *  --         |                   ,  0.01,  0.06,  0.17,  0.24,  0.28
+#
+ 2,                     rrp,7,  0.25,  0.23, ---      *  --      |                   ,  0.01,  0.08,  0.25,  0.32,  0.37
+ 2,                     rrp,8,  0.25,  0.16, -----    *  -----   |                   ,  0.02,  0.14,  0.25,  0.31,  0.44
+#
+ 3,                  asIs,196,  0.26,  0.13, --------  *  -----  |                   ,  0.01,  0.21,  0.26,  0.34,  0.46

@@ -1,0 +1,42 @@
+
+/Users/timm/gits/timm/ezr/data/optimize/config/rs-6d-c3_obj2.csv
+asIs	: 0.004
+div	: 0.225
+rows	: 3840
+xcols	: 6
+ycols	: 1
+
+rrp,4 : 0.00 secs
+rrp,14 : 0.56 secs
+exploit/b=False,20 : 0.15 secs
+exploit/b=True,20 : 0.58 secs
+exploit/b=False,30 : 0.25 secs
+exploit/b=True,30 : 0.65 secs
+exploit/b=False,40 : 0.28 secs
+exploit/b=True,40 : 0.60 secs
+rrp,4 : 0.01 secs
+rrp,13 : 0.40 secs
+explore/b=False,20 : 0.10 secs
+explore/b=True,20 : 0.39 secs
+explore/b=False,30 : 0.16 secs
+explore/b=True,30 : 0.42 secs
+explore/b=False,40 : 0.20 secs
+explore/b=True,40 : 0.44 secs
+#
+ 0,         exploit/b=True,40,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,        exploit/b=False,30,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,         exploit/b=True,30,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,        exploit/b=False,40,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,         explore/b=True,40,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,         explore/b=True,30,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,        exploit/b=False,20,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,         exploit/b=True,20,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,         explore/b=True,20,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,        explore/b=False,40,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,        explore/b=False,20,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,                 asIs,3840,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,        explore/b=False,30,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,                     rrp,4,  0.00,  0.00, *                   |                   ,  0.00,  0.00,  0.00,  0.00,  0.00
+ 0,                     rrp,4,  0.00,  0.00, *-                  |                   ,  0.00,  0.00,  0.00,  0.00,  0.01
+ 0,                    rrp,14,  0.00,  0.00, *-                  |                   ,  0.00,  0.00,  0.00,  0.00,  0.01
+ 0,                    rrp,13,  0.00,  0.00, *-----------        |                   ,  0.00,  0.00,  0.00,  0.00,  0.03
