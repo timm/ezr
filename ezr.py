@@ -860,28 +860,20 @@ class egs:
 
   def clusters12():
     d = DATA().adds(csv(the.train))
-    print(len(d.rows))
-    somes  = []
-    stop = 24
-    k = 4
-    for n in [64,128,256,512]:
-      stops  = stats.SOME(txt=f"stop,{n}")
-      somes.append(stops)
-      #ks   = stats.SOME(txt=f"k{k}")
-      #somes += [ks]
-      for train,test in xval(d.rows,m=4,n=4,some=n):
-        print(len(train), len(test))
-        all = d.clone(train)
-        cluster = d.cluster(train,stop=stop)
-        for want in test:
-          leaf = cluster.leaf(d, want)
-          mid  = leaf.data.mid()
-          rows = leaf.data.rows
-          got  = d.predict(want, rows, k=k) 
-          for at,got1 in got.items():
-            sd = d.cols.all[at].div()
-            stops.add(  (want[at] - got1   )/sd)
-    stats.report(somes)
+    for k in [1]:
+      for stop in [12,24,48]:
+        for some in [64,128,256,512,10000000000]:
+          for train,test in xval(d.rows,m=5,n=5,some=some):
+            all = d.clone(train)
+            cluster = d.cluster(train,stop=stop)
+            for want in test:
+              leaf = cluster.leaf(d, want)
+              mid  = leaf.data.mid()
+              rows = leaf.data.rows
+              got  = d.predict(want, rows, k=k) 
+              for at,got1 in got.items():
+                sd = d.cols.all[at].div()
+                print(k,some,stop,(want[at] - mid[at])/sd, (want[at] - got1)/sd,sep=",")
 
   def predicts(file=None):
     d = DATA().adds(csv(file or the.train)).shuffle()
