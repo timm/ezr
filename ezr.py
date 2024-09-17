@@ -172,6 +172,7 @@ def of(doc):
   def doit(fun):
     fun.__doc__ = doc
     self = inspect.getfullargspec(fun).annotations['self']
+    print("self",self)
     setattr(globals()[self], fun.__name__, fun)
   return doit
 #
