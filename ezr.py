@@ -352,6 +352,8 @@ def chebyshevs(self:DATA) -> DATA:
 
 @of("Compute Chebyshev distance of one row to the best `y` values.")
 def chebyshev(self:DATA,row:row) -> number:
+  if not self.cols.y:
+        print("No 'y' columns available!")
   return  max(abs(col.goal - col.norm(row[col.at])) for col in self.cols.y)
 
 @of("Sort rows by the Euclidean distance of the goals to heaven.")
