@@ -361,7 +361,7 @@ def d2hs(self:DATA) -> DATA:
 
 @of("Compute euclidean distance of one row to the best `y` values.")
 def d2h(self:DATA,row:row) -> number:
-  d = sum(abs(c.goal - c.norm(row[c.at]))**2 for c in self.cols.y)
+  d = sum(abs(c.goal - c.norm(row[c.at]))**the.p for c in self.cols.y)
   return (d/len(self.cols.y)) ** (1/the.p)
 #
 # ### Nearest Neighbor
