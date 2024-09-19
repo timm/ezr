@@ -4,7 +4,7 @@ d=$HOME/tmp/clusters12
 
 one() { 
 gawk -F, '
-$2==Some && $3==Stop { a[++n]= $4}
+$1==K && $2==Some && $3==Stop { a[++n]= $5}
 END  { print("K, "   ,  K,
              ",Some,",  Some,
              ",Stop, ", Stop, per(a)) }
@@ -25,12 +25,11 @@ function sd(a,     m,n) {
   n=asort(a)
   m = int(n/10)
   print(m,n)
-  return (a[m*9] - a[m])/ 2.56 } ' Stop=$1  Some=$2 $d/* 
+  return (a[m*9] - a[m])/ 2.56 } ' K=$1  Some=$2 Stop=$3 $d/* 
 }
-for Stop in 12 24 48;  do
-  for Some in 64 128 256 512;  do
-       >&2 echo one $Stop $Some 
-       one  $Stop $Some 
+for K in 1 2 4; do
+  for Stop in 12 24 48;  do
+    one  $K 10000000000 $Stop
   done
-done 
+done
 
