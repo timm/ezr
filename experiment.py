@@ -10,7 +10,7 @@ def guess(N, data):
 def run_experiment():
 
     for N in (20, 30, 40, 50):
-        d = DATA().adds(csv('data/optimize/config/SS-H.csv'))
+        d = DATA().adds(csv('data/optimize/config/SS-H.csv')) # Update file path here
 
         dumb = [guess(N, d) for _ in range(20)]
         smart = [d.shuffle().activeLearning() for _ in range(20)]
