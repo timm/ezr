@@ -996,6 +996,50 @@ class egs:
 
     stats.report(somes, 0.01)
 
+  def eg():
+    def normalized_exp(k, n, shift):
+        exp_values = [math.exp(0.25 * j) for j in range(n)]
+        min_exp, max_exp = min(exp_values), max(exp_values)
+        return (math.exp(0.25 * k) - min_exp) / (max_exp - min_exp) + shift
+    
+    def exploit(B, R):
+        return B
+    
+    def explore(B, R):
+        return (B + R) / (abs(B - R) + 10**-30)
+    
+    scoring_policies = [('exploit', lambda B, R,: exploit(B, R)),
+                        ('explore', lambda B, R: explore(B, R)),
+                        ('expoit2', lambda B, R: (B**2) / (R + 10**-30)),
+                        ('Random', lambda B, R: random.random()),
+                        ('ExpProgressive', lambda B, R: normalized_exp(the.iter, the.Last, 0) * exploit(B,R) + (1 - normalized_exp(the.iter, the.Last, 0)) * explore(B,R))]
+    
+    print(the.train,  flush=True, file=sys.stderr)
+    print("\n"+the.train)
+    repeats  = 20
+    d        = DATA().adds(csv(the.train))
+    b4       = [d.chebyshev(row) for row in d.rows]
+    asIs,div = medianSd(b4)
+    rnd      = lambda z: z 
+
+    print(f"asIs\t: {asIs:.3f}")
+    print(f"div\t: {div:.3f}")
+    print(f"rows\t: {len(d.rows)}")
+    print(f"xcols\t: {len(d.cols.x)}")
+    print(f"ycols\t: {len(d.cols.y)}\n")
+
+    somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
+
+    for what,how in scoring_policies:
+      for the.Last in [20, 30, 40]:
+        start = time()
+        result = [rnd(d.chebyshev(d.shuffle().activeLearning(score=how)[0]))
+                for _ in range(repeats)]
+        print(f"{what}.{the.Last}: {(time() - start) /repeats:.2f} secs")
+        somes +=   [stats.SOME(result,    f"{what} ,{the.Last}")]
+
+    stats.report(somes, 0.01)
+
   def branch():
     scoring_policies = [('exploit', lambda B, R,: B - R),
                         ('explore', lambda B, R :  (exp(B) + exp(R))/ (1E-30 + abs(exp(B) - exp(R))))]
