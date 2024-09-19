@@ -41,39 +41,29 @@ Share and enjoy.
 
 ## Setting Up
 
-### Get some example data
+I'm on windows and using code space.
+
 
 ### Installation
+Fork the code:
 
-First get some test data:
+    repo url: https://github.com/yicharlieyi/ezr
+    open code space
+    cd into the /workspaces/ezr directory
 
-    git clone http://github.com/timm/data
-
-Just grab the code:
-
-    git clone http://github.com/timm/ezr
-    cd ezr/src
-    python3 -B ezr.py -t path2data/misc/auto93.csv -e all
-
-Or install from local code (if you edit the code, those changes are
-instantly accessible):
-
-    git clone http://github.com/timm/ezr
-    cd ezr
-    pip [-e] install ./setup.py
-    ezr -t path2data/misc/auto93.csv -e all # test the isntall
-
-Install from the web. Best if you want to just want to import the code,
-the write you own extensions
-
-    pip install ezr
-    ezr -t path2data/misc/auto93.csv -e all # test the install
-
+    Make sure python 3.13 and pytest is installed
+    to do that, type 'sudo apt update -y; sudo  apt upgrade -y; sudo apt install software-properties-common -y; sudo add-apt-repository ppa:deadsnakes/ppa -y ; sudo apt update -y ; sudo apt install python3.13 -y' 
+    and 
+    'pip install pytest' in command line
 
 ###  Running the code 
 
-This code has lots of
-`eg.xxx()` functions. Each of these can be called on the command line
-using, say:
+Run the experiment:
+    For example, run it on a small dimensional data set:
+        python3.13 -B experiment.py -t data/optimize/config/SS-H.csv
 
-     python3 -B ezr.py -e klass      # calls the eg.klass() function
+    In order to run it on another data set, update the file path in **line 13 of the experiment.py** file and the command line
+        python3.13 -B experiment.py -t data/optimize/config/SS-N.csv
+    
+To run the test cases:
+    pytest test_experiment.py 
