@@ -21,6 +21,15 @@ pull    : ## download
 push    : ## save
 	echo -en "\033[33mWhy this push? \033[0m"; read x; git commit -am "$$x"; git push; git status
 
+python313 : ## install cool stuff
+    # everyone needs an onstall scriot
+	sudo apt -y -qq update  
+	sudo apt -y -qq upgrade  
+	sudo apt -y -qq install software-properties-common  
+	sudo add-apt-repository ppa:deadsnakes/ppa  -y   
+	sudo apt -y -qq update  
+	sudo apt -y -qq install python3.13 
+
 $(Top)/docs/%.pdf: %.py  ## make doco: .py ==> .pdf
 	mkdir -p ~/tmp
 	echo "pdf-ing $@ ... "
@@ -66,9 +75,10 @@ acts: ## experiment: mqs
 
 actb4: ## experiment: mqs
 	echo "mkdir -p $(Out)/$(Act)"
+	echo "rm $(Out)/$(Act)/*"
 	$(foreach d, config hpo misc process,         \
 		$(foreach f, $(wildcard $(Data)/$d/*.csv),   \
-				echo "python3 $(PWD)/ezr.py  -t $f -e $(Act)  | tee $(Out)/$(Act)/$(shell basename $f) & "; ))
+				echo "python3 $(PWD)/ezr.py  -D -t $f -e $(Act)  | tee $(Out)/$(Act)/$(shell basename $f) & "; ))
 
 fred:
 	echo $x

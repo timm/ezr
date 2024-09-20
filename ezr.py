@@ -858,31 +858,22 @@ class egs:
             ks.add(  (want[at] - got1   )/sd)
     stats.report(somes)
 
-
   def clusters12():
     d = DATA().adds(csv(the.train))
-    print(len(d.rows))
-    somes  = []
-    stop = 24
-    k = 4
-    for n in [64,128,256,512]:
-      stops  = stats.SOME(txt=f"stop,{n}")
-      somes.append(stops)
-      #ks   = stats.SOME(txt=f"k{k}")
-      #somes += [ks]
-      for train,test in xval(d.rows,m=4,n=4,some=n):
-        print(len(train), len(test))
-        all = d.clone(train)
-        cluster = d.cluster(train,stop=stop)
-        for want in test:
-          leaf = cluster.leaf(d, want)
-          mid  = leaf.data.mid()
-          rows = leaf.data.rows
-          got  = d.predict(want, rows, k=k) 
-          for at,got1 in got.items():
-            sd = d.cols.all[at].div()
-            stops.add(  (want[at] - got1   )/sd)
-    stats.report(somes)
+    for k in [1,2,4]:
+      for stop in [12,24,48]:
+        for some in [10000000000]:
+          for train,test in xval(d.rows,m=5,n=5,some=some):
+            all = d.clone(train)
+            cluster = d.cluster(train,stop=stop)
+            for want in test:
+              leaf = cluster.leaf(d, want)
+              mid  = leaf.data.mid()
+              rows = leaf.data.rows
+              got  = d.predict(want, rows, k=k) 
+              for at,got1 in got.items():
+                sd = d.cols.all[at].div()
+                print(k,some,stop,(want[at] - mid[at])/sd, (want[at] - got1)/sd,sep=",")
 
   def predicts(file=None):
     d = DATA().adds(csv(file or the.train)).shuffle()
@@ -978,6 +969,50 @@ class egs:
                         ('b2', lambda B, R: (B**2) / (R + 10**-30)),
                         ('Random', lambda B, R: random.random()),
                         ('SimAnneal', lambda B, R: ((exp(B) + 1) ** normalized_exp(the.iter, the.Last, 1) + (exp(R) + 1)) / (abs(exp(B) - exp(R)) + 10**-30)),
+                        ('ExpProgressive', lambda B, R: normalized_exp(the.iter, the.Last, 0) * exploit(B,R) + (1 - normalized_exp(the.iter, the.Last, 0)) * explore(B,R))]
+    
+    print(the.train,  flush=True, file=sys.stderr)
+    print("\n"+the.train)
+    repeats  = 20
+    d        = DATA().adds(csv(the.train))
+    b4       = [d.chebyshev(row) for row in d.rows]
+    asIs,div = medianSd(b4)
+    rnd      = lambda z: z 
+
+    print(f"asIs\t: {asIs:.3f}")
+    print(f"div\t: {div:.3f}")
+    print(f"rows\t: {len(d.rows)}")
+    print(f"xcols\t: {len(d.cols.x)}")
+    print(f"ycols\t: {len(d.cols.y)}\n")
+
+    somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
+
+    for what,how in scoring_policies:
+      for the.Last in [20, 30, 40]:
+        start = time()
+        result = [rnd(d.chebyshev(d.shuffle().activeLearning(score=how)[0]))
+                for _ in range(repeats)]
+        print(f"{what}.{the.Last}: {(time() - start) /repeats:.2f} secs")
+        somes +=   [stats.SOME(result,    f"{what} ,{the.Last}")]
+
+    stats.report(somes, 0.01)
+
+  def eg():
+    def normalized_exp(k, n, shift):
+        exp_values = [math.exp(0.25 * j) for j in range(n)]
+        min_exp, max_exp = min(exp_values), max(exp_values)
+        return (math.exp(0.25 * k) - min_exp) / (max_exp - min_exp) + shift
+    
+    def exploit(B, R):
+        return B
+    
+    def explore(B, R):
+        return (B + R) / (abs(B - R) + 10**-30)
+    
+    scoring_policies = [('exploit', lambda B, R,: exploit(B, R)),
+                        ('explore', lambda B, R: explore(B, R)),
+                        ('expoit2', lambda B, R: (B**2) / (R + 10**-30)),
+                        ('Random', lambda B, R: random.random()),
                         ('ExpProgressive', lambda B, R: normalized_exp(the.iter, the.Last, 0) * exploit(B,R) + (1 - normalized_exp(the.iter, the.Last, 0)) * explore(B,R))]
     
     print(the.train,  flush=True, file=sys.stderr)
