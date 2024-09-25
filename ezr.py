@@ -1032,7 +1032,7 @@ class egs:
                         ('explore', lambda B, R: explore(B, R)),
                         ('b2', lambda B, R: (B**2) / (R + 10**-30)),
                         ('Random', lambda B, R: random.random()),
-                        ('SimAnneal', lambda B, R: ((exp(B) + 1) ** normalized_exp(the.iter, the.Last, 1) + (exp(R) + 1)) / (abs(exp(B) - exp(R)) + 10**-30)),
+                        ('FOCUS', lambda B, R: ((exp(B) + 1) ** normalized_exp(the.iter, the.Last, 1) + (exp(R) + 1)) / (abs(exp(B) - exp(R)) + 10**-30)),
                         ('ExpProgressive', lambda B, R: normalized_exp(the.iter, the.Last, 0) * exploit(B,R) + (1 - normalized_exp(the.iter, the.Last, 0)) * explore(B,R))]
     
     print(the.train,  flush=True, file=sys.stderr)
