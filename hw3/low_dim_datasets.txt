@@ -1,0 +1,17 @@
+dim   	size  	xcols 	ycols 	rows  	file  
+------	------	------	------	------	------
+low   	med   	     3	     2	  1343	config/SS-A.csv
+low   	small 	     3	     2	   206	config/SS-B.csv
+low   	med   	     3	     2	  1512	config/SS-C.csv
+low   	small 	     3	     2	   196	config/SS-D.csv
+low   	med   	     3	     2	   756	config/SS-E.csv
+low   	small 	     3	     2	   196	config/SS-F.csv
+low   	small 	     3	     2	   196	config/SS-G.csv
+low   	small 	     4	     2	   259	config/SS-H.csv
+low   	med   	     5	     2	  1080	config/SS-I.csv
+low   	small 	     3	     1	   196	config/wc+rs-3d-c4-obj1.csv
+low   	small 	     3	     1	   196	config/wc+sol-3d-c4-obj1.csv
+low   	small 	     3	     1	   196	config/wc+wc-3d-c4-obj1.csv
+low   	hi    	     5	     3	 10000	hpo/healthCloseIsses12mths0001-hard.csv
+low   	hi    	     5	     3	 10000	hpo/healthCloseIsses12mths0011-easy.csv
+low   	small 	     4	     3	   398	misc/auto93.csv
