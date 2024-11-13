@@ -60,22 +60,34 @@ docs/%.html : %.py etc/py2html.awk etc/b4.html docs/ezr.css Makefile ## make doc
 Out=$(HOME)/tmp
 Act ?= _mqs
 Root=$(shell git rev-parse --show-toplevel)
+All ?= $(Root)/data/All
+High ?= $(Root)/data/High
+Medium ?= $(Root)/data/Medium
+Low ?= $(Root)/data/Low
+
+DataDirs = $(High) $(Medium) $(Low)
 
 acts: ## experiment: mqs
 	mkdir -p $(Out)
-	$(MAKE) actb4 > $(Tmp)/$(Act).sh
-	bash $(Tmp)/$(Act).sh
-	bash $(Out)/$(Act)/run_all.sh
-	cd $(Out)/$(Act); bash $(Root)/etc/rq.sh | column -s, -t | tee $(Out)/$(Act).txt
+	$(foreach dir, $(DataDirs), \
+		$(MAKE) run_for_dir DataDir=$(dir) DirName=$(notdir $(dir)) Act=$(Act);)
+
+run_for_dir: ## Run experiment for each directory
+	$(MAKE) actb4 DataDir=$(DataDir) DirName=$(DirName) Act=$(Act)
+	bash $(Out)/$(Act)_$(DirName)/run_all.sh
+	cd $(Out)/$(Act)_$(DirName); bash $(Root)/etc/rq.sh | column -s, -t | tee $(Out)/$(Act)_$(DirName).txt
 
 actb4: ## experiment: mqs
-	mkdir -p $(Out)/$(Act)
-	@echo "#!/bin/bash" > $(Out)/$(Act)/run_all.sh
-	@$(foreach d, config hpo misc process, \
-		$(foreach f, $(wildcard $(Data)/$d/*.csv), \
-			echo "python3 $(PWD)/ezr.py -t $f -e $(Act) | tee $(Out)/$(Act)/$(shell basename $f) &" >> $(Out)/$(Act)/run_all.sh;))
-	@echo "wait" >> $(Out)/$(Act)/run_all.sh
-	@chmod +x $(Out)/$(Act)/run_all.sh
+	mkdir -p $(Out)/$(Act)_$(DirName)
+	@echo "#!/bin/bash" > $(Out)/$(Act)_$(DirName)/run_all.sh
+	@$(foreach f, $(wildcard $(DataDir)/*.csv), \
+		echo "python3 $(PWD)/ezr.py -t $f -e $(Act) | tee $(Out)/$(Act)_$(DirName)/$(shell basename $f) &" >> $(Out)/$(Act)_$(DirName)/run_all.sh;)
+	@echo "wait" >> $(Out)/$(Act)_$(DirName)/run_all.sh
+	@chmod +x $(Out)/$(Act)_$(DirName)/run_all.sh
 
 fred:
 	echo $x
+
+
+
+

@@ -18,7 +18,7 @@ the fewest number of goal values?
     -b --buffer int    chunk size, when streaming   = 100
     -B --branch bool   set branch method            = False
     -d --divide int    half with mean or median     = 1
-    -D --Dull   bool   if true, round to cohen's d  = True
+    -D --Dull   bool   if true, round to cohen's d  = False
     -k --decay  float  kappa decay schedule         = 0
     -L --Last   int    max number of labels         = 30  
     -c --cut    float  borderline best:rest         = 0.5  
@@ -33,10 +33,12 @@ the fewest number of goal values?
     -l --label  int    initial number of labels     = 4   
     -m --m      int    low frequency Bayes hack     = 2   
     -M --metric str    distance metric              = 'chebyshev'
-    -p --p      int    distance formula exponent    = 2   
+    -n --neg    int    negative                     = -1
+    -p --p      int    distance formula exponent    = 2
+    -r --full   bool   full ranking of dataset      = False
     -s --seed   int    random number seed           = 1234567891   
-    -S --Stop   int    min size of tree leaves      = 6 
-    -t --train  str    training csv file. row1 has names = data/optimize/misc/auto93.csv
+    -S --Stop   int    min size of tree leaves      = 30 
+    -t --train  str    training csv file. row1 has names = data/optimize/config/SS-N.csv
 
 ### Data File Format
 
@@ -511,7 +513,7 @@ def cluster(self:DATA, rows:rows=None,  sortp=False, stop=None, cut=None, fun=No
   return it
 
 @of("Recursively bi-cluster `region`, recurse only down the best half.")
-def branch(self: DATA, region: rows = None, stop=None, used=[], rest=None, evals=1, before=None, left_count=0, right_count=0):
+def branch_V(self: DATA, region: rows = None, stop=None, used=[], rest=None, evals=1, before=None, left_count=0, right_count=0):
     region = region or self.rows
     if region == self.rows:
         random.shuffle(region)
@@ -532,6 +534,24 @@ def branch(self: DATA, region: rows = None, stop=None, used=[], rest=None, evals
     todo = [r for r in self.rows if r not in used]
     return todo, used
 
+@of("Recursively bi-cluster `region`, recurse only down the best half.")
+def branch(self:DATA, region:rows=None, stop=None, used=[], rest=None, evals=1, before=None):
+  region = region or self.rows
+  if region == self.rows: random.shuffle(region)
+  stop = stop or 2*len(region)**0.5
+  rest = rest or []
+  
+  if len(region) > stop:
+    lefts,rights,left,right  = self.half(region, True, before)
+    if left not in used:
+      used.append(left)
+    if right not in used:
+      used.append(right)
+    
+    return self.branch(lefts, stop, used, rest+rights, evals+1, left)
+  else:
+    todo = [r for r in self.rows if r not in used]
+    return todo, used
 
 le = lambda x,y: x <= y
 gt = lambda x,y: x >  y
@@ -646,15 +666,20 @@ def like(self:NUM, x:number, prior=None) -> float:
   return min(1, nom/(denom + 1E-30))
 #
 # ### Active Learning
+@of("ranked")
+def ranked(self:DATA, rows): return self.clone(rows).distances().rows
+
 @of("active learning")
 def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True ):
-  def ranked(rows): return self.clone(rows).distances().rows
-
   def todos(todo):
     if faster: # Apply our sorting heuristics to just a small buffer at start of "todo"
       # rotate back half of buffer to end of list, fill the gap with later items
        n = the.buffer//2
+       if the.buffer == 1000:
+         random.shuffle(todo)
+         return todo[:1000], []
        return todo[:n] + todo[2*n: 3*n],  todo[3*n:] + todo[n:2*n]
+
     else: # Apply our sorting heuristics to all of todo.
       return todo,[]
 
@@ -674,11 +699,18 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
     while len(todo) > 2 and len(done) < the.Last:
       top,*todo = guess(todo, done)
       done     += [top]
-      done      = ranked(done)
+      done      = self.ranked(done)
+
+    if the.full == True:
+      the.buffer = 1000
+      top = guess(todo, done)
+      done += top[:40 - the.Last]
+      done      = self.ranked(done)
+
     return done
   
   random.shuffle(self.rows)
-  todo, done = self.rows[the.label:], ranked(self.rows[:the.label])
+  todo, done = self.rows[the.label:], self.ranked(self.rows[:the.label])
 
   if the.branch == True:
     todo, done = self.branch(used = [])
@@ -689,10 +721,16 @@ def activeLearning(self:DATA, score=lambda B,R: B-R, generate=None, faster=True 
     if the.Last==0: return done
 
   if score == 'UCB_Linear':
-    return ranked(UCB_Linear(self, todo, done))
+    return self.ranked(UCB_Linear(self, todo, done))
+  
+  if score == 'PI_Linear':
+    return self.ranked(PI_Linear(self, todo, done))
+  
+  if score == 'EI_Linear':
+    return self.ranked(EI_Linear(self, todo, done))
   
   if score == 'UCB_GPM':
-    return ranked(UCB_GPM(self, todo, done))
+    return self.ranked(UCB_GPM(self, todo, done))
 
   return loop(todo, done)
 #
@@ -1102,16 +1140,14 @@ class egs:
 
     stats.report(somes, 0.01)
 
-  def rrp():
+  def simple():
     scoring_policies = [('exploit', lambda B, R,: B - R),
                         ('explore', lambda B, R :  (exp(B) + exp(R))/ (1E-30 + abs(exp(B) - exp(R)))),
-                        ('random',  lambda B, R : random.random()),
-                        ('FOCUS', lambda B, R: ((exp(B) + 1) ** normalized_exp(the.iter, the.Last, 1) + (exp(R) + 1)) / (abs(exp(B) - exp(R)) + 10**-30)),
-                        ('UCB_GPM', 'UCB_GPM')]
+                        ('random',  lambda B, R : random.random())]
     
     print(the.train,  flush=True, file=sys.stderr)
     print("\n"+the.train)
-    repeats  = 10
+    repeats  = 20
     d        = DATA().adds(csv(the.train))
     b4       = [d.distance(row) for row in d.rows]
     asIs,div = medianSd(b4)
@@ -1127,7 +1163,52 @@ class egs:
     somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
 
     for what,how in scoring_policies:
-      for the.Last in [0, 20, 30, 40]:
+      for the.Last in [20]:
+        for the.branch in [False]:
+          start = time()
+          result = [] 
+          runs = 0
+          for _ in range(repeats):
+             tmp=d.shuffle().activeLearning(score=how)
+             runs += len(tmp)
+             result += [rnd(d.distance(tmp[0]))]
+
+          pre=f"{what}/rrp_slash1={the.branch}" if the.Last >0 else "rrp"
+          tag = f"{the.train.split('/')[-1]}, {pre}, {int(runs/repeats)}" + f", {(time() - start) /repeats:.2f} secs"
+          somes +=   [stats.SOME(result,    tag)]
+
+    stats.report(somes, 0.01)
+
+  def rrp_dull_True():
+    scoring_policies = [('exploit', lambda B, R,: B - R),
+                        ('explore', lambda B, R :  (exp(B) + exp(R))/ (1E-30 + abs(exp(B) - exp(R)))),
+                        ('random',  lambda B, R : random.random()),
+                        ('FOCUS', lambda B, R: ((exp(B) + 1) ** normalized_exp(the.iter, the.Last, 1) + (exp(R) + 1)) / (abs(exp(B) - exp(R)) + 10**-30)),
+                        ('UCB_Linear', 'UCB_Linear'),
+                        ('PI_Linear', 'PI_Linear'),
+                        ('EI_Linear', 'EI_Linear'),
+                        ('UCB_GPM', 'UCB_GPM')]
+    
+    print(the.train,  flush=True, file=sys.stderr)
+    print("\n"+the.train)
+    repeats  = 5
+    d        = DATA().adds(csv(the.train))
+    b4       = [d.distance(row) for row in d.rows]
+    asIs,div = medianSd(b4)
+    dull = div*the.Cohen
+    the.Dull = True
+    rnd      = lambda z: ((int(z/dull) * dull) if the.Dull else z)
+
+    print(f"asIs\t: {asIs:.3f}")
+    print(f"div\t: {div:.3f}")
+    print(f"rows\t: {len(d.rows)}")
+    print(f"xcols\t: {len(d.cols.x)}")
+    print(f"ycols\t: {len(d.cols.y)}\n")
+
+    somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
+
+    for what,how in scoring_policies:
+      for the.Last in [20, 30, 40, 50, 60]:
         for the.branch in [False, True]:
           start = time()
           result = [] 
@@ -1137,7 +1218,138 @@ class egs:
              runs += len(tmp)
              result += [rnd(d.distance(tmp[0]))]
 
-          pre=f"{what}/rrp={the.branch}" if the.Last >0 else "rrp"
+          pre=f"{what}/rrp_slash1={the.branch}" if the.Last >0 else "rrp"
+          tag = f"{the.train.split('/')[-1]}, {pre}, {int(runs/repeats)}" + f", {(time() - start) /repeats:.2f} secs"
+          somes +=   [stats.SOME(result,    tag)]
+
+    stats.report(somes, 0.01)
+
+  def fall_only_ucb():
+    scoring_policies = [('UCB_GPM', 'UCB_GPM')]
+    
+    print(the.train,  flush=True, file=sys.stderr)
+    print("\n"+the.train)
+    repeats  = 5
+    d        = DATA().adds(csv(the.train))
+    b4       = [d.distance(row) for row in d.rows]
+    asIs,div = medianSd(b4)
+    dull = div*the.Cohen
+    the.Dull = False
+    rnd      = lambda z: ((int(z/dull) * dull) if the.Dull else z)
+
+    print(f"asIs\t: {asIs:.3f}")
+    print(f"div\t: {div:.3f}")
+    print(f"rows\t: {len(d.rows)}")
+    print(f"xcols\t: {len(d.cols.x)}")
+    print(f"ycols\t: {len(d.cols.y)}\n")
+
+    somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
+
+    for what,how in scoring_policies:
+      for the.Last in [20, 30, 40]:
+        for the.branch in [True, False]:
+          start = time()
+          result = [] 
+          runs = 0
+          for _ in range(repeats):
+             tmp=d.shuffle().activeLearning(score=how)
+             runs += len(tmp)
+             result += [rnd(d.distance(tmp[0]))]
+
+          pre=f"{what}/rr_slash1={the.branch}/{the.Last}" if the.Last >0 else "rrp"
+          tag = f"{pre},{int(runs/repeats)}"
+          print(tag, f": {(time() - start) /repeats:.2f} secs")
+          somes +=   [stats.SOME(result,    tag)]
+
+    stats.report(somes, 0.01)
+
+  def rank_all():
+    scoring_policies = [('exploit', lambda B, R,: B - R),
+                        ('explore', lambda B, R :  (exp(B) + exp(R))/ (1E-30 + abs(exp(B) - exp(R)))),
+                        ('random',  lambda B, R : random.random()),
+                        ('FOCUS', lambda B, R: ((exp(B) + 1) ** normalized_exp(the.iter, the.Last, 1) + (exp(R) + 1)) / (abs(exp(B) - exp(R)) + 10**-30))]
+    
+    print(the.train,  flush=True, file=sys.stderr)
+    print("\n"+the.train)
+    repeats  = 20
+    d        = DATA().adds(csv(the.train))
+    b4       = [d.distance(row) for row in d.rows]
+    asIs,div = medianSd(b4)
+    dull = div*the.Cohen
+    the.Dull = False
+    rnd      = lambda z: ((int(z/dull) * dull) if the.Dull else z)
+
+    print(f"asIs\t: {asIs:.3f}")
+    print(f"div\t: {div:.3f}")
+    print(f"rows\t: {len(d.rows)}")
+    print(f"xcols\t: {len(d.cols.x)}")
+    print(f"ycols\t: {len(d.cols.y)}\n")
+
+    somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
+
+    the.full = True
+
+    for what,how in scoring_policies:
+      for the.Last in [20, 30, 40]:
+        if the.Last == 20:
+          text = '20+20'
+        if the.Last == 30:
+          text = '30+10'
+        if the.Last == 40:
+          text = '40+0'
+        start = time()
+        result = [] 
+        runs = 0
+        for _ in range(repeats):
+            tmp=d.shuffle().activeLearning(score=how)
+            runs += len(tmp)
+            result += [rnd(d.distance(tmp[0]))]
+
+        pre=f"{what}/{text}" if the.Last >0 else "rrp"
+        tag = f"{pre},{int(runs/repeats)}"
+        print(tag, f": {(time() - start) /repeats:.2f} secs")
+        somes +=   [stats.SOME(result,    tag)]
+
+    stats.report(somes, 0.01)
+
+  def UCB_Linear_test():
+    scoring_policies = [('UCB_Linear', 'UCB_Linear'),
+                        ('PI_Linear', 'PI_Linear'),
+                        ('EI_Linear', 'EI_Linear'),
+                        ('random',  lambda B, R : random.random())]
+    
+    print(the.train,  flush=True, file=sys.stderr)
+    print("\n"+the.train)
+    repeats  = 10
+    d        = DATA().adds(csv(the.train))
+    b4       = [d.distance(row) for row in d.rows]
+    asIs,div = medianSd(b4)
+    dull = div*the.Cohen
+    the.Dull = False
+    rnd      = lambda z: ((int(z/dull) * dull) if the.Dull else z)
+
+    print(f"asIs\t: {asIs:.3f}")
+    print(f"div\t: {div:.3f}")
+    print(f"rows\t: {len(d.rows)}")
+    print(f"xcols\t: {len(d.cols.x)}")
+    print(f"ycols\t: {len(d.cols.y)}\n")
+
+    somes = [stats.SOME(b4,f"asIs,{len(d.rows)}")]
+
+    the.Branch = False
+
+    for what,how in scoring_policies:
+      for the.Last in [40]:
+        for the.neg in [1, -1]:
+          start = time()
+          result = [] 
+          runs = 0
+          for _ in range(repeats):
+             tmp=d.shuffle().activeLearning(score=how)
+             runs += len(tmp)
+             result += [rnd(d.distance(tmp[0]))]
+
+          pre=f"{what}/coef={the.neg}" if the.Last >0 else "rrp"
           tag = f"{pre},{int(runs/repeats)}"
           print(tag, f": {(time() - start) /repeats:.2f} secs")
           somes +=   [stats.SOME(result,    tag)]
@@ -1310,6 +1522,35 @@ class egs:
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
 # ## UCB with linear projections
+def get_cumulative_density(x, mean, sd):
+    cdf = lambda z: 1 - 0.5 * 2.718 ** (-0.717 * z - 0.416 * z * z)
+    z = (x - mean) / sd
+    return cdf(z) if z >= 0 else 1 - cdf(-z)
+
+def get_probability_density(x, mean, sd):
+    z = (x - mean) / sd
+    e = 2.718
+    return (0.399 / sd) * (e ** (-(z**2) / 2))
+
+def PI_score(mean, std, best_d2h):
+    exploit_explore_tradeoff = (
+        0.01  # The paper says that this has to be manually chosen.
+    )
+    m = (mean - best_d2h - exploit_explore_tradeoff) / (std + sys.float_info.min)
+    score = get_cumulative_density(m, mean, std)
+    return score
+
+
+# Expected improvement score
+def EI_score(mean, std, best_d2h):
+    exploit_explore_tradeoff = 0.01  # As recommended by Hoffman et al 2011
+    m = (mean - best_d2h - exploit_explore_tradeoff) / (std + sys.float_info.min)
+    cum_density_coeff = mean - best_d2h - exploit_explore_tradeoff
+    score = (cum_density_coeff * get_cumulative_density(m, mean, std)) + (
+        std * get_probability_density(m, mean, std)
+    )
+
+    return score
 
 def get_UCB_coefficients(lite_size, dark_size):
     delta = 0.1
@@ -1319,7 +1560,6 @@ def get_UCB_coefficients(lite_size, dark_size):
     gamma = 2 * math.log((D * lite_size**2 * math.pi**2) / 6 * delta)
     # revisit the std coeff
     std_coeff = (v * gamma) ** 0.5
-    print(std_coeff)
     return std_coeff 
 
 def UCB_plus_score(mean, std, lite_size, dark_size):
@@ -1349,7 +1589,7 @@ def get_interpolated_distance(dist_row_a, dist_row_b, dist_ab, d2h_a, d2h_b):
 
     return d2h_row, inconsistency
 
-def split_GP(self, dark, lite):
+def split_GP(self, dark, lite, acqn_fn):
     max = -1e30
     out = 1
     total_count = 0
@@ -1359,6 +1599,7 @@ def split_GP(self, dark, lite):
     dark_subset = dark[:the.buffer]
 
     for row in dark_subset:
+      best_d2h = self.distance(lite[0])
       interpol_distances = []
       for i in range(10):
           total_count += 1
@@ -1376,8 +1617,15 @@ def split_GP(self, dark, lite):
           if inconsistency:
               inconsistency_count += 1
           interpol_distances.append(distance)
-      mean, std = np.mean(interpol_distances), np.std(interpol_distances)
-      tmp = UCB_plus_score(-mean, std, len(lite), len(dark))
+
+      mean, std = np.mean(interpol_distances), np.std(interpol_distances) + 0.0001
+
+      if acqn_fn == 'UCB':
+        tmp = UCB_plus_score(the.neg * mean, std, len(lite), len(dark))
+      if acqn_fn == 'PI':
+        tmp = tmp = PI_score(the.neg * mean, std, best_d2h)
+      if acqn_fn == 'EI':
+        tmp = EI_score(the.neg * mean, std, best_d2h)
 
       if tmp > max:
           out, max = row, tmp
@@ -1386,9 +1634,26 @@ def split_GP(self, dark, lite):
 
 def UCB_Linear(d, todo, done):
     while len(todo) > 2 and len(done) < the.Last:
-      top = split_GP(d, todo, done)
+      top = split_GP(d, todo, done, 'UCB')
       todo.remove(top)
       done += [top]
+      done = d.ranked(done)
+    return done
+
+def PI_Linear(d, todo, done):
+    while len(todo) > 2 and len(done) < the.Last:
+      top = split_GP(d, todo, done, 'PI')
+      todo.remove(top)
+      done += [top]
+      done = d.ranked(done)
+    return done
+
+def EI_Linear(d, todo, done):
+    while len(todo) > 2 and len(done) < the.Last:
+      top = split_GP(d, todo, done, 'EI')
+      todo.remove(top)
+      done += [top]
+      done = d.ranked(done)
     return done
 
 #--------- --------- --------- --------- --------- --------- --------- --------- --------
@@ -1459,7 +1724,22 @@ def UCB_GPM(d, todo, done):
         best_candidate = todo.pop(best_idx)
          
         done.append(best_candidate)
-    
+      
+    if the.full == True:
+        update_gp_model(done)
+        random.shuffle(todo)
+        todo_subset = todo[:1000]
+
+        kappa = 2 * math.log((len(d.cols.x) * len(done)**2 * math.pi**2) / 6 * delta)
+
+        ucb_values = [ucb(row, kappa ** 0.5) for row in todo_subset]
+
+        for _ in range(40 - the.Last):
+          best_idx = np.argmax(ucb_values)
+          best_candidate = todo.pop(best_idx)
+          done.append(best_candidate)
+
+    print(len(d.rows))
     return done
 
 ## Main

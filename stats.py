@@ -8,8 +8,8 @@ class o:
 the = o(
   seed  = 1234567891, 
   round = 2,
-  stats = o(cohen=0.35,
-            cliffs=0.195, #border between small=.11 and medium=.28 
+  stats = o(cohen=0.49,
+            cliffs=0.27, #border between small=.11 and medium=.28 
             bootstraps=512,
             confidence=0.05))
 
