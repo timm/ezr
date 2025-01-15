@@ -38,7 +38,7 @@ class SOME:
       i.hi = max(x,i.hi)
       now  = len(i._has)
       if   now < i.max   : i.ok=False; i._has += [x]
-      elif R() <= now/i.n: i.ok=False; i._has[ int(R() * now) ]
+      elif R() <= now/i.n: i.ok=False; i._has[ int(R() * now) ] = x
 
     def __eq__(i,j):
       "True if all of cohen/cliffs/bootstrap say you are the same."
