@@ -2,7 +2,7 @@
 import sys; sys.path.insert(0, "../src")
 from about import the
 from data import Data
-from lib import go,csv,doc,cat
+from aux import go,csv,doc,cat
 from dist import xdist,ydist,kpp,ydists
 
 def eg__dist():

@@ -3,7 +3,7 @@ import sys; sys.path.insert(0, "../src")
 import random
 from about import the
 from adds import add,sub
-from lib import go,csv,doc
+from aux import go,csv,doc
 from query import spread,mid
 from data import clone,Num,Sym,Data
 

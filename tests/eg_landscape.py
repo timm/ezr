@@ -1,7 +1,7 @@
 import sys; sys.path.insert(0, "../src")
 
 from about import the
-from lib import go,csv,doc,cat
+from aux import go,csv,doc,cat
 from dist import ydist,ydists
 from landscape import fastmaps
 from data import Data

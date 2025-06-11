@@ -1,5 +1,5 @@
 from about import the
-from lib import big,shuffle
+from aux import big,shuffle
 from dist import ydist,xdist,xdists,ydists 
 
 def project(data, row, a, b, C=None):

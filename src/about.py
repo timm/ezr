@@ -27,7 +27,8 @@ Stats:
   -c   Cliffs     : effect size threshold (0.197)
  """
 import re
-from lib import atom,o
+from aux import atom,o
 
 the = o(**{k:atom(v) for k,v in 
            re.findall(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\)", __doc__)})
+

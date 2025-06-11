@@ -1,7 +1,7 @@
 import sys; sys.path.insert(0, "../src")
 
 from data import Cols
-from lib import cat,go
+from aux import cat,go
 
 def eg__cols():
   ":         : List[str] --> columns"
