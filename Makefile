@@ -29,14 +29,8 @@ push: ## commit to main
 sh: ## run my shell
 	Top=$(Top) bash --init-file $(Top)/etc/init.sh -i
 
-%.md: ## inlude 
-	gawk '\
-		in==0 && match($$0, /^```[a-zA-Z]+\s+\S+/) {                 \
-			print; split($$0,f," ");                                    \
-			while ((getline < f[2]) > 0) print; close(f[2]); in=1; next }\
-		in && /^```/ { print; in=0; next }\
-		in { next }\
-		1 ' $< > .tmp && mv .tmp $@
+%.md: ## include source code
+	gawk -f $(Top)/etc/include.awk $< > .tmp && mv .tmp $@
 
 ~/tmp/ezr.pdf: src/*.py
 	echo "pdf-ing $@ ... "
@@ -64,6 +58,7 @@ all: o csv cols num sym data addsub dist div
 
 o      :; $T eg_lib.py   --o       ## demo simple classes
 csv    :; $T eg_lib.py   --csv     ## demo reading csv files
+the    :; $T eg_lib.py   --the     ## demo showing config
 cols   :; $T eg_data.py  --cols    ## demo csv files --> Data
 num    :; $T eg_query.py --num     ## demo Nums
 sym    :; $T eg_query.py --sym     ## demo Syms
@@ -71,3 +66,4 @@ data   :; $T eg_query.py --data    ## demo Data
 addsub :; $T eg_query.py --addsub  ## demo incremetal adds, deletes
 dist   :; $T eg_dist.py  --dist    ## demo incremetal dist
 div    :; $T eg_dist.py  --div     ## demo diversity sampling
+fmap   :; $T eg_landscape.py --fmap ## demo fastmap

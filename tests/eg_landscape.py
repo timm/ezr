@@ -8,8 +8,8 @@ from data import Data,Num
 
 def eg__fastmap():
   data = Data(csv(doc(the.file)))
-  b4= Num(ydist(data,row) for row in data._rows)
-  one=lambda: ydist(data, fastmaps(data)[0][0])
+  b4   = Num(ydist(data,row) for row in data._rows)
+  one  = lambda : ydist(data, fastmaps(data).best._rows[0])
   print(o(mu=b4.mu,
           lo=b4.lo,
           vals= cat(sorted(one() for _ in range(20)))))
