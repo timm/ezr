@@ -1,71 +1,72 @@
-# Default is show help; e.g.
-#
-#    make 
-#
-# prints the help text.
+# ater much recursive make file nonsense, i finally went with
+# one entralized make
+#----------------------------------------------------------------
+# General tricks
 
 SHELL     := bash
 MAKEFLAGS += --warn-undefined-variables
 .SILENT:
 
+SHOUT = \033[1;34m#
+QUIET = \033[0m#
+
 Top=$(shell git rev-parse --show-toplevel)
-Data ?= $(Top)/../data/optimize
-Tmp  ?= $(HOME)/tmp
-Act  ?= mqs
 
-help      :  ## show help
-	gawk -f $(Top)/etc/help.awk $(MAKEFILE_LIST) 
+help:  ## show help
+	gawk 'BEGIN { FS   = ":.*## "; print "\nmake [WHAT]" }            \
+	      /^[^ \t].*##/ {                                              \
+	        printf("   $(SHOUT)%-10s$(QUIET) %s\n", $$1, $$2) | "sort"} \
+	' $(MAKEFILE_LIST)
 
-pull    : ## download
+pull: ## update from main
 	git pull
 
-push    : ## save
-	read -ep "\033[33mWhy this push? \033[0m" x; git commit -am "$$x"; git push; git status
+push: ## commit to main
+	- echo -en "$(SHOUT)Why this push? $(QUIET)" 
+	- read x ; git commit -am "$$x" ;  git push
+	- git status
 
-$(Top)/docs/%.pdf: %.py  ## make doco: .py ==> .pdf
-	mkdir -p ~/tmp
+sh: ## run my shell
+	Top=$(Top) bash --init-file $(Top)/etc/init.sh -i
+
+%.md: ## inlude 
+	gawk '\
+		in==0 && match($$0, /^```[a-zA-Z]+\s+\S+/) {                 \
+			print; split($$0,f," ");                                    \
+			while ((getline < f[2]) > 0) print; close(f[2]); in=1; next }\
+		in && /^```/ { print; in=0; next }\
+		in { next }\
+		1 ' $< > .tmp && mv .tmp $@
+
+~/tmp/ezr.pdf: src/*.py
 	echo "pdf-ing $@ ... "
-	a2ps                 \
-		-Br                 \
-		--chars-per-line=90 \
-		--file-align=fill      \
-		--line-numbers=1        \
-		--pro=color               \
-		--left-title=""            \
-		--borders=no             \
-	    --left-footer="$<  "               \
-	    --right-footer="page %s. of %s#"               \
-		--columns 3                 \
-		-M letter                     \
-	  -o	 $@.ps $<
-	ps2pdf $@.ps $@; rm $@.ps
+	a2ps                          \
+		--file-align=fill            \
+		--line-numbers=1              \
+		--pro=color                    \
+		--left-title=""                 \
+		--borders=no                     \
+	  --right-footer="page %s. of %s#"  \
+		--landscape                        \
+		--lines-per-page 110  \
+		--columns 3                          \
+		-M letter                             \
+		-o - $(Top)/src/*.py | ps2pdf - $@
 	open $@
 
-docs/%.html : docs/%.md etc/b4.html docs/ezr.css Makefile ## make doco: md -> html
-	echo "$< ... "
-	pandoc -s  -f markdown --number-sections --toc  --toc-depth=5 \
-					-B etc/b4.html --mathjax \
-  		     --css ezr.css --highlight-style tango \
-	  			 -o $@  $<
+#----------------------------------------------------------------
+# Local tricks
 
-docs/%.html : %.py etc/py2html.awk etc/b4.html docs/ezr.css Makefile ## make doco: md -> html
-	echo "$< ... "
-	gawk -f etc/py2html.awk $< \
-	| pandoc -s  -f markdown --number-sections --toc --toc-depth=5 \
-					-B etc/b4.html --mathjax \
-  		     --css ezr.css --highlight-style tango \
-					 --metadata title="$<" \
-	  			 -o $@ 
+T=cd $(Top)/tests; python3 -B
 
-# another commaned
-acts: ## experiment: mqs
-	$(MAKE) Data=$(Data) Tmp=~/tmp/ Act=mqs act
+all: o csv cols num sym data addsub dist div
 
-act: ## experiment: mqs
-	$(foreach d, config hpo misc process,         \
-		$(foreach f, $(wildcard $(Data)/$d/*.csv),   \
-				mkdir -p $(Out)/$(Act)/$d;                 \
-       ./ezr.py -t $f -e $(Act)  | tee $(Out)/$(Act)/$d/$f ; ))
-
-fred:
-	echo $x
+o      :; $T eg_lib.py   --o       ## demo simple classes
+csv    :; $T eg_lib.py   --csv     ## demo reading csv files
+cols   :; $T eg_data.py  --cols    ## demo csv files --> Data
+num    :; $T eg_query.py --num     ## demo Nums
+sym    :; $T eg_query.py --sym     ## demo Syms
+data   :; $T eg_query.py --data    ## demo Data
+addsub :; $T eg_query.py --addsub  ## demo incremetal adds, deletes
+dist   :; $T eg_dist.py  --dist    ## demo incremetal dist
+div    :; $T eg_dist.py  --div     ## demo diversity sampling
