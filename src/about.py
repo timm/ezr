@@ -4,7 +4,7 @@ n2m.py: tiny AI. multi objective, explainable, AI
 
 Options, with (defaults):
 
-  -f   file       : data name (../../../moot/optimize/misc/auto93.csv)
+  -f   file       : data name (../../moot/optimize/misc/auto93.csv)
   -r   rseed      : set random number rseed (123456781)
   -F   Few        : a few rows to explore (128)
   -l   leaf       : tree learning: min leaf size (2)

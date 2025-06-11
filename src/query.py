@@ -16,7 +16,7 @@ def spread(i):
 
 # Most common symbol.
 def mode(d): 
-  return max(d,key=d.has.get)
+  return max(d,key=d.get)
 
 # Symbolic complexity.
 def ent(d,N): 

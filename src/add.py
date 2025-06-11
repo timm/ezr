@@ -5,10 +5,6 @@ from data import Num, Sym
 def sub(i,v,purge=False): 
   return add(i, v, inc= -1, purge=purge)
 
-def adds(i,lst): 
-  from add import add  
-  [add(i,x) for x in lst]; return i
-
 # Add `v` to `i`. Skip unknowns ("?"), return v.
 def add(i,v, inc=1, purge=False): # -> v
   def _sym(sym,s): sym.has[s] = inc + sym.has.get(s,0)

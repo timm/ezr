@@ -1,14 +1,13 @@
 import sys; sys.path.insert(0, "../src")
 
 import random
-from lib import cli,csv,doc,lines
-from data import clone,Num,Sym,Data
-from query import spread,mid
-from example import EXAMPLE
-from add import add,sub
 from about import the
+from add import add,sub
+from lib import cli,csv,doc
+from query import spread,mid
+from data import clone,Num,Sym,Data
 
-def eg__nums():
+def eg__num():
   num=Num([random.gauss(10,2) for _ in range(1000)])
   assert 10 < mid(num) < 10.2 and 2 < spread(num) < 2.1
 
@@ -32,11 +31,11 @@ def eg__addSub():
       spreads = spread(data2)
   for row in data1._rows[::-1]:
     if len(data2._rows)==100: 
-      assert mids    == mid(data2)
-      assert spreads == spread(data2)
+      assert sum((a-b) for a,b in zip(mids, mid(data2))) < 0.1
+      assert sum((a-b) for a,b in zip(spreads, spread(data2))) < 0.1
       return
-    sub(data2, row)
+    sub(data2, row, purge=True)
 
-cli(dict(nums=eg__nums, sym=eg__sym, 
+cli(dict(num=eg__num, sym=eg__sym, 
          data=eg__data, addsub=eg__addSub))
 

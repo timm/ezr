@@ -1,6 +1,5 @@
 # ater much recursive make file nonsense, i finally went with
 # one entralized make
-
 #----------------------------------------------------------------
 # General tricks
 
@@ -39,14 +38,35 @@ sh: ## run my shell
 		in { next }\
 		1 ' $< > .tmp && mv .tmp $@
 
+~/tmp/ezr.pdf: src/*.py
+	echo "pdf-ing $@ ... "
+	a2ps                          \
+		--file-align=fill            \
+		--line-numbers=1              \
+		--pro=color                    \
+		--left-title=""                 \
+		--borders=no                     \
+	  --right-footer="page %s. of %s#"  \
+		--landscape                        \
+		--lines-per-page 110  \
+		--columns 3                          \
+		-M letter                             \
+		-o - $(Top)/src/*.py | ps2pdf - $@
+	open $@
+
 #----------------------------------------------------------------
 # Local tricks
 
 T=cd $(Top)/tests; python3 -B
 
-all: o csv cols
+all: o csv cols num sym data addSub
 
-o    :; $T lib.py o   ## demo simple classes
-csv  :; $T lib.py csv ## demo reading csv files
-cols :; $T data.py cols ## demo csv files --> Data
-	
+o      :; $T lib.py   o       ## demo simple classes
+csv    :; $T lib.py   csv     ## demo reading csv files
+cols   :; $T data.py  cols    ## demo csv files --> Data
+num    :; $T query.py num     ## demo Nums
+sym    :; $T query.py sym     ## demo Syms
+data   :; $T query.py data    ## demo Data
+addsub :; $T query.py addsub  ## demo incremetal adds, deletes
+dist   :; $T dist.py  dist    ## demo incremetal dist
+div    :; $T dist.py  div     ## demo diversity sampling
