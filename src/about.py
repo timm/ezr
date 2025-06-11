@@ -1,5 +1,5 @@
 """
-n2m.py: tiny AI. multi objective, explainable, AI
+ezr: a tiny AI toolkit for multi objective explainable AI
 (c) 2025 Tim Menzies, <timm@ieee.org>. MIT license
 
 Options, with (defaults):
@@ -10,21 +10,21 @@ Options, with (defaults):
   -l   leaf       : tree learning: min leaf size (2)
   -p   p          : distance calcs: set Minkowski coefficient (2)
 
+Active learning:
+  -A   Assume     : initial guesses (4)
+  -B   Build      : build a modell from this number of samples (20)
+  -C   Check      : test the model, allowing this many checks (5)
+  -a   acq        : in building, xploit or xplore or adapt? (xploit)  
+  -g   guess      : division best and rest (0.5)
+
 Bayes:
   -k   k          : bayes hack for rare classes (1)
   -m   m          : bayes hack for rare attributes (2)
 
-Active learning:
-  -A   Acq        : xploit or xplore or adapt (xploit)  
-  -G   Guess      : division best and rest (0.5)
-  -s   start      : guesses, initial (4)
-  -S   Stop       : guesses, max (20)
-  -T   Test       : test guesses (5)
-
 Stats:
-  -B   Boots      : significance threshold (0.95)
+  -s   samples    : samples used for bootstralling (0.95)
   -b   bootstrap  : num. bootstrap samples (512)
-  -C   Cliffs     : effect size threshold (0.197)
+  -c   Cliffs     : effect size threshold (0.197)
  """
 import re
 from lib import atom,o

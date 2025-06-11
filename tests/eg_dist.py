@@ -2,7 +2,7 @@
 import sys; sys.path.insert(0, "../src")
 from about import the
 from data import Data
-from lib import cli,csv,doc,cat
+from lib import go,csv,doc,cat
 from dist import xdist,ydist,kpp,ysort
 
 def eg__dist():
@@ -18,6 +18,6 @@ def eg__diversitySampling():
   one = lambda: ydist(data, ysort(data,kpp(data))[0])
   print(cat(sorted(one() for _ in range(20))))
 
-cli(dict(dist=eg__dist, 
-         div=eg__diversitySampling))
+go(dist=eg__dist, 
+   div=eg__diversitySampling)
 

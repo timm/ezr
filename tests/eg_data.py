@@ -1,7 +1,7 @@
 import sys; sys.path.insert(0, "../src")
 
 from data import Cols
-from lib import cat,cli
+from lib import cat,go
 
 def eg__cols():
   ":         : List[str] --> columns"
@@ -10,4 +10,4 @@ def eg__cols():
     print("\n"+what)
     [print("\t"+cat(one)) for one in lst]
 
-cli(dict(cols=eg__cols))
+go(cols=eg__cols)

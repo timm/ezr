@@ -16,7 +16,7 @@ def ydist(data, row):
   "Distance to heaven."
   return minkowski(abs(norm(c, row[c.at]) - c.heaven) for c in data.cols.y)
 
-def ysort(data,rows=None):
+def ydists(data,rows=None):
   "Sort rows by distance to heaven."
   return sorted(rows or data._rows, key=lambda row: ydist(data,row))
 
@@ -34,7 +34,7 @@ def xdist(data, row1, row2):
   return minkowski(_aha(c, row1[c.at], row2[c.at]) for c in data.cols.x)
 
 def xdists(data, row, rows=None):
-  "Sort all rows by xdist"
+  "Sort rows by xdist"
   return sorted(rows or data._rows, key=lambda r:xdist(data,row,r))
 
 def kpp(data, k=None, rows=None):

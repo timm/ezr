@@ -1,11 +1,15 @@
 import sys; sys.path.insert(0, "../src")
 
 import math
-from lib import o,csv,lines,cli
+from lib import o,csv,lines,go
+from about import the
 from example import EXAMPLE
 
 def eg__o():
   print(o(name="alan", age=41, p=math.pi))
+
+def eg__the():
+  print(the)
 
 def eg__csv():
   s,n = 0,0
@@ -16,4 +20,4 @@ def eg__csv():
     if type(row[0]) in [int,float]: n += 1
   assert s==1 and n==100
 
-cli(dict(o=eg__o, csv=eg__csv))
+go(o=eg__o, csv=eg__csv, the=eg__the)

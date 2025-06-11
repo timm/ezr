@@ -61,12 +61,12 @@ T=cd $(Top)/tests; python3 -B
 
 all: o csv cols num sym data addsub dist div
 
-o      :; $T eg_lib.py   o       ## demo simple classes
-csv    :; $T eg_lib.py   csv     ## demo reading csv files
-cols   :; $T eg_data.py  cols    ## demo csv files --> Data
-num    :; $T eg_query.py num     ## demo Nums
-sym    :; $T eg_query.py sym     ## demo Syms
-data   :; $T eg_query.py data    ## demo Data
-addsub :; $T eg_query.py addsub  ## demo incremetal adds, deletes
-dist   :; $T eg_dist.py  dist    ## demo incremetal dist
-div    :; $T eg_dist.py  div     ## demo diversity sampling
+o      :; $T eg_lib.py   --o       ## demo simple classes
+csv    :; $T eg_lib.py   --csv     ## demo reading csv files
+cols   :; $T eg_data.py  --cols    ## demo csv files --> Data
+num    :; $T eg_query.py --num     ## demo Nums
+sym    :; $T eg_query.py --sym     ## demo Syms
+data   :; $T eg_query.py --data    ## demo Data
+addsub :; $T eg_query.py --addsub  ## demo incremetal adds, deletes
+dist   :; $T eg_dist.py  --dist    ## demo incremetal dist
+div    :; $T eg_dist.py  --div     ## demo diversity sampling

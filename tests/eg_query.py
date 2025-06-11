@@ -3,7 +3,7 @@ import sys; sys.path.insert(0, "../src")
 import random
 from about import the
 from adds import add,sub
-from lib import cli,csv,doc
+from lib import go,csv,doc
 from query import spread,mid
 from data import clone,Num,Sym,Data
 
@@ -37,6 +37,6 @@ def eg__addSub():
       return
     sub(data2, row, purge=True)
 
-cli(dict(num=eg__num, sym=eg__sym, 
-         data=eg__data, addsub=eg__addSub))
+go(num=eg__num, sym=eg__sym, 
+   data=eg__data, addsub=eg__addSub)
 

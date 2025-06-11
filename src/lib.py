@@ -1,15 +1,26 @@
-import random,sys
-
-def cli(d):
-  if len(sys.argv) > 1 and (fn:= d.get(sys.argv[1])): 
-    from about import the
-    random.seed(the.rseed)
-    fn()
-  else: print("? no example found in ", sys.argv)
+import random,sys,re
 
 big = 1E32
 pick = random.choice
 picks = random.choices
+
+def go(**fns):
+  "Run a function from the command line."
+  for s in sys.argv:
+    if (fn:= fns.get(re.sub("^--","",s))):
+      from about import the
+      cli(the.__dict__)
+      random.seed(the.rseed)
+      fn()
+
+def cli(d):
+  "Update slot `k` in dictionary `d` from CLI flags matching `k`."
+  for k, v in d.items():
+    for c, arg in enumerate(sys.argv):
+      if arg == "-" + k[0]:
+        d[k] = atom("False" if str(v) == "True" else (
+                    "True" if str(v) == "False" else (
+                    sys.argv[c + 1] if c < len(sys.argv) - 1 else str(v))))
 
 def fyi(*l,**kw,): 
   print(*l, end="", flush=True, file=sys.stderr, **kw)
