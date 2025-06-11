@@ -1,7 +1,7 @@
 from lib import big, o
 
 def adds(i,lst): 
-  from add import add # dodges a cyclic dependancy issue
+  from adds import add # dodges a cyclic dependancy issue
   [add(i,x) for x in lst]; return i
 
 # Summary of numeric columns.
