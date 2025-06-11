@@ -1,84 +1,52 @@
-# Default is show help; e.g.
-#
-#    make 
-#
-# prints the help text.
+# ater much recursive make file nonsense, i finally went with
+# one entralized make
+
+#----------------------------------------------------------------
+# General tricks
 
 SHELL     := bash
 MAKEFLAGS += --warn-undefined-variables
 .SILENT:
 
+SHOUT = \033[1;34m#
+QUIET = \033[0m#
+
 Top=$(shell git rev-parse --show-toplevel)
-Data ?= $(Top)/data/optimize
-Tmp  ?= $(HOME)/tmp
 
-help      :  ## show help
-	gawk -f $(Top)/etc/help.awk $(MAKEFILE_LIST) 
+help:  ## show help
+	gawk 'BEGIN { FS   = ":.*## "; print "\nmake [WHAT]" }            \
+	      /^[^ \t].*##/ {                                              \
+	        printf("   $(SHOUT)%-10s$(QUIET) %s\n", $$1, $$2) | "sort"} \
+	' $(MAKEFILE_LIST)
 
-pull    : ## download
+pull: ## update from main
 	git pull
 
-push    : ## save
-	echo -en "\033[33mWhy this push? \033[0m"; read x; git commit -am "$$x"; git push; git status
+push: ## commit to main
+	- echo -en "$(SHOUT)Why this push? $(QUIET)" 
+	- read x ; git commit -am "$$x" ;  git push
+	- git status
 
-python313 : ## install cool stuff
-    # everyone needs an onstall scriot
-	sudo apt -y -qq update  
-	sudo apt -y -qq upgrade  
-	sudo apt -y -qq install software-properties-common  
-	sudo add-apt-repository ppa:deadsnakes/ppa  -y   
-	sudo apt -y -qq update  
-	sudo apt -y -qq install python3.13 
+sh: ## run my shell
+	Top=$(Top) bash --init-file $(Top)/etc/init.sh -i
 
-$(Top)/docs/%.pdf: %.py  ## make doco: .py ==> .pdf
-	mkdir -p ~/tmp
-	echo "pdf-ing $@ ... "
-	a2ps                 \
-		-Br                 \
-		--chars-per-line=90 \
-		--file-align=fill      \
-		--line-numbers=1        \
-		--pro=color               \
-		--left-title=""            \
-		--borders=no             \
-	    --left-footer="$<  "               \
-	    --right-footer="page %s. of %s#"               \
-		--columns 3                 \
-		-M letter                     \
-	  -o	 $@.ps $<
-	ps2pdf $@.ps $@; rm $@.ps
-	open $@
+%.md: ## inlude 
+	gawk '\
+		in==0 && match($$0, /^```[a-zA-Z]+\s+\S+/) {                 \
+			print; split($$0,f," ");                                    \
+			while ((getline < f[2]) > 0) print; close(f[2]); in=1; next }\
+		in && /^```/ { print; in=0; next }\
+		in { next }\
+		1 ' $< > .tmp && mv .tmp $@
 
-docs/%.html : docs/%.md etc/b4.html docs/ezr.css Makefile ## make doco: md -> html
-	echo "$< ... "
-	pandoc -s  -f markdown --number-sections --toc  --toc-depth=5 \
-					-B etc/b4.html --mathjax \
-  		     --css ezr.css --highlight-style tango \
-	  			 -o $@  $<
+#----------------------------------------------------------------
+# Local tricks
 
-docs/%.html : %.py etc/py2html.awk etc/b4.html docs/ezr.css Makefile ## make doco: md -> html
-	echo "$< ... "
-	gawk -f etc/py2html.awk $< \
-	| pandoc -s  -f markdown --number-sections --toc --toc-depth=5 \
-					-B etc/b4.html --mathjax \
-  		     --css ezr.css --highlight-style monochrome \
-					 --metadata title="$<" \
-	  			 -o $@ 
+T=cd $(Top)/tests; python3 -B
 
-# another commaned
-Out=$(HOME)/tmp
-Act ?= _mqs
-acts: ## experiment: mqs
-	mkdir -p ~/tmp
-	$(MAKE)  actb4  > $(Tmp)/$(Act).sh
-	bash $(Tmp)/$(Act).sh
+all: o csv cols
 
-actb4: ## experiment: mqs
-	echo "mkdir -p $(Out)/$(Act)"
-	echo "rm $(Out)/$(Act)/*"
-	$(foreach d, config hpo misc process,         \
-		$(foreach f, $(wildcard $(Data)/$d/*.csv),   \
-				echo "python3 $(PWD)/ezr.py  -D -t $f -e $(Act)  | tee $(Out)/$(Act)/$(shell basename $f) & "; ))
-
-fred:
-	echo $x
+o    :; $T lib.py o   ## demo simple classes
+csv  :; $T lib.py csv ## demo reading csv files
+cols :; $T data.py cols ## demo csv files --> Data
+	
