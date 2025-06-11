@@ -19,6 +19,7 @@ def fastmaps(data, build=None):
   done, todo = [], data._rows[:]
   stop = build or the.Build
   while len(todo)>2 and len(done) < stop-2:
+    print(1)
     a, *todo, b = fastmap(data, todo)
     mid = len(todo)//2
     todo= todo[mid:] if ydist(data,a) > ydist(data,b) else todo[:mid]
