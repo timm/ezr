@@ -8,7 +8,7 @@ from data import Data
 
 def eg__fastmap():
   data = Data(csv(doc(the.file)))
-  one=lambda: ydist(data, ydists(data, fastmaps(data)[0])[0])
+  one=lambda: ydist(data, fastmaps(data)[0][0])
   print(cat(sorted(one() for _ in range(20))))
 
 go(fmap=eg__fastmap)
