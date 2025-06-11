@@ -180,16 +180,22 @@ require("lazy").setup({
     config = function()
       local cmp = require("cmp")
       cmp.setup {
+        completion = {
+          autocomplete = false, -- 🔇 disable auto-popup
+        },
         mapping = cmp.mapping.preset.insert({
           ["<Tab>"] = cmp.mapping.confirm({ select = true }),
+          ["<C-Space>"] = cmp.mapping.complete(), -- 🔑 manual trigger
         }),
         sources = {
           { name = "nvim_lsp" },
         },
       }
     end
+
   }
 })
+
 
 require("catppuccin").setup({
   flavour = "mocha",

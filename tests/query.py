@@ -7,6 +7,7 @@ from lib import cli,csv,doc
 from query import spread,mid
 from data import clone,Num,Sym,Data
 
+
 def eg__num():
   num=Num([random.gauss(10,2) for _ in range(1000)])
   assert 10 < mid(num) < 10.2 and 2 < spread(num) < 2.1
