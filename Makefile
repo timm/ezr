@@ -41,19 +41,20 @@ sh: ## run my shell
 ~/tmp/ezr.pdf: src/*.py
 	echo "pdf-ing $@ ... "
 	a2ps                          \
-		--file-align=fill            \
+		--file-align=virtual         \
 		--line-numbers=1              \
 		--pro=color                    \
+		--pretty=python \
 		--left-title=""                 \
 		--borders=no                     \
 	  --right-footer="page %s. of %s#"  \
 		--landscape                        \
-		--lines-per-page 110  \
 		--columns 3                          \
 		-M letter                             \
 		-o - $(Top)/src/*.py | ps2pdf - $@
 	open $@
 
+#		--lines-per-page 110                \
 #----------------------------------------------------------------
 # Local tricks
 

@@ -39,7 +39,7 @@ def xdists(data, row, rows=None):
 
 def kpp(data, k=None, rows=None):
   "Retuen k points, usually D^2 distance from each other."
-  k = k or the.Stop
+  k = k or the.Build
   row,  *rows = shuffle(rows or data._rows)
   some = rows[:the.Few]
   centroids   = [row]

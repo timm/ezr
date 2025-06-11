@@ -150,7 +150,7 @@ require("lazy").setup({
           python = {
             analysis = {
               typeCheckingMode = "off",
-                extraPaths = { "src" },
+              extraPaths = { "src" },
               diagnosticMode = "openFilesOnly",
               autoSearchPaths = true,
               useLibraryCodeForTypes = true,
