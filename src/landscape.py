@@ -17,14 +17,13 @@ def fastmap(data, rows):
   return sorted(rows, key = lambda r: project(data,r,a,b,C))
 
 def fastmaps(data):
-  todo,done = [],[]
-  while len(done) <= the.Build - 2:
-    todo = todo if len(todo) > 2 else shuffle(data._rows[:])
+  tmp  = data._rows[:]
+  done = shuffle(tmp[:the.Assume])
+  todo = shuffle(tmp[the.Assume:])
+  while len(done) <= the.Build - 2 and len(todo)> 2:
     a, *todo, b = fastmap(data, todo)
-    done += [a,b]
-    mid   = len(todo)//2
-    todo  = todo[:mid] if ydist(data,a) < ydist(data,b) else todo[mid:]
+    done +=  [a,b]
+    n = len(todo)//2
+    todo = todo[:n] if ydist(data,a) < ydist(data,b) else todo[n:]
+    if len(todo) < 2: todo = shuffle(tmp[the.Assume:])
   return o(best=clone(data, done), test=todo)
-
-
-
