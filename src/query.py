@@ -1,5 +1,5 @@
 import math
-from aux import big
+from lib import big
 from data import Num,Sym
 
 # Middle tendency.

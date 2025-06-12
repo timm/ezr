@@ -1,7 +1,7 @@
 import sys; sys.path.insert(0, "../src")
 
 import math
-from aux import o,csv,lines,go
+from lib import o,csv,lines,go
 from about import the
 from an_example import EXAMPLE
 

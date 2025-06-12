@@ -1,6 +1,6 @@
 # How probable is it that  `v` belongs to a column?
 from data import Sym,clone,add
-from aux import big
+from lib import big
 from about import o,the
 import random,math
 

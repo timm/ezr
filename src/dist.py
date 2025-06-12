@@ -1,5 +1,5 @@
 import random
-from aux import big,shuffle
+from lib import big,shuffle
 from about import the
 from query import norm
 from data import Sym

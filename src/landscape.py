@@ -1,5 +1,5 @@
 from about import o,the
-from aux import big,shuffle
+from lib import big,shuffle
 from dist import ydist,xdist,xdists,ydists 
 from data import clone
 
@@ -17,15 +17,14 @@ def fastmap(data, rows):
   return sorted(rows, key = lambda r: project(data,r,a,b,C))
 
 def fastmaps(data):
-  done = []
-  todo = shuffle(data._rows[:])
-  while len(todo) > 2 and len(done) <= the.Build - 2:
+  todo,done = [],[]
+  while len(done) <= the.Build - 2:
+    todo = todo if len(todo) > 2 else shuffle(data._rows[:])
     a, *todo, b = fastmap(data, todo)
-    mid   = len(todo)//2
-    todo  = todo[mid:] if ydist(data,a) > ydist(data,b) else todo[:mid]
     done += [a,b]
-  print(len(done))
-  return o(best=clone(data, ydists(data,done)), test=todo)
+    mid   = len(todo)//2
+    todo  = todo[:mid] if ydist(data,a) < ydist(data,b) else todo[mid:]
+  return o(best=clone(data, done), test=todo)
 
 
 

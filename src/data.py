@@ -1,4 +1,4 @@
-from aux import big, o
+from lib import big, o
 
 def adds(i,lst): 
   from adds import add # dodges a cyclic dependancy issue

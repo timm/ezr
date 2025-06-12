@@ -32,9 +32,9 @@ sh: ## run my shell
 %.md: ## include source code
 	gawk -f $(Top)/etc/include.awk $< > .tmp && mv .tmp $@
 
-~/tmp/ezr.pdf: src/*.py
+~/tmp/ezr.pdf: $(Top)/src/*.py
 	echo "pdf-ing $@ ... "
-	a2ps                          \
+	cd $Top; a2ps                          \
 		--file-align=virtual         \
 		--line-numbers=1              \
 		--pro=color                    \
@@ -45,7 +45,8 @@ sh: ## run my shell
 		--landscape                        \
 		--columns 3                          \
 		-M letter                             \
-		-o - $(Top)/src/*.py | ps2pdf - $@
+		-o - about.py example.py  data.py adds.py \
+		     query.py dist.py landscape.py bayes.py lib.py | ps2pdf - $@
 	open $@
 
 #----------------------------------------------------------------
