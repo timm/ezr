@@ -13,7 +13,7 @@ def eg__dist(_):
   lst = ydists(data)
   [print(round(ydist(data,row),2), row) for row in lst[:3] + lst[-3:]]
 
-def eg__div(_):
+def eg__kpp(_):
   data = Data(csv(doc(the.file)))
   b4   = Num(ydist(data,row) for row in data._rows)
   one = lambda: ydist(data, ydists(data,kpp(data))[0])

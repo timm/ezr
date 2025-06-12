@@ -24,6 +24,7 @@ def fastmaps(data):
     mid   = len(todo)//2
     todo  = todo[mid:] if ydist(data,a) > ydist(data,b) else todo[:mid]
     done += [a,b]
+  print(len(done))
   return o(best=clone(data, ydists(data,done)), test=todo)
 
 
