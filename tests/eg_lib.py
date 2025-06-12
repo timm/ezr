@@ -5,13 +5,13 @@ from aux import o,csv,lines,go
 from about import the
 from an_example import EXAMPLE
 
-def eg__o():
+def eg__o(_):
   print(o(name="alan", age=41, p=math.pi))
 
-def eg__the():
+def eg__the(_):
   print(the)
 
-def eg__csv():
+def eg__csv(_):
   s,n = 0,0
   for i,row in enumerate(csv(lines(EXAMPLE))): 
     if not i % 20: print(row)
@@ -20,4 +20,4 @@ def eg__csv():
     if type(row[0]) in [int,float]: n += 1
   assert s==1 and n==100
 
-go(o=eg__o, csv=eg__csv, the=eg__the)
+go(globals())

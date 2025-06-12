@@ -21,8 +21,8 @@ def fastmaps(data):
   todo = shuffle(data._rows[:])
   while len(todo) > 2 and len(done) <= the.Build - 2:
     a, *todo, b = fastmap(data, todo)
-    mid = len(todo)//2
-    todo= todo[mid:] if ydist(data,a) > ydist(data,b) else todo[:mid]
+    mid   = len(todo)//2
+    todo  = todo[mid:] if ydist(data,a) > ydist(data,b) else todo[:mid]
     done += [a,b]
   return o(best=clone(data, ydists(data,done)), test=todo)
 

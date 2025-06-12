@@ -4,14 +4,14 @@ big = 1E32
 pick = random.choice
 picks = random.choices
 
-def go(**fns):
+def go(fns):
   "Run a function from the command line."
-  for s in sys.argv:
-    if (fn:= fns.get(re.sub("^--","",s))):
+  for i,s in enumerate(sys.argv):
+    if fn := fns.get("eg" + s.replace("-", "_")):
       from about import the
       cli(the.__dict__)
       random.seed(the.rseed)
-      fn()
+      fn(None if i==len(sys.argv) - 1 else atom(sys.argv[i+1]))
 
 def cli(d):
   "Update slot `k` in dictionary `d` from CLI flags matching `k`."
