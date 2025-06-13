@@ -7,7 +7,7 @@ sdfsdfds
 
 <pre><code>
 def process_data(
-    <a href="se1">se1</a>,
+    <a href="#se1">se1</a>,
     <a href="https://example.com/docs#output">output</a>
 ):
     # do stuff…
