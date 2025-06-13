@@ -252,3 +252,21 @@ vim.diagnostic.config({
   update_in_insert = false,
 })
 
+-- Auto-open nvim-tree when no files are passed
+vim.api.nvim_create_autocmd("VimEnter", {
+  callback = function()
+    if vim.fn.argc() == 0 then
+      require("nvim-tree.api").tree.open()
+    end
+  end,
+})
+
+-- Auto-quit when nvim-tree is the last window
+vim.api.nvim_create_autocmd("BufEnter", {
+  callback = function()
+    local view = require("nvim-tree.view")
+    if #vim.api.nvim_list_wins() == 1 and view.is_visible() then
+      vim.cmd("quit")
+    end
+  end,
+})

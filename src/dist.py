@@ -5,7 +5,7 @@ from query import norm
 from data import Sym
 
 def minkowski(src):
-  "Return pth root of the sum of the distances raises to p."
+  "Return pth root of the sum of the distances raises to p."  
   d, n = 0, 1/big
   for x in src:
     n += 1

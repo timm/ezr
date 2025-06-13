@@ -1,7 +1,9 @@
 # How probable is it that  `v` belongs to a column?
-from data import Sym,clone,add
-from lib import big
 from about import o,the
+from data  import Sym,clone
+from adds  import add,sub
+from lib   import big
+from dist  import ydists
 import random,math
 
 def pdf(col,v, prior=0):
@@ -32,7 +34,7 @@ def acquires(data, start=None, stop=None, guess=None, few=None):
     q   = 0 if acq=="xploit" else (1 if acq=="xplor" else 1-p)
     return (b + r*q) / abs(b*q - r + 1/big)
   def _guess(row):
-    return _acquire(like(best,row,n,2), like(rest,row,n,2), the.Acq, n/the.Stop)
+    return _acquire(like(best,row,n,2), like(rest,row,n,2), the.acq, n/the.Build)
 
   start = the.Assume if start is None else start
   stop = the.Build if stop is None else stop
@@ -52,16 +54,11 @@ def acquires(data, start=None, stop=None, guess=None, few=None):
                     key=_guess, reverse=True)
     todo    = lo[:few] + todo[few*2:] + lo[few:]
     add(bestrest, add(best, hi))
-    best._rows = ysort(bestrest)
+    best._rows = ydists(bestrest)
     if len(best._rows) >= round(n**guess):
       add(rest, # if incremental update, then runs 100 times faster
         sub(best,  
             best._rows.pop(-1))) 
   return o(best=best, rest=rest, test=todo)
-
-def acquired(data):
-  a = acquires(data,stop = the.Stop - the.Test)
-  t = tree(clone(data, a.best._rows + a.rest._rows))
-  return sorted(a.test, key=lambda z:leaf(t,z).ys.mu)[:the.Test]
 
 

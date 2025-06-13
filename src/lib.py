@@ -29,8 +29,7 @@ def say(*l,**kw,):
   print(*l, end="", flush=True, **kw)
 
 def shuffle(lst):
-  random.shuffle(lst)
-  return lst
+  random.shuffle(lst); return lst
 
 def doc(file):
   with open(file, 'r', newline='', encoding='utf-8') as f:
