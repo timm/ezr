@@ -8,10 +8,11 @@ from lib import go,csv,doc,cat
 
 def eg__fastmap(_):
   data = Data(csv(doc(the.file)))
-  b4   = Num(ydist(data,row) for row in data._rows)
-  one  = lambda : ydist(data, ydists(data,fastmaps(data).best._rows)[0])
+  Y    = lambda r: ydist(data,r)
+  b4   = Num(Y(r) for r in data._rows)
+  one  = lambda : Y(min(fastmaps(data).best._rows, key=Y))
   print("fmap",o(mu=b4.mu, lo=b4.lo,
-                 vals= cat(sorted(one() for _ in range(20)))))
+                 vals= sorted(one() for _ in range(20))))
 
 go(globals())
 

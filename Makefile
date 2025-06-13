@@ -65,5 +65,5 @@ sym    :; $T eg_query.py --sym     ## demo Syms
 data   :; $T eg_query.py --data    ## demo Data
 addSub :; $T eg_query.py --addSub  ## demo incremetal adds, deletes
 dist   :; $T eg_dist.py  --dist    ## demo incremetal dist
-div    :; $T eg_dist.py  --div     ## demo diversity sampling
+kpp    :; $T eg_dist.py  --kpp     ## demo diversity sampling with kpp
 fmap   :; $T eg_landscape.py --fastmap ## demo fastmap

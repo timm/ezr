@@ -3,7 +3,7 @@ import sys; sys.path.insert(0, "../src")
 import math
 from lib import o,csv,lines,go
 from about import the
-from an_example import EXAMPLE
+from example import EXAMPLE
 
 def eg__o(_):
   print(o(name="alan", age=41, p=math.pi))

@@ -38,17 +38,10 @@ def xdists(data, row, rows=None):
   return sorted(rows or data._rows, key=lambda r:xdist(data,row,r))
 
 def kpp(data, k=None, rows=None):
-  "Retuen k points, usually D^2 distance from each other."
-  k = k or the.Build
-  row,  *rows = shuffle(rows or data._rows)
-  some = rows[:the.Few]
-  centroids   = [row]
-  for _ in range(1, k):
-    dists = [min(xdist(data,x,y)**2 for y in centroids) for x in some]
-    r     = random.random() * sum(dists)
-    for j, d in enumerate(dists):
-      r -= d
-      if r <= 0:
-        centroids.append(some.pop(j))
-        break
-  return centroids
+  "Find k centroids d**2 away from existing centoids."
+  row, *rows = shuffle(rows or data._rows)[:the.Few]
+  out = [row]
+  while len(out) < (k or the.Build):
+     ws = [min(xdist(data,r, c)**2 for c in out) for r in rows]
+     out.append(random.choices(rows, weights=ws)[0])
+  return out
