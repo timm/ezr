@@ -31,6 +31,16 @@ def say(*l,**kw,):
 def shuffle(lst):
   random.shuffle(lst); return lst
 
+def nway(rows, m=5, n=5):
+  rows  = rows[:]              # keep caller’s data intact
+  fold  = len(rows) // n       # base fold size
+  for _ in range(m):
+      random.shuffle(rows)
+      for b in range(n):
+          lo = b * fold
+          hi = lo + fold if b < n - 1 else len(rows)
+          yield rows[:lo] + rows[hi:], rows[lo:hi]
+
 def doc(file):
   with open(file, 'r', newline='', encoding='utf-8') as f:
     for line in f: yield line
