@@ -4,11 +4,13 @@ from dist import ydist,xdist,xdists,ydists
 from data import clone
 
 def project(data, row, a, b, C=None):
+  "Closest point on line 'ab' to `row'" 
   C =  C or xdist(data,a,b)
   A,B = xdist(data,row,a), xdist(data,row,b)
   return (A*A + C*C - B*B) / (C+C + 1/big)
 
 def fastmap(data, rows):
+  "Map rows along a line between 2 distant points."
   one,*tmp = shuffle(rows)[:the.Few]
   far = int(0.9 *len(tmp))
   a   = xdists(data, one, tmp)[far]; 
@@ -17,6 +19,7 @@ def fastmap(data, rows):
   return sorted(rows, key = lambda r: project(data,r,a,b,C))
 
 def fastmaps(data):
+  "Repeateldy, throw away half the less promising data."
   tmp  = data._rows[:]
   done = shuffle(tmp[:the.Assume])
   todo = shuffle(tmp[the.Assume:])

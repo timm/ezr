@@ -1,15 +1,17 @@
-# Add `v` to `i`. Skip unknowns ("?"), return v.
 from data import Num, Sym
 
-# Subtraction is like addition, just with a negative increment  
 def sub(i,v,purge=False): 
+  "Subtraction is like addition, just with a negative increment."
   return add(i, v, inc= -1, purge=purge)
 
-# Add `v` to `i`. Skip unknowns ("?"), return v.
 def add(i,v, inc=1, purge=False): # -> v
-  def _sym(sym,s): sym.has[s] = inc + sym.has.get(s,0)
+  "Add `v` to `i`. Skip unknowns ("?"), return v."
+  def _sym(sym,s): 
+    "Updating Syms means just updating symbol counts."
+    sym.has[s] = inc + sym.has.get(s,0)
 
   def _data(data,row): 
+    "To udpate Data, change the rows and update the columns."
     if inc < 0:  
       if purge: data._rows.remove(v)  # Slow for very large lists
       [sub(c, row[c.at], inc) for c in data.cols.all]  
@@ -18,6 +20,7 @@ def add(i,v, inc=1, purge=False): # -> v
       [add(c,row[c.at],inc) for c in data.cols.all] # update cols
 
   def _num(num,n): 
+    "To udpate Num, change mu,sd,m2,lo,hi."
     num.lo = min(n, num.lo)
     num.hi = max(n, num.hi)
     if inc < 0 and num.n < 2: 

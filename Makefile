@@ -34,7 +34,7 @@ sh: ## run my shell
 
 ~/tmp/ezr.pdf: $(Top)/src/*.py
 	echo "pdf-ing $@ ... "
-	cd $Top; a2ps                          \
+	cd $(Top)/src; a2ps                          \
 		--file-align=virtual         \
 		--line-numbers=1              \
 		--pro=color                    \

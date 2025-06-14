@@ -29,6 +29,7 @@ Stats:
 import re
 from lib import atom,o
 
+# Parse our config from the above doc string.
 the = o(**{k:atom(v) for k,v in 
            re.findall(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\)", __doc__)})
 

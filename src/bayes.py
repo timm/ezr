@@ -29,17 +29,21 @@ def likes(datas, row):
 
 def acquires(data, start=None, stop=None, guess=None, few=None):
   "Split rows to best,rest. Label row that's e.g. max best/rest. Repeat."
-  def _acquire(b, r, acq="xploit", p=1):
-    b,r = math.e**b, math.e**r
-    q   = 0 if acq=="xploit" else (1 if acq=="xplor" else 1-p)
-    return (b + r*q) / abs(b*q - r + 1/big)
   def _guess(row):
-    return _acquire(like(best,row,n,2), like(rest,row,n,2), the.acq, n/the.Build)
+    "Using a two class classifier to guess how good is `row`."
+    p   =n/the.Build
+    b,r = like(best,row,n,2), like(rest,row,n,2)
+    b,r = math.e**b, math.e**r
+    q   = 0 if the.acq=="xploit" else (1 if the.acq=="xplor" else 1-p)
+    return (b + r*q) / abs(b*q - r + 1/big)
 
+  # initlaizations
   start = the.Assume if start is None else start
   stop = the.Build if stop is None else stop
   guess = the.guess if guess is None else guess
   few = the.Few if few is None else few
+  
+  # set up
   random.shuffle(data._rows)
   n         = start
   todo      = data._rows[n:]
@@ -48,17 +52,17 @@ def acquires(data, start=None, stop=None, guess=None, few=None):
   cut       = round(n**guess)
   best      = clone(data, done[:cut])
   rest      = clone(data, done[cut:])
+
+  # incremental model update
   while len(todo) > 2 and n < stop:
-    n      += 1
-    hi, *lo = sorted(todo[:few*2], # just sort a few? then 100 times faster
-                    key=_guess, reverse=True)
-    todo    = lo[:few] + todo[few*2:] + lo[few:]
+    n     += 1
+    hi,*lo= sorted(todo[:few*2],# 100 times faster if only sort few 
+                   key=_guess, reverse=True)
+    todo = lo[:few]+todo[few*2:]+lo[few:] #give other rows a chance
     add(bestrest, add(best, hi))
     best._rows = ydists(bestrest)
     if len(best._rows) >= round(n**guess):
-      add(rest, # if incremental update, then runs 100 times faster
+      add(rest, # 100 times faster if incremental update
         sub(best,  
             best._rows.pop(-1))) 
   return o(best=best, rest=rest, test=todo)
-
-

@@ -1,11 +1,13 @@
 from lib import big, o
 
 def adds(i,lst): 
+  "Bulk additions."
   from adds import add # dodges a cyclic dependancy issue
-  [add(i,x) for x in lst]; return i
+  [add(i,x) for x in lst]
+  return i
 
-# Summary of numeric columns.
 def Num(inits=[],at=0, txt=" ", rank=0):
+  "Summary of numeric columns."
   return adds(o(it=Num, 
     n      = 0,               ## items seen  
     at     = at,              ## column position
@@ -19,8 +21,8 @@ def Num(inits=[],at=0, txt=" ", rank=0):
     heaven = (0 if txt[-1] == "-" else 1), ## 0,1 = min,max
     ), inits)
 
-# Summary of symbolic columns.
 def Sym( inits=[], at=0, txt=" "):
+  "Summary of symbolic columns."
   return adds(o(it=Sym, 
     n     = 0,                ## items see
     at    = at,               ## column position 
@@ -28,8 +30,8 @@ def Sym( inits=[], at=0, txt=" "):
     has   = {}                ## counts of symbols seen
     ), inits)
 
-# Factory. <br> List[str] -> Dict[str, List[ Sym | Num ]]
 def Cols(names): 
+  "Factory. List[str] -> Dict[str, List[ Sym | Num ]]"
   all,x,y = [],[],[]
   for c,s in enumerate(names):
     all += [(Num if s[0].isupper() else Sym)(at=c, txt=s)]
@@ -41,8 +43,8 @@ def Cols(names):
     x     = x,                ## also, independent columns stored here
     y     = y)                ## also, dependent columns stored here
 
-# Data stores rows and columns.
 def Data(inits): 
+  "Data stores rows and columns."
   inits = iter(inits)
   return adds( o(it=Data, 
     n     = 0,                ## items seen
@@ -51,4 +53,5 @@ def Data(inits):
     ), inits)
 
 def clone(data, rows=[]):
+  "Copy structure of an existing table."
   return Data([data.cols.names]+rows)
