@@ -4,6 +4,18 @@ big = 1E32
 pick = random.choice
 picks = random.choices
 
+def helps(first, *more):
+  "Combine help texts. Only use para1 from the first string." 
+  return "\n".join([first] + [s.split("\n\n",1)[-1] for s in more])
+
+def settings(txt):
+  "Config is in lines with '-s setting some help text (default)'."
+  seen = {}
+  for k,v in re.findall(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\)",txt):
+    assert k not in seen, f"duplicate flag for setting '{k}'"
+    seen[k] = atom(v)
+  return o(**seen)
+
 def go(fns):
   "Run a function from the command line."
   for i,s in enumerate(sys.argv):

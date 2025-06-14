@@ -73,6 +73,22 @@ def leaf(data1,row):
       return leaf(data2, row)
   return data1
 
+# def show(data, key=lambda n:n.ys.mu):
+#     "Pretty print a tree."
+#     ys, span = data.ys, max(data.ys.mu - data.ys.lo, 1e-32)
+#     win = lambda v: round(100*(1 - (v-ys.lo)/span))
+#     print(f"{'d2h':>4} {'win':>4} {'n':>4}\n{'-'*4:>4} {'-'*4:>4} {'-'*4:>4}")
+#     used = set()
+#     for lvl,node in nodes(data, key=key):
+#         cond = ""
+#         if lvl:                         # not root
+#             op,at,val = node.how
+#             used.add(at)
+#             cond = f"{data.cols.all[at].txt} {op} {val}"
+#         print(f"{node.ys.mu:4.2f} {win(node.ys.mu):4} {node.n:4}    "
+#               f"{'|  '*(lvl-1)}{cond}{';' if not node.kids else ''}")
+#     print(", ".join(data.cols.names[i] for i in sorted(used)))
+
 def show(data, key=lambda z:z.ys.mu):
   "Pretty print a tree."
   stats = data.ys

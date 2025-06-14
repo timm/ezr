@@ -2,24 +2,26 @@ from about import the
 from lib import picks,big
 from data import Num
 from query import mid
+import random
 
+# XXXX no the. all passed in
 # Non-parametric significance test from Chp20,doi.org/10.1201/9780429246593.
 # Distributions are the same if, often, we `_see` differences just by chance.
 # We center both samples around the combined mean to simulate
 # what data might look like if vals1 and vals2 came from the same population.
-def bootstrap(vals1, vals2):
+def bootstrap(vals1, vals2, adds):
   "Non-parametric significance test from Chp20,doi.org/10.1201/9780429246593."
   _see = lambda i,j: abs(i.mu - j.mu) / ((i.sd**2/i.n + j.sd**2/j.n)**.5 +1/big)
-  x,y,z= Num(vals1+vals2), Num(vals1), Num(vals2)
+  x,y,z= adds(vals1+vals2), adds(vals1), Num(vals2)
   yhat = [y1 - mid(y) + mid(x) for y1 in vals1]
   zhat = [z1 - mid(z) + mid(x) for z1 in vals2] 
   n    = 0
   for _ in range(the.bootstrap):
-    n += _see(Num(picks(yhat, k=len(yhat))), 
-              Num(picks(zhat, k=len(zhat)))) > _see(y,z) 
+    n += _see(adds(random.choices(yhat, k=len(yhat))), 
+              adds(random.choices(zhat, k=len(zhat)))) > _see(y,z) 
   return n / the.bootstrap >= (1- the.samples)
 
-def cliffs(vals1,vals2):
+def cliffs(vals1,vals2, enough=0.197):
   "Non-parametric effect size from Tb1 of  doi.org/10.3102/10769986025002101"
   n,lt,gt = 0,0,0
   for x in vals1:
@@ -27,7 +29,7 @@ def cliffs(vals1,vals2):
       n += 1
       if x > y: gt += 1
       if x < y: lt += 1 
-  return abs(lt - gt)/n  < the.Cliffs # 0.197)  #med=.28, small=.11
+  return abs(lt - gt)/n  < enough # 0.197)  #med=.28, small=.11
 
 def scottKnott(rxs, eps=0, reverse=False):
   "Recurive bi-cluster of treatments. Stops when splits are the same."
