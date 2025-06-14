@@ -24,6 +24,8 @@ pre{
 }
 </style></head><body>]]
 
+print(W.head)
+
 h1"asdas"
 
 p[[asdasa

@@ -46,7 +46,8 @@ sh: ## run my shell
 		--columns 3                          \
 		-M letter                             \
 		-o - about.py example.py  data.py adds.py \
-		     query.py dist.py landscape.py bayes.py lib.py | ps2pdf - $@
+		     query.py dist.py landscape.py bayes.py \
+				 tree.py stats.py lib.py | ps2pdf - $@
 	open $@
 
 #----------------------------------------------------------------
@@ -54,7 +55,7 @@ sh: ## run my shell
 
 T=cd $(Top)/tests; python3 -B
 
-all: o csv the cols num sym data addSub dist div fmap
+all: o csv the cols num sym data addSub dist kpp fmap tree
 
 o      :; $T eg_lib.py   --o       ## demo simple classes
 csv    :; $T eg_lib.py   --csv     ## demo reading csv files
@@ -67,3 +68,7 @@ addSub :; $T eg_query.py --addSub  ## demo incremetal adds, deletes
 dist   :; $T eg_dist.py  --dist    ## demo incremetal dist
 kpp    :; $T eg_dist.py  --kpp     ## demo diversity sampling with kpp
 fmap   :; $T eg_landscape.py --fastmap ## demo fastmap
+tree   :; $T eg_tree.py --tree     ## tree demo
+stats  :; $T eg_stats.py --stats
+rank   :; $T eg_stats.py --rank
+rank2  :; $T eg_stats.py --rank2

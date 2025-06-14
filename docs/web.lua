@@ -1,4 +1,33 @@
 local l={}
+l.head=[[
+<a href="http://not2much.github.io/se4ai">
+  <img alt="🗂️ home" src="https://img.shields.io/badge/home-eeeeee?style=flat"></a>
+<a href="/src/">
+  <img alt="🗂️ src" src="https://img.shields.io/badge/src-bbbbbb?style=flat"></a>
+<a href="https://github.com/not2much/se4ai/fork">
+  <img alt="🔱 fork" src="https://img.shields.io/badge/fork-888888?style=flat&amp;logo=github&amp;logoColor=white"></a>
+<a href="#">
+  <img alt="© 2025" src="https://img.shields.io/badge/© 2025-666666?style=flat"></a><br>
+
+<a href="/docs/rules.md">
+  <img alt="🧭 rules" src="https://img.shields.io/badge/guide-ff6f6f?style=flat"></a>
+<a href="/docs/egs.md">
+  <img alt="📂 egs" src="https://img.shields.io/badge/egs-ff9999?style=flat"></a>
+<a href="/docs/motives.md">
+  <img alt="💡 why" src="https://img.shields.io/badge/motivation-ffcccc?style=flat"></a>&nbsp;&nbsp;
+<a href="/docs/sh.md">
+  <img alt="🐚 sh" src="https://img.shields.io/badge/sh-f1c40f?style=flat"></a>
+<a href="/docs/python.md">
+  <img alt="🐍 python" src="https://img.shields.io/badge/python-f39c12?style=flat"></a>
+<a href="/docs/se.md">
+  <img alt="🛠 se" src="https://img.shields.io/badge/se-e67e22?style=flat"></a>&nbsp;&nbsp;
+<a href="/docs/maths.md">
+  <img alt="📐 math" src="https://img.shields.io/badge/maths-7fdb7f?style=flat"></a>
+<a href="/docs/a.md">
+  <img alt="🧠 ai" src="https://img.shields.io/badge/ai-2ecc71?style=flat"></a>
+<a href="/docs/apps.md">
+  <img alt="📦 apps" src="https://img.shields.io/badge/apps-27ae60?style=flat"></a>&nbsp;&nbsp;
+]]
 
 l.fmt = string.format
 function l.tag(t,s) return l.fmt("<%s>%s</%s>",t,s,t) end
