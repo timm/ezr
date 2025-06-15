@@ -3,7 +3,7 @@ import sys; sys.path.insert(0, "../src")
 import random
 from data import the,atom,o
 from aux import go
-from stats import scottKnott, cliffs,bootstrap,abcd, abcdReport
+from stats import scottKnott, cliffs,bootstrap,abcds
 
 """
 output:
@@ -18,11 +18,11 @@ def eg__abcd(_):
   train = list('aaaaaaaaaaaaaaaaaaaaaabbbbb')
   test  = train[:]
   random.shuffle(test)
-  mem=None
+  abcd=None
   for actual, predicted in zip(train,test):
-    mem= abcd(actual,predicted,mem)
-  for k, x in abcdReport(mem)["stats"].items():
-    print(k,x) #o(pd=x.pd, acc=x.acc, pd=x.pd, prec=x.prec))
+    abcd= abcds(actual,predicted,abcd)
+  for k, x in abcd["stats"].items():
+    print(k,o(pd=x.pd, acc=x.acc, pf=x.pf, prec=x.prec))
 
 def eg__stats(_):
    def c(b): return 1 if b else 0
