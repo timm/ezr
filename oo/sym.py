@@ -3,7 +3,7 @@ import math
 
 class Sym(obj.ezr):
   "Summary of symbolic columns."
-  def __inits__(i, inits=[], at=0, txt=" "):
+  def __init__(i, inits=[], at=0, txt=""):
     i.n   = 0     ## items see
     i.at  = at    ## column position 
     i.txt = txt   ## column name

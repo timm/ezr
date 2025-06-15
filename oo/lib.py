@@ -1,5 +1,4 @@
-import random,math,re
-from obj import obj, ezr
+import random,math,sys,re
 
 BIG=1E32
 isa=isinstance
@@ -37,9 +36,26 @@ def settings(txt):
   for k,v in re.findall(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\)",txt):
     assert k not in seen, f"duplicate flag for setting '{k}'"
     seen[k] = atom(v)
-  return o(**seen)
+  return seen
 
 def shuffle(lst):
   "Return lst, with contents shuffled in place."
   random.shuffle(lst)
   return lst
+
+def cli(d):
+  "Update slot `k` in dictionary `d` from CLI flags matching `k`."
+  for k, v in d.items():
+    for c, arg in enumerate(sys.argv):
+      if arg == "-" + k[0]:
+        d[k] = atom("False" if str(v) == "True" else (
+                    "True" if str(v) == "False" else (
+                    sys.argv[c + 1] if c < len(sys.argv) - 1 else str(v))))
+
+def go(config,fns):
+  "Run a function from the command line."
+  for i,s in enumerate(sys.argv):
+    if fn := fns.get("eg" + s.replace("-", "_")):
+      cli(config)
+      random.seed(config.get("rseed",1))
+      fn(None if i==len(sys.argv) - 1 else atom(sys.argv[i+1]))

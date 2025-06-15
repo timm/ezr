@@ -4,12 +4,12 @@ import obj
 class Num(obj.ezr):
   "Summary of numeric columns."
   def __init__(i, inits=[], at=0, txt="", rank=0):
-     i.n = i.mu = i.m2 = i.sd = 0,    ## items seen  
-     i.at   = at,   ## column position
-     i.txt  = txt,  ## column name
-     i.hi   = -BIG, ## biggest seen
-     i.lo   =  BIG, ## smallest seen
-     i.rank = rank, ## used only by stats
+     i.n = i.mu = i.m2 = i.sd = 0    ## items seen  
+     i.at   = at   ## column position
+     i.txt  = txt  ## column name
+     i.hi   = -BIG ## biggest seen
+     i.lo   =  BIG ## smallest seen
+     i.rank = rank ## used only by stats
      i.heaven = 0 if  txt.endswith("-") else 1 ## goal. 0,1=min,max
      i.adds(inits)
 
