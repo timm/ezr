@@ -2,7 +2,7 @@ from lib import o,isa
 import random
 from Sym import Sym
 
-the = o(p=2,k=20)
+the = o(p=2, k=20, Few=128)
 
 def dist(vs):
   "Minkowski distance." 
@@ -39,7 +39,7 @@ def _xdist(col,u,v):
   v = v if v != "?" else (0 if u > .5 else 1)
   return abs(u - v) 
 
-@ XXX
+#XXX
 def knn(data,k,combine):
   seen=[]
   rows = shuffle[data._rows)
@@ -63,9 +63,4 @@ def kpp(data, k=None, rows=None):
   while len(out) < (k or the.Build):
      ws = [min(xdist(data, r, c)**2 for c in out) for r in rows]
      out.append(random.choices(rows, weights=ws)[0])
-  return out, memo
-
-
-
-      
-
+  return out, memo 
