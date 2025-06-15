@@ -1,4 +1,4 @@
- import obj
+import obj
 import math
 
 class Sym(obj.ezr):
