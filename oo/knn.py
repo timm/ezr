@@ -39,14 +39,13 @@ def _xdist(col,u,v):
   v = v if v != "?" else (0 if u > .5 else 1)
   return abs(u - v) 
 
-def kpp(data, k=None, rows=None):
-  "Find k centroids d**2 away from existing centoids."
-  row, *rows = shuffle(rows or data._rows)[:the.Few]
-  out = [row]
-  while len(out) < (k or the.Build):
-     ws = [min(xdist(data, r, c)**2 for c in out) for r in rows]
-     out.append(random.choices(rows, weights=ws)[0])
-  return out, memo
+@ XXX
+def knn(data,k,combine):
+  seen=[]
+  rows = shuffle[data._rows)
+  for n,row in enumerate(rows[1:]):
+    near = xdists(data,row, rows[:n]
+    combine(near,the.k, lambda r: ydist(data,r))
 
 def uniform(lst,k,fn):
   "Return average."
@@ -57,12 +56,16 @@ def triangle(lst,k,fn):
  wts = [k - i for i in range(k)]
  return sum(w*fn(x) for x,w in zip(lst[:k],wts)) / sum(wts)
 
-def knn(data,k):
-  seen=[]
-  rows = shuffle[data._rows)
-  for n,row in enumerate(rows):
-    if len(seen) < k:
-      seen[id(row)] += [data.clone([Data()]
+def kpp(data, k=None, rows=None):
+  "Find k centroids d**2 away from existing centoids."
+  row, *rows = shuffle(rows or data._rows)[:the.Few]
+  out = [row]
+  while len(out) < (k or the.Build):
+     ws = [min(xdist(data, r, c)**2 for c in out) for r in rows]
+     out.append(random.choices(rows, weights=ws)[0])
+  return out, memo
+
+
 
       
 
