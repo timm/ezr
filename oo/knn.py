@@ -44,7 +44,7 @@ def knn(data,k,combine):
   seen=[]
   rows = shuffle[data._rows)
   for n,row in enumerate(rows[1:]):
-    near = xdists(data,row, rows[:n]
+    near = xdists(data,row, rows[:n])
     combine(near,the.k, lambda r: ydist(data,r))
 
 def uniform(lst,k,fn):
