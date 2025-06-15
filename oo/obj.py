@@ -20,9 +20,9 @@ def see(v):
   it = type(v)
   if callable(v): return v.__name__ + "()"
   if it is float: return str(int(v)) if v == int(v) else f"{v:.3g}"
-  if it is list : return "{" + ", ".join(map(see, v)) + "}"
-  if it is dict : return see([f":{k} {see(v[k])}" for k in v
-                          if not (isa(k,str) and k.startswith("_"))])
+  if it is list : return "[" + ", ".join(map(see, v)) + "]"
+  if it is dict : return "{"+see([f":{k} {see(v[k])}" for k in v
+                           if not (isa(k,str) and k[0] == "_")])+"}"
   if hasattr(v,"__dict__"): return type(v).__name__ + see(v.__dict__)
   return str(v)
 
