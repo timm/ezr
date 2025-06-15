@@ -17,6 +17,14 @@ class Data(ezr):
     elif purge: i._rows.remove(row) # slow for large lists
     for col in i.cols.all: col.add(row[col.at], inc)
 
+  def mid(i) : 
+    "Central tendancy."
+    return [c.mid() for c in i.cols.all]
+
+  def spread(i): 
+    "Deviation from central tendancy."
+    return [c.spread() for c in i.cols.all]
+
   def _cols(i,names):
     "Factory. List[str] -> Dict[str, List[ Sym | Num ]]"
     all, x, y, klass = [], [], [], None
@@ -31,11 +39,3 @@ class Data(ezr):
                all   = all,    ## all columns
                x     = x,      ## also, hold independents here
                y     = y)      ## also, hold dependent here
-
-  def mid(i) : 
-    "Central tendancy."
-    return [c.mid() for c in i.cols.all]
-
-  def spread(i): 
-    "Deviation from central tendancy."
-    return [c.spread() for c in i.cols.all]
