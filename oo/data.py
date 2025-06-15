@@ -15,7 +15,6 @@ class Data(ezr):
 
   def _add(i,row,inc,purge):  
     "Update the rows acolumns"
-    print(">>>>",i)
     if inc > 0: i._rows.append(row) 
     elif purge: i._rows.remove(row) # slow for large lists
     for col in i.cols.all: col.add(row[col.at], inc)
