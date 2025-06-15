@@ -1,7 +1,7 @@
-from lib import obj
+ import obj
 import math
 
-class Sym(obj):
+class Sym(obj.ezr):
   "Summary of symbolic columns."
   def __inits__(i, inits=[], at=0, txt=" "):
     i.n   = 0     ## items see
