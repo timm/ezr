@@ -1,3 +1,5 @@
+the={rnd=3}
+
 class obj:
   "A mutatable struct with named slots,  x.slot access, pretty print."
   __init__ = lambda i, **d: i.__dict__.update(**d)
@@ -19,7 +21,7 @@ def see(v):
   "Converts most things to strings."
   it = type(v)
   if callable(v): return v.__name__ + "()"
-  if it is float: return str(int(v)) if v == int(v) else f"{v:.3g}"
+  if it is float: return str(int(v)) if v == int(v) else f"{x:.{the.rnd}g}"
   if it is list : return "[" + ", ".join(map(see, v)) + "]"
   if it is dict : return "{"+see([f":{k} {see(v[k])}" for k in v
                            if not (isa(k,str) and k[0] == "_")])+"}"
