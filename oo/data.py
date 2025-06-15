@@ -8,7 +8,7 @@ class Data(ezr):
     inits = iter(inits)
     i.n     = 0
     i._rows = [],    ## rows
-    i.cols  = i._cols(next(inits)) ## summaries of rows
+    i.cols  = _cols(next(inits)) ## summaries of rows
     i.adds(inits)
 
   def _add(i,row,inc,purge):  
@@ -25,17 +25,19 @@ class Data(ezr):
     "Deviation from central tendancy."
     return [c.spread() for c in i.cols.all]
 
-  def _cols(i,names):
-    "Factory. List[str] -> Dict[str, List[ Sym | Num ]]"
-    all, x, y, klass = [], [], [], None
-    for c, s in enumerate(names):
-      col = (Num if s[0].isupper() else Sym)(at=c, txt=s)
-      all += [col]
-      if s[-1] != "X":
-        if s[-1] == "!": klass = col
-        (y if s[-1] in "+-" else x).append(col)
-    return obj(names = names,  ## all the column names
-               klass = klass,  ## Target for classification
-               all   = all,    ## all columns
-               x     = x,      ## also, hold independents here
-               y     = y)      ## also, hold dependent here
+def _cols(names):
+  "Factory. List[str] -> Dict[str, List[ Sym | Num ]]"
+  cols= obj(names = names,  ## all the column names
+            klass = None,   ## Target for classification
+            all   = [],     ## all columns
+            x     = [],     ## also, hold independents here
+            y     = [])     ## also, hold dependent here
+  cols.all = [_cols(at,name,cols)  for at,name in enumerate(cols.names)]
+  return cols
+
+def _col(at,name,cols): 
+  col = (Num if name[0].isupper() else Sym)(txt=name, at=at) 
+  if name[-1] != "X":
+    if name[-1] == "!": cols.klass = col
+    (cols.y if name[-1] in "+-" else cols.x).append(col)
+  return col 
