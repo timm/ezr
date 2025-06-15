@@ -1,5 +1,5 @@
 class obj:
-  "Easy init a mutated struct with named slots and x.slot access."
+  "A mutatable struct with named slots,  x.slot access, pretty print."
   __init__ = lambda i, **d: i.__dict__.update(**d)
   __repr__ = lambda i: see(i.__dict__)
 
