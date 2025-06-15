@@ -12,7 +12,7 @@ class Sym(obj):
 
   def _add(i,s,inc,_):
     "Update symbol counts."
-    i.has[s] = inc + i.has.get(s,0)  
+    i.has[s] = i.has.get(s,0) + inc
 
   def mid(i): 
     "Central tendancy (most common key)."
