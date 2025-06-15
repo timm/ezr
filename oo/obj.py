@@ -9,7 +9,7 @@ class ezr(obj):
   def add(i,v, inc=1, purge=False):
     if v != "?"
       i.n += 1
-      i._add(i,v,inc, purge)
+      i._add(i,v,inc, purge) # implemented by subclass 
     return v
 
   def sub(i,v,inc= -1, purge=False):
