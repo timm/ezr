@@ -11,7 +11,7 @@ class Data(ezr):
     i.cols  = i._cols(next(inits)) ## summaries of rows
     i.adds(inits)
 
- def _add(i,row,inc,purge):  
+  def _add(i,row,inc,purge):  
     "Update the rows acolumns"
     if inc > 0: i._rows.append(row) 
     elif purge: i._rows.remove(row) # slow for large lists
@@ -34,8 +34,8 @@ class Data(ezr):
 
   def mid(i) : 
     "Central tendancy."
-    return [mid(c) for c in i.cols.all]
+    return [c.mid() for c in i.cols.all]
 
   def spread(i): 
     "Deviation from central tendancy."
-    return [spread(c) for c in i.cols.all]
+    return [c.spread() for c in i.cols.all]

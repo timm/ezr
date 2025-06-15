@@ -1,6 +1,5 @@
 from lib import BIG
 import obj
-import math
 
 class Num(obj.ezr):
   "Summary of numeric columns."
