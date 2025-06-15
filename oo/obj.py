@@ -14,3 +14,16 @@ class ezr(obj):
 
   def sub(i,v,inc= -1, purge=False):
     return i.add(i,v, inc=inc, purge=purge)
+
+def see(v):
+  "Converts most things to strings."
+  it = type(v)
+  if callable(v): return v.__name__ + "()"
+  if it is float: return str(int(v)) if v == int(v) else f"{v:.3g}"
+  if it is list : return "{" + ", ".join(map(see, v)) + "}"
+  if it is dict : return see([f":{k} {see(v[k])}" for k in v
+                          if not (isa(k,str) and k.startswith("_"))])
+  if hasattr(v,"__dict__"): return type(v).__name__ + see(v.__dict__)
+  return str(v)
+
+def say(v): print(see(v)); return v
