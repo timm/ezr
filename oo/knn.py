@@ -13,11 +13,11 @@ def dist(vs):
   return (s / n)**(1/the.p)
 
 def ydist(data, row): 
-  "Distance to goal (1 for maximize, 0 for minimze)"
+  "Distance of dependents to  heaven (1 for maximize, 0 for minimze)"
   return dist(abs(c.norm(row[c.at]) - c.heaven) for c in data.cols.y)
 
 def ydists(data, rows=None):
-  "Return all rows, sorted by ydis tto goals."
+  "Return all rows, sorted by ydist to heaven."
   return sorted(rows or data._rows, key=lambda row: ydist(data,row))
 
 def xdists(data, row1, rows=None):
@@ -27,9 +27,9 @@ def xdists(data, row1, rows=None):
   
 def xdist(data, row1, row2):  
   "Distance between independent attributes."
-  return dist(_xdist(c, row1[c.at], row2[c.at]) for c in data.cols.x)
+  return dist(_aha(c, row1[c.at], row2[c.at]) for c in data.cols.x)
 
-def _xdist(col,u,v):
+def _aha(col,u,v):
   "Distance between numeric or symbolic atoms."
   if u=="?" and v=="?": return 1 
   if isa(col, Sym): return u!=v  #1=different, 0=same 
