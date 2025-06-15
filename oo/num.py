@@ -1,7 +1,8 @@
-from lib import obj,BIG
+from lib import BIG
+import obj
 import math
 
-class Num(obj):
+class Num(obj.ezr):
   "Summary of numeric columns."
   def __init__(i, inits=[], at=0, txt="", rank=0):
      i.n = i.mu = i.m2 = i.sd = 0,    ## items seen  
@@ -35,4 +36,3 @@ class Num(obj):
       i.mu += inc * (d / i.n)
       i.m2 += inc * (d * (n - i.mu))
       i.sd  = 0 if i.n <= 2 else (max(0,i.m2)/(i.n-1))**.5
-
