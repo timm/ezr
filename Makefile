@@ -34,7 +34,7 @@ sh: ## run my shell
 
 ~/tmp/%.pdf: %.py
 	echo "pdf-ing $@ ... "
-	cd $(Top)/src; a2ps                          \
+	a2ps                          \
 		--file-align=virtual         \
 		--line-numbers=1              \
 		--pro=color                    \
