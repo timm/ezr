@@ -1,8 +1,8 @@
-import obj
+from obj import ezr,obj
 from Num import Num
 from Sym import Sym
 
-class Data(obj.ezr):
+class Data(ezr):
   "Data stores rows and columns."
   def __init__(i,inits=[]):
     inits = iter(inits)
@@ -26,11 +26,11 @@ class Data(obj.ezr):
       if s[-1] != "X":
         if s[-1] == "!": klass = col
         (y if s[-1] in "+-" else x).append(col)
-    return o(names = names,  ## all the column names
-             klass = klass,  ## Target for classification
-             all   = all,    ## all columns
-             x     = x,      ## also, hold independents here
-             y     = y)      ## also, hold dependent here
+    return obj(names = names,  ## all the column names
+               klass = klass,  ## Target for classification
+               all   = all,    ## all columns
+               x     = x,      ## also, hold independents here
+               y     = y)      ## also, hold dependent here
 
   def mid(i) : 
     "Central tendancy."
