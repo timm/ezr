@@ -27,6 +27,9 @@ class Data(ezr):
     "Deviation from central tendancy."
     return [c.spread() for c in i.cols.all]
 
+  def clone(i, inits=[]):
+    return Data([i.cols.names]+inits)
+
 def _cols(names):
   "Factory. List[str] -> Dict[str, List[ Sym | Num ]]"
   cols= obj(names = names, ## all the column names

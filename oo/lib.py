@@ -1,4 +1,5 @@
-import random,math,sys,re
+import random, sys, re
+sys.dont_write_bytecode = True
 
 BIG=1E32
 isa=isinstance
@@ -32,11 +33,11 @@ def doc(file):
 
 def settings(txt):
   "Extract flag=default from strings like our doc string"
-  seen = {}
+  d = {}
   for k,v in re.findall(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\)",txt):
-    assert k not in seen, f"duplicate flag for setting '{k}'"
-    seen[k] = atom(v)
-  return seen
+    assert k not in d, f"duplicate flag for setting '{k}'"
+    d[k] = atom(v)
+  return d
 
 def shuffle(lst):
   "Return lst, with contents shuffled in place."
@@ -59,3 +60,5 @@ def go(config,fns):
       cli(config)
       random.seed(config.get("rseed",1))
       fn(None if i==len(sys.argv) - 1 else atom(sys.argv[i+1]))
+
+
