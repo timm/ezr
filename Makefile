@@ -39,6 +39,7 @@ sh: ## run my shell
 		--line-numbers=1              \
 		--pro=color                    \
 		--pretty=python \
+		--chars-per-line=70 \
 		--left-title=""                 \
 		--borders=no                     \
 	  --right-footer="page %s. of %s#"  \
