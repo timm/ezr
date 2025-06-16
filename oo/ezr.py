@@ -154,8 +154,8 @@ class Num(Summary):
      i.heaven = 0 if  txt.endswith("-") else 1 ## goal. 0,1=min,max
      i.adds(inits)
 
-  def norm(i:Num,v): 
-    "Normalize 0..1 for min..max.")
+  def norm(i,v): 
+    "Normalize 0..1 for min..max."
     return v if v=="?" else (v-i.lo)/(i.hi-i.lo+1/BIG)
 
 #-----------------
@@ -190,36 +190,39 @@ def _col(at,name,cols):
   return col 
 
 #------------------------------------------------------------------
-def of(doc):
-  "Make fn a method of the class of the first arg." 
-  def decorator(fn):
-    fn.__doc__ = doc
-    v = list(fn.__annotations__.values())
-    if v: setattr(v[0], fn.__name__, fn)
-    return fn
-  return decorator
+_last = None
+def bind(fn=None, doc=None):
+  """Make fn a method of the class of the first arg. This lets me
+  group toether in the code related methods from different classes.
+  Kind of like extend methosd in C#/Kotlin or open class methods 
+  in Ruby, or any methods in Julia or Lua"""
+  def D(f):
+    global _last; _last = f.__doc__ = doc or _last
+    if (c := next(iter(f.__annotations__.values()), None)): 
+      setattr(c, f.__name__, f)
+    return f
+  return D(fn) if callable(fn) else D
 
 #------------------
-# Update patterns
-@of("Many updates")
-def adds(i:Summary, lst=[]): [i.add(x) for x in lst]; return i
-
-@of("'sub' is just a negative `add`")
-def sub(i:Summary, v, inc= -1,zap=False): return i.add(v,inc=inc,zap)
-
-@of("One update")
+@bind("Update")
 def add(i:Summary,v, inc=1, zap=False):
   if v != "?":
     i.n += inc
     i._add(v,inc,zap) # implemented by subclass 
   return v
 
-#-----------------
-@of("Update Syms")
+@bind("Do many updates")
+def adds(i:Summary, lst=[]): [i.add(x) for x in lst]; return i
+
+@bind("'sub' is just a negative `add`")
+def sub(i:Summary, v, inc= -1,zap=False): return i.add(v,inc,zap)
+
+#--------------------------------------------
+@bind("Internal methods to update a Summary")
 def _add(i:Sym,s,inc,_):
   i.has[s] = i.has.get(s,0) + inc
 
-@of("Update Nums")
+@bind
 def _add(i:Num,n, inc, _):
   i.lo, i.hi = min(n,i.lo), max(n,i.hi)
   if inc < 0 and i.n < 2: 
@@ -230,32 +233,32 @@ def _add(i:Num,n, inc, _):
     i.m2 += inc * (d * (n - i.mu))
     i.sd  = 0 if i.n <= 2 else (max(0,i.m2)/(i.n-1))**.5
 
-@of("Update the rows acolumns")
+@bind
 def _add(i:Data,row,inc,zap):  
-  if inc > 0: i._rows.append(row) 
-  elif zap: i._rows.remove(row) # slow for large lists
+  if inc > 0 : i._rows.append(row) 
+  elif zap   : i._rows.remove(row) # slow for large lists
   for col in i.cols.all: col.add(row[col.at], inc)
 
 #-----------------------
-@of("Central tendancy.")
+@bind("Central tendancy.")
 def mid(i:Num) : return i.mu
 
-@of("Central tendancy.")
+@bind
 def mid(i:Sym): return max(i.has, key=i.has.get)
 
-@of("Central tendancy.")
+@bind
 def mid(i:Data) : return [c.mid() for c in i.cols.all]
 
 #--------------------------------------
-@of("Deviation from central tendancy.")
+@bind("Deviation from central tendancy.")
 def spread(i:Num) : return i.sd
 
-@of("Deviation from central tendancy.")
+@bind
 def spread(i:Sym):
   d = i.has
   return -sum(p*math.log(p,2) for v in d.values() if (p:=v/i.n) > 0)
 
-@of("Deviation from central tendancy.")
+@bind
 def spread(i:Data): return [c.spread() for c in i.cols.all]
 
 #-----------------------------------------------------------------
