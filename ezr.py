@@ -291,7 +291,7 @@ def xdist(i:Data,r1,r2):
   return _dist(c.xdist(r1[c.at], r2[c.at]) for c in i.cols.x)
 
 @bind("Return rows, sorted by xdist to row r1.")
-def dists(i:Data, r1, rows=None):
+def xdists(i:Data, r1, rows=None):
   return sorted(rows or i._rows, key=lambda r2: i.xdist(r1,r2))
 
 @bind("Distance dependent variables to heaven.")
@@ -316,7 +316,7 @@ def kmeans(i, rows, centroids, n=10):
   for _ in range(n):
     new, err = {}, 0
     for row in rows:
-      c = min(centroids, key=lambda z: i.dist(z, row))
+      c = min(centroids, key=lambda z: i.xdist(z, row))
       now = new[id(c)] = new.get(id(c)) or i.clone()
       now.add(row)
       err += i.xdist(row, c)
@@ -349,53 +349,51 @@ def same(a, b):
   return cliffs(a, b) and bootstrap(a, b)
 
 def sk(rxs, same, eps=0, reverse=False):
-  """
-  Scott–Knott clustering on treatments.
-  Input: rxs: Dict[key, List[float]].
-  Returns: List of Num objects with key, mu, sd, n, and rank.
-  """
-  def div(items, rank=0):
-    # stats for this subset
-    N2 = sum(num.n for num, _ in items)
-    M2 = sum(num.mu * num.n for num, _ in items) / N2
-    best = 0; cut = None; s1 = n1 = 0
-    for j, (num, _) in enumerate(items[:-1], 1):
-      n, s = num.n, num.mu * num.n
+  "Dict[key,List[float]] -> List[Num(key,rank,mu,sd)]" 
+  def _cut(items):
+    cut = None
+    N   = sum(num.n for num, _ in items)
+    M   = sum(num.mu * num.n for num, _ in items) / N
+    best = s1 = n1 = 0
+    for j, (num, _) in enumerate(items[:-1]):
+      n, s   = num.n, num.mu * num.n
       n1, s1 = n1 + n, s1 + s
-      m1 = s1 / n1
-      m2 = (M2 * N2 - s1) / (N2 - n1)
-      gain = n1 * (m1 - M2)**2 + (N2 - n1) * (m2 - M2)**2
+      m1     = s1 / n1
+      n2     = N - n1
+      m2     = (M * N - s1) / n2
+      gain   = (n1 * (m1 - M)**2 + n2 * (m2 - M)**2) / N
       if abs(m1 - m2) > eps and gain > best:
-        best, cut = gain, j
-    # only split if cut is explicitly set
-    if cut is not None:
+        best, cut = gain, j+1
+    return cut
+
+  def _div(items, rank=0):
+    if (cut := _cut(items)) is not None:
       L, R = items[:cut], items[cut:]
-      a = [x for _, vals in L for x in vals]
-      b = [x for _, vals in R for x in vals]
+      a    = [x for _, vals in L for x in vals]
+      b    = [x for _, vals in R for x in vals]
       if not same(a, b):
-        rank = div(L, rank)
-        return div(R, rank + 1)
+        rank = _div(L, rank)
+        return _div(R, rank + 1)
     for num, _ in items:
       num.rank = rank
     return rank
 
-  nums = [(Num(vals, txt=k), vals) for k, vals in rxs.items()]
-  nums.sort(key=lambda x: x[0].mu, reverse=reverse)
-  div(nums)
+  nums = sorted([(Num(vals, txt=k), vals) for k, vals in rxs.items()],
+                key=lambda x: x[0].mu, reverse=reverse)
+  _div(nums)
   return [num for num, _ in nums]
-
 
 #-----------------------------------------------------------------
 def shuffle(lst):
   random.shuffle(lst)
   return lst
 
-lines=lambda s: (line for line in s.splitlines())
-
 def csv(src):
   for line in src:
     if line:
       yield [atom(x) for x in line.strip().split(',')]
+
+lines=lambda s: (line for line in s.splitlines())
 
 def doc(file):
   with open(file, "r") as f:
@@ -428,8 +426,6 @@ def cli(d):
                     sys.argv[c+1] if c<len(sys.argv)-1 else str(v))))
 
 def run(fn,x=None):
-  RED = '\033[31m'
-  RESET = '\033[0m'
   try:  
     print("\n# "+(fn.__doc__ or ""))
     random.seed(the.rseed)
@@ -437,7 +433,7 @@ def run(fn,x=None):
   except Exception as _:
     tb = traceback.format_exc().splitlines()[4:]
     return sys.stdout.write(
-            "\n".join([f"{RED}{x}{RESET}" for x in tb])+"\n")
+            "\n".join([f"\033[31m{x}\033[0m" for x in tb])+"\n")
 
 def main(fns):
   cli(the.__dict__)
