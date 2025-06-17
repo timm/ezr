@@ -555,41 +555,37 @@ def eg__lite(file):
 ### Tree -----------------------------------------------------------------------
 
 # ge, eq, gt
-ops = {'<=' : lambda x,y: x <= y,
-       "==" : lambda x,y: x == y,
-       '>'  : lambda x,y: x >  y}
+ops = {'<=':lambda x,y: x <= y, "==":lambda x,y: x == y, '>':lambda x,y: x >  y}
 
 # select a row
 def selects(row, op, at, y): x=row[at]; return  x=="?" or ops[op](x,y) 
 
-# what cuts most reduces spread?
-def cuts(col,rows,Y,Klass): 
-  def _sym(sym): 
-    n,d = 0,{}
-    for row in rows:
-      if (x := row[sym.at]) != "?":
-        n = n + 1
-        d[x] = d[x] if x in d else Klass()
-        add(d[x], Y(row))
-    return o(div = sum(c.n/n * spread(c) for c in d.values()),
-             hows = [("==",sym.at, k) for k,_ in d.items()])
+@bind("what cuts most reduces spread?")
+def cuts(i:Sym,rows,Y,Klass): 
+  n,d = 0,{}
+  for row in rows:
+    if (x := row[i.at]) != "?":
+      n = n + 1
+      d[x] = d[x] if x in d else Klass()
+      add(d[x], Y(row))
+  return o(div = sum(c.n/n * spread(c) for c in d.values()),
+           hows = [("==",i.at, k) for k,_ in d.items()])
 
-  def _num(num):
-    out, b4, lhs, rhs = None, None, Klass(), Klass()
-    xys = [(r[num.at], add(rhs, Y(r))) for r in rows if r[num.at] != "?"]
-    xpect = rhs.sd
-    for x, y in sorted(xys, key=lambda xy: xy[0]):
-      if x != b4:
-        if the.leaf <= lhs.n <= len(xys) - the.leaf:
-          tmp =  (lhs.n * lhs.sd + rhs.n * rhs.sd) / len(xys)
-          if tmp < xpect:
-            xpect, out = tmp, [("<=", num.at, b4), (">", num.at, b4)]
-      add(lhs, sub(rhs,y))
-      b4 = x
-    if out: 
-      return o(div=xpect, hows=out)
+@bind
+def cuts(i:Num,rows,Y,Klass):
+  out = None
+  b4, lhs, rhs = None, Klass(), Klass()
+  xys = [(r[i.at], add(rhs, Y(r))) for r in rows if r[i.at] != "?"]
+  for x, y in sorted(xys, key=lambda xy: xy[0]):
+    if x != b4:
+      if the.leaf <= lhs.n <= len(xys) - the.leaf:
+        now = (lhs.n * lhs.sd + rhs.n * rhs.sd) / len(xys)
+        if not out or now < out.div:
+          out= o(div=now,hows=[("<=",i.at,b4), (">",i.at,b4)])
+    add(lhs, sub(rhs,y))
+    b4 = x
+  return out
 
-  return (_sym if col.it is Sym else _num)(col)
 
 # Split data on best cut. Recurse on each split.
 def tree(data, Klass=Num, Y=None, how=None):
@@ -598,8 +594,9 @@ def tree(data, Klass=Num, Y=None, how=None):
   data.how  = how
   data.ys   = Num(Y(row) for row in data._rows)
   if data.n >= the.leaf:
-    tmp = [x for c in data.cols.x if (x := cuts(c,data._rows,Y,Klass=Klass))]    
+    tmp = [x for c in data.cols.x if (x := c.cuts(data._rows,Y,Klass))]    
     if tmp:
+      #for how1 in min(tmp,   key=lambda cut: cut.div).hows:
       for how1 in sorted(tmp, key=lambda cut: cut.div)[0].hows:
         rows1 = [row for row in data._rows if selects(row, *how1)]
         if the.leaf <= len(rows1) < data.n:

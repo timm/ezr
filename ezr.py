@@ -351,9 +351,9 @@ def same(a, b):
 def sk(rxs, same, eps=0, reverse=False):
   "Dict[key,List[float]] -> List[Num(key,rank,mu,sd)]" 
   def _cut(items):
-    cut = None
-    N   = sum(num.n for num, _ in items)
-    M   = sum(num.mu * num.n for num, _ in items) / N
+    cut  = None
+    N    = sum(num.n for num, _ in items)
+    M    = sum(num.mu * num.n for num, _ in items) / N
     best = s1 = n1 = 0
     for j, (num, _) in enumerate(items[:-1]):
       n, s   = num.n, num.mu * num.n
@@ -372,17 +372,115 @@ def sk(rxs, same, eps=0, reverse=False):
       a    = [x for _, vals in L for x in vals]
       b    = [x for _, vals in R for x in vals]
       if not same(a, b):
-        rank = _div(L, rank)
-        return _div(R, rank + 1)
+        return _div(R, _div(L, rank) + 1)
     for num, _ in items:
       num.rank = rank
     return rank
 
-  nums = sorted([(Num(vals, txt=k), vals) for k, vals in rxs.items()],
+  nums = sorted([(Num(vals, txt=k),vals) for k,vals in rxs.items()],
                 key=lambda x: x[0].mu, reverse=reverse)
   _div(nums)
   return [num for num, _ in nums]
 
+#-----------------------------------------------------------------
+ops = {'<=' : lambda x,y: x <= y,
+       "==" : lambda x,y: x == y,
+       '>'  : lambda x,y: x >  y}
+
+def selects(row,op,at,y): x=row[at]; return x=="?" or ops[op](x,y) 
+
+@bind("what cuts most reduces spread?")
+def cuts(i:Sym,rows,Y,Klass): 
+  n,d = 0,{}
+  for row in rows:
+    if (x := row[i.at]) != "?":
+      n = n + 1
+      d[x] = d[x] if x in d else Klass()
+      add(d[x], Y(row))
+  return o(div = sum(c.n/n * spread(c) for c in d.values()),
+           hows = [("==",i.at, k) for k,_ in d.items()])
+
+@bind
+def cuts(i:Num,rows,Y,Klass):
+  out = None
+  b4, lhs, rhs = None, Klass(), Klass()
+  xys = [(r[i.at], add(rhs, Y(r))) for r in rows if r[i.at] != "?"]
+  for x, y in sorted(xys, key=lambda xy: xy[0]):
+    if x != b4:
+      if the.leaf <= lhs.n <= len(xys) - the.leaf:
+        now = (lhs.n * lhs.sd + rhs.n * rhs.sd) / len(xys)
+        if not out or now < out.div:
+          out= o(div=now,hows=[("<=",i.at,b4), (">",i.at,b4)])
+    add(lhs, sub(rhs,y))
+    b4 = x
+  return out
+
+@bind("Split data on best cut. Recurse on each split.")
+def tree(i:Data, Klass=Num, Y=None, how=None):
+  Y      = Y or (lambda row: ydist(i,row))
+  i.kids = []
+  i.how  = how
+  i.ys   = Num(Y(row) for row in i._rows)
+  if i.n >= the.leaf:
+    tmp = [x for c in i.cols.x if (x := c.cuts(i._rows,Y,Klass))]    
+    if tmp:
+      for how1 in min(tmp,   key=lambda cut: cut.div).hows:
+        #for how1 in sorted(tmp, key=lambda cut: cut.div)[0].hows:
+        rows1 = [row for row in i._rows if selects(row, *how1)]
+        if the.leaf <= len(rows1) < i.n:
+          i.kids += [i.tree(i.clone(rows1), Klass, Y, how1)]  
+  return i
+
+@bind(" Iterate over all nodes.")
+def nodes(i:Data , lvl=0, key=None): 
+  yield lvl, i
+  for j in (sorted(i.kids, key=key) if key else i.kids):
+    yield from j.nodes(lvl + 1, key=key)
+
+@bind(" Return leaf selected by row.")
+def leaf(i:Data,row):
+  for j in i.kids or []:
+    if selects(row, *j.how): 
+      return j.leaf(row)
+  return i
+
+@bind("Show Tree")
+def showTree(i:Data, key=lambda d: d.ys.mu):
+  s, ats = i.ys, {}
+  win = lambda x: int(100 * (1 - ((x - s.lo) / (s.mu-s.lo+1e-32))))
+  print(f"{'d2h':>4} {'win':>4} {'n':>4}")
+  print(f"{'----':>4} {'----':>4} {'----':>4}")
+  for lvl, data in i.nodes(key=key):
+    leafp = not data.kids
+    op, at, y = data.how if lvl else ('', '', '')
+    name = i.cols.all[at].txt if lvl else ''
+    expl = f"{name} {op} {y}" if lvl else ''
+    indent = '|  ' * (lvl - 1)
+    print(f"{data.ys.mu:4.2f} {win(data.ys.mu):4} {data.n:4}    "
+          f"{indent}{expl}{';' if leafp else ''}")
+    if lvl: ats[at] = 1
+  print(', '.join(i.cols.names[at] for at in sorted(ats)))
+
+# # Pretty print a tree
+# def show(data, key=lambda z:z.ys.mu):
+#   stats = data.ys
+#   win = lambda x: int(100*(1 - ((x-stats.lo)/(stats.mu - stats.lo))))
+#   print(f"{'d2h':>4} {'win':>4} {'n':>4}  ")
+#   print(f"{'----':>4} {'----':>4} {'----':>4}  ")
+#   ats={}
+#   for lvl, node in nodes(data, key=key):
+#     leafp = len(node.kids)==0
+#     post = ";" if leafp else ""
+#     xplain = ""
+#     if lvl > 0:
+#       op,at,y = node.how
+#       ats[at] = 1
+#       xplain = f"{data.cols.all[at].txt} {op} {y}"
+#     indent = (lvl - 1) * "|  "
+#     print(f"{node.ys.mu:4.2f} {win(node.ys.mu):4} {node.n:4}    "
+#           f"{indent}{xplain}{post}")
+#   print(', '.join(sorted([data.cols.names[at] for at in ats])))
+#
 #-----------------------------------------------------------------
 def shuffle(lst):
   random.shuffle(lst)
