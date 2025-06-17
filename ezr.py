@@ -328,6 +328,48 @@ def kmeans(i:Data, rows=None, centroids=None, k=10, repeats=10):
     mid = tmp[0][1]
 
 #-----------------------------------------------------------------
+
+def same(a, b): 
+  return cliffs(a, b) and bootstrap(a, b)
+
+def sk(rxs, eps=0, same, reverse=False):
+  """
+  Scott–Knott clustering on treatments.
+  Input: rxs: Dict[key, List[float]].
+  Returns: List of Num objects with key, mu, sd, n, and rank.
+  """
+  def div(items, rank=0):
+    # stats for this subset
+    N2 = sum(num.n for num, _ in items)
+    M2 = sum(num.mu * num.n for num, _ in items) / N2
+    best = 0; cut = None; s1 = n1 = 0
+    for j, (num, _) in enumerate(items[:-1], 1):
+      n, s = num.n, num.mu * num.n
+      n1, s1 = n1 + n, s1 + s
+      m1 = s1 / n1
+      m2 = (M2 * N2 - s1) / (N2 - n1)
+      gain = n1 * (m1 - M2)**2 + (N2 - n1) * (m2 - M2)**2
+      if abs(m1 - m2) > eps and gain > best:
+        best, cut = gain, j
+    # only split if cut is explicitly set
+    if cut is not None:
+      L, R = items[:cut], items[cut:]
+      a = [x for _, vals in L for x in vals]
+      b = [x for _, vals in R for x in vals]
+      if not same(a, b):
+        rank = div(L, rank)
+        return div(R, rank + 1)
+    for num, _ in items:
+      num.rank = rank
+    return rank
+
+  nums = [(Num(vals, txt=k), vals) for k, vals in rxs.items()]
+  nums.sort(key=lambda x: x[0].mu, reverse=reverse)
+  div(nums)
+  return [num for num, _ in nums]
+
+
+#-----------------------------------------------------------------
 def shuffle(lst):
   random.shuffle(lst)
   return lst
