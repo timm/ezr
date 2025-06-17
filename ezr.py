@@ -290,7 +290,7 @@ def xdist(i:Num, u,v):
 def xdist(i:Data,r1,r2): 
   return _dist(c.xdist(r1[c.at], r2[c.at]) for c in i.cols.x)
 
-@bind("Return all rows, sorted by xdist to row1.")
+@bind("Return rows, sorted by xdist to row r1.")
 def dists(i:Data, r1, rows=None):
   return sorted(rows or i._rows, key=lambda r2: i.xdist(r1,r2))
 
@@ -298,11 +298,11 @@ def dists(i:Data, r1, rows=None):
 def ydist(i:Data,row):
   return _dist(c.norm(row[c.at]) - c.heaven for c in i.cols.x)
 
-@bind("Return all rows, sorted by ydist to heaven.")
+@bind("Return rows, sorted by ydist to heaven.")
 def ydists(i:Data, rows=None):
   return sorted(rows or i._rows, key=lambda row: i.ydist(row))
 
-@ning("Find k centroids d**2 away from existing centoids.")
+@bind("Find k centroids d**2 away from existing centoids.")
 def kpp(i:Data, k=None, rows=None):
   row, *rows = shuffle(rows or i._rows)[:the.Few]
   out = [row]
@@ -311,28 +311,52 @@ def kpp(i:Data, k=None, rows=None):
      out.append(random.choices(rows, weights=ws)[0])
   return out
 
-def kmeans(i:Data, rows=None, centroids=None, k=10, repeats=10):
-  rows = shuffle(rows or i._rows)
-  if not centroids: centroids,rows = rows[:k],rows[k:]
-  new  = {}
-  for row in rows:
-    c = min(centroids, key=lambda center: i.dist(center,row))
-    now = new[id(c)] = new.get(id(c)) or i.clone()
-    now.add(row)
-  err = 0
-  for j in new.values():
-    mid = j.mid()
-    tmp = sorted(((i.xdist(row,mid), row) for row in j._rows),
-                 key = lambda z:z[0])
-    err += Num(z[0] for z in tmp).mu / k
-    mid = tmp[0][1]
+def kmeans(i, rows, centroids, n=10):
+  errs = []
+  for _ in range(n):
+    new, err = {}, 0
+    for row in rows:
+      c = min(centroids, key=lambda z: i.dist(z, row))
+      now = new[id(c)] = new.get(id(c)) or i.clone()
+      now.add(row)
+      err += i.xdist(row, c)
+    errs += [err / len(rows)]
+    centroids = [new[k].mid() for k in new]
+  return centroids, errs
 
 #-----------------------------------------------------------------
+class Abcd:
+  "Incrementally collect pd,pf,etc."
+  def __init__(i, a=0): 
+    i.a=a; i.b=i.c=i.d=i.pd=i.pf=i.prec=i.acc=i.g=0
+
+  def add(i, want, got, x):
+    if x==want: 
+       i.d += got==want; i.b += got!=want
+    else:       
+       i.c += got==x;    i.a += got!=x
+    a,b,c,d = i.a,i.b,i.c,i.d
+    p       = lambda y,z: int(100*y/(1e-32+z))
+    i.pd    = p(d,   b+d)
+    i.pf    = p(c,   a+c)
+    i.prec  = p(d,   c+d)
+    i.acc   = p(a+d, a+b+c+d)
+    i.g     = p(2*i.pd*i.pf, i.pd+i.pf)
+
+def abcds(got, want, this=None):
+  "Manager for n-class stats for prec, pd, pf etc"
+  this = this or o(n=0,stats={})
+  for x in [want, got]:
+    this.stats[x] = this.stats.get(x) or Abcd(this.n)
+  this.n += 1
+  for x,s in this.stats.items():
+    s.add(want,got,x)
+  return this
 
 def same(a, b): 
   return cliffs(a, b) and bootstrap(a, b)
 
-def sk(rxs, eps=0, same, reverse=False):
+def sk(rxs, same, eps=0, reverse=False):
   """
   Scott–Knott clustering on treatments.
   Input: rxs: Dict[key, List[float]].

@@ -1,7 +1,5 @@
-import sys; sys.path.insert(0, "../oo")
-from root import o
-from abcd import abcds
-import random
+import sys; sys.path.insert(0, "../")
+from ezr import abcds,main,o
 
 """
 #  n   a   b   c   d  acc pd  pf  prec f  g  class     
@@ -13,15 +11,21 @@ a b c <-- got
 5 1 0 a <-- want
 0 2 1 b <-- want
 0 0 3 c <-- want
+
+a b <- got
+11 1  a <-- want
+2  12 b <-- got
 """
 
-random.seed(1234567891)
-for _ in range(5):  w=abcds("a","a",w)
-for _ in range(1):  x=abcds("a","b",x)
-for _ in range(2):  x=abcds("b","b",x)
-for _ in range(1):  x=abcds("b","c",x)
-for _ in range(3):  x=abcds("c","a",x)
+def eg__abcds(_):
+  x = None
+  for _ in range(5): x = abcds("a","a",x)
+  for _ in range(1): x = abcds("b","a",x)
+  for _ in range(2): x = abcds("b","b",x)
+  for _ in range(1): x = abcds("b","c",x)
+  for _ in range(3): x = abcds("a","c",x)
+  for k,y in x.stats.items():
+    print(k, o(pd=y.pd, acc=y.acc, 
+               pf=y.pf, prec=y.prec))
 
-for k,x in w.stats.items():
-  print(k, o(pd=x.pd, acc=x.acc, 
-             pf=x.pf, prec=x.prec))
+main(globals())
