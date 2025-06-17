@@ -1,6 +1,5 @@
-import random,sys; sys.path.insert(0, "../oo")
-
-from num import Num
+import random,sys; sys.path.insert(0, "../")
+from ezr import Num
 
 random.seed(1234567891)
 num = Num([random.gauss(10,2) for _ in range(1000)])

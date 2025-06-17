@@ -5,7 +5,7 @@ n2m.py: tiny AI. multi objective, explainable, AI
 
 Options, with (defaults):
 
-  -f   file       : data name (../../../moot/optimize/misc/auto93.csv)
+  -f   file       : data name (../../moot/optimize/misc/auto93.csv)
   -r   rseed      : set random number rseed (123456781)
   -R   Rnd        : round floats in pretty print (2)
   -F   Few        : a few rows to explore (128)
@@ -28,6 +28,7 @@ Stats:
   -b   bootstrap  : num. bootstrap samples (512)
   -C   Cliffs     : effect size threshold (0.197)
  """
+
 import traceback,random,math,sys,re
 sys.dont_write_bytecode = True 
 
@@ -35,7 +36,7 @@ BIG=1E32
 isa=isinstance
 
 class o:
-  "A mutatable struct with named slots, dot slot access, and pretty print."
+  "Mutatable struct. Named slots. Dot slot access. With pretty print."
   __init__ = lambda i, **d: i.__dict__.update(**d)
   __repr__ = lambda i: see(i.__dict__)
 
@@ -174,11 +175,11 @@ class Data(Summary):
 
 def _cols(names):
   "Factory. List[str] -> Dict[str, List[ Sym | Num ]]"
-  cols= obj(names = names, ## all the column names
-            klass = None,  ## Target for classification
-            all   = [],    ## all columns
-            x     = [],    ## also, hold independents here
-            y     = [])    ## also, hold dependent here
+  cols= o(names = names, ## all the column names
+          klass = None,  ## Target for classification
+          all   = [],    ## all columns
+          x     = [],    ## also, hold independents here
+          y     = [])    ## also, hold dependent here
   cols.all = [_col(at,name,cols) for at,name in enumerate(cols.names)]
   return cols
 
@@ -261,10 +262,88 @@ def spread(i:Sym):
 @bind
 def spread(i:Data): return [c.spread() for c in i.cols.all]
 
+#-------------------------------------------------------------------
+@bind("Distance between numeric or symbolic atoms.")
+
+def _dist(vs):
+  "Minkowski distance."
+  n, s = 0, 0
+  for x in vs:
+    n += 1
+    s += abs(x)**the.p
+  return (s / n)**(1/the.p)
+
+@bind("Distance between 2 things")
+def xdist(_:Sym, u,v):
+  return 1 if u=="?" and v=="?" else u !=v
+
+@bind
+def xdist(i:Num, u,v):
+  if u=="?" and v=="?": return 1
+  u = i.norm(u)
+  v = i.norm(v)
+  u = u if u != "?" else (0 if v > .5 else 1)
+  v = v if v != "?" else (0 if u > .5 else 1)
+  return abs(u - v)
+
+@bind
+def xdist(i:Data,r1,r2): 
+  return _dist(c.xdist(r1[c.at], r2[c.at]) for c in i.cols.x)
+
+@bind("Return all rows, sorted by xdist to row1.")
+def dists(i:Data, r1, rows=None):
+  return sorted(rows or i._rows, key=lambda r2: i.xdist(r1,r2))
+
+@bind("Distance dependent variables to heaven.")
+def ydist(i:Data,row):
+  return _dist(c.norm(row[c.at]) - c.heaven for c in i.cols.x)
+
+@bind("Return all rows, sorted by ydist to heaven.")
+def ydists(i:Data, rows=None):
+  return sorted(rows or i._rows, key=lambda row: i.ydist(row))
+
+@ning("Find k centroids d**2 away from existing centoids.")
+def kpp(i:Data, k=None, rows=None):
+  row, *rows = shuffle(rows or i._rows)[:the.Few]
+  out = [row]
+  while len(out) < (k or the.Build):
+     ws = [min(i.xdist(r, c)**2 for c in out) for r in rows]
+     out.append(random.choices(rows, weights=ws)[0])
+  return out
+
+def kmeans(i:Data, rows=None, centroids=None, k=10, repeats=10):
+  rows = shuffle(rows or i._rows)
+  if not centroids: centroids,rows = rows[:k],rows[k:]
+  new  = {}
+  for row in rows:
+    c = min(centroids, key=lambda center: i.dist(center,row))
+    now = new[id(c)] = new.get(id(c)) or i.clone()
+    now.add(row)
+  err = 0
+  for j in new.values():
+    mid = j.mid()
+    tmp = sorted(((i.xdist(row,mid), row) for row in j._rows),
+                 key = lambda z:z[0])
+    err += Num(z[0] for z in tmp).mu / k
+    mid = tmp[0][1]
+
 #-----------------------------------------------------------------
-def say(v): 
-  "Pretty printer for most things."
-  print(see(v)); return v
+def shuffle(lst):
+  random.shuffle(lst)
+  return lst
+
+lines=lambda s: (line for line in s.splitlines())
+
+def csv(src):
+  for line in src:
+    if line:
+      yield [atom(x) for x in line.strip().split(',')]
+
+def doc(file):
+  with open(file, "r") as f:
+    for line in f: yield(line)
+
+def say(v): print(see(v)); return v
 
 def see(v):
   "Converts most things to strings."
@@ -280,3 +359,31 @@ def see(v):
 def _c(k) : return not (isa(k,str) and k[0] == "_")
 def _cD(v): return see([f":{k} {see(v[k])}" for k in v if _c(k)])
 def _cF(v): return str(int(v)) if v==int(v) else f"{v:.{the.Rnd}g}"
+
+#--------------------------------------------------------------------
+def cli(d):
+  for k, v in d.items():
+    for c, arg in enumerate(sys.argv):
+      if arg == "-" + k[0]:
+        d[k] = atom("False" if str(v) == "True" else (
+                    "True" if str(v) == "False" else (
+                    sys.argv[c+1] if c<len(sys.argv)-1 else str(v))))
+
+def run(fn,x=None):
+  RED = '\033[31m'
+  RESET = '\033[0m'
+  try:  
+    print("\n# "+(fn.__doc__ or ""))
+    random.seed(the.rseed)
+    fn(x)
+  except Exception as _:
+    tb = traceback.format_exc().splitlines()[4:]
+    return sys.stdout.write(
+            "\n".join([f"{RED}{x}{RESET}" for x in tb])+"\n")
+
+def main(fns):
+  cli(the.__dict__)
+  for i, s in enumerate(sys.argv[1:]):
+    if fn := fns.get("eg" + s.replace("-", "_")):
+      x = None if i==len(sys.argv[1:]) - 1 else atom(sys.argv[i+2])
+      run(fn, x)
