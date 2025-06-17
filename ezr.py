@@ -326,32 +326,24 @@ def kmeans(i, rows, centroids, n=10):
 
 #-----------------------------------------------------------------
 class Abcd:
-  "Incrementally collect pd,pf,etc."
-  def __init__(i, a=0): 
-    i.a=a; i.b=i.c=i.d=i.pd=i.pf=i.prec=i.acc=i.g=0
-
+  def __init__(i, a=0): i.a, i.b, i.c, i.d = a, 0, 0, 0
   def add(i, want, got, x):
-    if x==want: 
-       i.d += got==want; i.b += got!=want
-    else:       
-       i.c += got==x;    i.a += got!=x
-    a,b,c,d = i.a,i.b,i.c,i.d
-    p       = lambda y,z: int(100*y/(1e-32+z))
-    i.pd    = p(d,   b+d)
-    i.pf    = p(c,   a+c)
-    i.prec  = p(d,   c+d)
-    i.acc   = p(a+d, a+b+c+d)
-    i.g     = p(2*i.pd*i.pf, i.pd+i.pf)
+    if x == want:   i.d += (got == want); i.b += (got != want)
+    else:           i.c += (got == x);    i.a += (got != x)
+    p = lambda y, z: int(100 * y / (z or 1e-32))
+    i.pd   = p(i.d,       i.d + i.b)
+    i.pf   = p(i.c,       i.c + i.a)
+    i.prec = p(i.d,       i.d + i.c)
+    i.acc  = p(i.d + i.a, i.a + i.b + i.c + i.d)
 
-def abcds(got, want, this=None):
-  "Manager for n-class stats for prec, pd, pf etc"
-  this = this or o(n=0,stats={})
-  for x in [want, got]:
-    this.stats[x] = this.stats.get(x) or Abcd(this.n)
-  this.n += 1
-  for x,s in this.stats.items():
-    s.add(want,got,x)
-  return this
+def abcds(want, got, state=None):
+  state = state or o(stats={}, total=0)
+  for L in (want, got):
+    state.stats[L] = state.stats.get(L) or Abcd(state.total)
+  for x, s in state.stats.items():
+    s.add(want, got, x)
+  state.total += 1
+  return state
 
 def same(a, b): 
   return cliffs(a, b) and bootstrap(a, b)
