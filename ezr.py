@@ -8,7 +8,7 @@ Options, with (defaults):
   -f   file       : data name (../../moot/optimize/misc/auto93.csv)
   -r   rseed      : set random number rseed (123456781)
   -R   Rnd        : round floats in pretty print (2)
-  -F   Few        : a few rows to explore (128)
+  -F   Few        : a few rows to explore (512)
   -l   leaf       : tree learning: min leaf size (2)
   -p   p          : distance calcs: set Minkowski coefficient (2)
 
@@ -331,7 +331,7 @@ def fastmap(i:Data, rows):
 
 @bind("Repeateldy, discard half the least promising data.")
 def sway(i:Data):
-  done, todo = [], shuffle(i._rows)[:2048]
+  done, todo = [], shuffle(i._rows)[:the.Few]
   while len(done) <= the.Build - 2:
     a, *todo, b = i.fastmap(todo)
     done += [a,b]
