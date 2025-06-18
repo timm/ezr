@@ -560,7 +560,7 @@ def cli(d):
 def run(fn,x=None):
   "Before test, reset seed. After test, print any assert errors"
   try:  
-    print("\n# "+(fn.__doc__ or ""))
+    print("\n# "+(fn.__doc__ or fn.__name__))
     random.seed(the.rseed)
     fn(x)
   except Exception as _:

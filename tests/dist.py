@@ -17,12 +17,12 @@ def eg__dist(_):
 def eg__kpp(_):
   data = Data(csv(doc(the.file)))
   Y    = lambda r : data.ydist(r)
-  run  = lambda fn: Y(min(fn(), key=Y))
+  run  = lambda fn: sorted(Y(min(fn(), key=Y)) for _ in range(20))
   one  = lambda   : data.kpp()
   two  = lambda   : random.choices(data._rows,k=the.Build)
   print(Num(Y(r) for r in data._rows))
-  print("kpp",see([sorted(run(one) for _ in range(20))]))
-  print("any",see([sorted(run(two) for _ in range(20))]))
+  print("kpp",see(run(one)))
+  print("any",see(run(two)))
 
 go(globals())
 
