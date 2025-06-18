@@ -17,14 +17,13 @@ Bayes:
   -m   m          : bayes hack for rare attributes (2)
 
 Active learning:
-  -A   Acq        : xploit or xplore or adapt (xploit)  
-  -G   Guess      : division best and rest (0.5)
-  -s   start      : guesses, initial (4)
-  -S   Stop       : guesses, max (20)
-  -T   Test       : test guesses (5)
+  -a   acq        : xploit or xplore or adapt (xploit)  
+  -A   Assume     : on init, how many initial guesses? (4)
+  -B   Build      : when growing theory, how many labels? (20)
+  -C   Check      : when testing, how many checks? (5)
 
 Stats:
-  -B   Boots      : significance threshold (0.95)
+  -S   Signif     : significance threshold (0.95)
   -b   bootstrap  : num. bootstrap samples (512)
   -C   Cliffs     : effect size threshold (0.197)
  """
@@ -48,7 +47,7 @@ def atom(x):
   x = x.strip()
   return x == "true" if x in ("true", "false") else x
 
-the = o(**{k:v for k,v in
+the = o(**{k:atom(v) for k,v in
            re.findall(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\)", __doc__)})
 
 # Sample data ----------------------------------------------------------------
@@ -267,7 +266,7 @@ def spread(i:Data): return [c.spread() for c in i.cols.all]
 
 def _dist(vs):
   "Minkowski distance."
-  n, s = 0, 0
+  s, n = 0, 1/BIG
   for x in vs:
     n += 1
     s += abs(x)**the.p
@@ -296,7 +295,7 @@ def xdists(i:Data, r1, rows=None):
 
 @bind("Distance dependent variables to heaven.")
 def ydist(i:Data,row):
-  return _dist(c.norm(row[c.at]) - c.heaven for c in i.cols.x)
+  return _dist((c.norm(row[c.at]) - c.heaven) for c in i.cols.y)
 
 @bind("Return rows, sorted by ydist to heaven.")
 def ydists(i:Data, rows=None):
