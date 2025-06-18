@@ -1,6 +1,6 @@
 
 import random,sys; sys.path.insert(0, "../")
-from ezr import csv,doc,the,go,Num,Data,o,see
+from ezr import csv,doc,the,go,Num,Data,o,see,say,sway
 
 def eg__dist(_):
   print(the.file)
@@ -23,6 +23,22 @@ def eg__kpp(_):
   print(Num(Y(r) for r in data._rows))
   print("kpp",see(run(one)))
   print("any",see(run(two)))
+
+def eg__sway(_):
+  data = Data(csv(doc(the.file)))
+  Y    = lambda r : data.ydist(r)
+  Ys   = lambda fn:  Y(min(fn(), key=Y))
+  num  = Num(Y(r) for r in data._rows)
+  win  = lambda n: int(100*(1 - (num.mu - n)/(num.mu - num.lo)))
+  results = lambda fn: sorted(Ys(fn) for _ in range(20))
+  one  = lambda   : data.kpp()
+  two  = lambda   : random.choices(data._rows,k=the.Build)
+  three= lambda :data.sway().done
+  print(the.Build)
+  print("asIs :",num)
+  print("kpp  :",Num(results(one)))
+  print("any  :",Num(results(two)))
+  print("sway :",Num(results(three)))
 
 go(globals())
 

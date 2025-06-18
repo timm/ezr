@@ -39,17 +39,6 @@ class o:
   __init__ = lambda i, **d: i.__dict__.update(**d)
   __repr__ = lambda i: see(i.__dict__)
 
-def atom(x):
-  "Coerce string to int,float, bool, string"
-  for fn in (int, float):
-    try: return fn(x)
-    except: pass
-  x = x.strip()
-  return x == "true" if x in ("true", "false") else x
-
-the = o(**{k:atom(v) for k,v in
-           re.findall(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\)", __doc__)})
-
 # Sample data ----------------------------------------------------------------
 
 EXAMPLE="""
@@ -323,6 +312,35 @@ def kmeans(i, rows, centroids, n=10):
     centroids = [new[k].mid() for k in new]
   return centroids, errs
 
+@bind("Where does the a line to the closest point touch?")
+def project(i:Data, row, a, b, C=None):
+  "Closest point on line 'ab' to `row'" 
+  C =  C or i.xdist(a,b)
+  A,B = i.xdist(row,a), xdist(i,row,b)
+  return (A*A + C*C - B*B) / (C+C + 1/BIG)
+
+@bind("Map rows along a line between 2 distance points")
+def fastmap(i:Data, rows):
+  "Map rows along a line between 2 distant points."
+  one,*tmp = shuffle(rows)[:the.Few]
+  far = int(0.9 *len(tmp))
+  a   = i.xdists(one, tmp)[far]; 
+  b   = i.xdists(a,   tmp)[far]
+  C   = i.xdist(a,b)
+  return sorted(rows, key = lambda r: i.project(r,a,b,C))
+
+@bind("Repeateldy, discard half the least promising data.")
+def sway(i:Data):
+  done, todo = [], shuffle(i._rows)[:2048]
+  while len(done) <= the.Build - 2:
+    a, *todo, b = i.fastmap(todo)
+    done += [a,b]
+    n = len(todo)//2
+    todo = todo[:n] if i.ydist(a) < i.ydist(b) else todo[n:]
+    if len(todo) < 2: 
+      todo = [x for x in shuffle(i._rows) if x not in done]
+  return o(done=i.ydists(done), todo=todo)
+
 #-----------------------------------------------------------------
 class Abcd:
   def __init__(i, a=0): i.a, i.b, i.c, i.d = a, 0, 0, 0
@@ -515,6 +533,14 @@ def showTree(i:Data, key=lambda d: d.ys.mu):
 #   print(', '.join(sorted([data.cols.names[at] for at in ats])))
 #
 #-----------------------------------------------------------------
+def atom(x):
+  "Coerce string to int,float, bool, string"
+  for fn in (int, float):
+    try: return fn(x)
+    except: pass
+  x = x.strip()
+  return x == "true" if x in ("true", "false") else x
+
 def shuffle(lst):
   random.shuffle(lst)
   return lst
@@ -577,3 +603,13 @@ def go(fns):
     if fn := fns.get("eg" + s.replace("-", "_")):
       x = None if i>=len(sys.argv[1:]) - 1 else atom(sys.argv[i+2])
       run(fn,x)
+
+def settings(txt):
+  "Extract flag=default from strings like our doc string"
+  d = {}
+  for k,v in re.findall(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\)",txt):
+    assert k not in d, f"duplicate flag for setting '{k}'"
+    d[k] = atom(v)
+  return d
+
+the = o(**settings(__doc__))
