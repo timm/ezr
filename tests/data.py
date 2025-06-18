@@ -1,10 +1,6 @@
 import re,sys; sys.path.insert(0, "../")
-from ezr import csv,doc,see,the,main,_cols
+from ezr import csv,doc,see,the,go,_cols
 from ezr import o,Data
-
-def eg__all(_):
-  for fn in [eg__col0, eg__cols, eg__stats,
-             eg__summary,eg__addSubs]: fn(_)
 
 def eg__col0(_):
   "How are col names turned to columns?"
@@ -47,4 +43,4 @@ def eg__addSubs(_):
       return
     data2.sub(row, zap=True)
 
-main(globals())
+go(globals())

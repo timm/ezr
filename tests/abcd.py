@@ -1,5 +1,5 @@
 import sys; sys.path.insert(0, "../")
-from ezr import abcds,main,o
+from ezr import abcds,go,o
 
 """
 a b c <- got
@@ -26,4 +26,4 @@ def eg__abcds(_):
   for k,y in x.stats.items():
     print(k, o(pd=y.pd, acc=y.acc, pf=y.pf, prec=y.prec))
 
-main(globals())
+go(globals())

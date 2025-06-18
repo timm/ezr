@@ -1,6 +1,6 @@
 
-import re,sys; sys.path.insert(0, "../")
-from ezr import csv,doc,see,the,main,xdist,ydist,kpp,ydists,Num,Data,o
+import random,sys; sys.path.insert(0, "../")
+from ezr import csv,doc,the,go,Num,Data,o,see
 
 def eg__dist(_):
   print(the.file)
@@ -16,11 +16,13 @@ def eg__dist(_):
 
 def eg__kpp(_):
   data = Data(csv(doc(the.file)))
-  Y    = lambda r: data.ydist(r)
-  one  = lambda  : Y(min(data.kpp(), key=Y))
-  b4   = Num(Y(r) for r in data._rows)
-  print("kpp ",o(mu   = b4.mu, lo=b4.lo, 
-                 vals = [sorted(one() for _ in range(20))]))
+  Y    = lambda r : data.ydist(r)
+  run  = lambda fn: Y(min(fn(), key=Y))
+  one  = lambda   : data.kpp()
+  two  = lambda   : random.choices(data._rows,k=the.Build)
+  print(Num(Y(r) for r in data._rows))
+  print("kpp",see([sorted(run(one) for _ in range(20))]))
+  print("any",see([sorted(run(two) for _ in range(20))]))
 
-main(globals())
+go(globals())
 

@@ -543,12 +543,13 @@ def see(v):
     return v.__class__.__name__ + see(v.__dict__)
   return str(v)
 
-def _c(k) : return not (isa(k,str) and k[0] == "_")
-def _cD(v): return see([f":{k} {see(v[k])}" for k in v if _c(k)])
+def _cOk(k) : return not (isa(k,str) and k[0] == "_")
+def _cD(v): return see([f":{k} {see(v[k])}" for k in v if _cOk(k)])
 def _cF(v): return str(int(v)) if v==int(v) else f"{v:.{the.Rnd}g}"
 
 #--------------------------------------------------------------------
 def cli(d):
+  "for d slot xxx, update its value from CLO flag -x"
   for k, v in d.items():
     for c, arg in enumerate(sys.argv):
       if arg == "-" + k[0]:
@@ -557,6 +558,7 @@ def cli(d):
                     sys.argv[c+1] if c<len(sys.argv)-1 else str(v))))
 
 def run(fn,x=None):
+  "Before test, reset seed. After test, print any assert errors"
   try:  
     print("\n# "+(fn.__doc__ or ""))
     random.seed(the.rseed)
@@ -566,9 +568,12 @@ def run(fn,x=None):
     return sys.stdout.write(
             "\n".join([f"\033[31m{x}\033[0m" for x in tb])+"\n")
 
-def main(fns):
+def go(fns):
+  "Update settings, run some fn from fns (selected by CLI flags)."
   cli(the.__dict__)
   for i, s in enumerate(sys.argv[1:]):
+    if s=="--all":
+       [run(fn) for s1,fn in fns.items() if s1.startswith("eg__")]
     if fn := fns.get("eg" + s.replace("-", "_")):
-      x = None if i==len(sys.argv[1:]) - 1 else atom(sys.argv[i+2])
-      run(fn, x)
+      x = None if i>=len(sys.argv[1:]) - 1 else atom(sys.argv[i+2])
+      run(fn,x)

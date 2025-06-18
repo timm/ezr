@@ -1,7 +1,10 @@
 import sys; sys.path.insert(0, "../")
-from ezr import Sym
+from ezr import Sym,go
 
-sym = Sym("aaaabbc")
-assert "a"==sym.mid() and 1.3 < sym.spread() < 1.4
+def eg__sym(_):
+  sym = Sym("aaaabbc")
+  assert "a"==sym.mid() and 1.3 < sym.spread() < 1.4
+
+go(globals())
 
 
