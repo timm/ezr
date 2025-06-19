@@ -502,7 +502,7 @@ def sk(rxs, same, eps=0, reverse=False):
     M    = sum(num.mu * num.n for num, _ in items) / N
     best = s1 = n1 = 0
     for j, (num, _) in enumerate(items[:-1]):
-      n, s  = num.n, num.mu * num.n
+      n, s  = num.n, num.mu * num.n 
       n1,s1 = n1 + n, s1 + s
       m1    = s1 / n1
       n2    = N - n1
