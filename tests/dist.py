@@ -1,6 +1,12 @@
 
-import random,sys; sys.path.insert(0, "../")
-from ezr import csv,doc,the,go,Num,Data,o,see,say,sway
+import random,sys,re; sys.path.insert(0, "../")
+from ezr import csv,doc,lines,the,go
+from ezr import Num,Data,o,see,say,sway,EXAMPLE
+
+def eg__ydists(_):
+  data = Data(csv(lines(EXAMPLE)))
+  for row in data.ydists():
+    print(row)
 
 def eg__dist(_):
   print(the.file)
@@ -26,19 +32,24 @@ def eg__kpp(_):
 
 def eg__sway(_):
   data = Data(csv(doc(the.file)))
-  Y    = lambda r : data.ydist(r)
-  Ys   = lambda fn:  Y(min(fn(), key=Y))
-  num  = Num(Y(r) for r in data._rows)
-  win  = lambda n: int(100*(1 - (num.mu - n)/(num.mu - num.lo)))
-  results = lambda fn: sorted(Ys(fn) for _ in range(20))
-  one  = lambda   : data.kpp()
-  two  = lambda   : random.choices(data._rows,k=the.Build)
-  three= lambda :data.sway().done
-  print(the.Build)
-  print("asIs :",num)
-  print("kpp  :",Num(results(one)))
-  print("any  :",Num(results(two)))
-  print("sway :",Num(results(three)))
+  Y    = lambda r  : data.ydist(r)
+  Ys   = lambda fn : Y(min(fn(), key=Y))
+  raw  = lambda fn : sorted(Ys(fn) for _ in range(20))
+  kpp  = lambda    : data.kpp()
+  rand = lambda    : random.choices(data._rows,k=the.Build)
+  sway = lambda    : data.sway().done
+  asIs = Num(Y(r) for r in data._rows)
+  print(the.file)
+  stats =dict(
+          kpp  = Num(raw(kpp)),
+          rand = Num(raw(rand)),
+          sway = Num(raw(sway)))
+  print(" ")
+  win  = lambda n: int(100*(1 - (asIs.mu - n)/(asIs.mu - asIs.lo)))
+  for k,num in stats.items():
+    print(k, see(num.mu), win(num.mu),sep=", ",end=", ")
+  print("asIs", see(asIs.mu), see(asIs.lo),win(asIs.mu),
+        re.sub(".*/","",the.file),sep=", ")
 
 go(globals())
 
