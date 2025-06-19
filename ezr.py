@@ -180,7 +180,7 @@ def _col(at,name,cols):
 
 #------------------------------------------------------------------
 _last = None
-def bind(fn=None, doc=None):
+def of(fn=None, doc=None):
   """Make fn a method of the class of the first arg. This lets me
   group toether in the code related methods from different classes.
   Kind of like extend methosd in C#/Kotlin or open class methods 
@@ -193,25 +193,25 @@ def bind(fn=None, doc=None):
   return D(fn) if callable(fn) else D
 
 #------------------
-@bind("Update")
+@of("Update")
 def add(i:Summary,v, inc=1, zap=False):
   if v != "?":
     i.n += inc
     i._add(v,inc,zap) # implemented by subclass 
   return v
 
-@bind("Do many updates")
+@of("Do many updates")
 def adds(i:Summary, lst=[]): [i.add(x) for x in lst]; return i
 
-@bind("'sub' is just a negative `add`")
+@of("'sub' is just a negative `add`")
 def sub(i:Summary, v, inc= -1,zap=False): return i.add(v,inc,zap)
 
 #--------------------------------------------
-@bind("Internal methods to update a Summary")
+@of("Internal methods to update a Summary")
 def _add(i:Sym,s,inc,_):
   i.has[s] = i.has.get(s,0) + inc
 
-@bind
+@of
 def _add(i:Num,n, inc, _):
   i.lo, i.hi = min(n,i.lo), max(n,i.hi)
   if inc < 0 and i.n < 2: 
@@ -222,36 +222,36 @@ def _add(i:Num,n, inc, _):
     i.m2 += inc * (d * (n - i.mu))
     i.sd  = 0 if i.n <= 2 else (max(0,i.m2)/(i.n-1))**.5
 
-@bind
+@of
 def _add(i:Data,row,inc,zap):  
   if inc > 0 : i._rows.append(row) 
   elif zap   : i._rows.remove(row) # slow for large lists
   for col in i.cols.all: col.add(row[col.at], inc)
 
 #-----------------------
-@bind("Central tendancy.")
+@of("Central tendancy.")
 def mid(i:Num) : return i.mu
 
-@bind
+@of
 def mid(i:Sym): return max(i.has, key=i.has.get)
 
-@bind
+@of
 def mid(i:Data) : return [c.mid() for c in i.cols.all]
 
 #--------------------------------------
-@bind("Deviation from central tendancy.")
+@of("Deviation from central tendancy.")
 def spread(i:Num) : return i.sd
 
-@bind
+@of
 def spread(i:Sym):
   d = i.has
   return -sum(p*math.log(p,2) for v in d.values() if (p:=v/i.n) > 0)
 
-@bind
+@of
 def spread(i:Data): return [c.spread() for c in i.cols.all]
 
 #-------------------------------------------------------------------
-@bind("Distance between numeric or symbolic atoms.")
+@of("Distance between numeric or symbolic atoms.")
 
 def _dist(vs):
   "Minkowski distance."
@@ -261,11 +261,11 @@ def _dist(vs):
     s += abs(x)**the.p
   return (s / n)**(1/the.p)
 
-@bind("Distance between 2 things")
+@of("Distance between 2 things")
 def xdist(_:Sym, u,v):
   return 1 if u=="?" and v=="?" else u !=v
 
-@bind
+@of
 def xdist(i:Num, u,v):
   if u=="?" and v=="?": return 1
   u = i.norm(u)
@@ -274,24 +274,24 @@ def xdist(i:Num, u,v):
   v = v if v != "?" else (0 if u > .5 else 1)
   return abs(u - v)
 
-@bind
+@of
 def xdist(i:Data,r1,r2): 
   return _dist(c.xdist(r1[c.at], r2[c.at]) for c in i.cols.x)
 
-@bind("Return rows, sorted by xdist to row r1.")
+@of("Return rows, sorted by xdist to row r1.")
 def xdists(i:Data, r1, rows=None):
   return sorted(rows or i._rows, key=lambda r2: i.xdist(r1,r2))
 
-@bind("Distance dependent variables to heaven.")
+@of("Distance dependent variables to heaven.")
 def ydist(i:Data,row):
   return _dist((c.norm(row[c.at]) - c.heaven) for c in i.cols.y)
 
-@bind("Return rows, sorted by ydist to heaven.")
+@of("Return rows, sorted by ydist to heaven.")
 def ydists(i:Data, rows=None):
   return sorted(rows or i._rows, key=lambda row: i.ydist(row))
 
 #-------------------------------------------------------------------
-@bind("Move centroids to mid of their nearest neighbors. Repeat.")
+@of("Move centroids to mid of their nearest neighbors. Repeat.")
 def kmeans(i:Data, rows, centroids, n=10):
   errs = []
   for _ in range(n):
@@ -305,7 +305,7 @@ def kmeans(i:Data, rows, centroids, n=10):
     centroids = [new[k].mid() for k in new]
   return centroids, errs
 
-@bind("Find k centroids d**2 away from existing centoids.")
+@of("Find k centroids d**2 away from existing centoids.")
 def kpp(i:Data, k=None, rows=None):
   row, *rows = shuffle(rows or i._rows)[:the.Few]
   out = [row]
@@ -314,7 +314,7 @@ def kpp(i:Data, k=None, rows=None):
      out.append(random.choices(rows, weights=ws)[0])
   return out
 
-@bind("Project data. Discard the least promising half. Repeat.")
+@of("Project data. Discard the least promising half. Repeat.")
 def sway(i:Data):
   done, todo = [], shuffle(i._rows)[:the.Few]
   while len(done) <= the.Build - 2:
@@ -326,7 +326,7 @@ def sway(i:Data):
       todo = [x for x in shuffle(i._rows) if x not in done]
   return o(done=i.ydists(done), todo=todo)
 
-@bind("Project rows along a line between 2 distant points")
+@of("Project rows along a line between 2 distant points")
 def fastmap(i:Data, rows):
   one,*tmp = shuffle(rows)[:the.Few]
   far = int(0.9 *len(tmp))
@@ -344,7 +344,7 @@ ops = {'<=' : lambda x,y: x <= y,
 
 def selects(row,op,at,y): x=row[at]; return x=="?" or ops[op](x,y) 
 
-@bind("what cuts most reduces spread?")
+@of("what cuts most reduces spread?")
 def cuts(i:Sym,rows,Y,Klass): 
   n,d = 0,{}
   for row in rows:
@@ -355,7 +355,7 @@ def cuts(i:Sym,rows,Y,Klass):
   return o(div = sum(c.n/n * spread(c) for c in d.values()),
            hows = [("==",i.at, k) for k,_ in d.items()])
 
-@bind
+@of
 def cuts(i:Num,rows,Y,Klass):
   out = None
   b4, lhs, rhs = None, Klass(), Klass()
@@ -370,7 +370,7 @@ def cuts(i:Num,rows,Y,Klass):
     b4 = x
   return out
 
-@bind("Split data on best cut. Recurse on each split.")
+@of("Split data on best cut. Recurse on each split.")
 def tree(i:Data, Klass=Num, Y=None, how=None):
   Y      = Y or (lambda row: ydist(i,row))
   i.kids = []
@@ -386,20 +386,20 @@ def tree(i:Data, Klass=Num, Y=None, how=None):
           i.kids += [i.tree(i.clone(rows1), Klass, Y, how1)]  
   return i
 
-@bind(" Iterate over all nodes.")
+@of(" Iterate over all nodes.")
 def nodes(i:Data , lvl=0, key=None): 
   yield lvl, i
   for j in (sorted(i.kids, key=key) if key else i.kids):
     yield from j.nodes(lvl + 1, key=key)
 
-@bind(" Return leaf selected by row.")
+@of(" Return leaf selected by row.")
 def leaf(i:Data,row):
   for j in i.kids or []:
     if selects(row, *j.how): 
       return j.leaf(row)
   return i
 
-@bind("Show Tree")
+@of("Show Tree")
 def showTree(i:Data, key=lambda d: d.ys.mu):
   s, ats = i.ys, {}
   win = lambda x: int(100 * (1 - ((x - s.lo) / (s.mu-s.lo+1e-32))))
