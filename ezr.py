@@ -290,16 +290,9 @@ def ydist(i:Data,row):
 def ydists(i:Data, rows=None):
   return sorted(rows or i._rows, key=lambda row: i.ydist(row))
 
-@bind("Find k centroids d**2 away from existing centoids.")
-def kpp(i:Data, k=None, rows=None):
-  row, *rows = shuffle(rows or i._rows)[:the.Few]
-  out = [row]
-  while len(out) < (k or the.Build):
-     ws = [min(i.xdist(r, c)**2 for c in out) for r in rows]
-     out.append(random.choices(rows, weights=ws)[0])
-  return out
-
-def kmeans(i, rows, centroids, n=10):
+#-------------------------------------------------------------------
+@bind("Move centroids to mid of their nearest neighbors. Repeat.")
+def kmeans(i:Data, rows, centroids, n=10):
   errs = []
   for _ in range(n):
     new, err = {}, 0
@@ -312,126 +305,37 @@ def kmeans(i, rows, centroids, n=10):
     centroids = [new[k].mid() for k in new]
   return centroids, errs
 
-@bind("Where does the a line to the closest point touch?")
-def project(i:Data, row, a, b, C=None):
-  "Closest point on line 'ab' to `row'" 
-  C =  C or i.xdist(a,b)
-  A,B = i.xdist(row,a), xdist(i,row,b)
-  return (A*A + C*C - B*B) / (C+C + 1/BIG)
+@bind("Find k centroids d**2 away from existing centoids.")
+def kpp(i:Data, k=None, rows=None):
+  row, *rows = shuffle(rows or i._rows)[:the.Few]
+  out = [row]
+  while len(out) < (k or the.Build):
+     ws = [min(i.xdist(r, c)**2 for c in out) for r in rows]
+     out.append(random.choices(rows, weights=ws)[0])
+  return out
 
-@bind("Map rows along a line between 2 distance points")
-def fastmap(i:Data, rows):
-  "Map rows along a line between 2 distant points."
-  one,*tmp = shuffle(rows)[:the.Few]
-  far = int(0.9 *len(tmp))
-  a   = i.xdists(one, tmp)[far]; 
-  b   = i.xdists(a,   tmp)[far]
-  C   = i.xdist(a,b)
-  return sorted(rows, key = lambda r: i.project(r,a,b,C))
-
-@bind("Repeateldy, discard half the least promising data.")
+@bind("Project data. Discard the least promising half. Repeat.")
 def sway(i:Data):
   done, todo = [], shuffle(i._rows)[:the.Few]
   while len(done) <= the.Build - 2:
     a, *todo, b = i.fastmap(todo)
     done += [a,b]
-    n = len(todo)//2
-    todo = todo[:n] if i.ydist(a) < i.ydist(b) else todo[n:]
+    n     = len(todo)//2
+    todo  = todo[:n] if i.ydist(a) < i.ydist(b) else todo[n:]
     if len(todo) < 2: 
       todo = [x for x in shuffle(i._rows) if x not in done]
   return o(done=i.ydists(done), todo=todo)
 
-#-----------------------------------------------------------------
-class Abcd:
-  def __init__(i, a=0): i.a, i.b, i.c, i.d = a, 0, 0, 0
-  def add(i, want, got, x):
-    if x == want:   i.d += (got == want); i.b += (got != want)
-    else:           i.c += (got == x);    i.a += (got != x)
-    p = lambda y, z: int(100 * y / (z or 1e-32))
-    i.pd   = p(i.d,       i.d + i.b)
-    i.pf   = p(i.c,       i.c + i.a)
-    i.prec = p(i.d,       i.d + i.c)
-    i.acc  = p(i.d + i.a, i.a + i.b + i.c + i.d)
-
-def abcds(want, got, state=None):
-  state = state or o(stats={}, total=0)
-  for L in (want, got):
-    state.stats[L] = state.stats.get(L) or Abcd(state.total)
-  for x, s in state.stats.items():
-    s.add(want, got, x)
-  state.total += 1
-  return state
-
-def same(a, b): 
-  return cliffs(a, b) and bootstrap(a, b)
-
-#--------------------------------------------------------------------
-def same(cliff=None, n=None, conf=None):
-  n     = n or the.bootstrap
-  conf  = conf or the.Boots
-  cliff = cliff or the.Cliifs
-  return lambda xs,ys:cliffs(xs,ys,cliff) and bootstrap(xs,ys,n,conf)
-
-def cliffs(xs,ys, cliff):
-  "Effect size. Tb1 of doi.org/10.3102/10769986025002101"
-  n,lt,gt = 0,0,0
-  for x in xs:
-    for y in ys:
-      n += 1
-      if x > y: gt += 1
-      if x < y: lt += 1
-  return abs(lt - gt)/n  < cliff # 0.197)  #med=.28, small=.11
-
-# Non-parametric significance test from 
-# Chp20,doi.org/10.1201/9780429246593. Distributions are the same 
-# if, often, we `_see` differences just by chance. We center both 
-# samples around the combined mean to simulate what data might look 
-# like if vals1 and vals2 came from the same population.
-def bootstrap(xs, ys, bootstrap,conf):
-  _see = lambda i,j: abs(i.mu - j.mu) / (
-                     (i.sd**2/i.n + j.sd**2/j.n)**.5 +1E-32)
-  x,y,z = Num(xs+ys), Num(xs), Num(ys)
-  yhat  = [y1 - mid(y) + mid(x) for y1 in xs]
-  zhat  = [z1 - mid(z) + mid(x) for z1 in ys]
-  n     = 0
-  for _ in range(bootstrap):
-    n += _see(Num(random.choices(yhat, k=len(yhat))),
-              Num(random.choices(zhat, k=len(zhat)))) > _see(y,z)
-  return n / bootstrap >= (1- conf)
-
-def sk(rxs, same, eps=0, reverse=False):
-  "Dict[key,List[float]] -> List[Num(key,rank,mu,sd)]" 
-  def _cut(items):
-    cut  = None
-    N    = sum(num.n for num, _ in items)
-    M    = sum(num.mu * num.n for num, _ in items) / N
-    best = s1 = n1 = 0
-    for j, (num, _) in enumerate(items[:-1]):
-      n, s   = num.n, num.mu * num.n
-      n1, s1 = n1 + n, s1 + s
-      m1     = s1 / n1
-      n2     = N - n1
-      m2     = (M * N - s1) / n2
-      gain   = (n1 * (m1 - M)**2 + n2 * (m2 - M)**2) / N
-      if abs(m1 - m2) > eps and gain > best:
-        best, cut = gain, j+1
-    return cut
-
-  def _div(items, rank=0):
-    if (cut := _cut(items)) is not None:
-      L, R = items[:cut], items[cut:]
-      a    = [x for _, vals in L for x in vals]
-      b    = [x for _, vals in R for x in vals]
-      if not same(a, b):
-        return _div(R, _div(L, rank) + 1)
-    for num, _ in items:
-      num.rank = rank
-    return rank
-
-  nums = sorted([(Num(vals, txt=k),vals) for k,vals in rxs.items()],
-                key=lambda x: x[0].mu, reverse=reverse)
-  _div(nums)
-  return [num for num, _ in nums]
+@bind("Project rows along a line between 2 distant points")
+def fastmap(i:Data, rows):
+  one,*tmp = shuffle(rows)[:the.Few]
+  far = int(0.9 *len(tmp))
+  a   = i.xdists(one, tmp)[far]; 
+  b   = i.xdists(a,   tmp)[far]
+  D   = lambda a,b: i.xdist(a,b)
+  C   = D(a,b)
+  cosine = lambda A,B: (A*A + C*C - B*B) / (C+C + 1/BIG)
+  return sorted(rows, key = lambda r: cosine(D(r,a), D(r,b)))
 
 #-----------------------------------------------------------------
 ops = {'<=' : lambda x,y: x <= y,
@@ -533,6 +437,98 @@ def showTree(i:Data, key=lambda d: d.ys.mu):
 #   print(', '.join(sorted([data.cols.names[at] for at in ats])))
 #
 #-----------------------------------------------------------------
+class Abcd:
+  def __init__(i, a=0): i.a, i.b, i.c, i.d = a, 0, 0, 0
+  def add(i, want, got, x):
+    if x == want:   i.d += (got == want); i.b += (got != want)
+    else:           i.c += (got == x);    i.a += (got != x)
+    p = lambda y, z: int(100 * y / (z or 1e-32))
+    i.pd   = p(i.d,       i.d + i.b)
+    i.pf   = p(i.c,       i.c + i.a)
+    i.prec = p(i.d,       i.d + i.c)
+    i.acc  = p(i.d + i.a, i.a + i.b + i.c + i.d)
+
+def abcds(want, got, state=None):
+  state = state or o(stats={}, total=0)
+  for L in (want, got):
+    state.stats[L] = state.stats.get(L) or Abcd(state.total)
+  for x, s in state.stats.items():
+    s.add(want, got, x)
+  state.total += 1
+  return state
+
+def same(a, b): 
+  return cliffs(a, b) and bootstrap(a, b)
+
+#--------------------------------------------------------------------
+def same(cliff=None, n=None, conf=None):
+  n     = n or the.bootstrap
+  conf  = conf or the.Boots
+  cliff = cliff or the.Cliifs
+  return lambda xs,ys:cliffs(xs,ys,cliff) and bootstrap(xs,ys,n,conf)
+
+def cliffs(xs,ys, cliff):
+  "Effect size. Tb1 of doi.org/10.3102/10769986025002101"
+  n,lt,gt = 0,0,0
+  for x in xs:
+    for y in ys:
+      n += 1
+      if x > y: gt += 1
+      if x < y: lt += 1
+  return abs(lt - gt)/n  < cliff # 0.197)  #med=.28, small=.11
+
+# Non-parametric significance test from 
+# Chp20,doi.org/10.1201/9780429246593. Distributions are the same 
+# if, often, we `_obs`erve differences just by chance. We center both 
+# samples around the combined mean to simulate what data might look 
+# like if vals1 and vals2 came from the same population.
+def bootstrap(xs, ys, bootstrap,conf):
+  _obs  = lambda i,j: abs(i.mu - j.mu) / (
+                           (i.sd**2/i.n + j.sd**2/j.n)**.5 +1E-32)
+  x,y,z = Num(xs+ys), Num(xs), Num(ys)
+  yhat  = [y1 - mid(y) + mid(x) for y1 in xs]
+  zhat  = [z1 - mid(z) + mid(x) for z1 in ys]
+  n     = 0
+  for _ in range(bootstrap):
+    n += _obs(Num(random.choices(yhat, k=len(yhat))),
+              Num(random.choices(zhat, k=len(zhat)))) > _obs(y,z)
+  return n / bootstrap >= (1- conf)
+
+def sk(rxs, same, eps=0, reverse=False):
+  "Dict[key,List[float]] -> List[Num(key,rank,mu,sd)]" 
+  def _cut(items):
+    cut  = None
+    N    = sum(num.n for num, _ in items)
+    M    = sum(num.mu * num.n for num, _ in items) / N
+    best = s1 = n1 = 0
+    for j, (num, _) in enumerate(items[:-1]):
+      n, s  = num.n, num.mu * num.n
+      n1,s1 = n1 + n, s1 + s
+      m1    = s1 / n1
+      n2    = N - n1
+      m2    = (M * N - s1) / n2
+      gain  = n1/N * (m1 - M)**2 + n2/N * (m2 - M)**2
+      if abs(m1 - m2) > eps and gain > best:
+        best, cut = gain, j+1
+    return cut
+
+  def _div(items, rank=0):
+    if (cut := _cut(items)) is not None:
+      L,R = items[:cut], items[cut:]
+      a   = [x for _, vals in L for x in vals]
+      b   = [x for _, vals in R for x in vals]
+      if not same(a, b):
+        return _div(R, _div(L, rank) + 1)
+    for num, _ in items:
+      num.rank = rank
+    return rank
+
+  nums = sorted([(Num(vals, txt=k),vals) for k,vals in rxs.items()],
+                key=lambda x: x[0].mu, reverse=reverse)
+  _div(nums)
+  return [num for num, _ in nums]
+
+#-----------------------------------------------------------------
 def fyi(*l): print(*l,end="", flush=True)
 
 def atom(x):
@@ -563,12 +559,12 @@ def say(v): print(see(v)); return v
 def see(v):
   "Converts most things to strings."
   it = type(v)
+  isKlass = hasattr(v,"__dict__")
+  if isKlass     : return v.__class__.__name__ + see(v.__dict__)
+  if callable(v) : return v.__name__ + "()"
   if it is float : return _cF(v) 
   if it is dict  : return _cD(v)
-  if callable(v) : return v.__name__ + "()"
   if it is list  : return "{" + ", ".join(map(see, v)) + "}"
-  if hasattr(v,"__dict__"): 
-    return v.__class__.__name__ + see(v.__dict__)
   return str(v)
 
 def _cOk(k) : return not (isa(k,str) and k[0] == "_")
