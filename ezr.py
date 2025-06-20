@@ -339,6 +339,84 @@ def fastmap(i:Data, rows):
   return sorted(rows, key = lambda r: cosine(D(r,a), D(r,b)))
 
 #-----------------------------------------------------------------
+@of("How probable is it that `v` belongs to a column?")
+def pdf(i:Sym,s, prior=0):
+  return (i.has.get(s,0) + the.m*prior) / (i.n + the.m + 1/BIG)
+
+@of
+def pdf(i:Num,v,_):
+  sd  = i.sd or 1 / BIG
+  var = 2 * sd * sd
+  z   = (v - i.mu) ** 2 / var
+  return min(1, max(0, math.exp(-z) / (2 * math.pi * var) ** 0.5))
+
+@of("Report how much `data` like `row`.")
+def like(i:Data, row, nall=2, nh=100):
+  prior = (i.n + the.k) / (nall + the.k*nh)
+  tmp = [c.pdf(row[c.at],prior) 
+         for c in i.cols.x if row[c.at] != "?"]
+  return sum(math.log(n) for n in tmp + [prior] if n>0)    
+
+def likes(datas, row):
+  "Return the `data` in `datas` that likes `row` the most."
+  n = sum(data.n for data in datas)
+  return max(datas, key=lambda data: like(data, row, n, len(datas)))
+
+@of("Split rows to best,rest. Label row that's e.g. max best/rest.")
+# def acquires(i:Data,rows):
+#   def _guess(row):
+#     b,r = like(best,row,n,2), like(rest,row,n,2)
+#     p   = n/the.Build
+#     b,r = math.e**b, math.e**r
+#     q   = 0 if the.acq=="xploit" else (1 if the.acq=="xplor" else 1-p)
+#     return (b + r*q) / bs(b*q - r + 1/BIG)
+#
+#   random.shuffle(rows)
+#   n         = the.Assume
+#   todo      = i._rows[n:]
+#   bestrest  = i.clone(rows[:n])
+#   done      = i.ydists(bestrest)
+#   cut       = round(n**the.Guess)
+#   best      = i.clone(done[:cut])
+#   rest      = i.clone(done[cut:])
+#   while len(todo) > 2 and n < the.Build:
+#     n      += 1
+#     hi, *lo = sorted(todo[:the.Few*2], 
+#                     key=_guess, reverse=True)
+#     todo    = lo[:the.Few] + todo[the.Few*2:] + lo[the.Few:]
+#     bestrest.add(best.add(hi))
+#     best._rows = bestrest.ydists()
+#     if len(best._rows) >= round(n**the.Guess):
+#       rest( best.sub( best._rows.pop(-1))) 
+#   return o(best=best, rest=rest, test=todo)
+
+def acquires(i:Data, rows):
+  def _guess(row):
+    b, r = like(best, row, n, 2), like(rest, row, n, 2)
+    p    = n / the.Build
+    b, r = math.e**b, math.e**r
+    q    = {"xploit": 0, "xplor": 1}.get(the.acq, 1 - p)
+    return (b + r*q) / abs(b*q - r + 1/BIG)
+
+  random.shuffle(rows)
+  n    = the.Assume
+  cut  = round(n**the.Guess) # [done = best + rest] + todo
+  todo = i._rows[n:]        
+  done = i.ydists(rows[:n])
+  best = i.clone(done[:cut])
+  rest = i.clone(done[cut:])
+  all  = i.clone(done)
+  while len(todo) > 2 and n < the.Build:
+    n     += 1
+    hi,*lo = sorted(todo[:the.Few*2], key=_guess, reverse=True)
+    todo   = lo[:the.Few] + todo[the.Few*2:] + lo[the.Few:]
+    all.add( best.add(hi))
+    best._rows = all.ydists(best._rows)
+    if len(best._rows) >= cut:
+      rest.add( best.sub( best._rows.pop(-1)))
+  return o(best=best, rest=rest, test=todo)
+
+#-----------------------------------------------------------------
 ops = {'<=' : lambda x,y: x <= y,
        "==" : lambda x,y: x == y,
        '>'  : lambda x,y: x >  y}
