@@ -68,6 +68,8 @@ dist   :; $T eg_dist.py  --dist    ## demo incremetal dist
 kpp    :; $T eg_dist.py  --kpp     ## demo diversity sampling with kpp
 fmap   :; $T eg_landscape.py --fastmap ## demo fastmap
 tree   :; $T eg_tree.py --tree     ## tree demo
-stats  :; $T eg_stats.py --stats
 rank   :; $T eg_stats.py --rank
 rank2  :; $T eg_stats.py --rank2
+
+stats: $(Top)/../moot/optimize/[hmpbc]*/*.csv
+	$(foreach f, $^, gawk -f $(Top)/etc/stats.awk $f;)

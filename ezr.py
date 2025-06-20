@@ -292,22 +292,23 @@ def ydists(i:Data, rows=None):
 
 #-------------------------------------------------------------------
 @of("Move centroids to mid of their nearest neighbors. Repeat.")
-def kmeans(i:Data, rows, centroids, n=10):
-  errs = []
-  for _ in range(n):
+def kmeans(i:Data, rows, centroids=None, k=10, repeats=10, eps=0.01):
+  errs, centroids = [], centroids or rows[:k]
+  for j in range(repeats):
     new, err = {}, 0
-    for row in rows:
+    for row in shuffle(rows):
       c = min(centroids, key=lambda z: i.xdist(z, row))
       now = new[id(c)] = new.get(id(c)) or i.clone()
       now.add(row)
       err += i.xdist(row, c)
     errs += [err / len(rows)]
     centroids = [new[k].mid() for k in new]
+    if j> 0 and abs(errs[-1] - errs[-2]) < eps: break 
   return centroids, errs
 
 @of("Find k centroids d**2 away from existing centoids.")
-def kpp(i:Data, k=None, rows=None):
-  row, *rows = shuffle(rows or i._rows)[:the.Few]
+def kpp(i:Data, rows, k=None):
+  row, *rows = shuffle(rows)
   out = [row]
   while len(out) < (k or the.Build):
      ws = [min(i.xdist(r, c)**2 for c in out) for r in rows]
@@ -315,15 +316,15 @@ def kpp(i:Data, k=None, rows=None):
   return out
 
 @of("Project data. Discard the least promising half. Repeat.")
-def sway(i:Data):
-  done, todo = [], shuffle(i._rows)[:the.Few]
+def sway(i:Data,rows):
+  done, todo = [], shuffle(rows)
   while len(done) <= the.Build - 2:
     a, *todo, b = i.fastmap(todo)
     done += [a,b]
     n     = len(todo)//2
     todo  = todo[:n] if i.ydist(a) < i.ydist(b) else todo[n:]
     if len(todo) < 2: 
-      todo = [x for x in shuffle(i._rows) if x not in done]
+      todo = [x for x in shuffle(rows) if x not in done]
   return o(done=i.ydists(done), todo=todo)
 
 @of("Project rows along a line between 2 distant points")
@@ -584,7 +585,7 @@ def cli(d):
 def run(fn,x=None):
   "Before test, reset seed. After test, print any assert errors"
   try:  
-    print("\n# "+(fn.__doc__ or fn.__name__))
+    print("# "+(fn.__doc__ or fn.__name__))
     random.seed(the.rseed)
     fn(x)
   except Exception as _:
