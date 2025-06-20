@@ -1,6 +1,6 @@
 # Tiny Tools for Easier AI
 
-Once apon a time I did decades of work of [DataAnalyics](#dataanalytics) with a whole
+Once apon a time I did decades of work of [data analytics](#data-analytics) with a whole
 bunch of industry and academic people, supervised dozens of PhD
 students, wrote a lot of papers, ran a bunch of conferences, editted
 a journal, got a few million from the National Science Foundation,
