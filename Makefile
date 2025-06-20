@@ -29,6 +29,10 @@ push: ## commit to main
 sh: ## run my shell
 	Top=$(Top) bash --init-file $(Top)/etc/init.sh -i
 
+md:
+	gawk -F, -f $(Top)/etc/xpand.awk ezr.py ezr.md
+
+
 %.md: ## include source code
 	gawk -f $(Top)/etc/include.awk $< > .tmp && mv .tmp $@
 
