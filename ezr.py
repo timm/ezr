@@ -14,7 +14,7 @@ Options, with (defaults):
 
 Bayes:
   -k   k          : bayes hack for rare classes (1)
-  -m   m          : bayes hack for rare attributes (2)
+  -m   m          : bayes hack for rare attributes (1)
 
 Active learning:
   -a   acq        : xploit or xplore or adapt (xploit)  
@@ -391,6 +391,9 @@ def likes(datas, row):
 @of("Seperate rows, 1 `data` per class. Classify, via those datas.")
 def nbc(i:Data,era=100):
   log,datas = None,{}
+  for _ in range(5):
+    shuffle(i._rows)
+    for j in range(5):
   for n,row in enumerate(shuffle(i._rows)):
     want = row[i.cols.klass.at]
     if n>5:
@@ -566,23 +569,41 @@ def showTree(i:Data, key=lambda d: d.ys.mu):
 # ___]  |  |  |  |  ___] 
                        
 class Abcd:
-  def __init__(i,kl,a): i.a, i.b, i.c, i.d = a, 0, 0, 0; i.txt=kl
+  def __init__(i,kl="-",a=0): 
+    i.a,i.txt = a,kl
+    i.b = i.c = i.d = 0
   def add(i, want, got, x):
     if x == want:   i.d += (got == want); i.b += (got != want)
     else:           i.c += (got == x);    i.a += (got != x)
+  def ready(i):
     p      = lambda y, z: int(100 * y / (z or 1e-32))
     i.pd   = p(i.d,       i.d + i.b)
     i.pf   = p(i.c,       i.c + i.a)
     i.prec = p(i.d,       i.d + i.c)
     i.acc  = p(i.d + i.a, i.a + i.b + i.c + i.d)
+    return i
+
+def abcdReady(state):
+  for abcd in state.stats.values(): abcd.ready()
+  return state
+
+def abcdWeighted(state):
+  out = Abcd()
+  for abcd in state.stats.values():
+    w = (abcd.b + abcd.d)/state.n
+    out.a += abcd.a*w
+    out.b += abcd.b*w
+    out.c += abcd.c*w
+    out.d += abcd.d*w
+  return out.ready()
 
 def abcds(want, got, state=None):
-  state = state or o(stats={}, total=0)
+  state = state or o(stats={},  n=0)
   for L in (want, got):
-    state.stats[L] = state.stats.get(L) or Abcd(L,state.total)
+    state.stats[L] = state.stats.get(L) or Abcd(L,state.n)
   for x, s in state.stats.items():
     s.add(want, got, x)
-  state.total += 1
+  state.n += 1
   return state
 
 def same(a, b): 
@@ -676,9 +697,12 @@ def shuffle(lst):
   return lst
 
 def csv(src):
+  want = None
   for line in src:
     if line:
-      yield [atom(x) for x in line.strip().split(',')]
+      cells= [atom(x) for x in line.strip().split(',')]
+      want = want or len(cells)
+      if want==len(cells): yield cells
 
 lines=lambda s: (line for line in s.splitlines())
 
@@ -703,6 +727,18 @@ def _cOk(k): return not (isa(k,str) and k[0] == "_")
 def _cD(v) : return see([f":{k} {see(v[k])}" for k in v if _cOk(k)])
 def _cF(v) : return str(int(v)) if v==int(v) else f"{v:.{the.Rnd}g}"
 
+def xval(rows, fn, m=5, n=5):
+  r=0
+  for _ in range(m):
+    random.shuffle(rows)
+    for k in range(n):
+      fold = len(rows) // n
+      lo, hi = k * fold, (k + 1) * fold
+      train, test = [], []
+      for j, row in enumerate(rows):
+        (test if lo <= j < hi else train).append(row)
+      r += 1
+      fn(r,train, test)
 #--------------------------------------------------------------------
 #  _  _ ____ _ _  _ 
 #  |\/| |__| | |\ | 
@@ -720,7 +756,7 @@ def cli(d):
 def run(fn,x=None):
   "Before test, reset seed. After test, print any assert errors"
   try:  
-    print("# "+(fn.__doc__ or fn.__name__))
+    print("#"+(fn.__doc__ or fn.__name__))
     random.seed(the.rseed)
     fn(x)
   except Exception as _:

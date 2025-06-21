@@ -1,5 +1,5 @@
 import sys; sys.path.insert(0, "../")
-from ezr import abcds,go,o
+from ezr import abcds,go,o,abcdReady
 
 """
 a b c <- got
@@ -17,6 +17,7 @@ def eg__abcds(_):
   for _ in range(2): x = abcds("b","b",x)
   for _ in range(1): x = abcds("b","c",x)
   for _ in range(3): x = abcds("c","c",x)
+  x = abcdReady(x)
   a=x.stats["a"]; a1= dict(pd=a.pd, acc=a.acc, pf=a.pf, prec=a.prec)
   b=x.stats["b"]; b1= dict(pd=b.pd, acc=b.acc, pf=b.pf, prec=b.prec)
   c=x.stats["c"]; c1= dict(pd=c.pd, acc=c.acc, pf=c.pf, prec=c.prec)
