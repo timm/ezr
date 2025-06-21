@@ -121,8 +121,8 @@ Max_spout,  hashing,  Spliters,  Counters,  Throughput+,  Latency-
 """
 #------------------------------------------------------------------
 #  ____ ___ ____ _  _ ____ ___ ____ 
-# [__   |  |__/ |  | |     |  [__  
-# ___]  |  |  \ |__| |___  |  ___] 
+#  [__   |  |__/ |  | |     |  [__  
+#  ___]  |  |  \ |__| |___  |  ___] 
                                  
 class Summary(o): pass
 
@@ -385,15 +385,23 @@ def like(i:Data, row, nall=2, nh=100):
 def likes(datas, row):
   "Return the `data` in `datas` that likes `row` the most."
   n = sum(data.n for data in datas)
-  return max(datas, key=lambda data: like(data, row, n, len(datas)))
+  return max(datas, key=lambda data:data.like(row,n,len(datas)))
 
-def nbc(i):
-  datas = {}
-  for row in i._rows:
-    got = lines(datas,values(), row)
+
+@of("Seperate rows, 1 `data` per class. Classify, via those datas.")
+def nbc(i:Data,era=100):
+  log,datas = None,{}
+  for n,row in enumerate(shuffle(i._rows)):
     want = row[i.cols.klass.at]
-    now = datas[kl] = datas.get(kl) or i.clone()
+    if n>5:
+      got = likes(datas.values(), row).txt
+      log = abcds(want,got,log)
+      if n % era == 0: 
+         [print(n,k,s.pd, s.pf, s.acc) for k,s in log.stats.items()]
+    now = datas[want] = datas.get(want) or i.clone()
+    now.txt = want
     now.add(row)
+  return log
 
 @of("Split rows to best,rest. Label row that's e.g. max best/rest.")
 # def acquires(i:Data,rows):
@@ -558,11 +566,11 @@ def showTree(i:Data, key=lambda d: d.ys.mu):
 # ___]  |  |  |  |  ___] 
                        
 class Abcd:
-  def __init__(i, a=0): i.a, i.b, i.c, i.d = a, 0, 0, 0
+  def __init__(i,kl,a): i.a, i.b, i.c, i.d = a, 0, 0, 0; i.txt=kl
   def add(i, want, got, x):
     if x == want:   i.d += (got == want); i.b += (got != want)
     else:           i.c += (got == x);    i.a += (got != x)
-    p = lambda y, z: int(100 * y / (z or 1e-32))
+    p      = lambda y, z: int(100 * y / (z or 1e-32))
     i.pd   = p(i.d,       i.d + i.b)
     i.pf   = p(i.c,       i.c + i.a)
     i.prec = p(i.d,       i.d + i.c)
@@ -571,7 +579,7 @@ class Abcd:
 def abcds(want, got, state=None):
   state = state or o(stats={}, total=0)
   for L in (want, got):
-    state.stats[L] = state.stats.get(L) or Abcd(state.total)
+    state.stats[L] = state.stats.get(L) or Abcd(L,state.total)
   for x, s in state.stats.items():
     s.add(want, got, x)
   state.total += 1
@@ -691,16 +699,16 @@ def see(v):
   if it is list  : return "{" + ", ".join(map(see, v)) + "}"
   return str(v)
 
-def _cOk(k) : return not (isa(k,str) and k[0] == "_")
-def _cD(v): return see([f":{k} {see(v[k])}" for k in v if _cOk(k)])
-def _cF(v): return str(int(v)) if v==int(v) else f"{v:.{the.Rnd}g}"
+def _cOk(k): return not (isa(k,str) and k[0] == "_")
+def _cD(v) : return see([f":{k} {see(v[k])}" for k in v if _cOk(k)])
+def _cF(v) : return str(int(v)) if v==int(v) else f"{v:.{the.Rnd}g}"
 
 #--------------------------------------------------------------------
 #  _  _ ____ _ _  _ 
 #  |\/| |__| | |\ | 
-# |  | |  | | | \| 
+#  |  | |  | | | \| 
                  
-def cli(d) 
+def cli(d): 
   "for d slot xxx, update its value from CLO flag -x"
   for k, v in d.items():
     for c, arg in enumerate(sys.argv):
