@@ -23,14 +23,16 @@ def eg__dist(_):
 def eg__kmeans(_):
   print(the.file)
   data = Data(csv(doc(the.file)))
-  _, errs = data.kmeans(data._rows)
-  say(errs)
+  for eps in [0,0.01]:
+    shuffle(data._rows)
+    _, errs = data.kmeans(data._rows,eps=eps)
+    print(eps, "\t",[round(x,5) for x in errs])
 
 def eg__kpp(_):
   data = Data(csv(doc(the.file)))
   Y    = lambda r : data.ydist(r)
   run  = lambda fn: sorted(Y(min(fn(), key=Y)) for _ in range(20))
-  one  = lambda   : data.kpp()
+  one  = lambda   : data.kpp(data._rows)
   two  = lambda   : random.choices(data._rows,k=the.Build)
   print(Num(Y(r) for r in data._rows))
   print("kpp",see(run(one)))

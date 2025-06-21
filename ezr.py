@@ -120,6 +120,10 @@ Max_spout,  hashing,  Spliters,  Counters,  Throughput+,  Latency-
 1000     ,  off    ,  2       ,  1       ,  8666.8     ,  1239.5  
 """
 #------------------------------------------------------------------
+#  ____ ___ ____ _  _ ____ ___ ____ 
+# [__   |  |__/ |  | |     |  [__  
+# ___]  |  |  \ |__| |___  |  ___] 
+                                 
 class Summary(o): pass
 
 #----------------
@@ -179,6 +183,10 @@ def _col(at,name,cols):
   return col 
 
 #------------------------------------------------------------------
+# _  _ ___  ___  ____ ___ ____ 
+# |  | |__] |  \ |__|  |  |___ 
+# |__| |    |__/ |  |  |  |___ 
+                             
 _last = None
 def of(fn=None, doc=None):
   """Make fn a method of the class of the first arg. This lets me
@@ -228,7 +236,11 @@ def _add(i:Data,row,inc,zap):
   elif zap   : i._rows.remove(row) # slow for large lists
   for col in i.cols.all: col.add(row[col.at], inc)
 
-#-----------------------
+#-----------------------------------------------------------------------
+# ____ _  _ ____ ____ _   _ 
+# |  | |  | |___ |__/  \_/  
+# |_\| |__| |___ |  \   |   
+                          
 @of("Central tendancy.")
 def mid(i:Num) : return i.mu
 
@@ -251,6 +263,10 @@ def spread(i:Sym):
 def spread(i:Data): return [c.spread() for c in i.cols.all]
 
 #-------------------------------------------------------------------
+# ___  _ ____ ___ ____ _  _ ____ ____ 
+# |  \ | [__   |  |__| |\ | |    |___ 
+# |__/ | ___]  |  |  | | \| |___ |___ 
+                                    
 @of("Distance between numeric or symbolic atoms.")
 
 def _dist(vs):
@@ -291,6 +307,10 @@ def ydists(i:Data, rows=None):
   return sorted(rows or i._rows, key=lambda row: i.ydist(row))
 
 #-------------------------------------------------------------------
+# ____ _    _  _ ____ ___ ____ ____ 
+# |    |    |  | [__   |  |___ |__/ 
+# |___ |___ |__| ___]  |  |___ |  \ 
+                                  
 @of("Move centroids to mid of their nearest neighbors. Repeat.")
 def kmeans(i:Data, rows, centroids=None, k=10, repeats=10, eps=0.01):
   errs, centroids = [], centroids or rows[:k]
@@ -339,6 +359,10 @@ def fastmap(i:Data, rows):
   return sorted(rows, key = lambda r: cosine(D(r,a), D(r,b)))
 
 #-----------------------------------------------------------------
+# ___  ____ _   _ ____ ____ 
+# |__] |__|  \_/  |___ [__  
+# |__] |  |   |   |___ ___] 
+                          
 @of("How probable is it that `v` belongs to a column?")
 def pdf(i:Sym,s, prior=0):
   return (i.has.get(s,0) + the.m*prior) / (i.n + the.m + 1/BIG)
@@ -357,10 +381,19 @@ def like(i:Data, row, nall=2, nh=100):
          for c in i.cols.x if row[c.at] != "?"]
   return sum(math.log(n) for n in tmp + [prior] if n>0)    
 
+@of("What `data` in `datas` lines `row` the most?")
 def likes(datas, row):
   "Return the `data` in `datas` that likes `row` the most."
   n = sum(data.n for data in datas)
   return max(datas, key=lambda data: like(data, row, n, len(datas)))
+
+def nbc(i):
+  datas = {}
+  for row in i._rows:
+    got = lines(datas,values(), row)
+    want = row[i.cols.klass.at]
+    now = datas[kl] = datas.get(kl) or i.clone()
+    now.add(row)
 
 @of("Split rows to best,rest. Label row that's e.g. max best/rest.")
 # def acquires(i:Data,rows):
@@ -417,6 +450,10 @@ def acquires(i:Data, rows):
   return o(best=best, rest=rest, test=todo)
 
 #-----------------------------------------------------------------
+# ___ ____ ____ ____ 
+#  |  |__/ |___ |___ 
+#  |  |  \ |___ |___ 
+                   
 ops = {'<=' : lambda x,y: x <= y,
        "==" : lambda x,y: x == y,
        '>'  : lambda x,y: x >  y}
@@ -516,6 +553,10 @@ def showTree(i:Data, key=lambda d: d.ys.mu):
 #   print(', '.join(sorted([data.cols.names[at] for at in ats])))
 #
 #-----------------------------------------------------------------
+# ____ ___ ____ ___ ____ 
+# [__   |  |__|  |  [__  
+# ___]  |  |  |  |  ___] 
+                       
 class Abcd:
   def __init__(i, a=0): i.a, i.b, i.c, i.d = a, 0, 0, 0
   def add(i, want, got, x):
@@ -608,6 +649,10 @@ def sk(rxs, same, eps=0, reverse=False):
   return [num for num, _ in nums]
 
 #-----------------------------------------------------------------
+#  _    _ ___  
+# |    | |__] 
+# |___ | |__] 
+            
 def fyi(*l): print(*l,end="", flush=True)
 
 def atom(x):
@@ -651,7 +696,11 @@ def _cD(v): return see([f":{k} {see(v[k])}" for k in v if _cOk(k)])
 def _cF(v): return str(int(v)) if v==int(v) else f"{v:.{the.Rnd}g}"
 
 #--------------------------------------------------------------------
-def cli(d):
+#  _  _ ____ _ _  _ 
+#  |\/| |__| | |\ | 
+# |  | |  | | | \| 
+                 
+def cli(d) 
   "for d slot xxx, update its value from CLO flag -x"
   for k, v in d.items():
     for c, arg in enumerate(sys.argv):
