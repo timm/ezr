@@ -1,37 +1,32 @@
-title: My Cool Site
-description: >- 
-  A simple Jekyll site using the default theme and enhanced features.
+title: My Cool Jekyll Site
+description: >-
+  A custom Jekyll site with useful features and no default theme.
 url: "https://yourusername.github.io"
-baseurl: "" # Change to "/repo-name" if using a project page
-
-theme: minima
-
-plugins:
-  - jemoji
-  - jekyll-feed
-  - jekyll-seo-tag
-  - jekyll-sitemap
-  - jekyll-redirect-from
-  - jekyll-paginate
-
-paginate: 5
-paginate_path: "/page:num/"
-
-minima:
-  skin: auto  # classic, dark, auto
-  social_links:
-    github: yourusername
-    twitter: yourhandle
-    linkedin: yourhandle
-    mastodon:
-      - username: yourname
-        instance: mastodon.social
+baseurl: ""  # "/repo-name" if using GitHub project pages
 
 markdown: kramdown
 kramdown:
   input: GFM
   hard_wrap: false
   syntax_highlighter: rouge
+
+permalink: /:categories/:year/:month/:title/
+
+plugins:
+  - jemoji              # GitHub-style emoji
+  - jekyll-feed         # Atom feed at /feed.xml
+  - jekyll-seo-tag      # SEO metadata
+  - jekyll-sitemap      # Sitemap at /sitemap.xml
+  - jekyll-redirect-from # Redirect old URLs
+  - jekyll-paginate     # Pagination
+
+paginate: 5
+paginate_path: "/page:num/"
+
+collections:
+  docs:
+    output: true
+    permalink: /docs/:path/
 
 defaults:
   - scope:
@@ -40,14 +35,6 @@ defaults:
       layout: default
       search: true
 
-permalink: /:categories/:year/:month/:title/
-
-collections:
-  docs:
-    output: true
-    permalink: /docs/:path/
-
-# Optional: exclude junk
 exclude:
   - Gemfile
   - Gemfile.lock
@@ -55,8 +42,3 @@ exclude:
   - vendor
   - README.md
   - LICENSE
-
-# For GitHub Pages builds (if needed)
-github:
-  is_project_page: false
-
