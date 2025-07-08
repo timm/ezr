@@ -1,0 +1,62 @@
+title: My Cool Site
+description: >- 
+  A simple Jekyll site using the default theme and enhanced features.
+url: "https://yourusername.github.io"
+baseurl: "" # Change to "/repo-name" if using a project page
+
+theme: minima
+
+plugins:
+  - jemoji
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-redirect-from
+  - jekyll-paginate
+
+paginate: 5
+paginate_path: "/page:num/"
+
+minima:
+  skin: auto  # classic, dark, auto
+  social_links:
+    github: yourusername
+    twitter: yourhandle
+    linkedin: yourhandle
+    mastodon:
+      - username: yourname
+        instance: mastodon.social
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+      search: true
+
+permalink: /:categories/:year/:month/:title/
+
+collections:
+  docs:
+    output: true
+    permalink: /docs/:path/
+
+# Optional: exclude junk
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - README.md
+  - LICENSE
+
+# For GitHub Pages builds (if needed)
+github:
+  is_project_page: false
+
