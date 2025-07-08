@@ -1,44 +1,7 @@
-title: My Cool Jekyll Site
-description: >-
-  A custom Jekyll site with useful features and no default theme.
-url: "https://yourusername.github.io"
-baseurl: ""  # "/repo-name" if using GitHub project pages
-
-markdown: kramdown
-kramdown:
-  input: GFM
-  hard_wrap: false
-  syntax_highlighter: rouge
-
-permalink: /:categories/:year/:month/:title/
-
 plugins:
   - jemoji              # GitHub-style emoji
-  - jekyll-feed         # Atom feed at /feed.xml
-  - jekyll-seo-tag      # SEO metadata
-  - jekyll-sitemap      # Sitemap at /sitemap.xml
-  - jekyll-redirect-from # Redirect old URLs
-  - jekyll-paginate     # Pagination
 
 paginate: 5
 paginate_path: "/page:num/"
 
-collections:
-  docs:
-    output: true
-    permalink: /docs/:path/
 
-defaults:
-  - scope:
-      path: ""
-    values:
-      layout: default
-      search: true
-
-exclude:
-  - Gemfile
-  - Gemfile.lock
-  - node_modules
-  - vendor
-  - README.md
-  - LICENSE
