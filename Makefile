@@ -29,6 +29,10 @@ push: ## commit to main
 sh: ## run my shell
 	Top=$(Top) bash --init-file $(Top)/etc/init.sh -i
 
+md:
+	gawk -F, -f $(Top)/etc/xpand.awk ezr.py ezr.md
+
+
 %.md: ## include source code
 	gawk -f $(Top)/etc/include.awk $< > .tmp && mv .tmp $@
 
@@ -68,6 +72,8 @@ dist   :; $T eg_dist.py  --dist    ## demo incremetal dist
 kpp    :; $T eg_dist.py  --kpp     ## demo diversity sampling with kpp
 fmap   :; $T eg_landscape.py --fastmap ## demo fastmap
 tree   :; $T eg_tree.py --tree     ## tree demo
-stats  :; $T eg_stats.py --stats
 rank   :; $T eg_stats.py --rank
 rank2  :; $T eg_stats.py --rank2
+
+stats: $(Top)/../moot/optimize/[hmpbc]*/*.csv
+	$(foreach f, $^, gawk -f $(Top)/etc/stats.awk $f;)

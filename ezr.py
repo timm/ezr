@@ -14,7 +14,7 @@ Options, with (defaults):
 
 Bayes:
   -k   k          : bayes hack for rare classes (1)
-  -m   m          : bayes hack for rare attributes (2)
+  -m   m          : bayes hack for rare attributes (1)
 
 Active learning:
   -a   acq        : xploit or xplore or adapt (xploit)  
@@ -120,6 +120,10 @@ Max_spout,  hashing,  Spliters,  Counters,  Throughput+,  Latency-
 1000     ,  off    ,  2       ,  1       ,  8666.8     ,  1239.5  
 """
 #------------------------------------------------------------------
+#  ____ ___ ____ _  _ ____ ___ ____ 
+#  [__   |  |__/ |  | |     |  [__  
+#  ___]  |  |  \ |__| |___  |  ___] 
+                                 
 class Summary(o): pass
 
 #----------------
@@ -179,6 +183,10 @@ def _col(at,name,cols):
   return col 
 
 #------------------------------------------------------------------
+# _  _ ___  ___  ____ ___ ____ 
+# |  | |__] |  \ |__|  |  |___ 
+# |__| |    |__/ |  |  |  |___ 
+                             
 _last = None
 def of(fn=None, doc=None):
   """Make fn a method of the class of the first arg. This lets me
@@ -228,7 +236,11 @@ def _add(i:Data,row,inc,zap):
   elif zap   : i._rows.remove(row) # slow for large lists
   for col in i.cols.all: col.add(row[col.at], inc)
 
-#-----------------------
+#-----------------------------------------------------------------------
+# ____ _  _ ____ ____ _   _ 
+# |  | |  | |___ |__/  \_/  
+# |_\| |__| |___ |  \   |   
+                          
 @of("Central tendancy.")
 def mid(i:Num) : return i.mu
 
@@ -251,6 +263,10 @@ def spread(i:Sym):
 def spread(i:Data): return [c.spread() for c in i.cols.all]
 
 #-------------------------------------------------------------------
+# ___  _ ____ ___ ____ _  _ ____ ____ 
+# |  \ | [__   |  |__| |\ | |    |___ 
+# |__/ | ___]  |  |  | | \| |___ |___ 
+                                    
 @of("Distance between numeric or symbolic atoms.")
 
 def _dist(vs):
@@ -291,23 +307,28 @@ def ydists(i:Data, rows=None):
   return sorted(rows or i._rows, key=lambda row: i.ydist(row))
 
 #-------------------------------------------------------------------
+# ____ _    _  _ ____ ___ ____ ____ 
+# |    |    |  | [__   |  |___ |__/ 
+# |___ |___ |__| ___]  |  |___ |  \ 
+                                  
 @of("Move centroids to mid of their nearest neighbors. Repeat.")
-def kmeans(i:Data, rows, centroids, n=10):
-  errs = []
-  for _ in range(n):
+def kmeans(i:Data, rows, centroids=None, k=10, repeats=10, eps=0.01):
+  errs, centroids = [], centroids or rows[:k]
+  for j in range(repeats):
     new, err = {}, 0
-    for row in rows:
+    for row in shuffle(rows):
       c = min(centroids, key=lambda z: i.xdist(z, row))
       now = new[id(c)] = new.get(id(c)) or i.clone()
       now.add(row)
       err += i.xdist(row, c)
     errs += [err / len(rows)]
     centroids = [new[k].mid() for k in new]
+    if j> 0 and abs(errs[-1] - errs[-2]) < eps: break 
   return centroids, errs
 
 @of("Find k centroids d**2 away from existing centoids.")
-def kpp(i:Data, k=None, rows=None):
-  row, *rows = shuffle(rows or i._rows)[:the.Few]
+def kpp(i:Data, rows, k=None):
+  row, *rows = shuffle(rows)
   out = [row]
   while len(out) < (k or the.Build):
      ws = [min(i.xdist(r, c)**2 for c in out) for r in rows]
@@ -315,15 +336,15 @@ def kpp(i:Data, k=None, rows=None):
   return out
 
 @of("Project data. Discard the least promising half. Repeat.")
-def sway(i:Data):
-  done, todo = [], shuffle(i._rows)[:the.Few]
+def sway(i:Data,rows):
+  done, todo = [], shuffle(rows)
   while len(done) <= the.Build - 2:
     a, *todo, b = i.fastmap(todo)
     done += [a,b]
     n     = len(todo)//2
     todo  = todo[:n] if i.ydist(a) < i.ydist(b) else todo[n:]
     if len(todo) < 2: 
-      todo = [x for x in shuffle(i._rows) if x not in done]
+      todo = [x for x in shuffle(rows) if x not in done]
   return o(done=i.ydists(done), todo=todo)
 
 @of("Project rows along a line between 2 distant points")
@@ -338,6 +359,112 @@ def fastmap(i:Data, rows):
   return sorted(rows, key = lambda r: cosine(D(r,a), D(r,b)))
 
 #-----------------------------------------------------------------
+# ___  ____ _   _ ____ ____ 
+# |__] |__|  \_/  |___ [__  
+# |__] |  |   |   |___ ___] 
+                          
+@of("How probable is it that `v` belongs to a column?")
+def pdf(i:Sym,s, prior=0):
+  return (i.has.get(s,0) + the.m*prior) / (i.n + the.m + 1/BIG)
+
+@of
+def pdf(i:Num,v,_):
+  sd  = i.sd or 1 / BIG
+  var = 2 * sd * sd
+  z   = (v - i.mu) ** 2 / var
+  return min(1, max(0, math.exp(-z) / (2 * math.pi * var) ** 0.5))
+
+@of("Report how much `data` like `row`.")
+def like(i:Data, row, nall=2, nh=100):
+  prior = (i.n + the.k) / (nall + the.k*nh)
+  tmp = [c.pdf(row[c.at],prior) 
+         for c in i.cols.x if row[c.at] != "?"]
+  return sum(math.log(n) for n in tmp + [prior] if n>0)    
+
+@of("What `data` in `datas` lines `row` the most?")
+def likes(datas, row):
+  "Return the `data` in `datas` that likes `row` the most."
+  n = sum(data.n for data in datas)
+  return max(datas, key=lambda data:data.like(row,n,len(datas)))
+
+
+@of("Seperate rows, 1 `data` per class. Classify, via those datas.")
+def nbc(i:Data,era=100):
+  log,datas = None,{}
+  for _ in range(5):
+    shuffle(i._rows)
+    for j in range(5):
+  for n,row in enumerate(shuffle(i._rows)):
+    want = row[i.cols.klass.at]
+    if n>5:
+      got = likes(datas.values(), row).txt
+      log = abcds(want,got,log)
+      if n % era == 0: 
+         [print(n,k,s.pd, s.pf, s.acc) for k,s in log.stats.items()]
+    now = datas[want] = datas.get(want) or i.clone()
+    now.txt = want
+    now.add(row)
+  return log
+
+@of("Split rows to best,rest. Label row that's e.g. max best/rest.")
+# def acquires(i:Data,rows):
+#   def _guess(row):
+#     b,r = like(best,row,n,2), like(rest,row,n,2)
+#     p   = n/the.Build
+#     b,r = math.e**b, math.e**r
+#     q   = 0 if the.acq=="xploit" else (1 if the.acq=="xplor" else 1-p)
+#     return (b + r*q) / bs(b*q - r + 1/BIG)
+#
+#   random.shuffle(rows)
+#   n         = the.Assume
+#   todo      = i._rows[n:]
+#   bestrest  = i.clone(rows[:n])
+#   done      = i.ydists(bestrest)
+#   cut       = round(n**the.Guess)
+#   best      = i.clone(done[:cut])
+#   rest      = i.clone(done[cut:])
+#   while len(todo) > 2 and n < the.Build:
+#     n      += 1
+#     hi, *lo = sorted(todo[:the.Few*2], 
+#                     key=_guess, reverse=True)
+#     todo    = lo[:the.Few] + todo[the.Few*2:] + lo[the.Few:]
+#     bestrest.add(best.add(hi))
+#     best._rows = bestrest.ydists()
+#     if len(best._rows) >= round(n**the.Guess):
+#       rest( best.sub( best._rows.pop(-1))) 
+#   return o(best=best, rest=rest, test=todo)
+
+def acquires(i:Data, rows):
+  def _guess(row):
+    b, r = like(best, row, n, 2), like(rest, row, n, 2)
+    p    = n / the.Build
+    b, r = math.e**b, math.e**r
+    q    = {"xploit": 0, "xplor": 1}.get(the.acq, 1 - p)
+    return (b + r*q) / abs(b*q - r + 1/BIG)
+
+  random.shuffle(rows)
+  n    = the.Assume
+  cut  = round(n**the.Guess) # [done = best + rest] + todo
+  todo = i._rows[n:]        
+  done = i.ydists(rows[:n])
+  best = i.clone(done[:cut])
+  rest = i.clone(done[cut:])
+  all  = i.clone(done)
+  while len(todo) > 2 and n < the.Build:
+    n     += 1
+    hi,*lo = sorted(todo[:the.Few*2], key=_guess, reverse=True)
+    todo   = lo[:the.Few] + todo[the.Few*2:] + lo[the.Few:]
+    all.add( best.add(hi))
+    best._rows = all.ydists(best._rows)
+    if len(best._rows) >= cut:
+      rest.add( best.sub( best._rows.pop(-1)))
+  return o(best=best, rest=rest, test=todo)
+
+#-----------------------------------------------------------------
+# ___ ____ ____ ____ 
+#  |  |__/ |___ |___ 
+#  |  |  \ |___ |___ 
+                   
 ops = {'<=' : lambda x,y: x <= y,
        "==" : lambda x,y: x == y,
        '>'  : lambda x,y: x >  y}
@@ -437,24 +564,46 @@ def showTree(i:Data, key=lambda d: d.ys.mu):
 #   print(', '.join(sorted([data.cols.names[at] for at in ats])))
 #
 #-----------------------------------------------------------------
+# ____ ___ ____ ___ ____ 
+# [__   |  |__|  |  [__  
+# ___]  |  |  |  |  ___] 
+                       
 class Abcd:
-  def __init__(i, a=0): i.a, i.b, i.c, i.d = a, 0, 0, 0
+  def __init__(i,kl="-",a=0): 
+    i.a,i.txt = a,kl
+    i.b = i.c = i.d = 0
   def add(i, want, got, x):
     if x == want:   i.d += (got == want); i.b += (got != want)
     else:           i.c += (got == x);    i.a += (got != x)
-    p = lambda y, z: int(100 * y / (z or 1e-32))
+  def ready(i):
+    p      = lambda y, z: int(100 * y / (z or 1e-32))
     i.pd   = p(i.d,       i.d + i.b)
     i.pf   = p(i.c,       i.c + i.a)
     i.prec = p(i.d,       i.d + i.c)
     i.acc  = p(i.d + i.a, i.a + i.b + i.c + i.d)
+    return i
+
+def abcdReady(state):
+  for abcd in state.stats.values(): abcd.ready()
+  return state
+
+def abcdWeighted(state):
+  out = Abcd()
+  for abcd in state.stats.values():
+    w = (abcd.b + abcd.d)/state.n
+    out.a += abcd.a*w
+    out.b += abcd.b*w
+    out.c += abcd.c*w
+    out.d += abcd.d*w
+  return out.ready()
 
 def abcds(want, got, state=None):
-  state = state or o(stats={}, total=0)
+  state = state or o(stats={},  n=0)
   for L in (want, got):
-    state.stats[L] = state.stats.get(L) or Abcd(state.total)
+    state.stats[L] = state.stats.get(L) or Abcd(L,state.n)
   for x, s in state.stats.items():
     s.add(want, got, x)
-  state.total += 1
+  state.n += 1
   return state
 
 def same(a, b): 
@@ -529,6 +678,10 @@ def sk(rxs, same, eps=0, reverse=False):
   return [num for num, _ in nums]
 
 #-----------------------------------------------------------------
+#  _    _ ___  
+# |    | |__] 
+# |___ | |__] 
+            
 def fyi(*l): print(*l,end="", flush=True)
 
 def atom(x):
@@ -544,9 +697,12 @@ def shuffle(lst):
   return lst
 
 def csv(src):
+  want = None
   for line in src:
     if line:
-      yield [atom(x) for x in line.strip().split(',')]
+      cells= [atom(x) for x in line.strip().split(',')]
+      want = want or len(cells)
+      if want==len(cells): yield cells
 
 lines=lambda s: (line for line in s.splitlines())
 
@@ -567,12 +723,28 @@ def see(v):
   if it is list  : return "{" + ", ".join(map(see, v)) + "}"
   return str(v)
 
-def _cOk(k) : return not (isa(k,str) and k[0] == "_")
-def _cD(v): return see([f":{k} {see(v[k])}" for k in v if _cOk(k)])
-def _cF(v): return str(int(v)) if v==int(v) else f"{v:.{the.Rnd}g}"
+def _cOk(k): return not (isa(k,str) and k[0] == "_")
+def _cD(v) : return see([f":{k} {see(v[k])}" for k in v if _cOk(k)])
+def _cF(v) : return str(int(v)) if v==int(v) else f"{v:.{the.Rnd}g}"
 
+def xval(rows, fn, m=5, n=5):
+  r=0
+  for _ in range(m):
+    random.shuffle(rows)
+    for k in range(n):
+      fold = len(rows) // n
+      lo, hi = k * fold, (k + 1) * fold
+      train, test = [], []
+      for j, row in enumerate(rows):
+        (test if lo <= j < hi else train).append(row)
+      r += 1
+      fn(r,train, test)
 #--------------------------------------------------------------------
-def cli(d):
+#  _  _ ____ _ _  _ 
+#  |\/| |__| | |\ | 
+#  |  | |  | | | \| 
+                 
+def cli(d): 
   "for d slot xxx, update its value from CLO flag -x"
   for k, v in d.items():
     for c, arg in enumerate(sys.argv):
@@ -584,7 +756,7 @@ def cli(d):
 def run(fn,x=None):
   "Before test, reset seed. After test, print any assert errors"
   try:  
-    print("\n# "+(fn.__doc__ or fn.__name__))
+    print("#"+(fn.__doc__ or fn.__name__))
     random.seed(the.rseed)
     fn(x)
   except Exception as _:

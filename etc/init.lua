@@ -261,12 +261,8 @@ vim.api.nvim_create_autocmd("VimEnter", {
   end,
 })
 
--- Auto-quit when nvim-tree is the last window
-vim.api.nvim_create_autocmd("BufEnter", {
-  callback = function()
-    local view = require("nvim-tree.view")
-    if #vim.api.nvim_list_wins() == 1 and view.is_visible() then
-      vim.cmd("quit")
-    end
-  end,
-})
+vim.g.markdown_fenced_languages = {
+  "python", "lua", "bash", "json", "yaml", "javascript"
+}
+
+
