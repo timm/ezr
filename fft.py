@@ -1,33 +1,38 @@
+import random
 from types import SimpleNamespace as o
 
-the = o(p=2, seed=1234567890, Projections=16)
+#Sym = dict
+#Num =,tuple (lo,hi)
+BIG  = 1e32
+the  = o(p=2, seed=1234567890, Projections=16)
 
-Sym,Num = dict,tuple
+def Data(src):
+  head, *row = list(src)
+  data  = _data(head, rows)
+  poles = projections(data)
+  for row in rows: [score(data,row,poles)
+  return data
 
-def Data(names,*rows):
+def _data(name,rows):
   w,x,y,all = {},{},{},{}
   for c, s in enumerate(names):
-    col = _data(c, rows, s[0].islower())
+    col = _col(c, rows, s[0].islower())
     all[c] = col
     if s[-1] != "X":
       w[c] = s[-1] == "+"
-      (y if s[-1] in "!+-" else x)[c] = col
+      (y if s[-1] in "!+-" else x)[c] = col 
   return o(rows=rows, cols=o(names=names, w=w, x=x, y=y, all=all))
 
-def _data(c, rows, isSym=True):
-  lo,hi,mu,n,m2 = 1e32,-1e32,0,0,0
-  counts = {}
+def _col(c, rows, is_sym=True):
+  counts, lo, hi = {}, BIG, -BIG
   for row in rows:
     if (v:=row[c]) != "?": 
-      if isSym: counts[v] = counts.get(v,0) + 1
+      if is_sym: 
+        counts[v] = 1 + counts.get(v,0)
       else : 
-        v   = row[c] = float(v)
-        n  += 1
-        d   = v - mu
-        mu += d / n
-        m2 += d * (v -mu)
+        v = row[c] = float(v)
         lo, hi = min(v,lo), max(v,hi)
-  return counts if isSym else (lo, hi, mu, (m2/(n-1))**.5)
+  return counts if isSym else (lo, hi)
 
 #------------------------------------------------------------------------------
 def minkowski(src):
@@ -52,13 +57,13 @@ def _xdist(col, a,b):
   return abs(a-b)
 
 def norm(x,lo,hi,*_): 
-  return 0 if x == "?" else (x - lo) / (hi - lo + 1e-32)
+  return (x - lo) / (hi - lo + 1/BIG)
 
 def cosine(data,row,best,rest,c):
   a,b = xdist(data, row, best), xdist(data, row, rest)
-  return (a*a + c*c - b*b)/(2*c + 1e-32)
+  return (a*a + c*c - b*b)/(2*c + 1/BIG)
 
-def goods(data,row,poles):
+def score(data,row,poles):
   row[-1] = sum(cosine(data,row,*pole) < 0.5 for pole in poles)/len(poles)
 
 def projections(data):
@@ -140,8 +145,8 @@ def eg__one():
   best  = max(trees, key=lambda t: S([predict(t, r) for r in data[1:]]))
   preds = [predict(best, r) for r in data[1:]]
 
-def cli(d, lst):
-  for i,arg in enumerate(sys.argv): flag(*it)
+def cli(d):
+  for i,arg in enumerate(sys.argv): 
     if (fn := globals().get(f"eg{arg.replace('-', '_')}")):
       random.seed(d['seed'])
       fn()
