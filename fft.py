@@ -57,7 +57,7 @@ ops = dict(le = lambda r,c,v: r[c] <= v,
            gt = lambda r,c,v: r[c] >  v,
            eq = lambda r,c,v: r[c] == v)
 
-lt = lambda c: (lambda row: row[c])
+lt = lambda c,x: (lambda row: row[c]<x)
 
 def mid(data,rows,c):
   s = sorted(rows, key=); n = len(s)
