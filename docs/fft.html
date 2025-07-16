@@ -35,9 +35,9 @@
 
 <span class="n">Sym</span> <span class="o">=</span> <span class="nb">dict</span>
 <span class="n">Num</span> <span class="o">=</span> <span class="nb">tuple</span> <span class="c1">#(lo,hi)</span>
-<span class="n">BIG</span>  <span class="o">=</span> <span class="mf">1e32</span>
-<span class="n">the</span>  <span class="o">=</span> <span class="n">o</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1234567890</span><span class="p">,</span> <span class="n">Projections</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-         <span class="n">file</span><span class="o">=</span><span class="s2">&quot;../moot/optimize/misc/auto93.csv&quot;</span><span class="p">)</span></pre></div>
+<span class="n">BIG</span> <span class="o">=</span> <span class="mf">1e32</span>
+<span class="n">the</span> <span class="o">=</span> <span class="n">o</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1234567890</span><span class="p">,</span> <span class="n">Projections</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+        <span class="n">file</span><span class="o">=</span><span class="s2">&quot;../moot/optimize/misc/auto93.csv&quot;</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -123,8 +123,8 @@
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">ydist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">row</span><span class="p">):</span>
-  <span class="k">return</span> <span class="n">minkowski</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="o">*</span><span class="n">col</span><span class="p">)</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">w</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> 
-                   <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">col</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">items</span><span class="p">())</span></pre></div>
+  <span class="k">return</span> <span class="n">minkowski</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">y</span><span class="p">],</span> <span class="o">*</span><span class="n">col</span><span class="p">)</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">w</span><span class="p">[</span><span class="n">y</span><span class="p">])</span> 
+                   <span class="k">for</span> <span class="n">y</span><span class="p">,</span><span class="n">col</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">items</span><span class="p">())</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -137,8 +137,8 @@
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">xdist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">row1</span><span class="p">,</span> <span class="n">row2</span><span class="p">):</span>
-  <span class="k">return</span> <span class="n">minkowski</span><span class="p">(</span><span class="n">_xdist</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">row1</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">row2</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> 
-                   <span class="k">for</span> <span class="n">c</span><span class="p">,</span><span class="n">col</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">())</span></pre></div>
+  <span class="k">return</span> <span class="n">minkowski</span><span class="p">(</span><span class="n">_xdist</span><span class="p">(</span><span class="n">row1</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">row2</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">col</span><span class="p">)</span> 
+                   <span class="k">for</span> <span class="n">x</span><span class="p">,</span><span class="n">col</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">())</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -150,13 +150,13 @@
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">_xdist</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
-  <span class="k">if</span> <span class="n">a</span><span class="o">==</span><span class="n">b</span><span class="o">==</span><span class="s2">&quot;?&quot;</span><span class="p">:</span> <span class="k">return</span> <span class="mi">1</span>
-  <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Sym</span><span class="p">:</span> <span class="k">return</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">b</span>
-  <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="o">*</span><span class="n">col</span><span class="p">),</span> <span class="n">norm</span><span class="p">(</span><span class="n">b</span><span class="p">,</span><span class="o">*</span><span class="n">col</span><span class="p">)</span>
-  <span class="n">a</span> <span class="o">=</span> <span class="n">a</span> <span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">b</span><span class="o">&gt;</span><span class="mf">0.5</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
-  <span class="n">b</span> <span class="o">=</span> <span class="n">b</span> <span class="k">if</span> <span class="n">b</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">a</span><span class="o">&gt;</span><span class="mf">0.5</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
-  <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">b</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">_xdist</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">col</span><span class="p">):</span>
+  <span class="k">if</span> <span class="n">x1</span><span class="o">==</span><span class="n">x2</span><span class="o">==</span><span class="s2">&quot;?&quot;</span><span class="p">:</span> <span class="k">return</span> <span class="mi">1</span>
+  <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Sym</span><span class="p">:</span> <span class="k">return</span> <span class="n">x1</span> <span class="o">!=</span> <span class="n">x2</span>
+  <span class="n">x1</span><span class="p">,</span><span class="n">x2</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span><span class="o">*</span><span class="n">col</span><span class="p">),</span> <span class="n">norm</span><span class="p">(</span><span class="n">x2</span><span class="p">,</span><span class="o">*</span><span class="n">col</span><span class="p">)</span>
+  <span class="n">x1</span>    <span class="o">=</span> <span class="n">x1</span> <span class="k">if</span> <span class="n">x1</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">x2</span><span class="o">&gt;</span><span class="mf">0.5</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="n">x2</span>    <span class="o">=</span> <span class="n">x2</span> <span class="k">if</span> <span class="n">x2</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">x1</span><span class="o">&gt;</span><span class="mf">0.5</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x1</span><span class="o">-</span><span class="n">x2</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>

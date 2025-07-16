@@ -58,7 +58,7 @@ def _xdist(x1, x2, col):
   x2    = x2 if x2 != "?" else (0 if x1>0.5 else 1)
   return abs(x1-x2)
 
-def norm(x,lo,hi,*_): 
+def norm(x,lo,hi): 
   return (x - lo) / (hi - lo + 1/BIG)
 
 def cosine(data,row,best,rest,c):
