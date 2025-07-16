@@ -1,19 +1,21 @@
-import random
+#!/usr/bin/env python3 -B
+import random, sys
 from types import SimpleNamespace as o
 
-#Sym = dict
-#Num =,tuple (lo,hi)
+Sym = dict
+Num = tuple #(lo,hi)
 BIG  = 1e32
-the  = o(p=2, seed=1234567890, Projections=16)
+the  = o(p=2, seed=1234567890, Projections=8,
+         file="../moot/optimize/misc/auto93.csv")
 
 def Data(src):
-  head, *row = list(src)
+  head, *rows = list(src)
   data  = _data(head, rows)
   poles = projections(data)
-  for row in rows: [score(data,row,poles)
+  for row in rows: score(data,row,poles)
   return data
 
-def _data(name,rows):
+def _data(names,rows):
   w,x,y,all = {},{},{},{}
   for c, s in enumerate(names):
     col = _col(c, rows, s[0].islower())
@@ -32,7 +34,7 @@ def _col(c, rows, is_sym=True):
       else : 
         v = row[c] = float(v)
         lo, hi = min(v,lo), max(v,hi)
-  return counts if isSym else (lo, hi)
+  return counts if is_sym else (lo, hi)
 
 #------------------------------------------------------------------------------
 def minkowski(src):
@@ -64,7 +66,7 @@ def cosine(data,row,best,rest,c):
   return (a*a + c*c - b*b)/(2*c + 1/BIG)
 
 def score(data,row,poles):
-  row[-1] = sum(cosine(data,row,*pole) < 0.5 for pole in poles)/len(poles)
+  row[-1] = sum(cosine(data,row,*pole) < 0.1 for pole in poles)/len(poles)
 
 def projections(data):
   poles = []
@@ -133,6 +135,19 @@ def csv(file):
         suffix = "scoreX" if n==0 else 0
         yield [s.strip() for s in line.split(",")] + [suffix]
 
+r3=lambda n:round(n,3)
+
+def eg__the(): print(the)
+def eg__xdata(): 
+  data = Data(csv(the.file))
+  print(sorted([r3(xdist(data,r,data.rows[0])) for r in data.rows])[::10])
+  print(sorted([r3(ydist(data,r)) for r in data.rows])[::10])
+
+def eg__data(): 
+  data = Data(csv(the.file))
+  for x,y in sorted([(r3(row[-1]),r3(ydist(data,row))) for row in data.rows]):
+      print(x,y)
+
 def eg__one():
   S = lambda rows: len(rows)
   data = [
@@ -153,8 +168,8 @@ def cli(d):
     else:
       for k,b4 in d.items():
         if arg == "-"+k[0]: 
-          new = b4==True and "False" or b4==False and "True" or sys.argv[n+1]
-          d[k] = type(old)(new)
+          new = b4==True and "False" or b4==False and "True" or sys.argv[i+1]
+          d[k] = type(b4)(new)
    
 random.seed(the.seed)
 if __name__=="__main__": 
