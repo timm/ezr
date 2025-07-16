@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+DATA=../../../moot/optimize
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+for f in $DATA/c*/*.csv  $DATA/h*/*.csv  $DATA/m*/*.csv $DATA/be*/*.csv $DATA/r*/*.csv  $DATA/binary_config/*.csv; do
+  echo $f
+  python3 -B "$DIR/../ezr.py" -B 32 -f "$f" --tree 
+done

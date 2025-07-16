@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Usage: 
+#   req1 report ==> sumamrzes results
+#   rq1         ==> regenerates results, then summarizes
+
+DATA=../../../moot/optimize
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+out="$HOME/tmp/$(basename "$0")"
+tmp=/tmp/rq1
+
+generates() {
+  #generate 16 $DATA/c*/*.csv
+  #generate 16 $DATA/h*/*.csv
+  #generate 16 $DATA/m*/*.csv
+  generate 1  $DATA/binary_config/*.csv  # Heavy group
+}
+
+generate() {
+  local max_jobs=$1; shift
+
+  for f in "$@"; do
+    name="$(basename "$f" .csv)"
+    echo "Running: $name" >&2
+    out_file="$tmp/$name.csv"
+
+    python3 -B "$DIR/../ezr.py" -f "$f" --rq1 > "$out_file" &
+
+    while (( $(jobs -r | wc -l) >= max_jobs )); do
+      sleep 1
+    done
+  done
+
+  wait
+}
+
+if [ $# -eq 0 ]; then
+   mkdir -p $tmp
+   rm -f $tmp/*
+   generates
+fi
+
+cat "$tmp"/*.csv > "$out"
+(cat "$out" | gawk -F, '{ print $(NF), $0 }' | sort -n -k1,1 | cut -d' ' -f2- 
+cat "$out" | gawk -F, -f $DIR/rq1.awk ) | column -s, -t | grep --color A
+

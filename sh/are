@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+## help sh/are : : save (push) to github
+SHOUT="\033[1;34m"
+QUIET="\033[0m"
+echo -en "${SHOUT}Why this push? ${QUIET}" 
+read x ; git commit -am "$x" ;  git push
+git status

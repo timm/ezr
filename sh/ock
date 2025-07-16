@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+## help sh/ock : : offer a startfling research result
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo tbd
+
