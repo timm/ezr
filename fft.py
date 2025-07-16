@@ -4,9 +4,9 @@ from types import SimpleNamespace as o
 
 Sym = dict
 Num = tuple #(lo,hi)
-BIG  = 1e32
-the  = o(p=2, seed=1234567890, Projections=8,
-         file="../moot/optimize/misc/auto93.csv")
+BIG = 1e32
+the = o(p=2, seed=1234567890, Projections=8,
+        file="../moot/optimize/misc/auto93.csv")
 
 def Data(src):
   head, *rows = list(src)
@@ -43,20 +43,20 @@ def minkowski(src):
   return (d/n) ** (1/the.p)
 
 def ydist(data,row):
-  return minkowski(abs(norm(row[c], *col) - data.cols.w[c]) 
-                   for c,col in data.cols.y.items())
+  return minkowski(abs(norm(row[y], *col) - data.cols.w[y]) 
+                   for y,col in data.cols.y.items())
 
 def xdist(data, row1, row2):
-  return minkowski(_xdist(col, row1[c], row2[c]) 
-                   for c,col in data.cols.x.items())
+  return minkowski(_xdist(row1[x], row2[x], col) 
+                   for x,col in data.cols.x.items())
    
-def _xdist(col, a,b):
-  if a==b=="?": return 1
-  if type(col) is Sym: return a != b
-  a,b = norm(a,*col), norm(b,*col)
-  a = a if a != "?" else (0 if b>0.5 else 1)
-  b = b if b != "?" else (0 if a>0.5 else 1)
-  return abs(a-b)
+def _xdist(x1, x2, col):
+  if x1==x2=="?": return 1
+  if type(col) is Sym: return x1 != x2
+  x1,x2 = norm(x1,*col), norm(x2,*col)
+  x1    = x1 if x1 != "?" else (0 if x2>0.5 else 1)
+  x2    = x2 if x2 != "?" else (0 if x1>0.5 else 1)
+  return abs(x1-x2)
 
 def norm(x,lo,hi,*_): 
   return (x - lo) / (hi - lo + 1/BIG)
@@ -65,8 +65,13 @@ def cosine(data,row,best,rest,c):
   a,b = xdist(data, row, best), xdist(data, row, rest)
   return (a*a + c*c - b*b)/(2*c + 1/BIG)
 
+def interpolate(data,row,best,rest,c):
+  x = cosine(data,row,best,rest,c) 
+  y1,y2 = ydist(data,best), ydist(data,rest)
+  return y1 + x/c * (y2-y1) 
+
 def score(data,row,poles):
-  row[-1] = sum(cosine(data,row,*pole) < 0.1 for pole in poles)/len(poles)
+  row[-1] = sum(interpolate(data,row,*pole) for pole in poles)/len(poles)
 
 def projections(data):
   poles = []
@@ -144,9 +149,20 @@ def eg__xdata():
   print(sorted([r3(ydist(data,r)) for r in data.rows])[::10])
 
 def eg__data(): 
-  data = Data(csv(the.file))
-  for x,y in sorted([(r3(row[-1]),r3(ydist(data,row))) for row in data.rows]):
-      print(x,y)
+  for p in [1,2,4,8]:
+    the.Projections = p
+    data = Data(csv(the.file))
+    #for x,y in sorted([(row[-1],ydist(data,row)) for row in data.rows]): print(x,y)
+    gy = [(row[-1],ydist(data,row)) for row in data.rows]
+    r=0
+    for _ in range(1000):
+      a =random.choice(gy)
+      b =random.choice(gy)
+      if a[0] > b[0]: a,b=b,a
+      r += a[1] < b[1]
+    print(f"{r/1000:.2f} ", end="",flush=True)
+  print(the.file)
+
 
 def eg__one():
   S = lambda rows: len(rows)
