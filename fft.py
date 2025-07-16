@@ -1,20 +1,22 @@
 from types import SimpleNamespace as o
 
 the = o(p=2)
-Sym, Num = dict, tuple
 
-def Col(c, rows, nump=True):
-  d, lo, hi, d = {}, 1e32, -1e32
+Sym,Num = dict,tuple
+
+def Col(c, rows, isSym=True):
+  d, lo, hi= {}, 1e32, -1e32
   for row in rows:
     if (v:=row[c]) != "?": 
-      if nump : lo, hi = min(v,lo), max(v,hi) 
-      else    : d[v] = d.get(v,0) + 1
-  return (lo,hi) if nump else d 
+      if isSym: d[v] = d.get(v,0) + 1
+      else : v = row[c] = float(v)
+             lo, hi = min(v,lo), max(v,hi) 
+  return d if isSym else (lo,hi)
 
 def Data(names,*rows):
   w,x,y,all = {},{},{},{}
   for c, s in enumerate(names):
-    new = Col(c, rows, s[0].isupper())
+    new = Col(c, rows, s[0].islower())
     all[c] = new
     if s[-1] != "X":
       w[c] = s[-1] == "+"
@@ -105,14 +107,8 @@ def csv(file):
   with open(file,encoding="utf-8") as f:
     for line in f:
       if (line := line.split("%")[0]):
-        yield [coerce(val.strip()) for val in line.split(",")]
+        yield [s.strip() for s in line.split(",")]
 
-def coerce(s):
-  for fn in [int,float]:
-    try: return fn(s)
-    except Exception as _: pass
-  s = s.strip()
-  return {'True':True,'False':False}.get(s,s)
 
 S = lambda rows: len(rows)
 data = [
