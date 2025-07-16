@@ -1,785 +1,727 @@
 #!/usr/bin/env python3 -B
+#
+#      ___  ____   _____       ____    __  __
+#     / _ \/_  /  / ___/      / __ \  / / / /
+#    /  __/ / /_ / /     _   / /_/ / / /_/ / 
+#    \___/ /___//_/     (_) / .___/  \__, /  
+
 """
-n2m.py: tiny AI. multi objective, explainable, AI
-(c) 2025 Tim Menzies, <timm@ieee.org>. MIT license
+ezr.py, multi objective.
+(col) 2025, Tim Menzies <timm@ieee.org>, MIT license
 
-Options, with (defaults):
+ -a  act=xploit      (xplor | xploit | adapt | klass)
+ -A  Any=4           on init, how many initial guesses?
+ -B  Build=24        when growing theory, how many labels?
+ -C  Check=5         when testing, how many checks?
+ -D  Delta=smed     required effect size test for cliff's delta
+ -F  Few=128         just explore a Few rows
+ -g  guess=0.5       |hot| is |lit|**guess
+ -K  Ks=0.95         confidence for Kolmogorov–Smirnov test
+ -k  k=1             Bayes hack for rare classes
+ -l  leaf=2          nodes in tree leaves
+ -m  m=2             Bayes hack for rare attributes
+ -p  p=2             distance calculation coefficient
+ -s  seed=1234567891 random number seed
+ -f  file=../moot/optimize/misc/auto93.csv
+                     path to CSV file
 
-  -f   file       : data name (../../moot/optimize/misc/auto93.csv)
-  -r   rseed      : set random number rseed (123456781)
-  -R   Rnd        : round floats in pretty print (2)
-  -F   Few        : a few rows to explore (512)
-  -l   leaf       : tree learning: min leaf size (2)
-  -p   p          : distance calcs: set Minkowski coefficient (2)
-
-Bayes:
-  -k   k          : bayes hack for rare classes (1)
-  -m   m          : bayes hack for rare attributes (1)
-
-Active learning:
-  -a   acq        : xploit or xplore or adapt (xploit)  
-  -A   Assume     : on init, how many initial guesses? (4)
-  -B   Build      : when growing theory, how many labels? (20)
-  -C   Check      : when testing, how many checks? (5)
-
-Stats:
-  -S   Signif     : significance threshold (0.95)
-  -b   bootstrap  : num. bootstrap samples (512)
-  -C   Cliffs     : effect size threshold (0.197)
- """
-
-import traceback,random,math,sys,re
-sys.dont_write_bytecode = True 
-
-BIG=1E32
-isa=isinstance
-
-class o:
-  "Mutatable struct. Named slots. Dot slot access. With pretty print."
-  __init__ = lambda i, **d: i.__dict__.update(**d)
-  __repr__ = lambda i: see(i.__dict__)
-
-# Sample data ----------------------------------------------------------------
-
-EXAMPLE="""
-Max_spout,  hashing,  Spliters,  Counters,  Throughput+,  Latency-
-100      ,  off    ,  2       ,  12      ,  26373      ,  40.169  
-100      ,  on     ,  2       ,  15      ,  25948      ,  46.001  
-100      ,  off    ,  2       ,  18      ,  25565      ,  39.447  
-100      ,  off    ,  6       ,  12      ,  24892      ,  41.478  
-1000     ,  off    ,  2       ,  12      ,  32399      ,  332.68  
-100      ,  on     ,  6       ,  15      ,  23675      ,  32.286  
-100      ,  on     ,  6       ,  9       ,  23142      ,  37.915  
-1000     ,  on     ,  2       ,  9       ,  28129      ,  398.1   
-100      ,  on     ,  3       ,  18      ,  21234      ,  53.927  
-100      ,  on     ,  1       ,  12      ,  20872      ,  55.886  
-100      ,  off    ,  2       ,  6       ,  20814      ,  53.103  
-100      ,  on     ,  3       ,  12      ,  20821      ,  56.731  
-100      ,  on     ,  6       ,  3       ,  20359      ,  55.501  
-10       ,  off    ,  2       ,  12      ,  20233      ,  5.7734  
-10       ,  off    ,  6       ,  6       ,  20089      ,  5.2988  
-10       ,  on     ,  6       ,  9       ,  20066      ,  5.0202  
-100      ,  off    ,  1       ,  15      ,  19875      ,  53.539  
-10       ,  on     ,  2       ,  15      ,  19505      ,  5.6023  
-10       ,  on     ,  6       ,  15      ,  19157      ,  5.0006  
-1000     ,  off    ,  1       ,  15      ,  23497      ,  439.35  
-100      ,  off    ,  1       ,  9       ,  18652      ,  62.08   
-10       ,  off    ,  2       ,  6       ,  18462      ,  6.481   
-1000     ,  on     ,  1       ,  12      ,  21808      ,  470.82  
-10       ,  off    ,  3       ,  9       ,  17161      ,  6.5827  
-10       ,  on     ,  3       ,  12      ,  17130      ,  6.2694  
-100      ,  off    ,  3       ,  3       ,  16941      ,  65.185  
-1000     ,  on     ,  2       ,  3       ,  22289      ,  518.71  
-1000     ,  on     ,  1       ,  6       ,  22015      ,  511.62  
-10       ,  on     ,  6       ,  3       ,  16238      ,  7.0838  
-10       ,  on     ,  3       ,  18      ,  16140      ,  7.2948  
-10       ,  off    ,  1       ,  15      ,  16019      ,  7.3717  
-10       ,  on     ,  1       ,  12      ,  15374      ,  7.1335  
-10       ,  on     ,  1       ,  18      ,  15103      ,  7.3965  
-10       ,  on     ,  1       ,  6       ,  14870      ,  8.1247  
-10       ,  off    ,  1       ,  9       ,  14807      ,  7.5491  
-1000     ,  off    ,  1       ,  3       ,  20050      ,  553.74  
-10       ,  off    ,  3       ,  3       ,  14591      ,  7.6695  
-10       ,  on     ,  2       ,  3       ,  14169      ,  8.1471  
-1000     ,  off    ,  3       ,  3       ,  19036      ,  595.91  
-10       ,  off    ,  1       ,  3       ,  12697      ,  9.2121  
-100      ,  off    ,  6       ,  1       ,  9214.4     ,  116.13  
-100      ,  off    ,  2       ,  1       ,  8746       ,  117.57  
-10       ,  on     ,  1       ,  1       ,  8226.1     ,  13.733  
-10       ,  on     ,  3       ,  1       ,  8219.4     ,  13.865  
-1        ,  on     ,  6       ,  3       ,  5151       ,  2.0815  
-1        ,  off    ,  3       ,  3       ,  5058.6     ,  3.5506  
-1        ,  on     ,  3       ,  1       ,  4980.3     ,  2.1598  
-1        ,  on     ,  3       ,  18      ,  4949.1     ,  2.1277  
-1        ,  off    ,  6       ,  1       ,  4904.2     ,  2.1626  
-1        ,  on     ,  6       ,  9       ,  4891.9     ,  2.1503  
-1        ,  off    ,  6       ,  12      ,  4871       ,  2.2277  
-1        ,  off    ,  6       ,  6       ,  4847.1     ,  2.1376  
-1        ,  on     ,  3       ,  6       ,  4836.7     ,  2.1283  
-1        ,  off    ,  3       ,  9       ,  4786.9     ,  2.1468  
-1        ,  off    ,  3       ,  15      ,  4767.6     ,  2.2173  
-1        ,  off    ,  6       ,  18      ,  4688.1     ,  2.2277  
-1        ,  on     ,  6       ,  15      ,  4645.8     ,  2.1468  
-1        ,  on     ,  3       ,  12      ,  4528.8     ,  3.0358  
-1        ,  off    ,  2       ,  6       ,  4423.6     ,  2.3538  
-1        ,  on     ,  2       ,  9       ,  4369.6     ,  2.4306  
-1        ,  on     ,  2       ,  3       ,  4343.6     ,  2.381   
-1        ,  off    ,  2       ,  1       ,  4294.7     ,  4.7793  
-1        ,  on     ,  2       ,  15      ,  4291.2     ,  2.4462  
-1        ,  off    ,  2       ,  12      ,  4288.1     ,  2.3965  
-1        ,  off    ,  1       ,  1       ,  4255.3     ,  2.5621  
-1        ,  off    ,  2       ,  18      ,  4236.2     ,  2.4647  
-1        ,  off    ,  1       ,  15      ,  4194.1     ,  2.5676  
-1        ,  on     ,  1       ,  3       ,  4160.1     ,  2.6057  
-1        ,  on     ,  1       ,  9       ,  4156.9     ,  2.5688  
-1        ,  off    ,  1       ,  6       ,  4089.5     ,  2.55    
-1        ,  on     ,  1       ,  12      ,  4013.8     ,  2.5474  
-1        ,  on     ,  1       ,  18      ,  3964.2     ,  2.5503  
-1000     ,  on     ,  1       ,  1       ,  10038      ,  1063.6  
-1000     ,  on     ,  3       ,  1       ,  9973.9     ,  1105.8  
-1000     ,  off    ,  2       ,  1       ,  8666.8     ,  1239.5  
+ -h                  show help
+ --list              list all examples
+ --X                 run example X
+ --all               run all examples
 """
-#------------------------------------------------------------------
-#  ____ ___ ____ _  _ ____ ___ ____ 
-#  [__   |  |__/ |  | |     |  [__  
-#  ___]  |  |  \ |__| |___  |  ___] 
-                                 
-class Summary(o): pass
+from types import SimpleNamespace as o 
+import random, math, sys, re
 
-#----------------
-class Sym(Summary):
-  def __init__(i, inits=[], at=0, txt=""):
-    i.n   = 0     ## items kept
-    i.at  = at    ## column position 
-    i.txt = txt   ## column name
-    i.has = {}    ## counts of symbols seen
-    i.adds(inits)
+def coerce(s):
+  "String to atom."
+  for fn in [int,float]:
+    try: return fn(s)
+    except Exception as _: pass
+  s = s.strip()
+  return {'True':True,'False':False}.get(s,s)
 
-#----------------
-class Num(Summary):
-  def __init__(i, inits=[], at=0, txt="", rank=0):
-     i.n = i.mu = i.m2 = i.sd = 0    ## items kept  
-     i.at   = at   ## column position
-     i.txt  = txt  ## column name
-     i.hi   = -BIG ## biggest seen
-     i.lo   =  BIG ## smallest seen
-     i.rank = rank ## used only by stats
-     i.heaven = 0 if  txt.endswith("-") else 1 ## goal. 0,1=min,max
-     i.adds(inits)
+# help --> config 
+the = o(**{k:coerce(v) for k,v in re.findall(r"(\w+)=(\S+)",__doc__)})
+
+#  _  _|_  ._        _  _|_   _ 
+# _>   |_  |   |_|  (_   |_  _> 
 
-  def norm(i,v): 
-    "Normalize 0..1 for min..max."
-    return v if v=="?" else (v-i.lo)/(i.hi-i.lo+1/BIG)
+Sym = dict
+Num = lambda: o(lo=1e32, mu=0, m2=0, sd=0, n=0, hi=-1e32, heaven=1)
 
-#-----------------
-class Data(Summary):
-  def __init__(i,inits=[]):
-    inits   = iter(inits)
-    cols    = _cols(next(inits))
-    i.n     = 0            ## items kept
-    i._rows = []           ## rows
-    i.cols  = cols         ## summaries of rows
-    i.adds(inits)
+def Data(src):
+  "Store rows, and summarizes then in cols."
+  def _cols(names):
+    cols = o(names=names, all=[], x={}, y={}, klass=None)
+    for c,s in enumerate(names):
+      cols.all += [Num() if s[0].isupper() else Sym()]
+      if s[-1] != "X":
+        if s[-1] == "!": cols.klass=c
+        if s[-1] == "-": cols.all[-1].heaven = 0
+        (cols.y if s[-1] in "!-+" else cols.x)[c] = cols.all[-1]
+    return cols
 
-  def clone(i, inits=[]):
-    "Make a new Data with same structre as self."
-    return Data([i.cols.names]+inits)
+  src = iter(src)
+  data = o(rows=[], cols= _cols(next(src)))
+  [adds(data,r) for r in src]
+  return data 
 
-def _cols(names):
-  "Factory. List[str] -> Dict[str, List[ Sym | Num ]]"
-  cols= o(names = names, ## all the column names
-          klass = None,  ## Target for classification
-          all   = [],    ## all columns
-          x     = [],    ## also, hold independents here
-          y     = [])    ## also, hold dependent here
-  cols.all = [_col(at,name,cols) for at,name in enumerate(cols.names)]
-  return cols
+def clone(data,rows=[]): 
+  "Mimic the structure of an existing data."
+  return Data([data.cols.names] + rows)
 
-def _col(at,name,cols): 
-  col = (Num if name[0].isupper() else Sym)(txt=name, at=at) 
-  if name[-1] != "X":
-    if name[-1] == "!": cols.klass = col
-    (cols.y if name[-1] in "+-" else cols.x).append(col)
-  return col 
+def adds(data, row, inc=1, zap=False):
+  "Update data with a row (and to subtract, use inc= -1)."
+  if inc>0: data.rows += [row]
+  elif zap: data.rows.remove(row) # slow for long rows
+  for c,col in enumerate(data.cols.all): add(col,row[c],inc)
+  return row
 
-#------------------------------------------------------------------
-# _  _ ___  ___  ____ ___ ____ 
-# |  | |__] |  \ |__|  |  |___ 
-# |__| |    |__/ |  |  |  |___ 
-                             
-_last = None
-def of(fn=None, doc=None):
-  """Make fn a method of the class of the first arg. This lets me
-  group toether in the code related methods from different classes.
-  Kind of like extend methosd in C#/Kotlin or open class methods 
-  in Ruby, or any methods in Julia or Lua"""
-  def D(f):
-    global _last; _last = f.__doc__ = doc or _last
-    if (c := next(iter(f.__annotations__.values()), None)): 
-      setattr(c, f.__name__, f)
-    return f
-  return D(fn) if callable(fn) else D
-
-#------------------
-@of("Update")
-def add(i:Summary,v, inc=1, zap=False):
+def add(col, v, inc=1):
+  "Update a col with a value (and to subtract, use inc= -1)."
   if v != "?":
-    i.n += inc
-    i._add(v,inc,zap) # implemented by subclass 
+    if type(col) is Sym: col[v] = inc + col.get(v,0)
+    else:
+      col.n += inc
+      col.lo, col.hi = min(v, col.lo), max(v, col.hi)
+      if inc < 0 and col.n < 2:
+        col.sd = col.m2 = col.mu = col.n = 0
+      else:
+        d       = v - col.mu
+        col.mu += inc * (d / col.n)
+        col.m2 += inc * (d * (v - col.mu))
+        col.sd  = 0 if col.n < 2 else (max(0,col.m2)/(col.n-1))**.5
   return v
 
-@of("Do many updates")
-def adds(i:Summary, lst=[]): [i.add(x) for x in lst]; return i
+def mids(data):
+  "Return the central tendency for each column."
+  return [mid(col) for col in data.cols.all]
 
-@of("'sub' is just a negative `add`")
-def sub(i:Summary, v, inc= -1,zap=False): return i.add(v,inc,zap)
+def mid(data):
+  return max(data, key=data.get) if type(data) is Sym else data.mu
 
-#--------------------------------------------
-@of("Internal methods to update a Summary")
-def _add(i:Sym,s,inc,_):
-  i.has[s] = i.has.get(s,0) + inc
+def div(data):
+  "Return the diversity)."
+  if type(data) is Sym:
+    N = sum(data.values())
+    return -sum(n/N * math.log(n/N, 2) for n in data.values())
+  return data.sd
+
+#   _|  o   _  _|_   _.  ._    _   _  
+#  (_|  |  _>   |_  (_|  | |  (_  (/_ 
+          
+def minkowski(src):
+  "Generalized distance with a variable power p."
+  d,n = 0,0
+  for v in src: n,d = n+1, d + v**the.p
+  return (d/n) ** (1/the.p)
 
-@of
-def _add(i:Num,n, inc, _):
-  i.lo, i.hi = min(n,i.lo), max(n,i.hi)
-  if inc < 0 and i.n < 2: 
-    i.sd = i.m2 = i.mu = i.n = 0
-  else:
-    d     = n - i.mu
-    i.mu += inc * (d / i.n)
-    i.m2 += inc * (d * (n - i.mu))
-    i.sd  = 0 if i.n <= 2 else (max(0,i.m2)/(i.n-1))**.5
+def ydist(data, row):
+  "Distance between goals and heaven."
+  return minkowski(abs(norm(col, row[c]) - col.heaven) 
+                   for c,col in data.cols.y.items())
 
-@of
-def _add(i:Data,row,inc,zap):  
-  if inc > 0 : i._rows.append(row) 
-  elif zap   : i._rows.remove(row) # slow for large lists
-  for col in i.cols.all: col.add(row[col.at], inc)
+def xdist(data, row1, row2):
+  "Distance between independent values of two rows."
+  def _aha(col, a,b):
+    if a==b=="?": return 1
+    if type(col) is Sym: return a != b
+    a,b = norm(col,a), norm(col,b)
+    a = a if a != "?" else (0 if b>0.5 else 1)
+    b = b if b != "?" else (0 if a>0.5 else 1)
+    return abs(a-b)
 
-#-----------------------------------------------------------------------
-# ____ _  _ ____ ____ _   _ 
-# |  | |  | |___ |__/  \_/  
-# |_\| |__| |___ |  \   |   
-                          
-@of("Central tendancy.")
-def mid(i:Num) : return i.mu
+  return minkowski(_aha(col, row1[c], row2[c]) 
+                   for c,col in data.cols.x.items())
 
-@of
-def mid(i:Sym): return max(i.has, key=i.has.get)
+def norm(col, row): 
+  "Normalize a number 0..1 for lo..hi."
+  if row=="?" or type(col) is Sym: return row
+  return (row - col.lo) / ( col.hi -  col.lo + 1E-32)
 
-@of
-def mid(i:Data) : return [c.mid() for c in i.cols.all]
-
-#--------------------------------------
-@of("Deviation from central tendancy.")
-def spread(i:Num) : return i.sd
-
-@of
-def spread(i:Sym):
-  d = i.has
-  return -sum(p*math.log(p,2) for v in d.values() if (p:=v/i.n) > 0)
-
-@of
-def spread(i:Data): return [c.spread() for c in i.cols.all]
-
-#-------------------------------------------------------------------
-# ___  _ ____ ___ ____ _  _ ____ ____ 
-# |  \ | [__   |  |__| |\ | |    |___ 
-# |__/ | ___]  |  |  | | \| |___ |___ 
-                                    
-@of("Distance between numeric or symbolic atoms.")
-
-def _dist(vs):
-  "Minkowski distance."
-  s, n = 0, 1/BIG
-  for x in vs:
-    n += 1
-    s += abs(x)**the.p
-  return (s / n)**(1/the.p)
-
-@of("Distance between 2 things")
-def xdist(_:Sym, u,v):
-  return 1 if u=="?" and v=="?" else u !=v
-
-@of
-def xdist(i:Num, u,v):
-  if u=="?" and v=="?": return 1
-  u = i.norm(u)
-  v = i.norm(v)
-  u = u if u != "?" else (0 if v > .5 else 1)
-  v = v if v != "?" else (0 if u > .5 else 1)
-  return abs(u - v)
-
-@of
-def xdist(i:Data,r1,r2): 
-  return _dist(c.xdist(r1[c.at], r2[c.at]) for c in i.cols.x)
-
-@of("Return rows, sorted by xdist to row r1.")
-def xdists(i:Data, r1, rows=None):
-  return sorted(rows or i._rows, key=lambda r2: i.xdist(r1,r2))
-
-@of("Distance dependent variables to heaven.")
-def ydist(i:Data,row):
-  return _dist((c.norm(row[c.at]) - c.heaven) for c in i.cols.y)
-
-@of("Return rows, sorted by ydist to heaven.")
-def ydists(i:Data, rows=None):
-  return sorted(rows or i._rows, key=lambda row: i.ydist(row))
-
-#-------------------------------------------------------------------
-# ____ _    _  _ ____ ___ ____ ____ 
-# |    |    |  | [__   |  |___ |__/ 
-# |___ |___ |__| ___]  |  |___ |  \ 
-                                  
-@of("Move centroids to mid of their nearest neighbors. Repeat.")
-def kmeans(i:Data, rows, centroids=None, k=10, repeats=10, eps=0.01):
-  errs, centroids = [], centroids or rows[:k]
-  for j in range(repeats):
-    new, err = {}, 0
-    for row in shuffle(rows):
-      c = min(centroids, key=lambda z: i.xdist(z, row))
-      now = new[id(c)] = new.get(id(c)) or i.clone()
-      now.add(row)
-      err += i.xdist(row, c)
-    errs += [err / len(rows)]
-    centroids = [new[k].mid() for k in new]
-    if j> 0 and abs(errs[-1] - errs[-2]) < eps: break 
-  return centroids, errs
-
-@of("Find k centroids d**2 away from existing centoids.")
-def kpp(i:Data, rows, k=None):
-  row, *rows = shuffle(rows)
-  out = [row]
-  while len(out) < (k or the.Build):
-     ws = [min(i.xdist(r, c)**2 for c in out) for r in rows]
-     out.append(random.choices(rows, weights=ws)[0])
+def kpp(data, rows=None, k=20, few=None):
+  "Return key centroids usually separated by distance D^2."
+  few = few or the.Few
+  rows = rows or data.rows[:]
+  random.shuffle(rows)
+  out = [rows[0]]
+  while len(out) < k:
+    tmp = random.sample(rows, few)
+    ws  = [min(xdist(data, r, c)**2 for c in out) for r in tmp]
+    p   = sum(ws) * random.random()
+    for j, w in enumerate(ws):
+      if (p := p - w) <= 0: 
+          out += [tmp[j]]; break
   return out
 
-@of("Project data. Discard the least promising half. Repeat.")
-def sway(i:Data,rows):
-  done, todo = [], shuffle(rows)
-  while len(done) <= the.Build - 2:
-    a, *todo, b = i.fastmap(todo)
-    done += [a,b]
-    n     = len(todo)//2
-    todo  = todo[:n] if i.ydist(a) < i.ydist(b) else todo[n:]
-    if len(todo) < 2: 
-      todo = [x for x in shuffle(rows) if x not in done]
-  return o(done=i.ydists(done), todo=todo)
+def kmeans(data, rows=None, n=10, out=None, err=1, **key):
+  "Return key centroids within data."
+  rows = rows or data.rows
+  centroids = [mids(d) for d in out] if out else kpp(data,rows,**key)
+  d,err1 = {},0
+  for row in rows:
+    col = min(centroids, key=lambda crow: xdist(data,crow,row))
+    err1 += xdist(data,col,row) / len(rows)
+    d[id(col)] = d.get(id(col)) or clone(data)
+    adds(d[id(col)],row)
+  print(f'err={err1:.3f}')
+  return (out if (n==1 or abs(err - err1) <= 0.01) else
+          kmeans(data, rows, n-1, d.values(), err=err1,**key))
 
-@of("Project rows along a line between 2 distant points")
-def fastmap(i:Data, rows):
-  one,*tmp = shuffle(rows)[:the.Few]
-  far = int(0.9 *len(tmp))
-  a   = i.xdists(one, tmp)[far]; 
-  b   = i.xdists(a,   tmp)[far]
-  D   = lambda a,b: i.xdist(a,b)
-  C   = D(a,b)
-  cosine = lambda A,B: (A*A + C*C - B*B) / (C+C + 1/BIG)
-  return sorted(rows, key = lambda r: cosine(D(r,a), D(r,b)))
+def project(data,row,east,west,c=None):
+  "Map row along a line east -> west."
+  D = lambda r1,r2 : xdist(data,r1,r2)
+  c = c or D(east,west)  
+  a,b = D(row,east), D(row,west)
+  return (a*a +c*c - b*b)/(2*c + 1e-32)
 
-#-----------------------------------------------------------------
-# ___  ____ _   _ ____ ____ 
-# |__] |__|  \_/  |___ [__  
-# |__] |  |   |   |___ ___] 
-                          
-@of("How probable is it that `v` belongs to a column?")
-def pdf(i:Sym,s, prior=0):
-  return (i.has.get(s,0) + the.m*prior) / (i.n + the.m + 1/BIG)
+def fastmap(data,rows):
+  "Sort rows along a line between 2 distant points."
+  X = lambda r1,r2:xdist(data,r1,r2)
+  anywhere, *few = random.choices(rows, k=the.Few)
+  here  = max(few, key= lambda r: X(anywhere,r))
+  there = max(few, key= lambda r: X(here,r))
+  c     = X(here,there)
+  return sorted(rows, key=lambda r: project(data,r,here,there,c))
 
-@of
-def pdf(i:Num,v,_):
-  sd  = i.sd or 1 / BIG
-  var = 2 * sd * sd
-  z   = (v - i.mu) ** 2 / var
-  return min(1, max(0, math.exp(-z) / (2 * math.pi * var) ** 0.5))
+def fastermap(data,rows, sway1=False):
+  "Prune half the rows furthest from best distant pair."
+  random.shuffle(rows)
+  nolabel = rows[the.Any:]
+  labels = clone(data, rows[:the.Any])
+  Y  = lambda r: ydist(labels,r)
+  while len(labels.rows) < the.Build and len(nolabel) >= 2: 
+    east, *rest, west = fastmap(data,nolabel)
+    adds(labels, east)
+    adds(labels, west)
+    n = len(rest)//2
+    nolabel = nolabel[:n] if Y(east) < Y(west) else nolabel[n:]
+    if not sway1 and len(nolabel) < 2:
+      nolabel= [r for r in rows if r not in labels.rows]
+      random.shuffle(nolabel)
+  labels.rows.sort(key=Y)
+  return o(labels= labels,
+           nolabels= [r for r in rows if r not in labels.rows])
+
+#  |  o  |    _  
+#  |  |  |<  (/_ 
+               
+def like(col, v, prior=0):
+  "How much does this COL like v?"
+  if type(col) is Sym: 
+    out=(col.get(v,0) + the.m*prior)/(sum(col.values()) + the.m+1e-32)
+  else:
+    var= 2 * col.sd * col.sd + 1E-32
+    z  = (v - col.mu) ** 2 / var
+    out=  math.exp(-z) / (2 * math.pi * var) ** 0.5
+  return min(1, max(0, out))
 
-@of("Report how much `data` like `row`.")
-def like(i:Data, row, nall=2, nh=100):
-  prior = (i.n + the.k) / (nall + the.k*nh)
-  tmp = [c.pdf(row[c.at],prior) 
-         for c in i.cols.x if row[c.at] != "?"]
+def likes(data, row, nall=100, nh=2):
+  "How much does this DATA like row?"
+  prior = (len(data.rows) + the.k) / (nall + the.k*nh)
+  tmp = [like(col,v,prior) 
+         for c,col in data.cols.x.items() if (v:=row[c]) != "?"]
   return sum(math.log(n) for n in tmp + [prior] if n>0)    
 
-@of("What `data` in `datas` lines `row` the most?")
-def likes(datas, row):
-  "Return the `data` in `datas` that likes `row` the most."
-  n = sum(data.n for data in datas)
-  return max(datas, key=lambda data:data.like(row,n,len(datas)))
+def liked(datas,row, nall=None):
+  "Which data likes this row the most?"
+  nall = nall or sum(len(data.row) for data in datas.values())
+  return max(datas, key=lambda k: likes(datas[k],row,nall,len(datas)))
 
+def nbc(file, wait=5):
+  "Classify rows by how much each class likes a row."
+  cf = Confuse()
+  data = Data(csv(file))
+  wait,d,key = 5,{},data.cols.klass
+  for n,row in enumerate(data.rows):
+    want = row[key]
+    d[want] = d.get(want) or clone(data)
+    if n > wait: confuse(cf, want, liked(d,row, n-wait))
+    adds(d[want], row)
+  return confused(cf)
 
-@of("Seperate rows, 1 `data` per class. Classify, via those datas.")
-def nbc(i:Data,era=100):
-  log,datas = None,{}
-  for _ in range(5):
-    shuffle(i._rows)
-    for j in range(5):
-  for n,row in enumerate(shuffle(i._rows)):
-    want = row[i.cols.klass.at]
-    if n>5:
-      got = likes(datas.values(), row).txt
-      log = abcds(want,got,log)
-      if n % era == 0: 
-         [print(n,k,s.pd, s.pf, s.acc) for k,s in log.stats.items()]
-    now = datas[want] = datas.get(want) or i.clone()
-    now.txt = want
-    now.add(row)
-  return log
-
-@of("Split rows to best,rest. Label row that's e.g. max best/rest.")
-# def acquires(i:Data,rows):
-#   def _guess(row):
-#     b,r = like(best,row,n,2), like(rest,row,n,2)
-#     p   = n/the.Build
-#     b,r = math.e**b, math.e**r
-#     q   = 0 if the.acq=="xploit" else (1 if the.acq=="xplor" else 1-p)
-#     return (b + r*q) / bs(b*q - r + 1/BIG)
-#
-#   random.shuffle(rows)
-#   n         = the.Assume
-#   todo      = i._rows[n:]
-#   bestrest  = i.clone(rows[:n])
-#   done      = i.ydists(bestrest)
-#   cut       = round(n**the.Guess)
-#   best      = i.clone(done[:cut])
-#   rest      = i.clone(done[cut:])
-#   while len(todo) > 2 and n < the.Build:
-#     n      += 1
-#     hi, *lo = sorted(todo[:the.Few*2], 
-#                     key=_guess, reverse=True)
-#     todo    = lo[:the.Few] + todo[the.Few*2:] + lo[the.Few:]
-#     bestrest.add(best.add(hi))
-#     best._rows = bestrest.ydists()
-#     if len(best._rows) >= round(n**the.Guess):
-#       rest( best.sub( best._rows.pop(-1))) 
-#   return o(best=best, rest=rest, test=todo)
-
-def acquires(i:Data, rows):
-  def _guess(row):
-    b, r = like(best, row, n, 2), like(rest, row, n, 2)
-    p    = n / the.Build
+def acquires(data, rows,acq=None):
+  "Label promising rows, "
+  acq = acq or the.acc
+  def _acquire(row): # Large numbers are better
+    nall =len(labels.rows)
+    b, r = likes(best, row, 2, nall), likes(rest, row, 2, nall)
     b, r = math.e**b, math.e**r
-    q    = {"xploit": 0, "xplor": 1}.get(the.acq, 1 - p)
-    return (b + r*q) / abs(b*q - r + 1/BIG)
+    if acq=="klass": return b>r
+    if acq=="bore": return (b*b) / (r+1e-32)
+    p    = n2 / the.Build
+    q    = {"xploit": 0, "xplor": 1}.get(acq, 1 - p)
+    return (b + r*q) / abs(b*q - r + 1E-32)
 
-  random.shuffle(rows)
-  n    = the.Assume
-  cut  = round(n**the.Guess) # [done = best + rest] + todo
-  todo = i._rows[n:]        
-  done = i.ydists(rows[:n])
-  best = i.clone(done[:cut])
-  rest = i.clone(done[cut:])
-  all  = i.clone(done)
-  while len(todo) > 2 and n < the.Build:
-    n     += 1
-    hi,*lo = sorted(todo[:the.Few*2], key=_guess, reverse=True)
-    todo   = lo[:the.Few] + todo[the.Few*2:] + lo[the.Few:]
-    all.add( best.add(hi))
-    best._rows = all.ydists(best._rows)
-    if len(best._rows) >= cut:
-      rest.add( best.sub( best._rows.pop(-1)))
-  return o(best=best, rest=rest, test=todo)
+  nolabels = rows[:]
+  random.shuffle(nolabels)
+  n1,n2      = round(the.Any**0.5), the.Any
+  labels   = clone(data, nolabels[:n2])
+  _ydist     = lambda row: ydist(labels, row) # smaller is better
+  _ysort     = lambda d: sorted(d.rows, key=lambda r: ydist(d,r))
 
-#-----------------------------------------------------------------
-# ___ ____ ____ ____ 
-#  |  |__/ |___ |___ 
-#  |  |  \ |___ |___ 
-                   
-ops = {'<=' : lambda x,y: x <= y,
-       "==" : lambda x,y: x == y,
-       '>'  : lambda x,y: x >  y}
+  best       = clone(data, nolabels[:n1]) # subset of labels
+  rest       = clone(data, nolabels[n1:n2]) # rest = labels - best
+  nolabels = nolabels[n2:]
 
-def selects(row,op,at,y): x=row[at]; return x=="?" or ops[op](x,y) 
+  _ysort(best)
+  while len(nolabels) > 2 and n2 < the.Build:
+    n2  += 1
+    hi,*lo = sorted(nolabels[:the.Few*2], key=_acquire,reverse=True) # best at start
+    nolabels = lo[:the.Few] + nolabels[the.Few*2:] + lo[the.Few:]
+    adds(labels, 
+        adds(best if _ydist(hi) < _ydist(best.rows[0]) else rest, hi))
+    if len(best.rows) >= n1:
+      _ysort(best)
+      adds(rest, adds(best, best.rows.pop(-1),-1))
+  _ysort(labels)
+  return o(best=best, rest=rest, 
+           labels=labels.rows, nolabels=nolabels)
+
+# _|_  ._   _    _  
+#  |_  |   (/_  (/_ 
 
-@of("what cuts most reduces spread?")
-def cuts(i:Sym,rows,Y,Klass): 
-  n,d = 0,{}
-  for row in rows:
-    if (x := row[i.at]) != "?":
-      n = n + 1
-      d[x] = d[x] if x in d else Klass()
-      add(d[x], Y(row))
-  return o(div = sum(c.n/n * spread(c) for c in d.values()),
-           hows = [("==",i.at, k) for k,_ in d.items()])
+ops = {'<=' : lambda x,y: x <= y, 
+       '==' : lambda x,y:x == y, 
+       '>'  : lambda x,y:x > y}
 
-@of
-def cuts(i:Num,rows,Y,Klass):
-  out = None
-  b4, lhs, rhs = None, Klass(), Klass()
-  xys = [(r[i.at], add(rhs, Y(r))) for r in rows if r[i.at] != "?"]
-  for x, y in sorted(xys, key=lambda xy: xy[0]):
-    if x != b4:
-      if the.leaf <= lhs.n <= len(xys) - the.leaf:
+def selects(row,op,at,y): return (x := row[at]) == "?" or ops[op](x, y)
+
+def cuts(col, rows, at, Y, Klass):
+  def _sym(sym):
+    d, n = {}, 0
+    for row in rows:
+      if (x := row[at]) != "?":
+        n += 1
+        d[x] = d.get(x) or Klass()
+        add(d[x], Y(row))
+    return o(div = sum(c.n/n * div(c) for c in d.values()),
+             hows = [("==",at,x) for x in d])
+  
+  def _num(num):
+    out, b4, lhs, rhs = None, None, Klass(), Klass()
+    xys = [(row[at], add(rhs, Y(row))) # add returns the "y" value
+           for row in rows if row[at] != "?"]
+    for x, y in sorted(xys, key=lambda z: z[0]):
+      if x != b4 and the.leaf <= lhs.n <= len(xys) - the.leaf:
         now = (lhs.n * lhs.sd + rhs.n * rhs.sd) / len(xys)
         if not out or now < out.div:
-          out= o(div=now,hows=[("<=",i.at,b4), (">",i.at,b4)])
-    add(lhs, sub(rhs,y))
-    b4 = x
-  return out
+          out = o(div=now, hows=[("<=",at,b4), (">",at,b4)])
+      add(lhs, add(rhs, y, -1))
+      b4 = x
+    return out
 
-@of("Split data on best cut. Recurse on each split.")
-def tree(i:Data, Klass=Num, Y=None, how=None):
-  Y      = Y or (lambda row: ydist(i,row))
-  i.kids = []
-  i.how  = how
-  i.ys   = Num(Y(row) for row in i._rows)
-  if i.n >= the.leaf:
-    tmp = [x for c in i.cols.x if (x := c.cuts(i._rows,Y,Klass))]    
-    if tmp:
-      for how1 in min(tmp,   key=lambda cut: cut.div).hows:
-        #for how1 in sorted(tmp, key=lambda cut: cut.div)[0].hows:
-        rows1 = [row for row in i._rows if selects(row, *how1)]
-        if the.leaf <= len(rows1) < i.n:
-          i.kids += [i.tree(i.clone(rows1), Klass, Y, how1)]  
-  return i
+  return (_sym if type(col) is Sym else _num)(col)
 
-@of(" Iterate over all nodes.")
-def nodes(i:Data , lvl=0, key=None): 
-  yield lvl, i
-  for j in (sorted(i.kids, key=key) if key else i.kids):
-    yield from j.nodes(lvl + 1, key=key)
+def tree(data, Klass=Num, Y=None, how=None):
+  Y = Y or (lambda row: ydist(data, row))
+  data.kids, data.how = [], how
+  data.ys = has(Y(row) for row in data.rows)
+  if len(data.rows) >= the.leaf:
+    hows = [how for at,col in data.cols.x.items() 
+            if (how := cuts(col,data.rows,at,Y,Klass))]
+    if hows:
+      for how1 in min(hows, key=lambda c: c.div).hows:
+        rows1 = [r for r in data.rows if selects(r, *how1)]
+        if the.leaf <= len(rows1) < len(data.rows):
+          data.kids += [tree(clone(data,rows1), Klass, Y, how1)]
+  return data
 
-@of(" Return leaf selected by row.")
-def leaf(i:Data,row):
-  for j in i.kids or []:
-    if selects(row, *j.how): 
-      return j.leaf(row)
-  return i
+def nodes(data, lvl=0, key=None):
+  "iterate over all nodes"
+  yield lvl, data
+  for j in sorted(data.kids, key=key) if key else data.kids:
+    yield from nodes(j,lvl + 1, key)
 
-@of("Show Tree")
-def showTree(i:Data, key=lambda d: d.ys.mu):
-  s, ats = i.ys, {}
-  win = lambda x: int(100 * (1 - ((x - s.lo) / (s.mu-s.lo+1e-32))))
+def leaf(data, row):
+  "Select a matching leaf"
+  for j in data.kids or []:
+    if selects(row, *j.how): return leaf(j,row)
+  return data
+
+def showTree(data, key=lambda d: d.ys.mu):
+  "Display tree"
   print(f"{'d2h':>4} {'win':>4} {'n':>4}")
   print(f"{'----':>4} {'----':>4} {'----':>4}")
-  for lvl, data in i.nodes(key=key):
-    leafp = not data.kids
-    op, at, y = data.how if lvl else ('', '', '')
-    name = i.cols.all[at].txt if lvl else ''
+  s, ats = data.ys, {}
+  win = lambda x: int(100 * (1-(x-data.ys.lo) / 
+                             (data.ys.mu-data.ys.lo+1e-32)))
+  for lvl, d in nodes(data,key=key):
+    op, at, y = d.how if lvl else ('', '', '')
+    name = data.cols.names[at] if lvl else ''
     expl = f"{name} {op} {y}" if lvl else ''
     indent = '|  ' * (lvl - 1)
-    print(f"{data.ys.mu:4.2f} {win(data.ys.mu):4} {data.n:4}    "
-          f"{indent}{expl}{';' if leafp else ''}")
+    line = f"{d.ys.mu:4.2f} {win(d.ys.mu):4} {len(d.rows):4}    " \
+           f"{indent}{expl}{';' if not d.kids else ''}"
+    print(line)
     if lvl: ats[at] = 1
-  print(', '.join(i.cols.names[at] for at in sorted(ats)))
+  used = [data.cols.names[at] for at in sorted(ats)]
+  print(len(data.cols.x), len(used), ', '.join(used))
+
+#   _  _|_   _.  _|_   _ 
+#  _>   |_  (_|   |_  _> 
 
-# # Pretty print a tree
-# def show(data, key=lambda z:z.ys.mu):
-#   stats = data.ys
-#   win = lambda x: int(100*(1 - ((x-stats.lo)/(stats.mu - stats.lo))))
-#   print(f"{'d2h':>4} {'win':>4} {'n':>4}  ")
-#   print(f"{'----':>4} {'----':>4} {'----':>4}  ")
-#   ats={}
-#   for lvl, node in nodes(data, key=key):
-#     leafp = len(node.kids)==0
-#     post = ";" if leafp else ""
-#     xplain = ""
-#     if lvl > 0:
-#       op,at,y = node.how
-#       ats[at] = 1
-#       xplain = f"{data.cols.all[at].txt} {op} {y}"
-#     indent = (lvl - 1) * "|  "
-#     print(f"{node.ys.mu:4.2f} {win(node.ys.mu):4} {node.n:4}    "
-#           f"{indent}{xplain}{post}")
-#   print(', '.join(sorted([data.cols.names[at] for at in ats])))
-#
-#-----------------------------------------------------------------
-# ____ ___ ____ ___ ____ 
-# [__   |  |__|  |  [__  
-# ___]  |  |  |  |  ___] 
-                       
-class Abcd:
-  def __init__(i,kl="-",a=0): 
-    i.a,i.txt = a,kl
-    i.b = i.c = i.d = 0
-  def add(i, want, got, x):
-    if x == want:   i.d += (got == want); i.b += (got != want)
-    else:           i.c += (got == x);    i.a += (got != x)
-  def ready(i):
-    p      = lambda y, z: int(100 * y / (z or 1e-32))
-    i.pd   = p(i.d,       i.d + i.b)
-    i.pf   = p(i.c,       i.c + i.a)
-    i.prec = p(i.d,       i.d + i.c)
-    i.acc  = p(i.d + i.a, i.a + i.b + i.c + i.d)
-    return i
+def Confuse() -> "Confuse": 
+  "Create a confusion stats for classification matrix."
+  return o(klasses={}, total=0)
 
-def abcdReady(state):
-  for abcd in state.stats.values(): abcd.ready()
-  return state
+def confuse(cf:Confuse, want:str, got:str) -> str:
+  "Update the confusion matrix."
+  for x in (want, got):
+    if x not in cf.klasses: 
+      cf.klasses[x] = o(label=x,tn=cf.total,fn=0,fp=0,tp=0)
+  for c in cf.klasses.values():
+    if c.label==want: c.tp += (got==want);    c.fn += (got != want)
+    else            : c.fp += (got==c.label); c.tn += (got != c.label)
+  cf.total += 1
+  return got
 
-def abcdWeighted(state):
-  out = Abcd()
-  for abcd in state.stats.values():
-    w = (abcd.b + abcd.d)/state.n
-    out.a += abcd.a*w
-    out.b += abcd.b*w
-    out.c += abcd.c*w
-    out.d += abcd.d*w
-  return out.ready()
+def confused(cf, summary=False):
+  "Report confusion metric statistics."
+  p = lambda y, z: round(100 * y / (z or 1e-32), 0)  # one decimal
+  def finalize(c):
+    c.pd   = p(c.tp, c.tp + c.fn)
+    c.prec = p(c.tp, c.fp + c.tp)
+    c.pf   = p(c.fp, c.fp + c.tn)
+    c.acc  = p(c.tp + c.tn, c.tp + c.fp + c.fn + c.tn)
+    return c
 
-def abcds(want, got, state=None):
-  state = state or o(stats={},  n=0)
-  for L in (want, got):
-    state.stats[L] = state.stats.get(L) or Abcd(L,state.n)
-  for x, s in state.stats.items():
-    s.add(want, got, x)
-  state.n += 1
-  return state
+  if summary:
+    out = o(label="_OVERALL", tn=0, fn=0, fp=0, tp=0)
+    for c in cf.klasses.values():
+      c = finalize(c)
+      for k in ["tn", "fn", "fp", "tp"]:
+        setattr(out, k, getattr(out, k) + getattr(c, k))
+    return finalize(out)
+  [finalize(v) for v in cf.klasses.values()]
+  return sorted(list(cf.klasses.values()) + 
+                [confused(cf, summary=True)],
+                key=lambda cf: cf.fn + cf.tp)
 
-def same(a, b): 
-  return cliffs(a, b) and bootstrap(a, b)
+# While ks_code is elegant (IMHO), its slow for large samples. That
+# said, it is nearly instantaneous  for the typical 20*20 cases.
+def ks_cliffs(x, y, ks=the.Ks, cliffs=the.Delta):
+  "True if x,y indistinguishable and differ by just a small effect."
+  x, y = sorted(x), sorted(y)
+  n, m = len(x), len(y)
 
-#--------------------------------------------------------------------
-def same(cliff=None, n=None, conf=None):
-  n     = n or the.bootstrap
-  conf  = conf or the.Boots
-  cliff = cliff or the.Cliifs
-  return lambda xs,ys:cliffs(xs,ys,cliff) and bootstrap(xs,ys,n,conf)
+  def _cliffs():
+    "How frequently are x items are gt,lt than y items?"
+    gt = sum(a > b for a in x for b in y)
+    lt = sum(a < b for a in x for b in y)
+    return abs(gt - lt) / (n * m)
 
-def cliffs(xs,ys, cliff):
-  "Effect size. Tb1 of doi.org/10.3102/10769986025002101"
-  n,lt,gt = 0,0,0
-  for x in xs:
-    for y in ys:
-      n += 1
-      if x > y: gt += 1
-      if x < y: lt += 1
-  return abs(lt - gt)/n  < cliff # 0.197)  #med=.28, small=.11
+  def _ks():
+    "Return max distance between cdf."
+    xs = sorted(x + y)
+    fx = [sum(a <= v for a in x)/n for v in xs]
+    fy = [sum(a <= v for a in y)/m for v in xs]
+    return max(abs(v1 - v2) for v1, v2 in zip(fx, fy))
 
-# Non-parametric significance test from 
-# Chp20,doi.org/10.1201/9780429246593. Distributions are the same 
-# if, often, we `_obs`erve differences just by chance. We center both 
-# samples around the combined mean to simulate what data might look 
-# like if vals1 and vals2 came from the same population.
-def bootstrap(xs, ys, bootstrap,conf):
-  _obs  = lambda i,j: abs(i.mu - j.mu) / (
-                           (i.sd**2/i.n + j.sd**2/j.n)**.5 +1E-32)
-  x,y,z = Num(xs+ys), Num(xs), Num(ys)
-  yhat  = [y1 - mid(y) + mid(x) for y1 in xs]
-  zhat  = [z1 - mid(z) + mid(x) for z1 in ys]
-  n     = 0
-  for _ in range(bootstrap):
-    n += _obs(Num(random.choices(yhat, k=len(yhat))),
-              Num(random.choices(zhat, k=len(zhat)))) > _obs(y,z)
-  return n / bootstrap >= (1- conf)
+  ks    = {0.1:1.22, 0.05:1.36, 0.01:1.63}[round(1 - ks,2)]
+  cliffs= {'small':0.11,'smed':0.195,'medium':0.28,'large':0.43}[cliffs]
+  return _cliffs() <= cliffs and _ks() <= ks * ((n + m)/(n * m))**0.5
 
-def sk(rxs, same, eps=0, reverse=False):
-  "Dict[key,List[float]] -> List[Num(key,rank,mu,sd)]" 
-  def _cut(items):
-    cut  = None
-    N    = sum(num.n for num, _ in items)
-    M    = sum(num.mu * num.n for num, _ in items) / N
-    best = s1 = n1 = 0
-    for j, (num, _) in enumerate(items[:-1]):
-      n, s  = num.n, num.mu * num.n 
-      n1,s1 = n1 + n, s1 + s
-      m1    = s1 / n1
-      n2    = N - n1
-      m2    = (M * N - s1) / n2
-      gain  = n1/N * (m1 - M)**2 + n2/N * (m2 - M)**2
-      if abs(m1 - m2) > eps and gain > best:
-        best, cut = gain, j+1
-    return cut
+def scottknott(rxs, reverse=False,same=ks_cliffs, eps=0.01):
+  "Sort rxs, recursively split them, stopping when two splits are same."
+  items = [(sum(vs), k, vs, len(vs)) for k, vs in rxs.items()]
+  return _skdiv(sorted(items,reverse=reverse),same,{},eps,rank=1)[1]
 
-  def _div(items, rank=0):
-    if (cut := _cut(items)) is not None:
-      L,R = items[:cut], items[cut:]
-      a   = [x for _, vals in L for x in vals]
-      b   = [x for _, vals in R for x in vals]
-      if not same(a, b):
-        return _div(R, _div(L, rank) + 1)
-    for num, _ in items:
-      num.rank = rank
-    return rank
+def _skdiv(groups, same, out, eps, rank=1):
+  "Cut and recurse (if we find a cut). Else, use rank=rank, then inc rank." 
+  def flat(lst): return [x for _, _, xs, _ in lst for x in xs]
+  cut = _skcut(groups, eps)
+  if cut and not same(flat(groups[:cut]), flat(groups[cut:])):
+    return _skdiv(groups[cut:], same, out, eps,
+                  rank=_skdiv(groups[:cut], same, out, eps, rank)[0])
+  for _, k, _, _ in groups:  out[k] = rank
+  return rank + 1, out
 
-  nums = sorted([(Num(vals, txt=k),vals) for k,vals in rxs.items()],
-                key=lambda x: x[0].mu, reverse=reverse)
-  _div(nums)
-  return [num for num, _ in nums]
+def _skcut(groups, eps):
+  "Cut to maximize difference in means (if cuts differ bu more than eps)."
+  sum1 = sum(s for s, _, _, _ in groups)
+  n1   = sum(n for _, _, _, n in groups)
+  mu   = sum1 / n1
+  best = sum0 = n0 = score = 0
+  for j, (s, _, _, n) in enumerate(groups[:-1]):
+    sum0 += s; n0 += n
+    sum1 -= s; n1 -= n
+    mu0, mu1 = sum0 / n0, sum1 / n1
+    now = n0 * (mu0 - mu)**2 + n1 * (mu1 - mu)**2
+    if abs(mu0 - mu1) > eps and now > score:
+      score, best = now, j + 1
+  return best
+
+#   _                                     
+# _|_       ._    _  _|_  o   _   ._    _ 
+#  |   |_|  | |  (_   |_  |  (_)  | |  _> 
+                                                       
+def csv(file):
+  "Iterate over all rows."
+  with open(file,encoding="utf-8") as f:
+    for line in f:
+      if (line := line.split("%")[0]):
+        yield [coerce(val.strip()) for val in line.split(",")]
 
-#-----------------------------------------------------------------
-#  _    _ ___  
-# |    | |__] 
-# |___ | |__] 
-            
-def fyi(*l): print(*l,end="", flush=True)
+def has(src, col=None):
+  "Summarize src into col (if col is None, them and guess what col to use)."
+  for row in src:
+    col = col or (Num if type(row) in [int,float] else Sym)()
+    add(col, row)
+  return col
 
-def atom(x):
-  "Coerce string to int,float, bool, string"
-  for fn in (int, float):
-    try: return fn(x)
-    except: pass
-  x = x.strip()
-  return x == "true" if x in ("true", "false") else x
-
-def shuffle(lst):
-  random.shuffle(lst)
-  return lst
-
-def csv(src):
-  want = None
-  for line in src:
-    if line:
-      cells= [atom(x) for x in line.strip().split(',')]
-      want = want or len(cells)
-      if want==len(cells): yield cells
-
-lines=lambda s: (line for line in s.splitlines())
-
-def doc(file):
-  with open(file, "r") as f:
-    for line in f: yield(line)
-
-def say(v): print(see(v)); return v
-
-def see(v):
-  "Converts most things to strings."
-  it = type(v)
-  isKlass = hasattr(v,"__dict__")
-  if isKlass     : return v.__class__.__name__ + see(v.__dict__)
-  if callable(v) : return v.__name__ + "()"
-  if it is float : return _cF(v) 
-  if it is dict  : return _cD(v)
-  if it is list  : return "{" + ", ".join(map(see, v)) + "}"
+def pretty(v, prec=0):
+  "Simplify print of numbers."
+  if isinstance(v, float):
+    return f"{v:.{prec}f}" if v != int(v) else str(int(v))
   return str(v)
 
-def _cOk(k): return not (isa(k,str) and k[0] == "_")
-def _cD(v) : return see([f":{k} {see(v[k])}" for k in v if _cOk(k)])
-def _cF(v) : return str(int(v)) if v==int(v) else f"{v:.{the.Rnd}g}"
+def show(lst, pre="| ", prec=0):
+  "Pretty print list of 'o' things, all with same labels."
+  def fmt(row):
+    return pre + " | ".join(c.rjust(w) for c, w in zip(row, gaps)) + " |"
 
-def xval(rows, fn, m=5, n=5):
-  r=0
-  for _ in range(m):
-    random.shuffle(rows)
-    for k in range(n):
-      fold = len(rows) // n
-      lo, hi = k * fold, (k + 1) * fold
-      train, test = [], []
-      for j, row in enumerate(rows):
-        (test if lo <= j < hi else train).append(row)
-      r += 1
-      fn(r,train, test)
-#--------------------------------------------------------------------
-#  _  _ ____ _ _  _ 
-#  |\/| |__| | |\ | 
-#  |  | |  | | | \| 
-                 
-def cli(d): 
-  "for d slot xxx, update its value from CLO flag -x"
-  for k, v in d.items():
-    for c, arg in enumerate(sys.argv):
-      if arg == "-" + k[0]:
-        d[k] = atom("False" if str(v) == "True" else (
-                    "True" if str(v) == "False" else (
-                    sys.argv[c+1] if c<len(sys.argv)-1 else str(v))))
+  rows = [[pretty(x, prec) for x in vars(r).values()] for r in lst]
+  head = list(vars(lst[0]))
+  table = [head] + rows
+  gaps = [max(len(row[i]) for row in table) for i in range(len(head))]
+  print(fmt(head))
+  print(pre + " | ".join("-" * w for w in gaps) + " |")
+  for row in rows: print(fmt(row))
 
-def run(fn,x=None):
-  "Before test, reset seed. After test, print any assert errors"
-  try:  
-    print("#"+(fn.__doc__ or fn.__name__))
-    random.seed(the.rseed)
-    fn(x)
-  except Exception as _:
-    tb = traceback.format_exc().splitlines()[4:]
-    return sys.stdout.write(
-            "\n".join([f"\033[31m{x}\033[0m" for x in tb])+"\n")
+def all_egs(run=False):
+  "Run all eg__* functions."
+  for k,fn in globals().items():
+    if k.startswith('eg__') and k != 'eg__all':
+      if run:
+        print("\n----["+k+"]"+'-'*40)
+        random.seed(the.seed)
+        fn()
+      else:  
+        print(" "+re.sub('eg__','--',k).ljust(10),"\t",fn.__doc__ or "")
+
+#  _        _.  ._ _   ._   |   _    _
+# (/_  ><  (_|  | | |  |_)  |  (/_  _> 
+#                      |               
 
-def go(fns):
-  "Update settings, run some fn from fns (selected by CLI flags)."
+def eg_h()    : print(__doc__)
+def eg__all() : all_egs(run=True)
+def eg__list(): all_egs()
+
+def eg__the(): print(the)
+def eg__csv(): [print(t) for t in list(csv(the.file))[::40]]
+def eg__sym(): print(has("aaaabbc"))
+def eg__Sym(): s = has("aaaabbc"); assert 0.44 == round(like(s,"a"),2)
+def eg__num(): print(has(random.gauss(10,2) for _ in range(1000)))
+def eg__Num() : 
+  n = has(random.gauss(10,2) for _ in range(1000))
+  assert 0.13 == round(like(n,10.5),2)
+
+def eg__data(): [print(col) for col in Data(csv(the.file)).cols.all]
+
+def eg__inc():
+  "Check i can add/delete rows incrementally."
+  d1 = Data(csv(the.file))
+  d2 = clone(d1)
+  x  = d2.cols.x[1]
+  for row in d1.rows:
+    adds(d2,row)
+    if len(d2.rows)==100:  
+      mu1,sd1 = x.mu,x.sd 
+  for row in d1.rows[::-1]:
+    if len(d2.rows)==100: 
+      mu2,sd2 = x.mu,x.sd
+      assert abs(mu2 - mu1) < 1.01 and abs(sd2 - sd1) < 1.01
+      break
+
+def eg__bayes():
+  data = Data(csv(the.file))
+  assert all(-30 <= likes(data,t) <= 0 for t in data.rows)
+  print(sorted([round(likes(data,t),2) for t in data.rows])[::20])
+
+def eg__confuse():
+  "check confuse calcs."
+  # a b c <- got
+  # ------. want
+  # 5 1   | a
+  #   2 1 | b
+  #     3 | c
+  cf = Confuse()   
+  for want,got,n in [
+      ("a","a",5),("a","b",1),("b","b",2),("b","c",1),("c","c",3)]:
+    for _ in range(n): confuse(cf, want, got)
+  xpect = {"a": {'pd':83,  'acc':92, 'pf':0,  'prec':100},
+           "b": {'pd':67,  'acc':83, 'pf':11, 'prec':67},
+           "c": {'pd':100, 'acc':92, 'pf':11, 'prec':75} }
+  for y in confused(cf):
+    if y.label != "_OVERALL":
+       got = {'pd':y.pd, 'acc':y.acc, 'pf':y.pf, 'prec':y.prec}
+       assert xpect[y.label] == got
+  show(confused(cf))
+
+def eg__stats():
+   b4 = [random.gauss(1,1)+ random.gauss(10,1)**0.5
+         for _ in range(20)]
+   d, out = 0,[]
+   while d < 1:
+     now = [x+d*random.random() for x in b4]
+     out += [f"{d:.2f}" + ("y" if ks_cliffs(b4,now) else "n")]
+     d += 0.05
+   print(', '.join(out))
+
+def daRx(t):
+    if not isinstance(t,(tuple,list)): return str(t)
+    return ':'.join(str(x) for x in t)
+
+def eg__sk():
+  n=20
+  for sd in [0.1,1,10]:
+    for eps in [1E-32,0.05,0.1,0.15,0.2]:
+      print("\neps=",eps, "sd=",sd)
+      rxs={}
+      G=lambda m:[random.gauss(m,sd) for _ in range(n)]
+      for i in range(20): 
+        if   i<=  4 : rxs[chr(97+i)] = G(10)
+        elif i <= 8 : rxs[chr(97+i)] = G(11)
+        elif i <=12 : rxs[chr(97+i)] = G(12)
+        elif i <=16 : rxs[chr(97+i)] = G(12)
+        else        : rxs[chr(97+i)] = G(14)
+      out=scottknott(rxs,eps=eps)
+      print("\t",''.join(map(daRx,out.keys())))
+      print("\t",''.join([str(x) for x in out.values()]))
+
+def eg__diabetes(): 
+  show(nbc("../../../moot/classify/diabetes.csv"))
+
+def eg__soybean():  
+  show(nbc("../../../moot/classify/soybean.csv"))
+
+def eg__xdist():
+  data = Data(csv(the.file))
+  r1= data.rows[0]
+  ds= sorted([xdist(data,r1,r2) for r2 in data.rows])
+  print(', '.join(f"{x:.2f}" for x in ds[::20]))
+  assert all(0 <= x <= 1 for x in ds)
+
+def eg__ydist():
+  data = Data(csv(the.file))
+  data.rows.sort(key=lambda row: ydist(data,row))
+  assert all(0 <= ydist(data,r) <= 1 for r in data.rows)
+  print(', '.join(data.cols.names))
+  print("top4:");   [print("\t",row) for row in data.rows[:4]]
+  print("worst4:"); [print("\t",row) for row in data.rows[-4:]]
+
+def eg__irisKpp(): 
+  [print(r) for r in kpp(Data(csv("../../../moot/classify/iris.csv")),k=10)]
+
+def eg__irisK(): 
+  for data in kmeans(Data(csv("../../../moot/classify/iris.csv")),k=10):
+    print(mids(data)) 
+
+def daBest(data,rows=None):
+  rows = rows or data.rows
+  Y=lambda r: ydist(data,r)
+  return Y(sorted(rows, key=Y)[0])
+
+def eg__tree():
+  data = Data(csv(the.file))
+  someData= clone(data,
+                  acquires(data,data.rows,"xplor").labels)
+  print(round(daBest(data),2))
+  showTree(tree(someData))
+
+def eg__fmap():
+  data = Data(csv(the.file))
+  for few in [32,64,128,256,512]:
+    the.Few = few
+    print(few)
+    n=has(daBest(data, fastermap(data,data.rows).labels.rows) for _ in range(20))
+    print("\t",n.mu,n.sd)
+
+def eg__acq():
+  data = Data(csv(the.file))
+  for few in [32,64,128,256,512]:
+    the.Few = few
+    print(few)
+    for acq in ["xploit"]: #["xplore", "xploit", "adapt","klass"]:
+      the.acq = acq
+      n=has(daBest(data, acquires(data, data.rows).labels.rows) for _ in range(20))
+      print("\t",the.acq, n.mu,n.sd)
+
+def eg__rand():
+  data = Data(csv(the.file))
+  n = has(daBest(data, random.choices(data.rows, k=the.Build)) for _ in range(20))
+  print("\t",n.mu,n.sd)
+
+
+def eg__old():
+  data = Data(csv(the.file))
+  rxs = dict(
+             kpp   = lambda d: kpp(d, d.rows),
+             sway   = lambda d: fastermap(d, d.rows, sway1=True).labels.rows,
+             sway2  = lambda d: fastermap(d, d.rows).labels.rows
+             )
+  xper1(data,rxs)
+             
+def eg__liking():
+  data = Data(csv(the.file))
+  rxs = dict(#rand   = lambda d: random.choices(d.rows,k=the.Build),
+             xploit = lambda d: acquires(d,d.rows,"xploit").labels,
+             xplor = lambda d: acquires(d,d.rows,"xplor").labels, # <== winner
+             adapt  = lambda d: acquires(d,d.rows,"adapt").labels,
+             )
+  xper1(data,rxs)
+
+def eg__final():
+  data = Data(csv(the.file))
+  rxs = dict(rand   = lambda d: random.choices(d.rows,k=the.Build),
+             xploit = lambda d: acquires(d,d.rows,"xploit").labels,
+             sway2  = lambda d: fastermap(d, d.rows).labels.rows
+             )
+  xper1(data,rxs)
+
+def xper1(data,rxs):
+  repeats=30
+  builds=[15,30,45,60,75,100]
+  base = has(ydist(data,r) for r in data.rows)
+  win  = lambda x: 1 - (x - base.lo) / (base.mu - base.lo + 1e-32)
+  out={}
+  for build in builds: 
+    the.Build = build
+    print("+", file=sys.stderr, end="",flush=True)
+    for rx,fn in rxs.items():
+      print("-", file=sys.stderr, end="", flush=True)
+      out[(rx,build)] = [daBest(data,fn(data)) for _ in range(repeats)]
+  print("\n", file=sys.stderr, flush=True)
+  ranks = scottknott(out, eps=base.sd*0.2)
+  rank1 = has(x for k in ranks if ranks[k] == 1 for x in out[k])
+  p = lambda z: round(100*z) #"1.00" if z == 1 else (f"{pretty(z,2)[1:]}" if isinstance(z,float) and z< 1 else str(z))
+  q = lambda k: f" {chr(64+ranks[k])} {p(has(out[k]).mu)}"
+  print("#file","rows","|y|","|x|","asIs","min",*[daRx((rx,b)) for b in builds for rx in rxs],"win",sep=",")
+  print(re.sub("^.*/","",the.file),
+        len(data.rows), len(data.cols.y), len(data.cols.x), p(base.mu), p(base.lo),
+        *[q((rx,b)) for b in builds for rx in rxs],p(win(rank1.mu)), sep=",")
+
+#   __                                  
+#  (_   _|_   _.  ._  _|_  __       ._  
+#  __)   |_  (_|  |    |_      |_|  |_) 
+#                                  |   
+
+def main():
+  "Update settings from CLI, run any eg functions."
   cli(the.__dict__)
-  for i, s in enumerate(sys.argv[1:]):
-    if s=="--all":
-       [run(fn) for s1,fn in fns.items() if s1.startswith("eg__")]
-    if fn := fns.get("eg" + s.replace("-", "_")):
-      x = None if i>=len(sys.argv[1:]) - 1 else atom(sys.argv[i+2])
-      run(fn,x)
+  for arg in sys.argv:
+    if (fn := globals().get(f"eg{arg.replace('-', '_')}")):
+      random.seed(the.seed)
+      fn() 
 
-def settings(txt):
-  "Extract flag=default from strings like our doc string"
-  d = {}
-  for k,v in re.findall(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\)",txt):
-    assert k not in d, f"duplicate flag for setting '{k}'"
-    d[k] = atom(v)
+def cli(d):
+  "Updated d's slots from  command line."
+  for n,arg in enumerate(sys.argv):
+    for key in d:
+      if arg == "-"+key[0]: 
+        d[key] = coerce(sys.argv[n+1])
   return d
 
-the = o(**settings(__doc__))
+if __name__ == "__main__": main()
