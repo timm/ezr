@@ -9,10 +9,13 @@ the = o(p=2, seed=1234567890, Projections=8,
         file="../moot/optimize/misc/auto93.csv")
 
 def Data(src):
+  def _guess(row):
+    return sum(interpolate(data,row,*pole) for pole in poles)/len(poles)
+
   head, *rows = list(src)
   data  = _data(head, rows)
   poles = projections(data)
-  for row in rows: score(data,row,poles)
+  for row in rows: row[-1] = _guess(row)
   return data
 
 def _data(names,rows):
@@ -70,9 +73,6 @@ def interpolate(data,row,best,rest,c):
   y1,y2 = ydist(data,best), ydist(data,rest)
   return y1 + x/c * (y2-y1) 
 
-def score(data,row,poles):
-  row[-1] = sum(interpolate(data,row,*pole) for pole in poles)/len(poles)
-
 def projections(data):
   poles = []
   for _ in range(the.Projections):
@@ -83,54 +83,51 @@ def projections(data):
   return poles
 
 #------------------------------------------------------------------------------
-# ops = dict(le = lambda r,c,v: r[c] <= v,
-#            gt = lambda r,c,v: r[c] >  v,
-#            eq = lambda r,c,v: r[c] == v)
-#
-# lt = lambda c,x: (lambda row: row[c]<x)
-#
-# def mid(data,rows,c):
-#   s = sorted(rows, key=); n = len(s)
-#   return s[n//2] if n%2 else (s[n//2-1] + s[n//2])/2
-#
-# def roles(head):
-#   n,s,x,y = set(),set(),set(),set()
-#   for i,txt in enumerate(head):
-#     if isinstance(txt,str):
-#       (n if txt[-1].isupper() else s).add(i)
-#       (y if txt[-1] in "!+-" else x).add(i)
-#   return o(nums=n, syms=s, x=x, y=y)
-#
-# def splits(data, meta):
-#   head, rows = data[0], data[1:]
-#   for c in meta.x:
-#     if c in meta.nums:
-#       v = median([r[c] for r in rows])
-#       yield o(col=c, val=v, op='le',
-#                yes=[r for r in rows if r[c] <= v],
-#                no =[r for r in rows if r[c] >  v])
-#     else:
-#       for v in set(r[c] for r in rows):
-#         yield o(col=c, val=v, op='eq',
-#                  yes=[r for r in rows if r[c] == v],
-#                  no =[r for r in rows if r[c] != v])
-#
-# def grow(data, score, d):
-#   if d == 0: return [data[1:]]
-#   meta = roles(data[0])
-#   best = max(splits(data, meta), key=lambda r: score(r.yes))
-#   c,v,o,ys,ns = best.col, best.val, best.op, best.yes, best.no
-#   out = []
-#   for t in grow([data[0]]+ns, score, d-1): out += [(c,v,o,ys,t)]
-#   for t in grow([data[0]]+ys, score, d-1): out += [(c,v,o,ns,t)]
-#   return out
-#
-# def predict(t, row):
-#   while isinstance(t, tuple):
-#     c,v,o,l,r = t
-#     t = l if ops[o](row,c,v) else r
-#   return t
-#
+ops = dict(le = lambda r,c,v: r[c] <= v,
+           gt = lambda r,c,v: r[c] >  v,
+           eq = lambda r,c,v: r[c] == v)
+
+def mid(rows, c):
+  rows  = sorted(rows, key= lambda r: -BIG of r[c]=="?" else r[c])
+  n     = rows[len(rows) // 2]
+  _eq   = lambda v: v == n or v == "?"
+  _down = lambda v: v <  n or v == "?"
+  _up   = lambda v: v >= n or v == "?"
+  _avg  = lambda rows: sum(r[-1] for r in rows) / len(rows)
+  lo,hi = [r for r in rows if _down(r[c])], [r for r in rows in _up(r[c])]
+  return _avg(lo), lo, _avg(hi), hi
+
+def splits(data):
+  def _fn(rows):
+    for c,col in data.cols.x.items():
+      if type(col) is Num:
+        v = mid(rows,c)
+
+        yield o(col=c, val=v, op='le', 
+                yes= [row for row in rows if g(row[c, 
+                no =rest)
+      else:
+        for v in set(r[c] for r in rows):
+          yield o(col=c, val=v, op='eq',
+                   yes=[r for r in rows if r[c] == v],
+                   no =[r for r in rows if r[c] != v])
+
+def grow(data, score, d):
+  if d == 0: return [data[1:]]
+  meta = roles(data[0])
+  best = max(splits(data, meta), key=lambda r: score(r.yes))
+  c,v,o,ys,ns = best.col, best.val, best.op, best.yes, best.no
+  out = []
+  for t in grow([data[0]]+ns, score, d-1): out += [(c,v,o,ys,t)]
+  for t in grow([data[0]]+ys, score, d-1): out += [(c,v,o,ns,t)]
+  return out
+
+def predict(t, row):
+  while isinstance(t, tuple):
+    c,v,o,l,r = t
+    t = l if ops[o](row,c,v) else r
+  return t
+
 def csv(file):
   n = -1
   with open(file,encoding="utf-8") as f:
@@ -143,6 +140,7 @@ def csv(file):
 r3=lambda n:round(n,3)
 
 def eg__the(): print(the)
+
 def eg__xdata(): 
   data = Data(csv(the.file))
   print(sorted([r3(xdist(data,r,data.rows[0])) for r in data.rows])[::10])
@@ -152,7 +150,6 @@ def eg__data():
   for p in [1,2,4,8]:
     the.Projections = p
     data = Data(csv(the.file))
-    #for x,y in sorted([(row[-1],ydist(data,row)) for row in data.rows]): print(x,y)
     gy = [(row[-1],ydist(data,row)) for row in data.rows]
     r=0
     for _ in range(1000):
@@ -162,7 +159,6 @@ def eg__data():
       r += a[1] < b[1]
     print(f"{r/1000:.2f} ", end="",flush=True)
   print(the.file)
-
 
 def eg__one():
   S = lambda rows: len(rows)
