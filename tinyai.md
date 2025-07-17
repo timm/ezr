@@ -1,12 +1,12 @@
 <!-- vi: set spell spelllang=en_us: -->
 
-# Insde EZR.py
+# Inside Easier AI
 
 Tim Menzies   
 timm@ieee.org  
 July 2025
 
-EZR was an experiment with "little AI". Big AI assumes that model
+EZR.py is an experiment with "little AI". Big AI assumes that model
 building needs massive amounts of data and CPU. Little AI takes an
 alternate approach and assumes that models are tiny gems that hide,
 obscured, by vast amounts of irrelevant, noise, or redundant
