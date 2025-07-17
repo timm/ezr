@@ -3,10 +3,14 @@ import random, sys
 from math import log
 from types import SimpleNamespace as o
 
-Sym = dict
-Num = tuple #(lo,hi)
 BIG = 1e32
-the = o(p=2, seed=1234567890, Projections=8,
+def Sym(): return {}
+def Num(): return o(lo=BIG, hi=-BIG,mu=0,m2=0,n=0,sd=0) 
+
+the = o(bins=7,
+        p=2, 
+        Projections=8, 
+        seed=1234567890, 
         file="../moot/optimize/misc/auto93.csv")
 
 def Data(src):
@@ -22,23 +26,33 @@ def Data(src):
 def _data(names,rows):
   w,x,y,all = {},{},{},{}
   for c, s in enumerate(names):
-    col = _col(c, rows, s[0].islower())
+    col = Sym if s[0].islower() else Num)()
+    [add(col,v) for row in rows if (v:=row[c]) != "?"]
     all[c] = col
     if s[-1] != "X":
       w[c] = s[-1] == "+"
       (y if s[-1] in "!+-" else x)[c] = col 
   return o(rows=rows, cols=o(names=names, w=w, x=x, y=y, all=all))
 
-def _col(c, rows, is_sym=True):
-  counts, lo, hi = {}, BIG, -BIG
-  for row in rows:
-    if (v:=row[c]) != "?": 
-      if is_sym: 
-        counts[v] = 1 + counts.get(v,0)
-      else : 
-        v = row[c] = float(v)
-        lo, hi = min(v,lo), max(v,hi)
-  return counts if is_sym else (lo, hi)
+def add(col, v):
+  if type(col) is dict: col[v] = 1 + col.get(v,0)
+  else:
+    v       = float(v)
+    col.n  += 1
+    d       = v - col.mu
+    col.mu += 1 * (d / col.n)
+    col.m2 += 1 * (d * (v - col.mu))
+    col.sd  = (col.m2/(col.n - 1 - 1/BIG))**.5
+    col.lo  = min(v, col.lo)
+    col.hi  = max(v, col.hi)
+  return v
+
+def bin(col,v):
+  if type(col) is dict: return v
+  fun = lambda x: 1 - 0.5 * math.exp(-0.717*x - 0.416*x*x) 
+  z   = (x - col.mu) / col.sd
+  b   = (fun(x) if z>=0 else 1 - fun(-z)) * the.bins
+  return max(0, min(b, the.bins - 1))
 
 #------------------------------------------------------------------------------
 def minkowski(src):
@@ -100,11 +114,12 @@ def chops(rows,c,is_num):
     x = q(rows[n])
     return [("<=", x, c, [r for r in rows if q(r) <= x]),
             (">" , x, c, [r for r in rows if q(r) >  x])]
-  d = {}
+  x,y={},{}
   for row in rows:
     if (x := row[c]) != "?":
-      d[x] = d.get(x,[]) 
-      d[x] += [row]
+      b = bin(col,x)
+      d[b] = d.get(b,[]) 
+      d[b] += [row]
   return [("==",c,x,d[x]) for x in d]
 
 def splits(data,rows.how=None,stop=2,depth=0)
