@@ -234,11 +234,13 @@
 </head>
 <body>
 <!-- vi: set spell spelllang=en_us: -->
-<h1 id="insde-ezr.py">Insde EZR.py</h1>
+<!-- make with md2html thisfile.md-->
+<h1 id="inside-easier-ai">Inside Easier AI</h1>
 <p>Tim Menzies<br />
 timm@ieee.org<br />
 July 2025</p>
-<p>EZR was an experiment with “little AI”. Big AI assumes that model
+<h2 id="introduction">Introduction</h2>
+<p>EZR.py is an experiment with “little AI”. Big AI assumes that model
 building needs massive amounts of data and CPU. Little AI takes an
 alternate approach and assumes that models are tiny gems that hide,
 obscured, by vast amounts of irrelevant, noise, or redundant
@@ -246,6 +248,16 @@ information. Under that assumption:</p>
 <blockquote>
 <p>The best thing to do with most data, is throw it away.</p>
 </blockquote>
+<p>Accordingly, EZR.py usies active learnng to build models froma very
+small amunt of dat. Its work can be sumamrised as A-B-C.</p>
+<ul>
+<li><strong>A</strong>: Use <em>a</em>ny examples</li>
+<li><strong>B</strong>: <em>B</em>uild a model</li>
+<li><strong>C</strong>: <em>C</em>heck the model</li>
+</ul>
+<h2 id="motivation">Motivation</h2>
+<h3 id="should-make-it-simpler">Should make it simpler</h3>
+<h3 id="can-make-i-simpler">Can make i simpler</h3>
 <p>EZR was motivated by the current industrial obsession on Big AI that
 seems to be forgetting centuries of experience with data mining. As far
 back as 1901, Pearson<a href="#fn1" class="footnote-ref" id="fnref1"
@@ -295,8 +307,8 @@ within that higher space [^zh05].</li>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Data(src):</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(row):</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(interpolate(data,row,<span class="op">*</span>pole) </span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               <span class="cf">for</span> pole <span class="kw">in</span> poles)<span class="op">/</span><span class="bu">len</span>(poles)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(interpolate(data,row,<span class="op">*</span>pole) <span class="cf">for</span> pole <span class="kw">in</span> poles)<span class="op">/</span><span class="bu">len</span>(poles)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>      </span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  head, <span class="op">*</span>rows <span class="op">=</span> <span class="bu">list</span>(src)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  data  <span class="op">=</span> _data(head, rows)</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  poles <span class="op">=</span> projections(data)</span>

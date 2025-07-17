@@ -1,4 +1,5 @@
 <!-- vi: set spell spelllang=en_us: -->
+<!-- make with md2html thisfile.md-->
 
 # Inside Easier AI
 
@@ -6,13 +7,38 @@ Tim Menzies
 timm@ieee.org  
 July 2025
 
+## Introduction
+
 EZR.py is an experiment with "little AI". Big AI assumes that model
 building needs massive amounts of data and CPU. Little AI takes an
 alternate approach and assumes that models are tiny gems that hide,
-obscured, by vast amounts of irrelevant, noise, or redundant
-information. Under that assumption:
+obscured by vast amounts of detail that is irrelevant or noisy or superfluous.
+Under that assumption:
 
 > The best thing to do with most data, is throw it away.
+
+Accordingly, EZR.py
+usies active learnng to build models froma very small amunt of dat.
+Its work can be sumamrised as A-B-C.
+
+- **A**: Use **a**ny examples
+- **B**: **B**uild a model
+- **C**: **C**heck the model
+
+EZR supports not just the code but allso the statsitical functions that
+lets analst make clear concluios about (e.g.) what kinds of clustering leads
+to better conclusions, sooner. With this it...
+
+Teaching . illustrates much of what is missing in current programmer and sE ltierature (oatterns of productinve coding, isuess of documentation,
+encapultion test drivend evelopment etc). It can also be used a minimal AI teaching toolkit that indotruces
+students to clustering. Bayes inference, classfication, rule earling, tree elarning
+as well as the stats required to devalauted which of these tools is best for some current data/
+
+## Motivation
+
+### Should make it simpler
+
+### Can make i simpler
 
 EZR was motivated by the current industrial obsession on Big AI
 that seems to be forgetting centuries of experience with data mining.
@@ -59,8 +85,8 @@ Code:
 
     def Data(src):
       def _guess(row):
-        return sum(interpolate(data,row,*pole) 
-                   for pole in poles)/len(poles)
+        return sum(interpolate(data,row,*pole) for pole in poles)/len(poles)
+          
       head, *rows = list(src)
       data  = _data(head, rows)
       poles = projections(data)
