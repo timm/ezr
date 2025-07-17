@@ -31,7 +31,6 @@ space[^witten].  Levnina and Biclet cwnote that
 
 (This remarks echoes an early conclusion from Johnson and Lindenstrauss [^john84].).
 
-[TOC]
 
 For example:
 
@@ -60,12 +59,16 @@ Code:
 
     def Data(src):
       def _guess(row):
-        return sum(interpolate(data,row,*pole) for pole in poles)/len(poles)
+        return sum(interpolate(data,row,*pole) 
+                   for pole in poles)/len(poles)
       head, *rows = list(src)
       data  = _data(head, rows)
       poles = projections(data)
       for row in rows: row[-1] = _guess(row)
       return data
+### data 
+
+Notes from ase aper
 
 ### Caveats
 
@@ -79,7 +82,7 @@ Tabular data
 into a hilbert space,” Contemporary Mathematics, vol. 26, pp. 189–206,
 1984.
 
-[^me08a:] T. Menzies, B. Turhan, A. Bener, G. Gay, B. Cukic, and Y. Jiang,
+[^me08a]: T. Menzies, B. Turhan, A. Bener, G. Gay, B. Cukic, and Y. Jiang,
 “Implications of ceiling effects in defect predictors,” in Proceedings
 of the 4th international workshop on Predictor models in software
 engineering, 2008, pp. 47–54.
@@ -88,7 +91,7 @@ engineering, 2008, pp. 47–54.
 to Systems of Points in Space". Philosophical Magazine. 2 (11):
 559–572. 10.1080/14786440109462720.
 
-[^witten:]      I. Witten, E. Frank, and M. Hall.  Data Mining:
+[^witten]:      I. Witten, E. Frank, and M. Hall.  Data Mining:
 Practical Machine Learning Tools and Techniques Morgan Kaufmann
 Series in Data Management Systems Morgan Kaufmann, Amsterdam, 3
 edition, (2011)
