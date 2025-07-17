@@ -1,5 +1,6 @@
 #!/usr/bin/env python3 -B
 import random, sys
+from math import log
 from types import SimpleNamespace as o
 
 Sym = dict
@@ -82,10 +83,43 @@ def projections(data):
     poles += [(best, rest, xdist(data,best, rest))]
   return poles
 
+def ent(d):
+  N = sum(d.values())
+  return - sum(p*log(p,2) for n in d.values() if (p:=n/N) > 0)
+
+def std(lst,fn):
+ n = lst//10
+ return (fn(lst[n*9]) - fn(lst[n]))/2.56
+
+
 #------------------------------------------------------------------------------
+def chops(rows,c,is_num):
+  if is_num:
+    v = lambda r: -BIG if r[c]=="?" else r[c]
+    n = sorted(rows,key=v)[len(rows//2)
+    x = q(rows[n])
+    return [("<=", x, c, [r for r in rows if q(r) <= x]),
+            (">" , x, c, [r for r in rows if q(r) >  x])]
+  d = {}
+  for row in rows:
+    if (x := row[c]) != "?":
+      d[x] = d.get(x,[]) 
+      d[x] += [row]
+  return [("==",c,x,d[x]) for x in d]
+
+def splits(data,rows.how=None,stop=2,depth=0)
+  kids=[]
+  if len(rows)> stop and depth > 0:
+     tmp = [cut(rows,c,type(col) is Num))
+            for c,col in data.cols.x.items()]
+
+  return o(how=how,kids=kids,rows=rows)
+  max(for c,col in data.cols.xa
 ops = dict(le = lambda r,c,v: r[c] <= v,
            gt = lambda r,c,v: r[c] >  v,
            eq = lambda r,c,v: r[c] == v)
+
+def worth(rows): return sum(r[-1] for r in rows) / len(rows)
 
 def mid(rows, c):
   rows  = sorted(rows, key= lambda r: -BIG of r[c]=="?" else r[c])
@@ -93,9 +127,8 @@ def mid(rows, c):
   _eq   = lambda v: v == n or v == "?"
   _down = lambda v: v <  n or v == "?"
   _up   = lambda v: v >= n or v == "?"
-  _avg  = lambda rows: sum(r[-1] for r in rows) / len(rows)
   lo,hi = [r for r in rows if _down(r[c])], [r for r in rows in _up(r[c])]
-  return _avg(lo), lo, _avg(hi), hi
+  return worth(lo), lo, worth(hi), hi
 
 def splits(data):
   def _fn(rows):
