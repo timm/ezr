@@ -108,8 +108,8 @@
      overflow: visible;
     }
     hr {
-      background-color: #1a1a1a;
       border: none;
+      border-top: 1px solid #1a1a1a;
       height: 1px;
       margin: 1em 0;
     }
@@ -168,8 +168,9 @@
     }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
     /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -180,7 +181,7 @@
     }
     @media print {
     pre > code.sourceCode { white-space: pre-wrap; }
-    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
     }
     pre.numberSource code
       { counter-reset: source-line 0; }
@@ -238,23 +239,127 @@
 <p class="author">Tim Menzies<br>timm@ieee.org</p>
 <p class="date">July, 2025</p>
 </header>
-<p><em>“Hush! Or I will replace you with a very small shell
-script.”</em></p>
-<hr />
-<p>This doc is an attempt to explain in detail the nucleus of some of
-the more interesting AI methods to appear in recent years. XXX much
-recent work on less XXX</p>
-<p>EZR.py is a “little AI” tool. Big AI needs massive amounts of data
-and CPU. Little AI, on the other hand, assumes that models are tiny
-gems, obscured by vast amounts of detail that is irrelevant or noisy or
-superfluous. Under that assumption:</p>
+<table style="width:76%;">
+<colgroup>
+<col style="width: 76%" />
+</colgroup>
+<tbody>
+<tr>
+<td><em>“Perfection is achieved not when there is nothing more to add,
+but when there is nothing left to take away.”</em> <br>- Antoine de
+Saint-Exupéry</td>
+</tr>
+<tr>
+<td><em>“Less, but better.”</em> <br>- Dieter Rams</td>
+</tr>
+</tbody>
+</table>
+<p>Much current work focuses on “big AI” methods that assume massive CPU
+and enormous quantities of training data. While successful for a range
+of generative tasks<a href="#fn1" class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a> <a href="#fn2" class="footnote-ref"
+id="fnref2" role="doc-noteref"><sup>2</sup></a> <a href="#fn3"
+class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> <a
+href="#fn4" class="footnote-ref" id="fnref4"
+role="doc-noteref"><sup>4</sup></a>, they have many limitations<a
+href="#fn5" class="footnote-ref" id="fnref5"
+role="doc-noteref"><sup>5</sup></a>. For example, it is hard to
+reproduce results using resource intensive methods. Hence, it is hardly
+surprising that there is very few comparison of big AI to other methods.
+A recent systematic review<a href="#fn6" class="footnote-ref"
+id="fnref6" role="doc-noteref"><sup>6</sup></a> of 229 SE papers using
+large language models (a big AI method), only 13/229 ≈ 5% of those
+papers compared themselves to other approaches. This is a methodological
+error since other methods can produce results that are better and/or
+faster <a href="#fn7" class="footnote-ref" id="fnref7"
+role="doc-noteref"><sup>7</sup></a> <a href="#fn8" class="footnote-ref"
+id="fnref8" role="doc-noteref"><sup>8</sup></a> <a href="#fn9"
+class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a> <a
+href="#fn10" class="footnote-ref" id="fnref10"
+role="doc-noteref"><sup>10</sup></a> <a href="#fn11"
+class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a>
+<a href="#fn12" class="footnote-ref" id="fnref12"
+role="doc-noteref"><sup>12</sup></a> <a href="#fn13"
+class="footnote-ref" id="fnref13"
+role="doc-noteref"><sup>13</sup></a>.</p>
+<p>So what are alternative approaches for AI (that do not assume deep
+learning or large language models)? One place to start is that, for the
+most part, big AI research overlooks decades of work showing that models
+are often tiny gems, obscured by vast amounts of detail that is
+irrelevant or noisy or superfluous. “Little AI” assumes that:</p>
 <blockquote>
 <p>The best thing to do with most data, is throw it away.</p>
 </blockquote>
-<p>EZR is an interesting candidate for formal study , for the following
+<p>EZR is an active learner; i.e. it reflects on a tiny model built so
+far, to select the next thing to explore. In this way it can avoid
+superfluous, irrelevant, and noisy data. EZR’s results are startling. In
+just a few hundred lines of code, EZR supports numerous basic AI tasks.
+Using those basic tasks, it then it becomes quick to code numerous
+common AI tasks like clustering or classification or regression or
+active learning or multi-objective optimization or explanation.</p>
+<p>This research note describe the “why”, “how”, and “so what?” of EZR.
+After motivating the work, a code walk through explores the internals of
+the tool. EZR is then assessed using 100+ examples taken from the
+software engineering optimization literature. These examples, available
+at the MOOT repository<a href="#fn14" class="footnote-ref" id="fnref14"
+role="doc-noteref"><sup>14</sup></a>, are quite diverse and include
+software process decisions, optimizing configuration parameters, and
+tuning learners for better analytics. Successful MOOT modeling results
+in better advice for project managers, better control of software
+options, and enhanced analytics from learners that are better tuned to
+the local data.</p>
+<p>Using MOOT, we can answer many questions about EZR:</p>
+<ul>
+<li><strong>RQ1</strong>: Is it simple? As seen below, EZR has a very
+short and straight-forward code base.</li>
+<li><strong>RQ2</strong>: Is it fast? In milliseconds, EZR can complete
+tasks that take hours using big data methods.</li>
+<li><strong>RQ3</strong>: Is it effective? In a result supporting the
+little data assumption, MOOT’s active learners can achieve near-optimal
+results after processing just a few dozen examples.</li>
+<li><strong>RQ4</strong>: Is it insightful? Our discussion section
+argues that MOOT offers a unique perspective on science and engineering,
+and what it means to explore the world.</li>
+<li><strong>RQ5:</strong> Is it general? All our conclusions are based
+on the MOOT data. Hence it is prudent to ask what are the limits of
+conclusions drawn from that kind of experience. For example, our EZR
+tool is not (yet) a tool for generation tasks (for that, you need a
+large language mode like ChatGPT). Nevertheless. its fast runtime and
+explanation tools make it the preferred approach when models must be
+built quickly or critiqued externally.</li>
+</ul>
+<h2 id="a-quick-demo">A Quick Demo</h2>
+<p>The file ezr.py contains numerous demos that can be executed from the
+command line. For example, k-means clustering groups together similar
+examples by (a) picking <span class="math inline"><em>k</em></span>
+centroids at random from amongst the rows of data; (b) labelling each
+example with he iid of of its nearest centroid; then (c)</p>
+<table>
+<tr>
+<td>
+Fig1: axxx
+</td>
+</tr>
+<tr>
+<td>
+The file ezr.py contains numerous demos that can be executed from the
+command line. For example, k-means clustering groups together similar
+examples by (a) picking <span class="math inline"><em>k</em></span>
+centroids at random from amongst the <em>rows</em> of data; (b)
+labelling each example with he iid of of its nearest centroid; then (c)
+</td>
+</tr>
+</table>
+<h1 id="easer-ai-why">Easer AI: Why?</h1>
+<p>This section offers motivation for exploring little AI tools like
+EZR.</p>
+<h3 id="learning-about-ai">Learning About AI</h3>
+<p>If we can make AI simpler, then we can make also simplify the
+teaching of AI.</p>
+<p>EZR is an interesting candidate for study, for the following
 reasons:</p>
 <ul>
-<li>its system requirements are so lwo, it can run on system that are
+<li>its system requirements are so low, it can run on system that are
 already available to all of us;</li>
 <li>it is compact and accessible;</li>
 <li>it provides an extensive set of very usable facilities;</li>
@@ -262,28 +367,56 @@ already available to all of us;</li>
 number of areas.</li>
 </ul>
 <p>Not least amongst the charms and virtues of EZR is the compactness of
-its source code: comfortable less than 1,000 lines of code including
-tools for clustering, classification, regression, optimization,
-explanation, active learning, statistical analysis, documentation, and
-test-driven development.</p>
-<p>Such a short code listing is important since it has often been
-suggested that 1,000 lines of code represents the practical limit in
-size for a program which is to be understood and maintained by a single
-individual<a href="#fn1" class="footnote-ref" id="fnref1"
-role="doc-noteref"><sup>1</sup></a>. Most AI tools either exceed this
-limit by one or even two orders of magnitude, or else offer the user a
-very limited set of facilities, i.e. either the details of the system
-are inaccessible to all but the most determined, dedicated and
+its source code: in just a few hundred ines of code including tools for
+clustering, classification, regression, optimization, explanation,
+active learning, statistical analysis, documentation, and test-driven
+development.</p>
+<p>Such a short code listing is important. For <strong>industrial
+practitioners:</strong>, short code examples are easier to understand,
+adapt, test, maintain and (if required), port to different languages.
+Another reason to explore short code solutions are the security
+implications associated with building systems based on long supply
+chains. To say the least, it is prudent to replace long supply chains
+with tiny local stubs.</p>
+<p>Also, for <strong>teaching (or self-study)</strong>, it has often
+been suggested that 1,000 lines of code represents the practical limit
+in size for a program which is to be understood and maintained by a
+single individual<a href="#fn15" class="footnote-ref" id="fnref15"
+role="doc-noteref"><sup>15</sup></a>. Most AI tools either exceed this
+limit by two orders of magnitude, or else offer the user a very limited
+set of facilities, i.e. either the details of the system are
+inaccessible to all but the most determined, dedicated and
 long-suffering student, or else the system is rather specialised and of
 little intrinsic interest.</p>
-<p>In my opinion, it is highly beneficial for students to have the
-opportunity to study a working AI tool in all its aspects. Moreover it
-is undoubtedly good for students majoring in Computer Science, to be
-confronted at least once in their careers, with the task of reading and
-understanding a program of major dimensions.</p>
-<p>It is my hope that this doc will be of interet and value to students
+<p>In my view, it is highly beneficial for anyone studying SE, AI, or
+computer science to have the opportunity to study a working AI tool in
+all its aspects. Moreover it is undoubtedly good for students majoring
+in Computer Science, to be confronted at least once in their careers,
+with the task of reading and understanding a program of major
+dimensions.</p>
+<p>It is my hope that this doc will be of interest and value to students
 and practitioners of AI. Although not prepared primarily for use as a
-reference work, some will wish to use it as such.</p>
+reference work, some will wish to use it as such. For those people, this
+code comes with extensive digressions on how parts of it illustrate
+various aspects of SE, AI, or computer science.</p>
+<h2 id="a-quick-demo-1">A Quick Demo</h2>
+<ul>
+<li>A</li>
+<li>B</li>
+<li>C ## Coding Style</li>
+</ul>
+<h3 id="no-oo">No OO</h3>
+<p>No OO. hatton.</p>
+<h3 id="dry">DRY</h3>
+<p>docu</p>
+<h3 id="tdd">TDD</h3>
+<h3 id="min-loc.-keep-readability">Min LOC. Keep readability</h3>
+<h4 id="functional">Functional</h4>
+<h4 id="ternary">Ternary</h4>
+<h4 id="auto-typing">Auto-typing</h4>
+<h4 id="comprehensions">Comprehensions</h4>
+<h3 id="dsl">DSL</h3>
+<p>Rule of three</p>
 <p>Accordingly, EZR.py usies active learnng to build models froma very
 small amunt of dat. Its work can be sumamrised as A-B-C.</p>
 <ul>
@@ -306,36 +439,36 @@ for some current data/</p>
 <h3 id="can-make-i-simpler">Can make i simpler</h3>
 <p>EZR was motivated by the current industrial obsession on Big AI that
 seems to be forgetting centuries of experience with data mining. As far
-back as 1901, Pearson<a href="#fn2" class="footnote-ref" id="fnref2"
-role="doc-noteref"><sup>2</sup></a> showed that tables of data with
+back as 1901, Pearson<a href="#fn16" class="footnote-ref" id="fnref16"
+role="doc-noteref"><sup>16</sup></a> showed that tables of data with
 <span class="math inline"><em>N</em></span> columns can be modeled with
 far fewer columns (where the latter are derived from the eigenvectors of
 a correlation information).</p>
 <p>Decades of subsequent work has shown that effective models can be
 built from data that cover tiny fractions of the possible data space<a
-href="#fn3" class="footnote-ref" id="fnref3"
-role="doc-noteref"><sup>3</sup></a>. Levnina and Biclet cwnote that</p>
+href="#fn17" class="footnote-ref" id="fnref17"
+role="doc-noteref"><sup>17</sup></a>. Levnina and Biclet cwnote that</p>
 <blockquote>
 <p>“The only reason any (learning) methods work … is that, in fact, the
 data are not truly high-dimensional. Rather, they are .. can be
 efficiently summarized in a space of a much lower dimension.</p>
 </blockquote>
 <p>(This remarks echoes an early conclusion from Johnson and
-Lindenstrauss <a href="#fn4" class="footnote-ref" id="fnref4"
-role="doc-noteref"><sup>4</sup></a>.).</p>
+Lindenstrauss <a href="#fn18" class="footnote-ref" id="fnref18"
+role="doc-noteref"><sup>18</sup></a>.).</p>
 <p>For example:</p>
 <ul>
 <li><strong>Many rows can be ignored</strong>: Data sets with thousands
-of rows can be modeled with just a few dozen samples<a href="#fn5"
-class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>. To
-explain this, suppose we only want to use models that are well supported
-by the data; i.e. supported by multiple rows in a table of data. This
-means that many rows in a table can be be replaced by a smaller number
-of exemplars.</li>
+of rows can be modeled with just a few dozen samples<a href="#fn19"
+class="footnote-ref" id="fnref19" role="doc-noteref"><sup>19</sup></a>.
+To explain this, suppose we only want to use models that are well
+supported by the data; i.e. supported by multiple rows in a table of
+data. This means that many rows in a table can be be replaced by a
+smaller number of exemplars.</li>
 <li><strong>Many columns can be ignored</strong>: High-dimensional
 tables (with many colummns) can be projected into lower dimensional
-tables while nearly preserving all pairwise distances<a href="#fn6"
-class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>.
+tables while nearly preserving all pairwise distances<a href="#fn20"
+class="footnote-ref" id="fnref20" role="doc-noteref"><sup>20</sup></a>.
 This means that data sets with many columns can be modeled with
 surprisingly few columns. e.g. A table of (say) of <span
 class="math inline"><em>C</em> = 20</span> columns of binary variables
@@ -365,16 +498,16 @@ engine to leap quickly from one narrow to another.</p>
 examined what happens when a data miner deliberately ignores some of the
 variables in the training data. Kohavi and John report trials of data
 sets where up to 80% of the variables can be ignored without degrading
-classification accuracy<a href="#fn7" class="footnote-ref" id="fnref7"
-role="doc-noteref"><sup>7</sup></a>. Note the similarity with Amarel’s
+classification accuracy<a href="#fn21" class="footnote-ref" id="fnref21"
+role="doc-noteref"><sup>21</sup></a>. Note the similarity with Amarel’s
 work: it is more important to reason about a small set of important
 variables than about all the variables. At the same time, researchers in
 constraint satisfaction found “random search with retries” was a very
 effective strategy.</p>
 <p>Crawford and Baker reported that such searches took less time than a
 complete search to find more solutions using just a small number of
-retries<a href="#fn8" class="footnote-ref" id="fnref8"
-role="doc-noteref"><sup>8</sup></a>. Their ISAMP “iterative sampler”
+retries<a href="#fn22" class="footnote-ref" id="fnref22"
+role="doc-noteref"><sup>22</sup></a>. Their ISAMP “iterative sampler”
 makes random choices within a model until it gets “stuck”; i.e. until
 further choices do not satisfy expectations. When “stuck”, ISAMP does
 not waste time fiddling with current choices (as was done by older
@@ -394,8 +527,8 @@ far-flung master variables. For such models, if the reasoning gets stuck
 in one region, then the best thing to do is to leap at random to some
 distant part of the model.</p>
 <p>A similar conclusion comes from the work of Williams et al.<a
-href="#fn9" class="footnote-ref" id="fnref9"
-role="doc-noteref"><sup>9</sup></a>. They found that if a randomized
+href="#fn23" class="footnote-ref" id="fnref23"
+role="doc-noteref"><sup>23</sup></a>. They found that if a randomized
 search is repeated many times, that a small number of variable settings
 were shared by all solutions. They also found that if they set those
 variables before conducting the rest of the search, then formerly
@@ -421,8 +554,8 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a hr
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> data</span></code></pre></div>
 <h3 id="data">Data</h3>
 <p>Shared datasets from research papers by Apel [2], Chen <a
-href="#fn10" class="footnote-ref" id="fnref10"
-role="doc-noteref"><sup>10</sup></a>, and Menzies [^nair] are often used
+href="#fn24" class="footnote-ref" id="fnref24"
+role="doc-noteref"><sup>24</sup></a>, and Menzies [^nair] are often used
 as case studies of optimization in SE research papers. Chen and Menzies
 are collaborating to curate the MOOT repository (Multi-Objective
 Optimization Testing4) which offers datasets from recent SE optimization
@@ -469,7 +602,7 @@ value of a particular row, this “costs” one unit. For reasons described
 below, good optimizers find good goals at least cost (i.e. fewest
 labels).</p>
 <p>Notes from ase aper</p>
-<h3 id="caveats">Caveats</h3>
+<h2 id="rq5-lmits">RQ5: Lmits</h2>
 <p>not generation.</p>
 <p>Tabular data</p>
 <h2 id="references">References</h2>
@@ -477,47 +610,112 @@ labels).</p>
 role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1"><p>Lions, John (1996). Lions’ Commentary on UNIX 6th
+<li id="fn1"><p>P, Maniatis and D, Tarlow, 2023 Large sequence models
+for software development activities.” Google Research. [Online].
+Available: https://research.google/blog/
+large-sequence-models-for-software -development-activities/<a
+href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>M. Tabachnyk and S. Nikolov, (20222) “MLenhanced code
+completion improves developer productivity.” Google Research Blog.
+[Online]. Available: https://research.google/blog/
+ml-enhanced-code-completion -improves-developer-productivity/<a
+href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>C. Bird et al., “Taking Flight with Copilot: Early
+insights and opportunities of AI-powered pair-programming tools,” Queue,
+vol. 20, no. 6, pp. 35–57, 2023, doi: 10.1145/3582083.<a href="#fnref3"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>S. Bubeck et al., “Sparks of artificial general
+intelligence: Early experiments with GPT-4,” 2023, arXiv:2303.12712<a
+href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>B. Johnson and T. Menzies, “Ai over-hype: A dangerous
+threat (and how to fix it),” IEEE Software, vol. 41, no. 6, pp. 131–138,
+2024.<a href="#fnref5" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>X. Hou, Y. Zhao, Y. Liu, Z. Yang, K. Wang, L. Li, X.
+Luo, D. Lo, J. Grundy, and H. Wang, “Large language models for software
+engineering: A systematic literature review,” ACM Trans. Softw. Eng.
+Methodol., vol. 33, no. 8, Dec. 2024. [Online]. Available:
+https://doi.org/10.1145/3695988<a href="#fnref6" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>X. Hou, Y. Zhao, Y. Liu, Z. Yang, K. Wang, L. Li, X.
+Luo, D. Lo, J. Grundy, and H. Wang, “Large language models for software
+engineering: A systematic literature review,” ACM Trans. Softw. Eng.
+Methodol., vol. 33, no. 8, Dec. 2024. [Online]. Available:
+https://doi.org/10.1145/3695988<a href="#fnref7" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>W. Fu and T. Menzies, “Easy over hard: a case study on
+deep learning,” in Proceedings of the 2017 11th Joint Meeting on
+Foundations of Software Engineering, ser. ESEC/FSE 2017. New York, NY,
+USA: Association for Computing Machinery, 2017, p. 49–60. [Online].
+Available: https://doi.org/10.1145/3106237. 3106256<a href="#fnref8"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>L. Grinsztajn, E. Oyallon, and G. Varoquaux, “Why do
+tree-based models still outperform deep learning on typical tabular
+data?” in NeurIPS’22, 2022.<a href="#fnref9" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>X. Ling, T. Menzies, C. Hazard, J. Shu, and J. Beel,
+“Trading off scalability, privacy, and performance in data synthesis,”
+IEEE Access, vol. 12, pp. 26 642–26 654, 2024.<a href="#fnref10"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>S. Majumder, N. Balaji, K. Brey, W. Fu, and T. Menzies,
+“500+ times faster than deep learning,” in Proceedings of the 15th
+International Conference on Mining Software Repositories. ACM, 2018.<a
+href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn12"><p>S. Somvanshi, S. Das, S. A. Javed, G. Antariksa, and A.
+Hossain, “A survey on deep tabular learning,” arXiv preprint
+arXiv:2410.12034, 2024.<a href="#fnref12" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn13"><p>V. Tawosi, R. Moussa, and F. Sarro, “Agile effort
+estimation: Have we solved the problem yet? insights from a replication
+study,” IEEE Transactions on Software Engineering, vol. 49, no. 4,
+pp. 2677– 2697, 2023.<a href="#fnref13" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn14"><p>T. Menzies and T. Chen, MOOT repository of
+Multi-objective optimization tests. 2025. <a
+href="http://github.com/timm/moot">http://github.com/timm/moot</a><a
+href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn15"><p>Lions, John (1996). Lions’ Commentary on UNIX 6th
 Edition with Source Code. Peer-to-Peer Communications. ISBN
-978-1-57398-013-5.<a href="#fnref1" class="footnote-back"
+978-1-57398-013-5.<a href="#fnref15" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>Pearson, K. (1901). “On Lines and Planes of Closest Fit
+<li id="fn16"><p>Pearson, K. (1901). “On Lines and Planes of Closest Fit
 to Systems of Points in Space”. Philosophical Magazine. 2 (11): 559–572.
-10.1080/14786440109462720.<a href="#fnref2" class="footnote-back"
+10.1080/14786440109462720.<a href="#fnref16" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>I. Witten, E. Frank, and M. Hall. Data Mining: Practical
-Machine Learning Tools and Techniques Morgan Kaufmann Series in Data
-Management Systems Morgan Kaufmann, Amsterdam, 3 edition, (2011)<a
-href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+<li id="fn17"><p>I. Witten, E. Frank, and M. Hall. Data Mining:
+Practical Machine Learning Tools and Techniques Morgan Kaufmann Series
+in Data Management Systems Morgan Kaufmann, Amsterdam, 3 edition,
+(2011)<a href="#fnref17" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn18"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
 lipschitz mappings into a hilbert space,” Contemporary Mathematics,
-vol. 26, pp. 189–206, 1984.<a href="#fnref4" class="footnote-back"
+vol. 26, pp. 189–206, 1984.<a href="#fnref18" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>T. Menzies, B. Turhan, A. Bener, G. Gay, B. Cukic, and
+<li id="fn19"><p>T. Menzies, B. Turhan, A. Bener, G. Gay, B. Cukic, and
 Y. Jiang, “Implications of ceiling effects in defect predictors,” in
 Proceedings of the 4th international workshop on Predictor models in
-software engineering, 2008, pp. 47–54.<a href="#fnref5"
+software engineering, 2008, pp. 47–54.<a href="#fnref19"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+<li id="fn20"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
 lipschitz mappings into a hilbert space,” Contemporary Mathematics,
-vol. 26, pp. 189–206, 1984.<a href="#fnref6" class="footnote-back"
+vol. 26, pp. 189–206, 1984.<a href="#fnref20" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn7"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
+<li id="fn21"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
 selection,” Artif. Intell., vol. 97, no. 1-2, pp. 273–324, Dec. 1997.<a
-href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn8"><p>J. M. Crawford and A. B. Baker, “Experimental results on
-the application of satisfiability algorithms to scheduling problems,” in
-Proceedings of the Twelfth National Conference on Artificial
+href="#fnref21" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn22"><p>J. M. Crawford and A. B. Baker, “Experimental results
+on the application of satisfiability algorithms to scheduling problems,”
+in Proceedings of the Twelfth National Conference on Artificial
 Intelligence (Vol. 2), Menlo Park, CA, USA, 1994, pp. 1092–1097.<a
-href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
+href="#fnref22" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn23"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
 typical case complexity,” in Proceedings of the International Joint
-Conference on Artificial Intelligence, 2003.<a href="#fnref9"
+Conference on Artificial Intelligence, 2003.<a href="#fnref23"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p>M. Li, T. Chen, and X. Yao, “How to evaluate solutions
+<li id="fn24"><p>M. Li, T. Chen, and X. Yao, “How to evaluate solutions
 in pareto-based search-based software engineering: A critical review and
 methodological guidance,” IEEE Transactions on Software Engineering,
-vol. 48, no. 5, pp. 1771–1799, 2022<a href="#fnref10"
+vol. 48, no. 5, pp. 1771–1799, 2022<a href="#fnref24"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>

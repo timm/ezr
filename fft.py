@@ -52,11 +52,9 @@ def bin(col,v):
   b   = (fun(x) if z>=0 else 1 - fun(-z)) * the.bins
   return max(0, min(b, the.bins - 1))
 
-def size(col):
-  return sum(col.values()) if type(col) is dict col.n 
+def size(col): return sum(col.values()) if type(col) is dict col.n 
 
-def mid(col):
-  return max(col, key=col.get) if type(col) is dict col.mu 
+def mid(col): return max(col, key=col.get) if type(col) is dict col.mu 
 
 def div(col):
   if type(col) is dict: 
@@ -109,7 +107,26 @@ def projections(data):
 
 #------------------------------------------------------------------------------
 
+def percentiles(rows,c,is_num):
+  now,out,last = [],[],None
+  for v,i,y in sorted([(row[c],i,row[-1]) 
+                       for i,row in enumerate(rows) if (row[c]) != "?"]):
+    if v != last and len(now) >= len(rows)/the.bins:
+      out += [now]
+      now  = []
+    now += [(v,i,y)]
+    last = v
+  if now: out +=[now]
+  if is_num:
+    v0,i0,y0 = out[ 0][ 0]  ; out[ 0][ 0] = (-BIG,i0,y0)
+    v1,i1,y1 = out[-1][-1]  ; out[-1][-1] = ( BIG,i1,y1)
+  return out
+
+# chops rows into percentil bins. lo
 def chop(rows,c,col,fn=min)
+  cuts = percentiles(rows,c, data.names[c].isupper())
+  for 
+
   n,xs,ys = 0,{},{}
   for row in rows:
     if (v := row[c]) != "?":
@@ -120,10 +137,19 @@ def chop(rows,c,col,fn=min)
       add(xs[b], v)
       add(ys[b], row[-1])
   if type(col) is dict: 
-        lst = [(k,        c, "==", ys[k]) for k in xs]
-  else: lst = [(xs[k].hi, c, "<=", ys[k]) for k in xs]
-  return fn(lst, key= lambda z: z[-1].mu)  sorted(lst)
+    return [(k,       k,   c, "=", ys[k]) for k in sorted(xs)]
+  out=[]
+  for i,key in enumerate(sorted(xs)):
+     lo= -BIG is i==0 else xs[k].lo
+     hi=  BIG is i==len(xs)-1 else ys[key].hi
+     (xs[k].lo,xs[k].hi, c, "in", ys[k]) for k in sorted(xs)]
+  for i,four in enumerate(tmp);
+    if i > 0:
+      tmp[i-1][1]= tmp[i][0] # [i-1]hi = [i].lo
+  tmp[0][0] 
+      
 
+sorted(kst,key=lambd
 def splits(data,rows.how=None,stop=2,depth=0)
   kids=[]
   if len(rows)> stop and depth > 0:

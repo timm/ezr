@@ -4,59 +4,176 @@ author:  "Tim Menzies<br>timm@ieee.org"
 date: "July, 2025"
 ---
 
-_"Hush! Or I will replace you with a very small shell script."_
 
--------------------------------
 
-This doc is an attempt to explain in detail the
-nucleus of some of the more interesting AI methods to appear in recent years.
-XXX much recent work on less XXX
+------------------------------------------------------
+_"Perfection is achieved not when there is nothing more to add, but when there is nothing left to take away."_ <br>- Antoine de Saint-Exupéry
 
-EZR.py is a "little AI" tool. Big AI needs
-massive amounts of data and CPU. Little AI, on the other hand,
-assumes that models are tiny gems,
-obscured by vast amounts of detail that is irrelevant or noisy or superfluous.
-Under that assumption:
+_"Less, but better."_ <br>- Dieter Rams
+------------------------------------------------------
+
+Much current work focuses on "big AI" methods that assume massive
+CPU and enormous quantities of training data.  While successful for
+a range of generative tasks[^mani23] [^taba23] [^bird23] [^bubeck23],
+they have many limitations[^john24].  For example, it is hard to
+reproduce results using resource intensive methods.  Hence, it is
+hardly surprising that there is very few comparison of big AI to other
+methods. A recent systematic review[^hou24] of 229
+SE papers using large language models (a big AI method), only 13/229 ≈ 5% of
+those papers compared themselves to other approaches.  This is a
+methodological error since other methods can produce results that
+are better and/or faster [^hou24] [^fu17] [^grin22]
+[^ling86] [^maju18] [^somy24] [^tawo23].
+
+So what are alternative approaches for AI (that do not assume deep
+learning or large language models)?  One place to start is that,
+for the most part, big AI research overlooks decades of work showing
+that models are often tiny gems, obscured by vast amounts of detail
+that is irrelevant or noisy or superfluous.
+"Little AI" assumes that:
 
 > The best thing to do with most data, is throw it away.
 
-EZR is an interesting candidate for formal
-study , for the following reasons:
+EZR is an  active learner; i.e. it  reflects on a tiny model built
+so far, to select the next thing to explore.  In this way it can
+avoid superfluous, irrelevant, and noisy data.  EZR's  results are
+startling.  In just a few hundred lines of code, EZR supports
+numerous basic AI tasks.  Using those basic tasks, it then it becomes
+quick to code numerous common AI tasks like  clustering or
+classification or regression or active learning or multi-objective
+optimization or explanation.
 
-- its system requirements are so lwo, it can  run on system that are already available to all of us;
+This research note describe the "why", "how", and "so what?" of EZR.
+After motivating  the work, a code walk
+through explores the internals of the tool. EZR is then assessed
+using 100+ examples taken from the software engineering optimization
+literature.  These examples, available at the MOOT repository[^moot],
+are quite diverse and include software process decisions, optimizing
+configuration parameters, and tuning learners for better analytics.
+Successful MOOT modeling results in better advice for project
+managers, better control of   software options, and enhanced analytics
+from learners that are better tuned to the local data.
+
+Using MOOT, we can answer many questions about EZR:
+
+- **RQ1**: Is it simple? As seen below, EZR has a very short and
+  straight-forward code base.
+- **RQ2**: Is it fast?  In milliseconds, EZR can complete tasks
+  that take hours using big data methods.
+- **RQ3**: Is it effective? In a result supporting the little data 
+  assumption, MOOT's active learners  can achieve near-optimal results after
+  processing just a few dozen examples.
+- **RQ4**: Is it insightful?  Our discussion section argues that
+  MOOT offers a unique perspective on science and engineering,
+  and what it means to explore the world.
+- **RQ5:** Is it general? All our conclusions are based on the MOOT data.
+  Hence it is prudent to ask what are the limits of conclusions
+  drawn from that kind of experience. For example, our EZR tool is
+  not (yet) a tool for generation tasks (for that, you need a large
+  language mode like ChatGPT). Nevertheless. its fast runtime and
+  explanation tools make it the preferred approach when models must
+  be built quickly or critiqued externally.
+
+## A Quick Demo
+
+The file ezr.py contains numerous demos that can be executed from the command line.
+For example, k-means clustering groups together similar examples by (a) picking
+$k$ centroids at random from amongst the rows of data; (b) labelling each example with he iid of of its nearest centroid; then (c) 
+
+<table>
+<tr><td>Fig1: axxx</td></tr><tr><td>
+
+The file ezr.py contains numerous demos that can be executed from the command line.
+For example, k-means clustering groups together similar examples by (a) picking
+$k$ centroids at random from amongst the _rows_ of data; (b) labelling each example with he iid of of its nearest centroid; then (c) 
+</td></tr></table>
+
+
+# Easer AI: Why?
+
+This section offers motivation for exploring little AI tools like EZR.
+
+### Learning About AI
+
+If we can make AI simpler, then we can make also simplify the teaching of AI.
+
+EZR is an interesting candidate for study, for the following reasons:
+
+- its system requirements are so low, it can  run on system that
+  are already available to all of us;
 - it is compact and accessible;
 - it provides an extensive set of very usable facilities;
-- it is intrinsically interesting, and in fact breaks
-  new ground in a number of areas.
+- it is intrinsically interesting, and in fact breaks new ground
+  in a number of areas.
 
-Not least amongst the charms and virtues of EZR
-is the compactness of
-its source code: comfortable less than 1,000 lines of code including tools for clustering,
-classification, regression, optimization, explanation, active learning, statistical analysis,
+Not least amongst the charms and virtues of EZR is the compactness
+of its source code: in just a few hundred ines of code
+including tools for clustering, classification, regression,
+optimization, explanation, active learning, statistical analysis,
 documentation, and test-driven development.
 
-Such a short code listing
-is important since it has often been suggested that 1,000 lines of
-code represents the practical limit in size for a program which is to be understood and maintained by
-a single individual[^lions96]. Most AI tools
-either
-exceed this limit by one or even two orders of magnitude, or else offer the user a very limited set of
-facilities, i.e. either the details of the system are
-inaccessible to all but the most determined, dedicated and long-suffering student, or else the system
-is rather specialised and of little intrinsic interest.
+Such a short code listing is important.  For **industrial
+practitioners:**, short code examples are easier to understand,
+adapt, test, maintain and (if required), port to different languages.
+Another reason to explore short code solutions are the security
+implications associated with building systems based on long supply
+chains.  To say the least, it is prudent to replace long supply
+chains with tiny local stubs.
 
-In my opinion, it is highly beneficial for students to have the opportunity to study a working
-AI tool in all its aspects.
-Moreover it is undoubtedly good for students
-majoring in Computer Science, to be confronted at
-least once in their careers, with the task of reading
-and understanding a program of major dimensions.
+Also,  for **teaching (or self-study)**, it has often been suggested
+that 1,000 lines of code represents the practical limit in size for
+a program which is to be understood and maintained by a single
+individual[^lions96].  Most AI tools either exceed this limit by
+two orders of magnitude, or else offer the user a very limited set
+of facilities, i.e. either the details of the system are inaccessible
+to all but the most determined, dedicated and long-suffering student,
+or else the system is rather specialised and of little intrinsic
+interest.
 
-It is my hope that this doc will be of interet
-and value to students and practitioners of AI.
-Although not prepared primarily
-for use as a reference work, some will wish to use it
-as such.
+In my view, it is highly beneficial for anyone studying SE, AI, or
+computer science to have the opportunity to study a working AI tool
+in all its aspects.  Moreover it is undoubtedly good for students
+majoring in Computer Science, to be confronted at least once in
+their careers, with the task of reading and understanding a program
+of major dimensions.
+
+It is my hope that this doc will be of interest and value to students
+and practitioners of AI.  Although not prepared primarily for use
+as a reference work, some will wish to use it as such. For those
+people, this code comes with extensive digressions on how parts of
+it illustrate various aspects of SE, AI, or computer science.
+
+
+## A Quick Demo
+
+- A 
+- B
+- C
+## Coding Style
+
+### No OO
+
+No OO. hatton. 
+
+### DRY 
+
+docu 
+
+### TDD
+
+### Min LOC. Keep readability
+
+#### Functional  
+#### Ternary
+#### Auto-typing
+#### Comprehensions
+
+
+### DSL 
+
+
+
+Rule of three
 
 
 
@@ -239,19 +356,6 @@ Optimization Testing4) which offers datasets from recent SE
 optimization papers for process tuning, DB configuration,
 HPO, management decision making etc.
 
-[^apel20]: . Apel, N. Siegmund, C. K¨astner, and A. Legay, “A case for automated
-configuration of variability-intensive systems,” IEEE Software, vol. 37,
-no. 3, pp. 26–33, 2020.
-
-[^chen22]: M. Li, T. Chen, and X. Yao, “How to evaluate solutions in pareto-based
-search-based software engineering: A critical review and methodological
-guidance,” IEEE Transactions on Software Engineering, vol. 48, no. 5,
-pp. 1771–1799, 2022
-
-[^nair18]: V. Nair, Z. Yu, T. Menzies, N. Siegmund, and S. Apel, “Finding faster
-configurations using flash,” IEEE Transactions on Software Engineering,
-vol. 46, no. 7, pp. 794–811, 2018.
-
 
 Since our focus is on configuration, we use MOOT data
 related to that task (see Table I and II). Fig. 3 shows the typical
@@ -301,7 +405,7 @@ good goals at least cost (i.e. fewest labels).
 
 Notes from ase aper
 
-### Caveats
+## RQ5: Lmits
 
 not generation.
 
@@ -309,21 +413,95 @@ Tabular data
 
 ## References
 
+[^apel20]: S. Apel, N. Siegmund, C. K¨astner, and A. Legay, “A case
+for automated configuration of variability-intensive systems,” IEEE
+Software, vol. 37, no. 3, pp. 26–33, 2020.
+
+[^bird23]:  C. Bird et al., “Taking Flight with Copilot: Early
+insights and opportunities of AI-powered pair-programming tools,”
+Queue, vol. 20, no. 6, pp. 35–57, 2023, doi: 10.1145/3582083.
+
+[^bubeck23]: S. Bubeck et al., “Sparks of artificial general
+intelligence: Early experiments with GPT-4,” 2023, arXiv:2303.12712
+
+[^chen22]: M. Li, T. Chen, and X. Yao, “How to evaluate solutions
+in pareto-based search-based software engineering: A critical review
+and methodological guidance,” IEEE Transactions on Software
+Engineering, vol. 48, no. 5, pp. 1771–1799, 2022
+
+[^fu17]: W. Fu and T. Menzies, “Easy over hard: a case study on
+deep learning,” in Proceedings of the 2017 11th Joint Meeting on
+Foundations of Software Engineering, ser. ESEC/FSE 2017. New York,
+NY, USA: Association for Computing Machinery, 2017, p. 49–60.
+[Online]. Available: https://doi.org/10.1145/3106237.  3106256
+
+[^grin22]: L. Grinsztajn, E. Oyallon, and G. Varoquaux, “Why do
+tree-based models still outperform deep learning on typical tabular
+data?” in NeurIPS’22, 2022.
+
+[^hou24]: X. Hou, Y. Zhao, Y. Liu, Z. Yang, K. Wang, L. Li, X. Luo,
+D. Lo, J. Grundy, and H. Wang, “Large language models for software
+engineering: A systematic literature review,” ACM Trans. Softw.
+Eng. Methodol., vol. 33, no. 8, Dec. 2024. [Online]. Available:
+https://doi.org/10.1145/3695988
+
 [^john84]: W. B. Johnson and J. Lindenstrauss, “Extensions of
 lipschitz mappings into a hilbert space,” Contemporary Mathematics,
 vol. 26, pp. 189–206, 1984.
 
+[^john24]: B. Johnson and T. Menzies, “Ai over-hype: A dangerous
+threat (and how to fix it),” IEEE Software, vol. 41, no. 6, pp.
+131–138, 2024.
+
+[^ling86]: X. Ling, T. Menzies, C. Hazard, J. Shu, and J. Beel,
+“Trading off scalability, privacy, and performance in data synthesis,”
+IEEE Access, vol. 12, pp. 26 642–26 654, 2024.
+
 [^lions96]: Lions, John (1996). Lions' Commentary on UNIX 6th Edition
 with Source Code. Peer-to-Peer Communications. ISBN 978-1-57398-013-5.
+
+
+[^maju18]:  S. Majumder, N. Balaji, K. Brey, W. Fu, and T. Menzies,
+“500+ times faster than deep learning,” in Proceedings of the 15th
+International Conference on Mining Software Repositories. ACM, 2018.
+
+[^mani23]: P, Maniatis and D, Tarlow, 2023 Large sequence models
+for software development activities.” Google Research. [Online].
+Available: https://research.google/blog/ large-sequence-models-for-software
+-development-activities/
+
 
 [^me08a]: T. Menzies, B. Turhan, A. Bener, G. Gay, B. Cukic, and
 Y. Jiang, “Implications of ceiling effects in defect predictors,”
 in Proceedings of the 4th international workshop on Predictor models
 in software engineering, 2008, pp. 47–54.
 
+[^moot]: T. Menzies and T. Chen, MOOT repository of Multi-objective
+optimization tests.  2025.
+[http://github.com/timm/moot](http://github.com/timm/moot)
+
+[^nair18]: V. Nair, Z. Yu, T. Menzies, N. Siegmund, and S. Apel,
+“Finding faster configurations using flash,” IEEE Transactions on
+Software Engineering, vol. 46, no. 7, pp. 794–811, 2018.
+
 [^pca]:  Pearson, K. (1901). "On Lines and Planes of Closest Fit
 to Systems of Points in Space". Philosophical Magazine. 2 (11):
 559–572. 10.1080/14786440109462720.
+
+[^somy24]:  S. Somvanshi, S. Das, S. A. Javed, G. Antariksa, and
+A. Hossain, “A survey on deep tabular learning,” arXiv preprint
+arXiv:2410.12034, 2024.
+
+
+[^taba23]:  M. Tabachnyk and S. Nikolov, (20222) “MLenhanced code
+completion improves developer productivity.” Google Research Blog.
+[Online]. Available: https://research.google/blog/
+ml-enhanced-code-completion -improves-developer-productivity/
+
+[^tawo23]: V. Tawosi, R. Moussa, and F. Sarro, “Agile effort
+estimation: Have we solved the problem yet? insights from a replication
+study,” IEEE Transactions on Software Engineering, vol. 49, no. 4,
+pp. 2677– 2697, 2023.
 
 [^witten]:      I. Witten, E. Frank, and M. Hall.  Data Mining:
 Practical Machine Learning Tools and Techniques Morgan Kaufmann
