@@ -4,6 +4,12 @@ Here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 html="$Here/../docs/$(basename "${1%.*}").html"
 
 gawk -f $Here/prep.awk $1  |
-pandoc --from markdown --to html  --highlight-style=tango    --standalone  -o $html 
+pandoc                 \
+  --from markdown       \
+  --to html              \
+  --highlight-style=tango \
+  --standalone              \
+  -o $html 
+
 sed -i ''  's?<.style>? pre {font-size: small;} </style>?' $html
 open $html

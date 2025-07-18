@@ -1,21 +1,64 @@
-<!-- vi: set spell spelllang=en_us: -->
-<!-- make with md2html thisfile.md-->
+---
+title: "Inside Easier AI"
+author:  "Tim Menzies<br>timm@ieee.org"
+date: "July, 2025"
+---
 
-# Inside Easier AI
+_"Hush! Or I will replace you with a very small shell script."_
 
-Tim Menzies   
-timm@ieee.org  
-July 2025
+-------------------------------
 
-## Introduction
+This doc is an attempt to explain in detail the
+nucleus of some of the more interesting AI methods to appear in recent years.
 
-EZR.py is an experiment with "little AI". Big AI assumes that model
-building needs massive amounts of data and CPU. Little AI takes an
-alternate approach and assumes that models are tiny gems that hide,
+EZR.py is a "little AI" tool. Big AI needs
+massive amounts of data and CPU. Little AI, on the other hand,
+assumes that models are tiny gems,
 obscured by vast amounts of detail that is irrelevant or noisy or superfluous.
 Under that assumption:
 
 > The best thing to do with most data, is throw it away.
+
+EZR is an interesting candidate for formal
+study , for the following reasons:
+
+- its system requirements are so lwo, it can  run on system that are already available to all of us;
+- it is compact and accessible;
+- it provides an extensive set of very usable facilities;
+- it is intrinsically interesting, and in fact breaks
+  new ground in a number of areas.
+
+Not least amongst the charms and virtues of EZR
+is the compactness of
+its source code: comfortable less than 1,000 lines of code including tools for clustering,
+classification, regression, optimization, explanation, active learning, statistical analysis,
+documentation, and test-driven development.
+
+Such a short code listing
+is important since it has often been suggested that 1,000 lines of
+code represents the practical limit in size for a program which is to be understood and maintained by
+a single individual[^lions96]. Most AI tools
+either
+exceed this limit by one or even two orders of magnitude, or else offer the user a very limited set of
+facilities, i.e. either the details of the system are
+inaccessible to all but the most determined, dedicated and long-suffering student, or else the system
+is rather specialised and of little intrinsic interest.
+
+In my opinion, it is highly beneficial for students to have the opportunity to study a working
+AI tool in all its aspects.
+Moreover it is undoubtedly good for students
+majoring in Computer Science, to be confronted at
+least once in their careers, with the task of reading
+and understanding a program of major dimensions.
+
+It is my hope that this doc will be of interet
+and value to students and practitioners of AI.
+Although not prepared primarily
+for use as a reference work, some will wish to use it
+as such.
+
+
+
 
 Accordingly, EZR.py
 usies active learnng to build models froma very small amunt of dat.
@@ -104,14 +147,17 @@ Tabular data
 
 ## References
 
-[^john84]: W. B. Johnson and J. Lindenstrauss, “Extensions of lipschitz mappings
-into a hilbert space,” Contemporary Mathematics, vol. 26, pp. 189–206,
-1984.
+[^john84]: W. B. Johnson and J. Lindenstrauss, “Extensions of
+lipschitz mappings into a hilbert space,” Contemporary Mathematics,
+vol. 26, pp. 189–206, 1984.
 
-[^me08a]: T. Menzies, B. Turhan, A. Bener, G. Gay, B. Cukic, and Y. Jiang,
-“Implications of ceiling effects in defect predictors,” in Proceedings
-of the 4th international workshop on Predictor models in software
-engineering, 2008, pp. 47–54.
+[^lions96]: Lions, John (1996). Lions' Commentary on UNIX 6th Edition
+with Source Code. Peer-to-Peer Communications. ISBN 978-1-57398-013-5.
+
+[^me08a]: T. Menzies, B. Turhan, A. Bener, G. Gay, B. Cukic, and
+Y. Jiang, “Implications of ceiling effects in defect predictors,”
+in Proceedings of the 4th international workshop on Predictor models
+in software engineering, 2008, pp. 47–54.
 
 [^pca]:  Pearson, K. (1901). "On Lines and Planes of Closest Fit
 to Systems of Points in Space". Philosophical Magazine. 2 (11):
@@ -122,5 +168,5 @@ Practical Machine Learning Tools and Techniques Morgan Kaufmann
 Series in Data Management Systems Morgan Kaufmann, Amsterdam, 3
 edition, (2011)
 
-[^zhu05]: X. Zhu, “Semi-supervised learning literature survey,” Computer Sciences
-Technical Report, vol. 1530, pp. 1–59, 2005.
+[^zhu05]: X. Zhu, “Semi-supervised learning literature survey,”
+Computer Sciences Technical Report, vol. 1530, pp. 1–59, 2005.

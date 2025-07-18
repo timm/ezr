@@ -14,13 +14,11 @@ the = o(bins=7,
         file="../moot/optimize/misc/auto93.csv")
 
 def Data(src):
-  def _guess(row):
-    return sum(interpolate(data,row,*pole) for pole in poles)/len(poles)
-
   head, *rows = list(src)
   data  = _data(head, rows)
   poles = projections(data)
-  for row in rows: row[-1] = _guess(row)
+  for row in rows: 
+    row[-1] = sum(interpolate(data,row,*pole) for pole in poles)/len(poles)
   return data
 
 def _data(names,rows):
@@ -53,6 +51,18 @@ def bin(col,v):
   z   = (x - col.mu) / col.sd
   b   = (fun(x) if z>=0 else 1 - fun(-z)) * the.bins
   return max(0, min(b, the.bins - 1))
+
+def size(col):
+  return sum(col.values()) if type(col) is dict col.n 
+
+def mid(col):
+  return max(col, key=col.get) if type(col) is dict col.mu 
+
+def div(col):
+  if type(col) is dict: 
+    N = sum(col.values())
+    return - sum(p*log(p,2) for n in col.values() if (p:=n/N) > 0)
+  return col.sd
 
 #------------------------------------------------------------------------------
 def minkowski(src):
@@ -97,30 +107,22 @@ def projections(data):
     poles += [(best, rest, xdist(data,best, rest))]
   return poles
 
-def ent(d):
-  N = sum(d.values())
-  return - sum(p*log(p,2) for n in d.values() if (p:=n/N) > 0)
-
-def std(lst,fn):
- n = lst//10
- return (fn(lst[n*9]) - fn(lst[n]))/2.56
-
-
 #------------------------------------------------------------------------------
-def chops(rows,c,is_num):
-  if is_num:
-    v = lambda r: -BIG if r[c]=="?" else r[c]
-    n = sorted(rows,key=v)[len(rows//2)
-    x = q(rows[n])
-    return [("<=", x, c, [r for r in rows if q(r) <= x]),
-            (">" , x, c, [r for r in rows if q(r) >  x])]
-  x,y={},{}
+
+def chop(rows,c,col,fn=min)
+  n,xs,ys = 0,{},{}
   for row in rows:
-    if (x := row[c]) != "?":
-      b = bin(col,x)
-      d[b] = d.get(b,[]) 
-      d[b] += [row]
-  return [("==",c,x,d[x]) for x in d]
+    if (v := row[c]) != "?":
+      n   += 1
+      b    = bin(col, v)
+      xs[b] = xs.get(b) or {}    
+      ys[b] = ys.get(b) or Num() 
+      add(xs[b], v)
+      add(ys[b], row[-1])
+  if type(col) is dict: 
+        lst = [(k,        c, "==", ys[k]) for k in xs]
+  else: lst = [(xs[k].hi, c, "<=", ys[k]) for k in xs]
+  return fn(lst, key= lambda z: z[-1].mu)  sorted(lst)
 
 def splits(data,rows.how=None,stop=2,depth=0)
   kids=[]
