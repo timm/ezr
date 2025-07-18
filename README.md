@@ -10,6 +10,7 @@ _"Hush! Or I will replace you with a very small shell script."_
 
 This doc is an attempt to explain in detail the
 nucleus of some of the more interesting AI methods to appear in recent years.
+XXX much recent work on less XXX
 
 EZR.py is a "little AI" tool. Big AI needs
 massive amounts of data and CPU. Little AI, on the other hand,
