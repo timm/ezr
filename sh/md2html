@@ -7,7 +7,7 @@ gawk -f $Here/prep.awk $1  |
 pandoc                 \
   --from markdown       \
   --to html              \
-  --highlight-style=tango \
+  --highlight-style=tango  \
   --standalone              \
   -o $html 
 
