@@ -592,10 +592,10 @@ def eg__sk():
       print("\t",''.join([str(x) for x in out.values()]))
 
 def eg__diabetes(): 
-  show(nbc("../../../moot/classify/diabetes.csv"))
+  show(nbc("../moot/classify/diabetes.csv"))
 
 def eg__soybean():  
-  show(nbc("../../../moot/classify/soybean.csv"))
+  show(nbc("../moot/classify/soybean.csv"))
 
 def eg__xdist():
   data = Data(csv(the.file))
@@ -613,10 +613,10 @@ def eg__ydist():
   print("worst4:"); [print("\t",row) for row in data.rows[-4:]]
 
 def eg__irisKpp(): 
-  [print(r) for r in kpp(Data(csv("../../../moot/classify/iris.csv")),k=10)]
+  [print(r) for r in kpp(Data(csv("../moot/classify/iris.csv")),k=10)]
 
 def eg__irisK(): 
-  for data in kmeans(Data(csv("../../../moot/classify/iris.csv")),k=10):
+  for data in kmeans(Data(csv("../moot/classify/iris.csv")),k=10):
     print(mids(data)) 
 
 def daBest(data,rows=None):

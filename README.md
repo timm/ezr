@@ -17,7 +17,7 @@ CPU and enormous quantities of training data.  While successful for
 a range of generative tasks[^mani23] [^taba23] [^bird23] [^bubeck23],
 they have many limitations[^john24].  For example, it is hard to
 reproduce results using resource intensive methods.  Hence, it is
-hardly surprising that there is very few comparison of big AI to other
+hardly surprising that there are very few comparison of big AI to other
 methods. A recent systematic review[^hou24] of 229
 SE papers using large language models (a big AI method), only 13/229 ≈ 5% of
 those papers compared themselves to other approaches.  This is a
@@ -29,19 +29,18 @@ So what are alternative approaches for AI (that do not assume deep
 learning or large language models)?  One place to start is that,
 for the most part, big AI research overlooks decades of work showing
 that models are often tiny gems, obscured by vast amounts of detail
-that is irrelevant or noisy or superfluous.
-"Little AI" assumes that:
+that is irrelevant or noisy or superfluous. "Little AI" assumes that:
 
 > The best thing to do with most data, is throw it away.
 
-EZR is an  active learner; i.e. it  reflects on a tiny model built
-so far, to select the next thing to explore.  In this way it can
-avoid superfluous, irrelevant, and noisy data.  EZR's  results are
-startling.  In just a few hundred lines of code, EZR supports
-numerous basic AI tasks.  Using those basic tasks, it then it becomes
-quick to code numerous common AI tasks like  clustering or
-classification or regression or active learning or multi-objective
-optimization or explanation.
+EZR is a tool that works by ignoring most data.  EZR is an  _active
+learner_[^sett09]; i.e. to decide what to do next, it  looks on
+what has been learned so far.  In this way it can avoid superfluous,
+irrelevant, and noisy data.  EZR's  results are startling.  In just
+a few hundred lines of code, EZR supports numerous basic AI tasks.
+Using those basic tasks, it then it becomes quick to code numerous
+common AI tasks like  clustering or classification or regression
+or active learning or multi-objective optimization or explanation.
 
 This research note describe the "why", "how", and "so what?" of EZR.
 After motivating  the work, a code walk
@@ -54,7 +53,7 @@ Successful MOOT modeling results in better advice for project
 managers, better control of   software options, and enhanced analytics
 from learners that are better tuned to the local data.
 
-Using MOOT, we can answer many questions about EZR:
+Using MOOT, many questions can be  answered about EZR:
 
 - **RQ1**: Is it simple? As seen below, EZR has a very short and
   straight-forward code base.
@@ -75,6 +74,26 @@ Using MOOT, we can answer many questions about EZR:
   be built quickly or critiqued externally.
 
 ## A Quick Demo
+
+SLOC XXX
+
+|what | notes|
+|-----+------|
+|file  | SS-L.csv |
+|ows   | 1023 |
+|y    | 2 |
+|x    | 11 |
+|asIs   | 63 |
+|min    | 16 |
+
+|Samples |explit     | exokire| adapt |
+|--------+-----------+--------+-------|
+|15      |   29      |     38 |    30 |
+| 30     |  23       |     35 |    30 |
+|45      | **18 !!** |     35 |    38 |
+|60      | **20 !!** |     38 |    31 |
+|75      | **17 !!** |     33 |    28 |
+|100     | **17 !!** |     28 |    28 |
 
 The file ezr.py contains numerous demos that can be executed from the command line.
 For example, k-means clustering groups together similar examples by (a) picking
@@ -394,7 +413,6 @@ problem representations and solution methods,” in Machine Learning:
 An Artificial Intelligence Approach. Morgan Kaufmann, 1986.
 
 
-
 [^apel20]: S. Apel, N. Siegmund, C. K¨astner, and A. Legay, “A case
 for automated configuration of variability-intensive systems,” IEEE
 Software, vol. 37, no. 3, pp. 26–33, 2020.
@@ -491,6 +509,8 @@ Software Engineering, vol. 46, no. 7, pp. 794–811, 2018.
 [^pca]:  Pearson, K. (1901). "On Lines and Planes of Closest Fit
 to Systems of Points in Space". Philosophical Magazine. 2 (11):
 559–572. 10.1080/14786440109462720.
+
+[^sett09]: Settles, Burr. "Active learning literature survey." (2009).
 
 [^somy24]:  S. Somvanshi, S. Das, S. A. Javed, G. Antariksa, and
 A. Hossain, “A survey on deep tabular learning,” arXiv preprint

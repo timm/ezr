@@ -265,8 +265,8 @@ role="doc-noteref"><sup>4</sup></a>, they have many limitations<a
 href="#fn5" class="footnote-ref" id="fnref5"
 role="doc-noteref"><sup>5</sup></a>. For example, it is hard to
 reproduce results using resource intensive methods. Hence, it is hardly
-surprising that there is very few comparison of big AI to other methods.
-A recent systematic review<a href="#fn6" class="footnote-ref"
+surprising that there are very few comparison of big AI to other
+methods. A recent systematic review<a href="#fn6" class="footnote-ref"
 id="fnref6" role="doc-noteref"><sup>6</sup></a> of 229 SE papers using
 large language models (a big AI method), only 13/229 ≈ 5% of those
 papers compared themselves to other approaches. This is a methodological
@@ -290,8 +290,10 @@ irrelevant or noisy or superfluous. “Little AI” assumes that:</p>
 <blockquote>
 <p>The best thing to do with most data, is throw it away.</p>
 </blockquote>
-<p>EZR is an active learner; i.e. it reflects on a tiny model built so
-far, to select the next thing to explore. In this way it can avoid
+<p>EZR is a tool that works by ignoring most data. EZR is an <em>active
+learner</em><a href="#fn14" class="footnote-ref" id="fnref14"
+role="doc-noteref"><sup>14</sup></a>; i.e. to decide what to do next, it
+looks on what has been learned so far. In this way it can avoid
 superfluous, irrelevant, and noisy data. EZR’s results are startling. In
 just a few hundred lines of code, EZR supports numerous basic AI tasks.
 Using those basic tasks, it then it becomes quick to code numerous
@@ -301,14 +303,14 @@ active learning or multi-objective optimization or explanation.</p>
 After motivating the work, a code walk through explores the internals of
 the tool. EZR is then assessed using 100+ examples taken from the
 software engineering optimization literature. These examples, available
-at the MOOT repository<a href="#fn14" class="footnote-ref" id="fnref14"
-role="doc-noteref"><sup>14</sup></a>, are quite diverse and include
+at the MOOT repository<a href="#fn15" class="footnote-ref" id="fnref15"
+role="doc-noteref"><sup>15</sup></a>, are quite diverse and include
 software process decisions, optimizing configuration parameters, and
 tuning learners for better analytics. Successful MOOT modeling results
 in better advice for project managers, better control of software
 options, and enhanced analytics from learners that are better tuned to
 the local data.</p>
-<p>Using MOOT, we can answer many questions about EZR:</p>
+<p>Using MOOT, many questions can be answered about EZR:</p>
 <ul>
 <li><strong>RQ1</strong>: Is it simple? As seen below, EZR has a very
 short and straight-forward code base.</li>
@@ -381,8 +383,8 @@ with tiny local stubs.</p>
 <p>Also, for <strong>teaching (or self-study)</strong>, it has often
 been suggested that 1,000 lines of code represents the practical limit
 in size for a program which is to be understood and maintained by a
-single individual<a href="#fn15" class="footnote-ref" id="fnref15"
-role="doc-noteref"><sup>15</sup></a>. Most AI tools either exceed this
+single individual<a href="#fn16" class="footnote-ref" id="fnref16"
+role="doc-noteref"><sup>16</sup></a>. Most AI tools either exceed this
 limit by two orders of magnitude, or else offer the user a very limited
 set of facilities, i.e. either the details of the system are
 inaccessible to all but the most determined, dedicated and
@@ -439,32 +441,31 @@ for some current data/</p>
 <h3 id="can-make-i-simpler">Can make i simpler</h3>
 <p>EZR was motivated by the current industrial obsession on Big AI that
 seems to be forgetting centuries of experience with data mining. As far
-back as 1901, Pearson<a href="#fn16" class="footnote-ref" id="fnref16"
-role="doc-noteref"><sup>16</sup></a> showed that tables of data with
+back as 1901, Pearson<a href="#fn17" class="footnote-ref" id="fnref17"
+role="doc-noteref"><sup>17</sup></a> showed that tables of data with
 <span class="math inline"><em>N</em></span> columns can be modeled with
 far fewer columns (where the latter are derived from the eigenvectors of
 a correlation information).</p>
 <p>Decades of subsequent work has shown that effective models can be
 built from data that cover tiny fractions of the possible data space<a
-href="#fn17" class="footnote-ref" id="fnref17"
-role="doc-noteref"><sup>17</sup></a>. Levnina and Biclet cwnote that</p>
+href="#fn18" class="footnote-ref" id="fnref18"
+role="doc-noteref"><sup>18</sup></a>. Levnina and Biclet cwnote that</p>
 <blockquote>
 <p>“The only reason any (learning) methods work … is that, in fact, the
 data are not truly high-dimensional. Rather, they are .. can be
 efficiently summarized in a space of a much lower dimension.</p>
 </blockquote>
 <p>(This remarks echoes an early conclusion from Johnson and
-Lindenstrauss <a href="#fn18" class="footnote-ref" id="fnref18"
-role="doc-noteref"><sup>18</sup></a>.).</p>
+Lindenstrauss <a href="#fn19" class="footnote-ref" id="fnref19"
+role="doc-noteref"><sup>19</sup></a>.).</p>
 <p>For example:</p>
 <ul>
 <li><strong>Many rows can be ignored</strong>: Data sets with thousands
-of rows can be modeled with just a few dozen samples<a href="#fn19"
-class="footnote-ref" id="fnref19" role="doc-noteref"><sup>19</sup></a>.
-To explain this, suppose we only want to use models that are well
-supported by the data; i.e. supported by multiple rows in a table of
-data. This means that many rows in a table can be be replaced by a
-smaller number of exemplars.</li>
+of rows can be modeled with just a few dozen samples[^me08a]. To explain
+this, suppose we only want to use models that are well supported by the
+data; i.e. supported by multiple rows in a table of data. This means
+that many rows in a table can be be replaced by a smaller number of
+exemplars.</li>
 <li><strong>Many columns can be ignored</strong>: High-dimensional
 tables (with many colummns) can be projected into lower dimensional
 tables while nearly preserving all pairwise distances<a href="#fn20"
@@ -540,8 +541,7 @@ reasoning about RE models. First, use random search with retries to find
 the “key” decisions in RE models. Second, have stakeholders debate, and
 then decide, about the keys before exploring anything else. Third, to
 avoid trivially small solutions, our random search should strive to
-cover much of the model.</p>
-<p>Code:</p>
+cover much of the model. Code:</p>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Data(src):</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(row):</span>
@@ -606,6 +606,10 @@ labels).</p>
 <p>not generation.</p>
 <p>Tabular data</p>
 <h2 id="references">References</h2>
+<p>a [^amarel]: S. Amarel, “Program synthesis as a theory formation
+task: problem representations and solution methods,” in Machine
+Learning: An Artificial Intelligence Approach. Morgan Kaufmann,
+1986.</p>
 <section id="footnotes" class="footnotes footnotes-end-of-document"
 role="doc-endnotes">
 <hr />
@@ -670,32 +674,30 @@ estimation: Have we solved the problem yet? insights from a replication
 study,” IEEE Transactions on Software Engineering, vol. 49, no. 4,
 pp. 2677– 2697, 2023.<a href="#fnref13" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn14"><p>T. Menzies and T. Chen, MOOT repository of
+<li id="fn14"><p>Settles, Burr. “Active learning literature survey.”
+(2009).<a href="#fnref14" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn15"><p>T. Menzies and T. Chen, MOOT repository of
 Multi-objective optimization tests. 2025. <a
 href="http://github.com/timm/moot">http://github.com/timm/moot</a><a
-href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn15"><p>Lions, John (1996). Lions’ Commentary on UNIX 6th
+href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn16"><p>Lions, John (1996). Lions’ Commentary on UNIX 6th
 Edition with Source Code. Peer-to-Peer Communications. ISBN
-978-1-57398-013-5.<a href="#fnref15" class="footnote-back"
+978-1-57398-013-5.<a href="#fnref16" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn16"><p>Pearson, K. (1901). “On Lines and Planes of Closest Fit
+<li id="fn17"><p>Pearson, K. (1901). “On Lines and Planes of Closest Fit
 to Systems of Points in Space”. Philosophical Magazine. 2 (11): 559–572.
-10.1080/14786440109462720.<a href="#fnref16" class="footnote-back"
+10.1080/14786440109462720.<a href="#fnref17" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn17"><p>I. Witten, E. Frank, and M. Hall. Data Mining:
+<li id="fn18"><p>I. Witten, E. Frank, and M. Hall. Data Mining:
 Practical Machine Learning Tools and Techniques Morgan Kaufmann Series
 in Data Management Systems Morgan Kaufmann, Amsterdam, 3 edition,
-(2011)<a href="#fnref17" class="footnote-back"
+(2011)<a href="#fnref18" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn18"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+<li id="fn19"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
 lipschitz mappings into a hilbert space,” Contemporary Mathematics,
-vol. 26, pp. 189–206, 1984.<a href="#fnref18" class="footnote-back"
+vol. 26, pp. 189–206, 1984.<a href="#fnref19" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn19"><p>T. Menzies, B. Turhan, A. Bener, G. Gay, B. Cukic, and
-Y. Jiang, “Implications of ceiling effects in defect predictors,” in
-Proceedings of the 4th international workshop on Predictor models in
-software engineering, 2008, pp. 47–54.<a href="#fnref19"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn20"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
 lipschitz mappings into a hilbert space,” Contemporary Mathematics,
 vol. 26, pp. 189–206, 1984.<a href="#fnref20" class="footnote-back"
