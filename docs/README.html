@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Tim Menzies timm@ieee.org" />
+  <title>Inside Easier AI</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {  background-color: #f8f8f8; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ef2929; } /* Alert */
+    code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #204a87; } /* Attribute */
+    code span.bn { color: #0000cf; } /* BaseN */
+    code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4e9a06; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #8f5902; font-style: italic; } /* Comment */
+    code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+    code span.dt { color: #204a87; } /* DataType */
+    code span.dv { color: #0000cf; } /* DecVal */
+    code span.er { color: #a40000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #0000cf; } /* Float */
+    code span.fu { color: #204a87; font-weight: bold; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+    code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+    code span.ot { color: #8f5902; } /* Other */
+    code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+    code span.sc { color: #ce5c00; font-weight: bold; } /* SpecialChar */
+    code span.ss { color: #4e9a06; } /* SpecialString */
+    code span.st { color: #4e9a06; } /* String */
+    code span.va { color: #000000; } /* Variable */
+    code span.vs { color: #4e9a06; } /* VerbatimString */
+    code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+   pre {font-size: small;} </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Inside Easier AI</h1>
+<p class="author">Tim Menzies<br>timm@ieee.org</p>
+<p class="date">July, 2025</p>
+</header>
+<p><em>“Hush! Or I will replace you with a very small shell
+script.”</em></p>
+<hr />
+<p>This doc is an attempt to explain in detail the nucleus of some of
+the more interesting AI methods to appear in recent years.</p>
+<p>EZR.py is a “little AI” tool. Big AI needs massive amounts of data
+and CPU. Little AI, on the other hand, assumes that models are tiny
+gems, obscured by vast amounts of detail that is irrelevant or noisy or
+superfluous. Under that assumption:</p>
+<blockquote>
+<p>The best thing to do with most data, is throw it away.</p>
+</blockquote>
+<p>EZR is an interesting candidate for formal study , for the following
+reasons:</p>
+<ul>
+<li>its system requirements are so lwo, it can run on system that are
+already available to all of us;</li>
+<li>it is compact and accessible;</li>
+<li>it provides an extensive set of very usable facilities;</li>
+<li>it is intrinsically interesting, and in fact breaks new ground in a
+number of areas.</li>
+</ul>
+<p>Not least amongst the charms and virtues of EZR is the compactness of
+its source code: comfortable less than 1,000 lines of code including
+tools for clustering, classification, regression, optimization,
+explanation, active learning, statistical analysis, documentation, and
+test-driven development.</p>
+<p>Such a short code listing is important since it has often been
+suggested that 1,000 lines of code represents the practical limit in
+size for a program which is to be understood and maintained by a single
+individual<a href="#fn1" class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a>. Most AI tools either exceed this
+limit by one or even two orders of magnitude, or else offer the user a
+very limited set of facilities, i.e. either the details of the system
+are inaccessible to all but the most determined, dedicated and
+long-suffering student, or else the system is rather specialised and of
+little intrinsic interest.</p>
+<p>In my opinion, it is highly beneficial for students to have the
+opportunity to study a working AI tool in all its aspects. Moreover it
+is undoubtedly good for students majoring in Computer Science, to be
+confronted at least once in their careers, with the task of reading and
+understanding a program of major dimensions.</p>
+<p>It is my hope that this doc will be of interet and value to students
+and practitioners of AI. Although not prepared primarily for use as a
+reference work, some will wish to use it as such.</p>
+<p>Accordingly, EZR.py usies active learnng to build models froma very
+small amunt of dat. Its work can be sumamrised as A-B-C.</p>
+<ul>
+<li><strong>A</strong>: Use <strong>a</strong>ny examples</li>
+<li><strong>B</strong>: <strong>B</strong>uild a model</li>
+<li><strong>C</strong>: <strong>C</strong>heck the model</li>
+</ul>
+<p>EZR supports not just the code but allso the statsitical functions
+that lets analst make clear concluios about (e.g.) what kinds of
+clustering leads to better conclusions, sooner. With this it…</p>
+<p>Teaching . illustrates much of what is missing in current programmer
+and sE ltierature (oatterns of productinve coding, isuess of
+documentation, encapultion test drivend evelopment etc). It can also be
+used a minimal AI teaching toolkit that indotruces students to
+clustering. Bayes inference, classfication, rule earling, tree elarning
+as well as the stats required to devalauted which of these tools is best
+for some current data/</p>
+<h2 id="motivation">Motivation</h2>
+<h3 id="should-make-it-simpler">Should make it simpler</h3>
+<h3 id="can-make-i-simpler">Can make i simpler</h3>
+<p>EZR was motivated by the current industrial obsession on Big AI that
+seems to be forgetting centuries of experience with data mining. As far
+back as 1901, Pearson<a href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a> showed that tables of data with
+<span class="math inline"><em>N</em></span> columns can be modeled with
+far fewer columns (where the latter are derived from the eigenvectors of
+a correlation information).</p>
+<p>Decades of subsequent work has shown that effective models can be
+built from data that cover tiny fractions of the possible data space<a
+href="#fn3" class="footnote-ref" id="fnref3"
+role="doc-noteref"><sup>3</sup></a>. Levnina and Biclet cwnote that</p>
+<blockquote>
+<p>“The only reason any (learning) methods work … is that, in fact, the
+data are not truly high-dimensional. Rather, they are .. can be
+efficiently summarized in a space of a much lower dimension.</p>
+</blockquote>
+<p>(This remarks echoes an early conclusion from Johnson and
+Lindenstrauss <a href="#fn4" class="footnote-ref" id="fnref4"
+role="doc-noteref"><sup>4</sup></a>.).</p>
+<p>For example:</p>
+<ul>
+<li><strong>Many rows can be ignored</strong>: Data sets with thousands
+of rows can be modeled with just a few dozen samples<a href="#fn5"
+class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>. To
+explain this, suppose we only want to use models that are well supported
+by the data; i.e. supported by multiple rows in a table of data. This
+means that many rows in a table can be be replaced by a smaller number
+of exemplars.</li>
+<li><strong>Many columns can be ignored</strong>: High-dimensional
+tables (with many colummns) can be projected into lower dimensional
+tables while nearly preserving all pairwise distances<a href="#fn6"
+class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>.
+This means that data sets with many columns can be modeled with
+surprisingly few columns. e.g. A table of (say) of <span
+class="math inline"><em>C</em> = 20</span> columns of binary variables
+have a total data space of <span
+class="math inline">2<sup>20</sup></span> (which is more than a
+million). Yet with just dozens to hundred rows of training data, it is
+often possible to build predictors from test rows from that data space.
+This is only possible if the signal in this data condenses to a small
+regions within the total data space.</li>
+<li>Researchers in semi-supervised learning note that high-dimensional
+data often lies on a simpler, lower-dimensional ”manifold” embedded
+within that higher space [^zh05].</li>
+</ul>
+<p>Numerous AI researchers studying NP-hard tasks report the existence
+of a small number of key variables that determine the behavior of the
+rest of the model. When such keys are present, then the problem of
+controlling an entire model simplifies to just the problem of
+controlling the keys.</p>
+<p>Keys have been discovered in AI many times and called many different
+names: Variable subset selection, narrows, master variables, and
+backdoors. In the 1960s, Amarel observed that search problems contain
+narrows; i.e. tiny sets of variable settings that must be used in any
+solution[^amarel]. Amarel’s work defined macros that encode paths
+between the narrows in the search space, effectively permitting a search
+engine to leap quickly from one narrow to another.</p>
+<p>In later work, data mining researchers in the 1990s explored and
+examined what happens when a data miner deliberately ignores some of the
+variables in the training data. Kohavi and John report trials of data
+sets where up to 80% of the variables can be ignored without degrading
+classification accuracy<a href="#fn7" class="footnote-ref" id="fnref7"
+role="doc-noteref"><sup>7</sup></a>. Note the similarity with Amarel’s
+work: it is more important to reason about a small set of important
+variables than about all the variables. At the same time, researchers in
+constraint satisfaction found “random search with retries” was a very
+effective strategy.</p>
+<p>Crawford and Baker reported that such searches took less time than a
+complete search to find more solutions using just a small number of
+retries<a href="#fn8" class="footnote-ref" id="fnref8"
+role="doc-noteref"><sup>8</sup></a>. Their ISAMP “iterative sampler”
+makes random choices within a model until it gets “stuck”; i.e. until
+further choices do not satisfy expectations. When “stuck”, ISAMP does
+not waste time fiddling with current choices (as was done by older
+chronological backtracking algorithms). Instead, ISAMP logs what
+decisions were made before getting “stuck”. It then performs a “retry”;
+i.e. resets and starts again, this time making other random choices to
+explore.</p>
+<p>Crawford and Baker explain the success of this strange approach by
+assuming models contain a small set of master variables that set the
+remaining variables (and this paper calls such master variables keys).
+Rigorously searching through all variable settings is not recommended
+when master variables are present, since only a small number of those
+settings actually matter. Further, when the master variables are spread
+thinly over the entire model, it makes no sense to carefully explore all
+parts of the model since much time will be wasted “walking” between the
+far-flung master variables. For such models, if the reasoning gets stuck
+in one region, then the best thing to do is to leap at random to some
+distant part of the model.</p>
+<p>A similar conclusion comes from the work of Williams et al.<a
+href="#fn9" class="footnote-ref" id="fnref9"
+role="doc-noteref"><sup>9</sup></a>. They found that if a randomized
+search is repeated many times, that a small number of variable settings
+were shared by all solutions. They also found that if they set those
+variables before conducting the rest of the search, then formerly
+exponential runtimes collapsed to low-order polynomial time. They called
+these shared variables the backdoor to reducing computational
+complexity.</p>
+<p>Combining the above, we propose the following strategy for faster
+reasoning about RE models. First, use random search with retries to find
+the “key” decisions in RE models. Second, have stakeholders debate, and
+then decide, about the keys before exploring anything else. Third, to
+avoid trivially small solutions, our random search should strive to
+cover much of the model.</p>
+<p>Code:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Data(src):</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(row):</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(interpolate(data,row,<span class="op">*</span>pole) <span class="cf">for</span> pole <span class="kw">in</span> poles)<span class="op">/</span><span class="bu">len</span>(poles)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  head, <span class="op">*</span>rows <span class="op">=</span> <span class="bu">list</span>(src)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  data  <span class="op">=</span> _data(head, rows)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  poles <span class="op">=</span> projections(data)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row <span class="kw">in</span> rows: row[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> _guess(row)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> data</span></code></pre></div>
+<h3 id="data">Data</h3>
+<p>Shared datasets from research papers by Apel [2], Chen <a
+href="#fn10" class="footnote-ref" id="fnref10"
+role="doc-noteref"><sup>10</sup></a>, and Menzies [^nair] are often used
+as case studies of optimization in SE research papers. Chen and Menzies
+are collaborating to curate the MOOT repository (Multi-Objective
+Optimization Testing4) which offers datasets from recent SE optimization
+papers for process tuning, DB configuration, HPO, management decision
+making etc.</p>
+<p>Since our focus is on configuration, we use MOOT data related to that
+task (see Table I and II). Fig. 3 shows the typical structure of those
+MOOT data sets. The goal in this data is to tune Spout wait, Spliters,
+Counters in order to achieve the best Throughput/Latency. In
+summary:</p>
+<ul>
+<li>MOOT datasets are tables with x inputs and y goals.</li>
+<li>The first row shows the column names.</li>
+<li>Numeric columns start with uppercase, all others are /symbolic.</li>
+<li>Goal columns (e.g. Fig. 3’s Throughput+, Latency-) use +/- to denote
+maximize and minimize.</li>
+</ul>
+<p>Data:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a> x <span class="op">=</span> independent values          <span class="op">|</span> y <span class="op">=</span> dependent values</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">--------------------------------|----------------------</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  Spout_wait, Spliters, Counters, <span class="op">|</span> Throughput<span class="op">+</span>, Latency<span class="op">-</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>     <span class="dv">10</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">23075</span>,    <span class="fl">158.68</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">8</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22887</span>,    <span class="fl">172.74</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22799</span>,    <span class="fl">156.83</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">3</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22430</span>,    <span class="fl">160.14</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    ...,      ...,      ...,           ...,    ...</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">10</span>,      <span class="op">|</span>   <span class="fl">460.81</span>,    <span class="fl">8761.6</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">18</span>,      <span class="op">|</span>   <span class="fl">402.53</span>,    <span class="fl">8797.5</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">12</span>,      <span class="op">|</span>   <span class="fl">365.07</span>,    <span class="fl">9098.9</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,        <span class="dv">1</span>,      <span class="op">|</span>   <span class="fl">310.06</span>,    <span class="dv">9421</span></span></code></pre></div>
+<p>Note that our data is much larger than the Table 3 example. The 39
+data sets in Table I have up to 86,000 rows, 88 independent variables,
+and three y goals. For the purposes of illustration, the rows in Table 3
+are sorted from best to worst based on those goals. During
+experimentation, row order should initially be randomized.</p>
+<p>For the purposes of evaluation, all rows in MOOT data sets contain
+all their y values. When evaluating the outcome of an optimizer, these
+values are used to determine how well the optimizer found the best
+rows.</p>
+<p>For the purposes of optimization experiments, researchers should hide
+the y-values from the optimizer. Each time the optimizer requests the
+value of a particular row, this “costs” one unit. For reasons described
+below, good optimizers find good goals at least cost (i.e. fewest
+labels).</p>
+<p>Notes from ase aper</p>
+<h3 id="caveats">Caveats</h3>
+<p>not generation.</p>
+<p>Tabular data</p>
+<h2 id="references">References</h2>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Lions, John (1996). Lions’ Commentary on UNIX 6th
+Edition with Source Code. Peer-to-Peer Communications. ISBN
+978-1-57398-013-5.<a href="#fnref1" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Pearson, K. (1901). “On Lines and Planes of Closest Fit
+to Systems of Points in Space”. Philosophical Magazine. 2 (11): 559–572.
+10.1080/14786440109462720.<a href="#fnref2" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>I. Witten, E. Frank, and M. Hall. Data Mining: Practical
+Machine Learning Tools and Techniques Morgan Kaufmann Series in Data
+Management Systems Morgan Kaufmann, Amsterdam, 3 edition, (2011)<a
+href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+lipschitz mappings into a hilbert space,” Contemporary Mathematics,
+vol. 26, pp. 189–206, 1984.<a href="#fnref4" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>T. Menzies, B. Turhan, A. Bener, G. Gay, B. Cukic, and
+Y. Jiang, “Implications of ceiling effects in defect predictors,” in
+Proceedings of the 4th international workshop on Predictor models in
+software engineering, 2008, pp. 47–54.<a href="#fnref5"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+lipschitz mappings into a hilbert space,” Contemporary Mathematics,
+vol. 26, pp. 189–206, 1984.<a href="#fnref6" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
+selection,” Artif. Intell., vol. 97, no. 1-2, pp. 273–324, Dec. 1997.<a
+href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>J. M. Crawford and A. B. Baker, “Experimental results on
+the application of satisfiability algorithms to scheduling problems,” in
+Proceedings of the Twelfth National Conference on Artificial
+Intelligence (Vol. 2), Menlo Park, CA, USA, 1994, pp. 1092–1097.<a
+href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
+typical case complexity,” in Proceedings of the International Joint
+Conference on Artificial Intelligence, 2003.<a href="#fnref9"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>M. Li, T. Chen, and X. Yao, “How to evaluate solutions
+in pareto-based search-based software engineering: A critical review and
+methodological guidance,” IEEE Transactions on Software Engineering,
+vol. 48, no. 5, pp. 1771–1799, 2022<a href="#fnref10"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>
