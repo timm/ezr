@@ -310,30 +310,6 @@ Second, have stakeholders debate, and then decide, about
 the keys before exploring anything else. Third, to avoid
 trivially small solutions, our random search should strive
 to cover much of the model.
-
-[^backdoor]: R. Williams, C. P. Gomes, and B. Selman, “Backdoors
-to typical case complexity,” in Proceedings of the International
-Joint Conference on Artificial Intelligence, 2003.
-
-[^amrel]: S. Amarel, “Program synthesis as a theory formation task:
-problem representations and solution methods,” in Machine Learning:
-An Artificial Intelligence Approach. Morgan Kaufmann, 1986.
-
-[^crawford]: J. M. Crawford and A. B. Baker, “Experimental results
-on the application of satisfiability algorithms to scheduling
-problems,” in Proceedings of the Twelfth National Conference on
-Artificial Intelligence (Vol. 2), Menlo Park, CA, USA, 1994, pp.
-1092–1097.
-
-[^kohavi97]: R. Kohavi and G. H. John, “Wrappers for feature subset
-selection,” Artif. Intell., vol. 97, no. 1-2, pp. 273–324, Dec.
-1997.
-
-[^men96a]: T. Menzies, “Applications of abduction: knowledge-level
-modeling,” International journal of human-computer studies, vol.
-45, no. 3, pp. 305–335, 1996.
-
-
 Code: 
 
     def Data(src):
@@ -412,10 +388,21 @@ not generation.
 Tabular data
 
 ## References
+a
+[^amarel]: S. Amarel, “Program synthesis as a theory formation task:
+problem representations and solution methods,” in Machine Learning:
+An Artificial Intelligence Approach. Morgan Kaufmann, 1986.
+
+
 
 [^apel20]: S. Apel, N. Siegmund, C. K¨astner, and A. Legay, “A case
 for automated configuration of variability-intensive systems,” IEEE
 Software, vol. 37, no. 3, pp. 26–33, 2020.
+
+[^backdoor]: R. Williams, C. P. Gomes, and B. Selman, “Backdoors
+to typical case complexity,” in Proceedings of the International
+Joint Conference on Artificial Intelligence, 2003.
+
 
 [^bird23]:  C. Bird et al., “Taking Flight with Copilot: Early
 insights and opportunities of AI-powered pair-programming tools,”
@@ -428,6 +415,13 @@ intelligence: Early experiments with GPT-4,” 2023, arXiv:2303.12712
 in pareto-based search-based software engineering: A critical review
 and methodological guidance,” IEEE Transactions on Software
 Engineering, vol. 48, no. 5, pp. 1771–1799, 2022
+
+[^crawford]: J. M. Crawford and A. B. Baker, “Experimental results
+on the application of satisfiability algorithms to scheduling
+problems,” in Proceedings of the Twelfth National Conference on
+Artificial Intelligence (Vol. 2), Menlo Park, CA, USA, 1994, pp.
+1092–1097.
+
 
 [^fu17]: W. Fu and T. Menzies, “Easy over hard: a case study on
 deep learning,” in Proceedings of the 2017 11th Joint Meeting on
@@ -453,6 +447,12 @@ vol. 26, pp. 189–206, 1984.
 threat (and how to fix it),” IEEE Software, vol. 41, no. 6, pp.
 131–138, 2024.
 
+[^kohavi97]: R. Kohavi and G. H. John, “Wrappers for feature subset
+selection,” Artif. Intell., vol. 97, no. 1-2, pp. 273–324, Dec.
+1997.
+
+
+
 [^ling86]: X. Ling, T. Menzies, C. Hazard, J. Shu, and J. Beel,
 “Trading off scalability, privacy, and performance in data synthesis,”
 IEEE Access, vol. 12, pp. 26 642–26 654, 2024.
@@ -470,11 +470,15 @@ for software development activities.” Google Research. [Online].
 Available: https://research.google/blog/ large-sequence-models-for-software
 -development-activities/
 
-
-[^me08a]: T. Menzies, B. Turhan, A. Bener, G. Gay, B. Cukic, and
+[^men08a]: T. Menzies, B. Turhan, A. Bener, G. Gay, B. Cukic, and
 Y. Jiang, “Implications of ceiling effects in defect predictors,”
 in Proceedings of the 4th international workshop on Predictor models
 in software engineering, 2008, pp. 47–54.
+
+[^men96a]: T. Menzies, “Applications of abduction: knowledge-level
+modeling,” International journal of human-computer studies, vol.
+45, no. 3, pp. 305–335, 1996.
+
 
 [^moot]: T. Menzies and T. Chen, MOOT repository of Multi-objective
 optimization tests.  2025.
