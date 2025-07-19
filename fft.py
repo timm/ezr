@@ -4,6 +4,7 @@ from math import log
 from types import SimpleNamespace as o
 
 BIG = 1e32
+Sym = dict
 def Sym(): return {}
 def Num(): return o(lo=BIG, hi=-BIG,mu=0,m2=0,n=0,sd=0) 
 
@@ -33,7 +34,7 @@ def _data(names,rows):
   return o(rows=rows, cols=o(names=names, w=w, x=x, y=y, all=all))
 
 def add(col, v):
-  if type(col) is dict: col[v] = 1 + col.get(v,0)
+  if type(col) is Sym: col[v] = 1 + col.get(v,0)
   else:
     v       = float(v)
     col.n  += 1
@@ -45,22 +46,12 @@ def add(col, v):
     col.hi  = max(v, col.hi)
   return v
 
-def bin(col,v):
-  if type(col) is dict: return v
-  fun = lambda x: 1 - 0.5 * math.exp(-0.717*x - 0.416*x*x) 
-  z   = (x - col.mu) / col.sd
-  b   = (fun(x) if z>=0 else 1 - fun(-z)) * the.bins
-  return max(0, min(b, the.bins - 1))
+def size(col): return sum(col.values()) if type(col) is Sym else col.n 
+def mid(col) : return mode(col          if type(col) is Sym else col.mu 
+def div(col):  return ent(col)          if type(col) is Sym else col.sd
 
-def size(col): return sum(col.values()) if type(col) is dict col.n 
-
-def mid(col): return max(col, key=col.get) if type(col) is dict col.mu 
-
-def div(col):
-  if type(col) is dict: 
-    N = sum(col.values())
-    return - sum(p*log(p,2) for n in col.values() if (p:=n/N) > 0)
-  return col.sd
+def mode(d): return max(d, key=d.get)
+def ent(d) : N=size(); return -sum(p*log(p,2) for n in d.values() if (p:=n/N)>0)
 
 #------------------------------------------------------------------------------
 def minkowski(src):
@@ -106,7 +97,49 @@ def projections(data):
   return poles
 
 #------------------------------------------------------------------------------
+i know the mean. split up dpen. two halves. m1,m2 best rest
+descend on best, descend on rest
 
+
+split, find best, rest
+
+012345 67899   aa bb  cc dd
+best   resst 
+
+exit on best 
+exit on rest
+
+if policy==1
+  split all
+  find best in all and not best
+
+if policy==0
+  split all
+  find worst in all. now u have worst and not wrst
+
+def cuts(col,x,rows):
+  def _sym(_):
+    ys = {}
+    for row in rows:
+      if (v:=row[c]) != "?":
+        ys[v] = ys.get(v) or Num()
+        add(ys[v], row[-1])
+    return [(ys[k].mu, x, k, k) for k in ys]
+
+  def _num(num):
+    lys,rys = Num(),[Num()
+    for row in rows:
+      if (v:=row[c]) != "?": 
+        add(lys if v <= num.mu else rys, row[-1])
+    return [(ly.mu, x, -BIG, col.mu), (ry.mu, x, col.mu, BIG)]
+
+  for cut in (_sum if type(col) is Sym else _num)(col): yield cut
+
+def chops(data,):
+  a,*_,z = sorted(c for x,col in data.cols.x.items() for c in cuts(col,x,rows))
+  for _,x,lo,hi in [a,z]:
+    yield 
+    
 def percentiles(rows,c,is_num):
   now,out,last = [],[],None
   for v,i,y in sorted([(row[c],i,row[-1]) 

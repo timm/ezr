@@ -27,7 +27,7 @@ are better and/or faster [^hou24] [^fu17] [^grin22]
 
 So what are alternative approaches for AI (that do not assume deep
 learning or large language models)?  One place to start is that,
-for the most part, big AI research overlooks decades of work showing
+for the most part, big AI research overlooks decades of work (see [Related work](#relatedwork)) showing
 that models are often tiny gems, obscured by vast amounts of detail
 that is irrelevant or noisy or superfluous. "Little AI" assumes that:
 
