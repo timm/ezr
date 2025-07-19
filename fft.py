@@ -5,7 +5,6 @@ from types import SimpleNamespace as o
 
 BIG = 1e32
 Sym = dict
-def Sym(): return {}
 def Num(): return o(lo=BIG, hi=-BIG,mu=0,m2=0,n=0,sd=0) 
 
 the = o(bins=7,
@@ -97,75 +96,73 @@ def projections(data):
   return poles
 
 #------------------------------------------------------------------------------
-
-def fftChops(col, c, rows):
-  bins, sym = {}, type(col) is not Sym
-  for row in rows:
-    v = row[c]
-    if v == "?": continue
-    k = v <= col.mu if sym else v
-    bins[k] = bins.get(k) or Num()
-    add(bins[k], row[-1])
-  for k, y in bins.items():
-    yield (y.mu, c,
-           -BIG if sym and not k else col.mu if sym else k,
-            col.mu if sym and not k else BIG if sym else k)
-    def chops(col, c, rows):
-  ys, tmp, is_sym = {}, [], type(col) is not Sym
-  all = Num()
-  for row in rows:
-    v = row[c]
-    add(all, row[-1])
-    if v == "?": tmp += [row]; continue
-    k = v if is_sym else (v <= col.mu)
-    ys[k] = ys.get(k) or Num()
-    add(ys[k], row[-1])
-  [add(ys[k], row[-1]) for row in tmp for k in ys]
-  for k, y in ys.items():
-    yield (y, c, 
-           -BIG   if is_sym and not k else col.mu if is_sym else k,
-           col.mu if is_sym and not k else BIG    if is_sym else k,
-           (all.mu*all.n - y.mu*y.n) / (all.n - y.n))
+def rx(c, rows):
+  out = Num(); [add(out, row[c]) for row in rows if row[c] != "?"]; return out.mu
 
 def selects(rows, c, lo, hi):
   yes, no = [], []
   for row in rows:
     v = row[c]
-    if v == "?" or     (lo <= v <= hi) : yes += [row]
-    if v == "?" or not (lo <= v <= hi) : no  += [row]
+    if v == "?" or lo <= v <= hi: yes.append(row)
+    if v == "?" or not (lo <= v <= hi): no.append(row)
   return yes, no
 
-def fft(data, rows=None, depth=4, other=None):
-  rows = rows or data.rows
-  if depth > 0 and len(rows) > 2: return other
-    if (cuts := [cut for c, col in data.cols.c.items() 
-                for cut in chops(col, c, rows)]):
-      a, *_, z = sorted(cuts)
-      yield _fft(data,rows, depth-1, *a)
-      yield _fft(data,rows, depth-1, *z)
-  yield other
+def fft(data, rows, depth=4):
+  if depth > 0 and rows:
+    if (cuts := [cut for c, col in data.cols.x.items() 
+                 for cut in fftCuts(col, c, rows, type(col) is Sym)]):
+      best, *_, worst = sorted(cuts)
+      yield _fft(data, rows, depth, True, *best)
+      yield _fft(data, rows, depth, False,*worst)
 
-def _fft(data, rows, depth, stats, c, lo, hi, other):
+def fftCuts(col, c, rows, sym):
+  bins, unknowns = {}, []
+  for row in rows:
+    v = row[c]
+    if v == "?": unknowns.append(row); continue
+    k =v if sym else v <= col.mu
+    bins[k] = bins.get(k) or Num()
+    add(bins[k], row[-1])
+  [add(bin, row[-1]) for row in unknowns for bin in bins.values()]
+  for k, y in bins.items():
+    if sym: lo = hi = k
+    else:   lo, hi = (-BIG, col.mu) if k else (col.mu, BIG)
+    yield (y.mu, c,lo,hi)
+
+def _fft(cut, data, rows, depth, exiting, mu,c,lo,hi):
   yes, no = selects(rows, c, lo, hi)
-  return o(
-    c=c, lo=lo, hi=hi, stats=stats.mu,
-    left  = fft(data, yes, depth, other),
-    right = fft(data, yes, depth, other))
-
-def showFFT(tree, prefix=""):
-  if not hasattr(tree, "left"):
-    print(f"{prefix} ==> {round(tree.stats,2)}")
-    return
-  cond = f"{tree.lo} <= x{tree.x} <= {tree.hi}"
-  showFFT(tree.left,  prefix + f"if {cond} and ")
-  showFFT(tree.right, prefix + f"if not {cond} and ")
+  leaf = o(stats=rx(c, yes if exiting else no))
+  rest =               no  if exiting else yes
+  if depth == 1: return leaf
+  return o(c=c, lo=lo, hi=hi, left=leaf, stats=rx(c, rows), 
+           right=fft(data, rest, depth-1))
 
 def predict(t, row):
-  while isinstance(t, tuple):
-    c,v,o,l,r = t
-    t = l if ops[o](row,c,v) else r
-  return t
+  while hasattr(t, "c"):
+    v = row[t.c]
+    t = t.left if v == "?" or t.lo <= v <= t.hi else next(t.right) if hasattr(t.right, "__iter__") else t.right
+  return t.stats
 
+def showFFT(t, lvl=0):
+  if not hasattr(t, "c"): print("  " * lvl + f"=> {t.stats:.2f}"); return
+  print("  " * lvl + f"if {t.c} in [{t.lo:.2f}, {t.hi:.2f}] then")
+  showFFT(t.left, lvl + 1)
+  print("  " * lvl + "else")
+  for r in (t.right if hasattr(t.right, "__iter__") else [t.right]):
+    showFFT(r, lvl + 1)
+
+   """
+x<1  x>1          y==a y==b y==c
+10   1              3   8    20
+
+worst split  y==c
+best split x>1
+
+exit on worst = 0
+exit on best = 0
+
+left is alwaus e xit.
+"""
 def csv(file):
   n = -1
   with open(file,encoding="utf-8") as f:

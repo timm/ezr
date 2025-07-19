@@ -1,92 +1,113 @@
 ---
-title: "Inside Easier AI"
+title: "Easier AI for Software Engineers"
 author:  "Tim Menzies<br>timm@ieee.org"
 date: "July, 2025"
 ---
 
-Recentl, in discussions with my teaching colleagues at NC State,
-a new kind of teaching challenge has become apparent.
-The current generation of CS students, schooled in isolation during covid are perhaps
-not exceptional at critique code. Trained with search engines and LLM chat bots, they 
-are more like to vibe code than discet it. files ond esk top
-
-are becoming  emerging need in th post-covid LLM-focused environemnt, become a aware of a new
-challenge in teaching coding.
-
-urgetn need to better teaching what goes on iside scropts in general and AI tools on aprticlar.
-students loosing the "our tools" mentanlity. trained on search engiens, not know what is isnde. want surgeons. let lo code and 
-vibe coding and chatgt prompts democsratize coding and let the world be able to code
-but let us alos train scode surgeons who can fix messed up code or offer healt advisoryies on how to write
-better code or design new coding tools
-
-
 ------------------------------------------------------
-_"Perfection is achieved not when there is nothing more to add, but when there is nothing left to take away."_ <br>- Antoine de Saint-Exupéry
+_"The best thing to do with most data is throw it away."_ --me
 
-_"Less, but better."_ <br>- Dieter Rams
+_"YAGNI"_ (you aren't gonna need it) --Kent Beck
+
+_"Less, but better."_  --Dieter Rams  
+
+_"Subtract."_ --Leidy Klotz[^adams21]
 ------------------------------------------------------
 
-Much current work focuses on "big AI" methods that assume massive
-CPU and enormous quantities of training data.  While successful for
-a range of generative tasks[^mani23] [^taba23] [^bird23] [^bubeck23],
-they have many limitations[^john24].  For example, it is hard to
-reproduce results using resource intensive methods.  Hence, it is
-hardly surprising that there are very few comparison of big AI to other
-methods. A recent systematic review[^hou24] of 229
-SE papers using large language models (a big AI method), only 13/229 ≈ 5% of
-those papers compared themselves to other approaches.  This is a
-methodological error since other methods can produce results that
-are better and/or faster [^hou24] [^fu17] [^grin22]
+What should we be teaching newcomers to software engineers?
+Talking with fellow instructors, we have  noticed a new SE teaching
+challenge. Post-COVID, SE students, raised on search
+engines and chatbots, are great at vibing with code (copying,
+tweaking, prompting) but not at dissecting it. Critique and repair,
+the practices of software craftsmanship, are giving way to surface-level
+interaction. Code becomes something that appears on their screen,
+not something they **own**.
+
+D. Richard Hipp, the creator of SQLite, once said: “If you want to
+be free, that means doing things yourself.”[^hipp21] That ethic —
+of simplicity, self-reliance, and deep understanding — is being
+lost. My goal is to bring it back.  We need to teach software
+engineers what happens *inside* code, especially those that drive
+modern AI.  In an era where AI have become widely used, we must
+also train *code surgeons*—developers who can look beneath the
+surface, offer precise interventions, diagnose issues, and even
+design better tools. This is about reclaiming authorship, encouraging
+understanding, and fostering a mindset of critique rather than cargo
+cult reuse.
+
+And this is not  just a teaching issue. It reflects a deeper
+epistemological problem in how we conduct research in software
+enginering.  Much current AI research emphasizes "big AI" methods
+that rely on massive compute resources and vast datasets. These
+systems can produce impressive outputs[^mani23] [^taba23] [^bird23]
+[^bubeck23], but they are often treated as inscrutable black boxes.
+Like students who vibe rather than dissect, researchers increasingly
+report results without understanding, or questioning, what goes on
+inside the models.
+
+This reluctance to look inside has serious consequences. Chief among
+them is the crisis of *reproducibility*: big AI experiments are
+difficult to replicate, and comparative evaluations are rare. For
+example, a recent review[^hou24] of 229 software engineering papers
+using LLMs (large language models) found that only 13 (just 5%)
+compared their results to any alternative. This lack of introspection
+is not only methodologically flawed; it also suppresses innovation.
+As seen in the _[Example](#examples)_ section, simpler approaches
+can often perform just as well—or better—while being faster, more
+transparent, and easier to critique_[^hou24] [^fu17] [^grin22]
 [^ling86] [^maju18] [^somy24] [^tawo23].
 
-So what are alternative approaches for AI (that do not assume deep
-learning or large language models)?  One place to start is that,
-for the most part, big AI research overlooks decades of work (see
-[Related work](#relatedwork)) showing that models are often tiny
-gems, obscured by vast amounts of detail that is irrelevant or noisy
-or superfluous. "Little AI" assumes that:
+So what are those alternatives? “Little AI” offers one path forward.
+Where big AI emphasizes volume, little AI assumes that useful models
+are tiny gems obscured by irrelevant or noisy or redundant data.
+Finding useful models is a hence a progress of pruning everything
+that  is superflous or confusing. To say that another way:
 
-> The best thing to do with most data, is throw it away.
+> The best thing to do with most data is throw it away.
 
-EZR is a tool that works by ignoring most data.  EZR is an  _active
-learner_[^sett09]; i.e. to decide what to do next, it  looks on
-what has been learned so far.  In this way it can avoid superfluous,
-irrelevant, and noisy data.  EZR's  results are startling.  In just
-a few hundred lines of code, EZR supports numerous basic AI tasks.
-Using those basic tasks, it then it becomes quick to code numerous
-common AI tasks like  clustering or classification or regression
-or active learning or multi-objective optimization or explanation.
+**EZR** is a compact implementation of this idea. It is an incremental
+_active learner_[^sett09], which means "what to do next" is determined
+from "what has been seen so far". By peeking at the data before
+processing it, tools like **EZR** can avoid irrelevancies, redundancies,
+and noisy data.  In this way, models can be built, very quickly,
+from very little data.  In just a few hundred lines of code, EZR
+supports a wide range of core AI tasks—classification, clustering,
+regression, active learning, multi-objective optimization, and
+explainability.
 
-This research note describe the "why", "how", and "so what?" of EZR.
-After motivating  the work, a code walk
-through explores the internals of the tool. EZR is then assessed
-using 100+ examples taken from the software engineering optimization
-literature.  These examples, available at the MOOT repository[^moot],
-are quite diverse and include software process decisions, optimizing
-configuration parameters, and tuning learners for better analytics.
-Successful MOOT modeling results in better advice for project
-managers, better control of   software options, and enhanced analytics
-from learners that are better tuned to the local data.
+This research note introduces EZR and explains its design, motivation,
+and implications. After a code walkthrough, we evaluate EZR using
+over 100 diverse examples from the [MOOT
+repository](https://github.com/timm/moot)[^moot], which captures
+problems from software engineering optimization, such as tuning
+analytic tools, adjusting configuration parameters, and guiding
+software process decisions.
 
-Using MOOT, many questions can be  answered about EZR:
+The MOOT benchmarks help answer several core questions
+about EZR:
 
-- **RQ1**: Is it simple? As seen below, EZR has a very short and
-  straight-forward code base.
-- **RQ2**: Is it fast?  In milliseconds, EZR can complete tasks
-  that take hours using big data methods.
-- **RQ3**: Is it effective? In a result supporting the little data 
-  assumption, MOOT's active learners  can achieve near-optimal results after
-  processing just a few dozen examples.
-- **RQ4**: Is it insightful?  Our discussion section argues that
-  MOOT offers a unique perspective on science and engineering,
-  and what it means to explore the world.
-- **RQ5:** Is it general? All our conclusions are based on the MOOT data.
-  Hence it is prudent to ask what are the limits of conclusions
-  drawn from that kind of experience. For example, our EZR tool is
-  not (yet) a tool for generation tasks (for that, you need a large
-  language mode like ChatGPT). Nevertheless. its fast runtime and
-  explanation tools make it the preferred approach when models must
-  be built quickly or critiqued externally.
+- **RQ1: Is it simple?**  
+  Yes- EZR has a compact, readable codebase, ideal for teaching 
+  and tinkering.
+
+- **RQ2: Is it fast?**  
+  Yes— EZR completes tasks in milliseconds that take 
+  hours for big AI.
+
+- **RQ3: Is it effective?**  
+  Yes— MOOT's active learners achieve near-optimal results 
+  after seeing just a few dozen examples.
+
+- **RQ4: Is it insightful?**  
+  Yes— EZR reveals a perspective on learning that encourages explanation and critical analysis, not just automation.
+
+- **RQ5: Is it general?**
+  Within the scope of MOOT-style optimization tasks, yes. While not
+  designed for text generation (you’ll still need LLMs for that),
+  EZR excels at fast model building and external critique—an essential
+  capability when teaching students to open up and reason about AI
+  systems.
+
 
 ## A Quick Demo
 
@@ -472,7 +493,10 @@ not generation.
 Tabular data
 
 ## References
-a
+[^adams21]: Adams, G. S., Converse, B. A., Hales, A. H., & Klotz, L.
+E. (2021). People systematically overlook subtractive changes.
+Nature, 592(7853), 258-261.
+
 [^amarel]: S. Amarel, “Program synthesis as a theory formation task:
 problem representations and solution methods,” in Machine Learning:
 An Artificial Intelligence Approach. Morgan Kaufmann, 1986.
@@ -516,6 +540,11 @@ NY, USA: Association for Computing Machinery, 2017, p. 49–60.
 tree-based models still outperform deep learning on typical tabular
 data?” in NeurIPS’22, 2022.
 
+[^hipp21]: A.G. Bell 2021, The Untold Story of SQLite With Richard
+Hipp Corecursive podcast. Interview by Adam Gordon Bell. November
+30, 2020. Accessed July 19, 2025.
+https://corecursive.com/066-sqlite-with-richard-hipp/
+
 [^hou24]: X. Hou, Y. Zhao, Y. Liu, Z. Yang, K. Wang, L. Li, X. Luo,
 D. Lo, J. Grundy, and H. Wang, “Large language models for software
 engineering: A systematic literature review,” ACM Trans. Softw.
@@ -533,8 +562,6 @@ threat (and how to fix it),” IEEE Software, vol. 41, no. 6, pp.
 [^kohavi97]: R. Kohavi and G. H. John, “Wrappers for feature subset
 selection,” Artif. Intell., vol. 97, no. 1-2, pp. 273–324, Dec.
 1997.
-
-
 
 [^ling86]: X. Ling, T. Menzies, C. Hazard, J. Shu, and J. Beel,
 “Trading off scalability, privacy, and performance in data synthesis,”

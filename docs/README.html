@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Tim Menzies timm@ieee.org" />
-  <title>Inside Easier AI</title>
+  <title>Easier AI for Software Engineers</title>
   <style>
     html {
       color: #1a1a1a;
@@ -108,8 +108,8 @@
      overflow: visible;
     }
     hr {
+      background-color: #1a1a1a;
       border: none;
-      border-top: 1px solid #1a1a1a;
       height: 1px;
       margin: 1em 0;
     }
@@ -168,9 +168,8 @@
     }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
     /* CSS for syntax highlighting */
-    html { -webkit-text-size-adjust: 100%; }
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -181,7 +180,7 @@
     }
     @media print {
     pre > code.sourceCode { white-space: pre-wrap; }
-    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
     }
     pre.numberSource code
       { counter-reset: source-line 0; }
@@ -235,7 +234,7 @@
 </head>
 <body>
 <header id="title-block-header">
-<h1 class="title">Inside Easier AI</h1>
+<h1 class="title">Easier AI for Software Engineers</h1>
 <p class="author">Tim Menzies<br>timm@ieee.org</p>
 <p class="date">July, 2025</p>
 </header>
@@ -245,34 +244,65 @@
 </colgroup>
 <tbody>
 <tr>
-<td><em>“Perfection is achieved not when there is nothing more to add,
-but when there is nothing left to take away.”</em> <br>- Antoine de
-Saint-Exupéry</td>
+<td><em>“The best thing to do with most data is throw it away.”</em>
+–me</td>
 </tr>
 <tr>
-<td><em>“Less, but better.”</em> <br>- Dieter Rams</td>
+<td><em>“YAGNI”</em> (you aren’t gonna need it) –Kent Beck</td>
+</tr>
+<tr>
+<td><em>“Less, but better.”</em> –Dieter Rams</td>
+</tr>
+<tr>
+<td><em>“Subtract.”</em> –Leidy Klotz<a href="#fn1" class="footnote-ref"
+id="fnref1" role="doc-noteref"><sup>1</sup></a></td>
 </tr>
 </tbody>
 </table>
-<p>Much current work focuses on “big AI” methods that assume massive CPU
-and enormous quantities of training data. While successful for a range
-of generative tasks<a href="#fn1" class="footnote-ref" id="fnref1"
-role="doc-noteref"><sup>1</sup></a> <a href="#fn2" class="footnote-ref"
-id="fnref2" role="doc-noteref"><sup>2</sup></a> <a href="#fn3"
-class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> <a
-href="#fn4" class="footnote-ref" id="fnref4"
-role="doc-noteref"><sup>4</sup></a>, they have many limitations<a
+<p>What should we be teaching newcomers to software engineers? Talking
+with fellow instructors, we have noticed a new SE teaching challenge.
+Post-COVID, SE students, raised on search engines and chatbots, are
+great at vibing with code (copying, tweaking, prompting) but not at
+dissecting it. Critique and repair, the practices of software
+craftsmanship, are giving way to surface-level interaction. Code becomes
+something that appears on their screen, not something they
+<strong>own</strong>.</p>
+<p>D. Richard Hipp, the creator of SQLite, once said: “If you want to be
+free, that means doing things yourself.”<a href="#fn2"
+class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>
+That ethic — of simplicity, self-reliance, and deep understanding — is
+being lost. My goal is to bring it back. We need to teach software
+engineers what happens <em>inside</em> code, especially those that drive
+modern AI. In an era where AI have become widely used, we must also
+train <em>code surgeons</em>—developers who can look beneath the
+surface, offer precise interventions, diagnose issues, and even design
+better tools. This is about reclaiming authorship, encouraging
+understanding, and fostering a mindset of critique rather than cargo
+cult reuse.</p>
+<p>And this is not just a teaching issue. It reflects a deeper
+epistemological problem in how we conduct research in software
+enginering. Much current AI research emphasizes “big AI” methods that
+rely on massive compute resources and vast datasets. These systems can
+produce impressive outputs<a href="#fn3" class="footnote-ref"
+id="fnref3" role="doc-noteref"><sup>3</sup></a> <a href="#fn4"
+class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> <a
 href="#fn5" class="footnote-ref" id="fnref5"
-role="doc-noteref"><sup>5</sup></a>. For example, it is hard to
-reproduce results using resource intensive methods. Hence, it is hardly
-surprising that there are very few comparison of big AI to other
-methods. A recent systematic review<a href="#fn6" class="footnote-ref"
-id="fnref6" role="doc-noteref"><sup>6</sup></a> of 229 SE papers using
-large language models (a big AI method), only 13/229 ≈ 5% of those
-papers compared themselves to other approaches. This is a methodological
-error since other methods can produce results that are better and/or
-faster <a href="#fn7" class="footnote-ref" id="fnref7"
-role="doc-noteref"><sup>7</sup></a> <a href="#fn8" class="footnote-ref"
+role="doc-noteref"><sup>5</sup></a> <a href="#fn6" class="footnote-ref"
+id="fnref6" role="doc-noteref"><sup>6</sup></a>, but they are often
+treated as inscrutable black boxes. Like students who vibe rather than
+dissect, researchers increasingly report results without understanding,
+or questioning, what goes on inside the models.</p>
+<p>This reluctance to look inside has serious consequences. Chief among
+them is the crisis of <em>reproducibility</em>: big AI experiments are
+difficult to replicate, and comparative evaluations are rare. For
+example, a recent review<a href="#fn7" class="footnote-ref" id="fnref7"
+role="doc-noteref"><sup>7</sup></a> of 229 software engineering papers
+using LLMs (large language models) found that only 13 (just 5%) compared
+their results to any alternative. This lack of introspection is not only
+methodologically flawed; it also suppresses innovation. As seen in the
+<em><a href="#examples">Example</a></em> section, simpler approaches can
+often perform just as well—or better—while being faster, more
+transparent, and easier to critique_<a href="#fn8" class="footnote-ref"
 id="fnref8" role="doc-noteref"><sup>8</sup></a> <a href="#fn9"
 class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a> <a
 href="#fn10" class="footnote-ref" id="fnref10"
@@ -280,57 +310,278 @@ role="doc-noteref"><sup>10</sup></a> <a href="#fn11"
 class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a>
 <a href="#fn12" class="footnote-ref" id="fnref12"
 role="doc-noteref"><sup>12</sup></a> <a href="#fn13"
-class="footnote-ref" id="fnref13"
-role="doc-noteref"><sup>13</sup></a>.</p>
-<p>So what are alternative approaches for AI (that do not assume deep
-learning or large language models)? One place to start is that, for the
-most part, big AI research overlooks decades of work showing that models
-are often tiny gems, obscured by vast amounts of detail that is
-irrelevant or noisy or superfluous. “Little AI” assumes that:</p>
+class="footnote-ref" id="fnref13" role="doc-noteref"><sup>13</sup></a>
+<a href="#fn14" class="footnote-ref" id="fnref14"
+role="doc-noteref"><sup>14</sup></a>.</p>
+<p>So what are those alternatives? “Little AI” offers one path forward.
+Where big AI emphasizes volume, little AI assumes that useful models are
+tiny gems obscured by irrelevant or noisy or redundant data. Finding
+useful models is a hence a progress of pruning everything that is
+superflous or confusing. To say that another way:</p>
 <blockquote>
-<p>The best thing to do with most data, is throw it away.</p>
+<p>The best thing to do with most data is throw it away.</p>
 </blockquote>
-<p>EZR is a tool that works by ignoring most data. EZR is an <em>active
-learner</em><a href="#fn14" class="footnote-ref" id="fnref14"
-role="doc-noteref"><sup>14</sup></a>; i.e. to decide what to do next, it
-looks on what has been learned so far. In this way it can avoid
-superfluous, irrelevant, and noisy data. EZR’s results are startling. In
-just a few hundred lines of code, EZR supports numerous basic AI tasks.
-Using those basic tasks, it then it becomes quick to code numerous
-common AI tasks like clustering or classification or regression or
-active learning or multi-objective optimization or explanation.</p>
-<p>This research note describe the “why”, “how”, and “so what?” of EZR.
-After motivating the work, a code walk through explores the internals of
-the tool. EZR is then assessed using 100+ examples taken from the
-software engineering optimization literature. These examples, available
-at the MOOT repository<a href="#fn15" class="footnote-ref" id="fnref15"
-role="doc-noteref"><sup>15</sup></a>, are quite diverse and include
-software process decisions, optimizing configuration parameters, and
-tuning learners for better analytics. Successful MOOT modeling results
-in better advice for project managers, better control of software
-options, and enhanced analytics from learners that are better tuned to
-the local data.</p>
-<p>Using MOOT, many questions can be answered about EZR:</p>
+<p><strong>EZR</strong> is a compact implementation of this idea. It is
+an incremental <em>active learner</em><a href="#fn15"
+class="footnote-ref" id="fnref15" role="doc-noteref"><sup>15</sup></a>,
+which means “what to do next” is determined from “what has been seen so
+far”. By peeking at the data before processing it, tools like
+<strong>EZR</strong> can avoid irrelevancies, redundancies, and noisy
+data. In this way, models can be built, very quickly, from very little
+data. In just a few hundred lines of code, EZR supports a wide range of
+core AI tasks—classification, clustering, regression, active learning,
+multi-objective optimization, and explainability.</p>
+<p>This research note introduces EZR and explains its design,
+motivation, and implications. After a code walkthrough, we evaluate EZR
+using over 100 diverse examples from the <a
+href="https://github.com/timm/moot">MOOT repository</a><a href="#fn16"
+class="footnote-ref" id="fnref16" role="doc-noteref"><sup>16</sup></a>,
+which captures problems from software engineering optimization, such as
+tuning analytic tools, adjusting configuration parameters, and guiding
+software process decisions.</p>
+<p>The MOOT benchmarks help answer several core questions about EZR:</p>
 <ul>
-<li><strong>RQ1</strong>: Is it simple? As seen below, EZR has a very
-short and straight-forward code base.</li>
-<li><strong>RQ2</strong>: Is it fast? In milliseconds, EZR can complete
-tasks that take hours using big data methods.</li>
-<li><strong>RQ3</strong>: Is it effective? In a result supporting the
-little data assumption, MOOT’s active learners can achieve near-optimal
-results after processing just a few dozen examples.</li>
-<li><strong>RQ4</strong>: Is it insightful? Our discussion section
-argues that MOOT offers a unique perspective on science and engineering,
-and what it means to explore the world.</li>
-<li><strong>RQ5:</strong> Is it general? All our conclusions are based
-on the MOOT data. Hence it is prudent to ask what are the limits of
-conclusions drawn from that kind of experience. For example, our EZR
-tool is not (yet) a tool for generation tasks (for that, you need a
-large language mode like ChatGPT). Nevertheless. its fast runtime and
-explanation tools make it the preferred approach when models must be
-built quickly or critiqued externally.</li>
+<li><p><strong>RQ1: Is it simple?</strong><br />
+Yes- EZR has a compact, readable codebase, ideal for teaching and
+tinkering.</p></li>
+<li><p><strong>RQ2: Is it fast?</strong><br />
+Yes— EZR completes tasks in milliseconds that take hours for big
+AI.</p></li>
+<li><p><strong>RQ3: Is it effective?</strong><br />
+Yes— MOOT’s active learners achieve near-optimal results after seeing
+just a few dozen examples.</p></li>
+<li><p><strong>RQ4: Is it insightful?</strong><br />
+Yes— EZR reveals a perspective on learning that encourages explanation
+and critical analysis, not just automation.</p></li>
+<li><p><strong>RQ5: Is it general?</strong> Within the scope of
+MOOT-style optimization tasks, yes. While not designed for text
+generation (you’ll still need LLMs for that), EZR excels at fast model
+building and external critique—an essential capability when teaching
+students to open up and reason about AI systems.</p></li>
 </ul>
 <h2 id="a-quick-demo">A Quick Demo</h2>
+<p>SLOC XXX</p>
+<p>A- =</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>  <span class="fl">3.0247</span> <span class="op">*</span> B <span class="op">+</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fl">1.7922</span> <span class="op">*</span> C <span class="op">+</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.6417</span> <span class="op">*</span> D <span class="op">+</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fl">2.2354</span> <span class="op">*</span> E <span class="op">+</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fl">1.6558</span> <span class="op">*</span> F <span class="op">+</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fl">1.1448</span> <span class="op">*</span> G <span class="op">+</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a> <span class="fl">15.6973</span> <span class="op">*</span> H <span class="op">+</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a> <span class="fl">12.4552</span> <span class="op">*</span> I <span class="op">+</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a> <span class="fl">16.5112</span> <span class="op">*</span> J <span class="op">+</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a> <span class="fl">16.8096</span> <span class="op">*</span> K <span class="op">+</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fl">200.4093</span></span></code></pre></div>
+<p>B- =</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a> <span class="op">-</span><span class="fl">0.1742</span> <span class="op">*</span> C <span class="op">+</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.2132</span> <span class="op">*</span> F <span class="op">+</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.1585</span> <span class="op">*</span> G <span class="op">+</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="op">-</span><span class="fl">11.7985</span> <span class="op">*</span> H <span class="op">+</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fl">2.2523</span> <span class="op">*</span> I <span class="op">+</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.7718</span> <span class="op">*</span> J <span class="op">+</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a> <span class="op">-</span><span class="fl">0.7594</span> <span class="op">*</span> K <span class="op">+</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a> <span class="fl">27.0068</span></span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>what</th>
+<th>notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>file</td>
+<td>SS-L.csv</td>
+</tr>
+<tr>
+<td>ows</td>
+<td>1023</td>
+</tr>
+<tr>
+<td>y</td>
+<td>2</td>
+</tr>
+<tr>
+<td>x</td>
+<td>11</td>
+</tr>
+<tr>
+<td>asIs</td>
+<td>63</td>
+</tr>
+<tr>
+<td>min</td>
+<td>16</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Samples</th>
+<th>explit</th>
+<th>exokire</th>
+<th>adapt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>15</td>
+<td>29</td>
+<td>38</td>
+<td>30</td>
+</tr>
+<tr>
+<td>30</td>
+<td>23</td>
+<td>35</td>
+<td>30</td>
+</tr>
+<tr>
+<td>45</td>
+<td><strong>18 !!</strong></td>
+<td>35</td>
+<td>38</td>
+</tr>
+<tr>
+<td>60</td>
+<td><strong>20 !!</strong></td>
+<td>38</td>
+<td>31</td>
+</tr>
+<tr>
+<td>75</td>
+<td><strong>17 !!</strong></td>
+<td>33</td>
+<td>28</td>
+</tr>
+<tr>
+<td>100</td>
+<td><strong>17 !!</strong></td>
+<td>28</td>
+<td>28</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">d2h</th>
+<th style="text-align: right;">win</th>
+<th style="text-align: right;">n</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">0.53</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">24</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.38</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">10 K &lt;= 0</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.32</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">2 | G &lt;= 0;</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.39</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">8 | G &gt; 0</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.37</td>
+<td style="text-align: right;">61</td>
+<td style="text-align: right;">4 | | F &lt;= 0</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.36</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">2 | | | D &lt;= 0;</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.38</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">2 | | | D &gt; 0;</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.41</td>
+<td style="text-align: right;">47</td>
+<td style="text-align: right;">4 | | F &gt; 0</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">2 | | | D &lt;= 0;</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: right;">2 | | | D &gt; 0;</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.63</td>
+<td style="text-align: right;">-42</td>
+<td style="text-align: right;">14 K &gt; 0</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.62</td>
+<td style="text-align: right;">-35</td>
+<td style="text-align: right;">12 | H &gt; 0</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.61</td>
+<td style="text-align: right;">-34</td>
+<td style="text-align: right;">8 | | D &gt; 0</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.60</td>
+<td style="text-align: right;">-31</td>
+<td style="text-align: right;">6 | | | G &gt; 0</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.59</td>
+<td style="text-align: right;">-25</td>
+<td style="text-align: right;">4 | | | | F &gt; 0;</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.63</td>
+<td style="text-align: right;">-41</td>
+<td style="text-align: right;">2 | | | | F &lt;= 0;</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.64</td>
+<td style="text-align: right;">-44</td>
+<td style="text-align: right;">2 | | | G &lt;= 0;</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.62</td>
+<td style="text-align: right;">-38</td>
+<td style="text-align: right;">4 | | D &lt;= 0</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.61</td>
+<td style="text-align: right;">-33</td>
+<td style="text-align: right;">2 | | | F &lt;= 0;</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.64</td>
+<td style="text-align: right;">-43</td>
+<td style="text-align: right;">2 | | | F &gt; 0;</td>
+</tr>
+<tr>
+<td style="text-align: right;">0.74</td>
+<td style="text-align: right;">-85</td>
+<td style="text-align: right;">2 | H &lt;= 0;</td>
+</tr>
+</tbody>
+</table>
 <p>The file ezr.py contains numerous demos that can be executed from the
 command line. For example, k-means clustering groups together similar
 examples by (a) picking <span class="math inline"><em>k</em></span>
@@ -383,8 +634,8 @@ with tiny local stubs.</p>
 <p>Also, for <strong>teaching (or self-study)</strong>, it has often
 been suggested that 1,000 lines of code represents the practical limit
 in size for a program which is to be understood and maintained by a
-single individual<a href="#fn16" class="footnote-ref" id="fnref16"
-role="doc-noteref"><sup>16</sup></a>. Most AI tools either exceed this
+single individual<a href="#fn17" class="footnote-ref" id="fnref17"
+role="doc-noteref"><sup>17</sup></a>. Most AI tools either exceed this
 limit by two orders of magnitude, or else offer the user a very limited
 set of facilities, i.e. either the details of the system are
 inaccessible to all but the most determined, dedicated and
@@ -441,23 +692,23 @@ for some current data/</p>
 <h3 id="can-make-i-simpler">Can make i simpler</h3>
 <p>EZR was motivated by the current industrial obsession on Big AI that
 seems to be forgetting centuries of experience with data mining. As far
-back as 1901, Pearson<a href="#fn17" class="footnote-ref" id="fnref17"
-role="doc-noteref"><sup>17</sup></a> showed that tables of data with
+back as 1901, Pearson<a href="#fn18" class="footnote-ref" id="fnref18"
+role="doc-noteref"><sup>18</sup></a> showed that tables of data with
 <span class="math inline"><em>N</em></span> columns can be modeled with
 far fewer columns (where the latter are derived from the eigenvectors of
 a correlation information).</p>
 <p>Decades of subsequent work has shown that effective models can be
 built from data that cover tiny fractions of the possible data space<a
-href="#fn18" class="footnote-ref" id="fnref18"
-role="doc-noteref"><sup>18</sup></a>. Levnina and Biclet cwnote that</p>
+href="#fn19" class="footnote-ref" id="fnref19"
+role="doc-noteref"><sup>19</sup></a>. Levnina and Biclet cwnote that</p>
 <blockquote>
 <p>“The only reason any (learning) methods work … is that, in fact, the
 data are not truly high-dimensional. Rather, they are .. can be
 efficiently summarized in a space of a much lower dimension.</p>
 </blockquote>
 <p>(This remarks echoes an early conclusion from Johnson and
-Lindenstrauss <a href="#fn19" class="footnote-ref" id="fnref19"
-role="doc-noteref"><sup>19</sup></a>.).</p>
+Lindenstrauss <a href="#fn20" class="footnote-ref" id="fnref20"
+role="doc-noteref"><sup>20</sup></a>.).</p>
 <p>For example:</p>
 <ul>
 <li><strong>Many rows can be ignored</strong>: Data sets with thousands
@@ -468,8 +719,8 @@ that many rows in a table can be be replaced by a smaller number of
 exemplars.</li>
 <li><strong>Many columns can be ignored</strong>: High-dimensional
 tables (with many colummns) can be projected into lower dimensional
-tables while nearly preserving all pairwise distances<a href="#fn20"
-class="footnote-ref" id="fnref20" role="doc-noteref"><sup>20</sup></a>.
+tables while nearly preserving all pairwise distances<a href="#fn21"
+class="footnote-ref" id="fnref21" role="doc-noteref"><sup>21</sup></a>.
 This means that data sets with many columns can be modeled with
 surprisingly few columns. e.g. A table of (say) of <span
 class="math inline"><em>C</em> = 20</span> columns of binary variables
@@ -492,23 +743,25 @@ controlling the keys.</p>
 names: Variable subset selection, narrows, master variables, and
 backdoors. In the 1960s, Amarel observed that search problems contain
 narrows; i.e. tiny sets of variable settings that must be used in any
-solution[^amarel]. Amarel’s work defined macros that encode paths
-between the narrows in the search space, effectively permitting a search
-engine to leap quickly from one narrow to another.</p>
+solution<a href="#fn22" class="footnote-ref" id="fnref22"
+role="doc-noteref"><sup>22</sup></a>. Amarel’s work defined macros that
+encode paths between the narrows in the search space, effectively
+permitting a search engine to leap quickly from one narrow to
+another.</p>
 <p>In later work, data mining researchers in the 1990s explored and
 examined what happens when a data miner deliberately ignores some of the
 variables in the training data. Kohavi and John report trials of data
 sets where up to 80% of the variables can be ignored without degrading
-classification accuracy<a href="#fn21" class="footnote-ref" id="fnref21"
-role="doc-noteref"><sup>21</sup></a>. Note the similarity with Amarel’s
+classification accuracy<a href="#fn23" class="footnote-ref" id="fnref23"
+role="doc-noteref"><sup>23</sup></a>. Note the similarity with Amarel’s
 work: it is more important to reason about a small set of important
 variables than about all the variables. At the same time, researchers in
 constraint satisfaction found “random search with retries” was a very
 effective strategy.</p>
 <p>Crawford and Baker reported that such searches took less time than a
 complete search to find more solutions using just a small number of
-retries<a href="#fn22" class="footnote-ref" id="fnref22"
-role="doc-noteref"><sup>22</sup></a>. Their ISAMP “iterative sampler”
+retries<a href="#fn24" class="footnote-ref" id="fnref24"
+role="doc-noteref"><sup>24</sup></a>. Their ISAMP “iterative sampler”
 makes random choices within a model until it gets “stuck”; i.e. until
 further choices do not satisfy expectations. When “stuck”, ISAMP does
 not waste time fiddling with current choices (as was done by older
@@ -528,8 +781,8 @@ far-flung master variables. For such models, if the reasoning gets stuck
 in one region, then the best thing to do is to leap at random to some
 distant part of the model.</p>
 <p>A similar conclusion comes from the work of Williams et al.<a
-href="#fn23" class="footnote-ref" id="fnref23"
-role="doc-noteref"><sup>23</sup></a>. They found that if a randomized
+href="#fn25" class="footnote-ref" id="fnref25"
+role="doc-noteref"><sup>25</sup></a>. They found that if a randomized
 search is repeated many times, that a small number of variable settings
 were shared by all solutions. They also found that if they set those
 variables before conducting the rest of the search, then formerly
@@ -542,20 +795,20 @@ the “key” decisions in RE models. Second, have stakeholders debate, and
 then decide, about the keys before exploring anything else. Third, to
 avoid trivially small solutions, our random search should strive to
 cover much of the model. Code:</p>
-<div class="sourceCode" id="cb1"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Data(src):</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(row):</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(interpolate(data,row,<span class="op">*</span>pole) <span class="cf">for</span> pole <span class="kw">in</span> poles)<span class="op">/</span><span class="bu">len</span>(poles)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  head, <span class="op">*</span>rows <span class="op">=</span> <span class="bu">list</span>(src)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  data  <span class="op">=</span> _data(head, rows)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  poles <span class="op">=</span> projections(data)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row <span class="kw">in</span> rows: row[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> _guess(row)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> data</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Data(src):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(row):</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(interpolate(data,row,<span class="op">*</span>pole) <span class="cf">for</span> pole <span class="kw">in</span> poles)<span class="op">/</span><span class="bu">len</span>(poles)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  head, <span class="op">*</span>rows <span class="op">=</span> <span class="bu">list</span>(src)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  data  <span class="op">=</span> _data(head, rows)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  poles <span class="op">=</span> projections(data)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row <span class="kw">in</span> rows: row[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> _guess(row)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> data</span></code></pre></div>
 <h3 id="data">Data</h3>
 <p>Shared datasets from research papers by Apel [2], Chen <a
-href="#fn24" class="footnote-ref" id="fnref24"
-role="doc-noteref"><sup>24</sup></a>, and Menzies [^nair] are often used
+href="#fn26" class="footnote-ref" id="fnref26"
+role="doc-noteref"><sup>26</sup></a>, and Menzies [^nair] are often used
 as case studies of optimization in SE research papers. Chen and Menzies
 are collaborating to curate the MOOT repository (Multi-Objective
 Optimization Testing4) which offers datasets from recent SE optimization
@@ -574,19 +827,19 @@ summary:</p>
 maximize and minimize.</li>
 </ul>
 <p>Data:</p>
-<div class="sourceCode" id="cb2"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>  x <span class="op">=</span> independent values          <span class="op">|</span> y <span class="op">=</span> dependent values</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">--------------------------------|----------------------</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  Spout_wait, Spliters, Counters, <span class="op">|</span> Throughput<span class="op">+</span>, Latency<span class="op">-</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>     <span class="dv">10</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">23075</span>,    <span class="fl">158.68</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">8</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22887</span>,    <span class="fl">172.74</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22799</span>,    <span class="fl">156.83</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">3</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22430</span>,    <span class="fl">160.14</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    ...,      ...,      ...,           ...,    ...</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">10</span>,      <span class="op">|</span>   <span class="fl">460.81</span>,    <span class="fl">8761.6</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">18</span>,      <span class="op">|</span>   <span class="fl">402.53</span>,    <span class="fl">8797.5</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">12</span>,      <span class="op">|</span>   <span class="fl">365.07</span>,    <span class="fl">9098.9</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,        <span class="dv">1</span>,      <span class="op">|</span>   <span class="fl">310.06</span>,    <span class="dv">9421</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>  x <span class="op">=</span> independent values          <span class="op">|</span> y <span class="op">=</span> dependent values</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">--------------------------------|----------------------</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  Spout_wait, Spliters, Counters, <span class="op">|</span> Throughput<span class="op">+</span>, Latency<span class="op">-</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>     <span class="dv">10</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">23075</span>,    <span class="fl">158.68</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">8</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22887</span>,    <span class="fl">172.74</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22799</span>,    <span class="fl">156.83</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">3</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22430</span>,    <span class="fl">160.14</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    ...,      ...,      ...,           ...,    ...</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">10</span>,      <span class="op">|</span>   <span class="fl">460.81</span>,    <span class="fl">8761.6</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">18</span>,      <span class="op">|</span>   <span class="fl">402.53</span>,    <span class="fl">8797.5</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">12</span>,      <span class="op">|</span>   <span class="fl">365.07</span>,    <span class="fl">9098.9</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,        <span class="dv">1</span>,      <span class="op">|</span>   <span class="fl">310.06</span>,    <span class="dv">9421</span></span></code></pre></div>
 <p>Note that our data is much larger than the Table 3 example. The 39
 data sets in Table I have up to 86,000 rows, 88 independent variables,
 and three y goals. For the purposes of illustration, the rows in Table 3
@@ -606,118 +859,123 @@ labels).</p>
 <p>not generation.</p>
 <p>Tabular data</p>
 <h2 id="references">References</h2>
-<p>a [^amarel]: S. Amarel, “Program synthesis as a theory formation
-task: problem representations and solution methods,” in Machine
-Learning: An Artificial Intelligence Approach. Morgan Kaufmann,
-1986.</p>
 <section id="footnotes" class="footnotes footnotes-end-of-document"
 role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1"><p>P, Maniatis and D, Tarlow, 2023 Large sequence models
+<li id="fn1"><p>Adams, G. S., Converse, B. A., Hales, A. H., &amp;
+Klotz, L. E. (2021). People systematically overlook subtractive changes.
+Nature, 592(7853), 258-261.<a href="#fnref1" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>A.G. Bell 2021, The Untold Story of SQLite With Richard
+Hipp Corecursive podcast. Interview by Adam Gordon Bell. November 30,
+2020. Accessed July 19, 2025.
+https://corecursive.com/066-sqlite-with-richard-hipp/<a href="#fnref2"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>P, Maniatis and D, Tarlow, 2023 Large sequence models
 for software development activities.” Google Research. [Online].
 Available: https://research.google/blog/
 large-sequence-models-for-software -development-activities/<a
-href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>M. Tabachnyk and S. Nikolov, (20222) “MLenhanced code
+href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>M. Tabachnyk and S. Nikolov, (20222) “MLenhanced code
 completion improves developer productivity.” Google Research Blog.
 [Online]. Available: https://research.google/blog/
 ml-enhanced-code-completion -improves-developer-productivity/<a
-href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>C. Bird et al., “Taking Flight with Copilot: Early
-insights and opportunities of AI-powered pair-programming tools,” Queue,
-vol. 20, no. 6, pp. 35–57, 2023, doi: 10.1145/3582083.<a href="#fnref3"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>S. Bubeck et al., “Sparks of artificial general
-intelligence: Early experiments with GPT-4,” 2023, arXiv:2303.12712<a
 href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>B. Johnson and T. Menzies, “Ai over-hype: A dangerous
-threat (and how to fix it),” IEEE Software, vol. 41, no. 6, pp. 131–138,
-2024.<a href="#fnref5" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>X. Hou, Y. Zhao, Y. Liu, Z. Yang, K. Wang, L. Li, X.
-Luo, D. Lo, J. Grundy, and H. Wang, “Large language models for software
-engineering: A systematic literature review,” ACM Trans. Softw. Eng.
-Methodol., vol. 33, no. 8, Dec. 2024. [Online]. Available:
-https://doi.org/10.1145/3695988<a href="#fnref6" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>C. Bird et al., “Taking Flight with Copilot: Early
+insights and opportunities of AI-powered pair-programming tools,” Queue,
+vol. 20, no. 6, pp. 35–57, 2023, doi: 10.1145/3582083.<a href="#fnref5"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>S. Bubeck et al., “Sparks of artificial general
+intelligence: Early experiments with GPT-4,” 2023, arXiv:2303.12712<a
+href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn7"><p>X. Hou, Y. Zhao, Y. Liu, Z. Yang, K. Wang, L. Li, X.
 Luo, D. Lo, J. Grundy, and H. Wang, “Large language models for software
 engineering: A systematic literature review,” ACM Trans. Softw. Eng.
 Methodol., vol. 33, no. 8, Dec. 2024. [Online]. Available:
 https://doi.org/10.1145/3695988<a href="#fnref7" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn8"><p>W. Fu and T. Menzies, “Easy over hard: a case study on
+<li id="fn8"><p>X. Hou, Y. Zhao, Y. Liu, Z. Yang, K. Wang, L. Li, X.
+Luo, D. Lo, J. Grundy, and H. Wang, “Large language models for software
+engineering: A systematic literature review,” ACM Trans. Softw. Eng.
+Methodol., vol. 33, no. 8, Dec. 2024. [Online]. Available:
+https://doi.org/10.1145/3695988<a href="#fnref8" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>W. Fu and T. Menzies, “Easy over hard: a case study on
 deep learning,” in Proceedings of the 2017 11th Joint Meeting on
 Foundations of Software Engineering, ser. ESEC/FSE 2017. New York, NY,
 USA: Association for Computing Machinery, 2017, p. 49–60. [Online].
-Available: https://doi.org/10.1145/3106237. 3106256<a href="#fnref8"
+Available: https://doi.org/10.1145/3106237. 3106256<a href="#fnref9"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>L. Grinsztajn, E. Oyallon, and G. Varoquaux, “Why do
+<li id="fn10"><p>L. Grinsztajn, E. Oyallon, and G. Varoquaux, “Why do
 tree-based models still outperform deep learning on typical tabular
-data?” in NeurIPS’22, 2022.<a href="#fnref9" class="footnote-back"
+data?” in NeurIPS’22, 2022.<a href="#fnref10" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p>X. Ling, T. Menzies, C. Hazard, J. Shu, and J. Beel,
+<li id="fn11"><p>X. Ling, T. Menzies, C. Hazard, J. Shu, and J. Beel,
 “Trading off scalability, privacy, and performance in data synthesis,”
-IEEE Access, vol. 12, pp. 26 642–26 654, 2024.<a href="#fnref10"
+IEEE Access, vol. 12, pp. 26 642–26 654, 2024.<a href="#fnref11"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn11"><p>S. Majumder, N. Balaji, K. Brey, W. Fu, and T. Menzies,
+<li id="fn12"><p>S. Majumder, N. Balaji, K. Brey, W. Fu, and T. Menzies,
 “500+ times faster than deep learning,” in Proceedings of the 15th
 International Conference on Mining Software Repositories. ACM, 2018.<a
-href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn12"><p>S. Somvanshi, S. Das, S. A. Javed, G. Antariksa, and A.
+href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn13"><p>S. Somvanshi, S. Das, S. A. Javed, G. Antariksa, and A.
 Hossain, “A survey on deep tabular learning,” arXiv preprint
-arXiv:2410.12034, 2024.<a href="#fnref12" class="footnote-back"
+arXiv:2410.12034, 2024.<a href="#fnref13" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn13"><p>V. Tawosi, R. Moussa, and F. Sarro, “Agile effort
+<li id="fn14"><p>V. Tawosi, R. Moussa, and F. Sarro, “Agile effort
 estimation: Have we solved the problem yet? insights from a replication
 study,” IEEE Transactions on Software Engineering, vol. 49, no. 4,
-pp. 2677– 2697, 2023.<a href="#fnref13" class="footnote-back"
+pp. 2677– 2697, 2023.<a href="#fnref14" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn14"><p>Settles, Burr. “Active learning literature survey.”
-(2009).<a href="#fnref14" class="footnote-back"
+<li id="fn15"><p>Settles, Burr. “Active learning literature survey.”
+(2009).<a href="#fnref15" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn15"><p>T. Menzies and T. Chen, MOOT repository of
+<li id="fn16"><p>T. Menzies and T. Chen, MOOT repository of
 Multi-objective optimization tests. 2025. <a
 href="http://github.com/timm/moot">http://github.com/timm/moot</a><a
-href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn16"><p>Lions, John (1996). Lions’ Commentary on UNIX 6th
+href="#fnref16" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn17"><p>Lions, John (1996). Lions’ Commentary on UNIX 6th
 Edition with Source Code. Peer-to-Peer Communications. ISBN
-978-1-57398-013-5.<a href="#fnref16" class="footnote-back"
+978-1-57398-013-5.<a href="#fnref17" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn17"><p>Pearson, K. (1901). “On Lines and Planes of Closest Fit
+<li id="fn18"><p>Pearson, K. (1901). “On Lines and Planes of Closest Fit
 to Systems of Points in Space”. Philosophical Magazine. 2 (11): 559–572.
-10.1080/14786440109462720.<a href="#fnref17" class="footnote-back"
+10.1080/14786440109462720.<a href="#fnref18" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn18"><p>I. Witten, E. Frank, and M. Hall. Data Mining:
+<li id="fn19"><p>I. Witten, E. Frank, and M. Hall. Data Mining:
 Practical Machine Learning Tools and Techniques Morgan Kaufmann Series
 in Data Management Systems Morgan Kaufmann, Amsterdam, 3 edition,
-(2011)<a href="#fnref18" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn19"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
-lipschitz mappings into a hilbert space,” Contemporary Mathematics,
-vol. 26, pp. 189–206, 1984.<a href="#fnref19" class="footnote-back"
+(2011)<a href="#fnref19" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
 <li id="fn20"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
 lipschitz mappings into a hilbert space,” Contemporary Mathematics,
 vol. 26, pp. 189–206, 1984.<a href="#fnref20" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn21"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
+<li id="fn21"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+lipschitz mappings into a hilbert space,” Contemporary Mathematics,
+vol. 26, pp. 189–206, 1984.<a href="#fnref21" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn22"><p>S. Amarel, “Program synthesis as a theory formation
+task: problem representations and solution methods,” in Machine
+Learning: An Artificial Intelligence Approach. Morgan Kaufmann, 1986.<a
+href="#fnref22" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn23"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
 selection,” Artif. Intell., vol. 97, no. 1-2, pp. 273–324, Dec. 1997.<a
-href="#fnref21" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn22"><p>J. M. Crawford and A. B. Baker, “Experimental results
+href="#fnref23" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn24"><p>J. M. Crawford and A. B. Baker, “Experimental results
 on the application of satisfiability algorithms to scheduling problems,”
 in Proceedings of the Twelfth National Conference on Artificial
 Intelligence (Vol. 2), Menlo Park, CA, USA, 1994, pp. 1092–1097.<a
-href="#fnref22" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn23"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
+href="#fnref24" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn25"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
 typical case complexity,” in Proceedings of the International Joint
-Conference on Artificial Intelligence, 2003.<a href="#fnref23"
+Conference on Artificial Intelligence, 2003.<a href="#fnref25"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn24"><p>M. Li, T. Chen, and X. Yao, “How to evaluate solutions
+<li id="fn26"><p>M. Li, T. Chen, and X. Yao, “How to evaluate solutions
 in pareto-based search-based software engineering: A critical review and
 methodological guidance,” IEEE Transactions on Software Engineering,
-vol. 48, no. 5, pp. 1771–1799, 2022<a href="#fnref24"
+vol. 48, no. 5, pp. 1771–1799, 2022<a href="#fnref26"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
