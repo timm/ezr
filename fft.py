@@ -97,139 +97,60 @@ def projections(data):
   return poles
 
 #------------------------------------------------------------------------------
-i know the mean. split up dpen. two halves. m1,m2 best rest
-descend on best, descend on rest
+# i know the mean. split up dpen. two halves. m1,m2 best rest
+# descend on best, descend on rest
+#
+#
+# split, find best, rest
+#
+# 012345 67899   aa bb  cc dd
+# best   resst 
+#
+# exit on best 
+# exit on rest
+#
+# if policy==1
+#   split all
+#   find best in all and not best
+#
+# if policy==0
+#   split all
+#   find worst in all. now u have worst and not wrst
 
-
-split, find best, rest
-
-012345 67899   aa bb  cc dd
-best   resst 
-
-exit on best 
-exit on rest
-
-if policy==1
-  split all
-  find best in all and not best
-
-if policy==0
-  split all
-  find worst in all. now u have worst and not wrst
-
-def cuts(col,x,rows):
-  def _sym(_):
-    ys = {}
-    for row in rows:
-      if (v:=row[c]) != "?":
-        ys[v] = ys.get(v) or Num()
-        add(ys[v], row[-1])
-    return [(ys[k].mu, x, k, k) for k in ys]
-
-  def _num(num):
-    lys,rys = Num(),[Num()
-    for row in rows:
-      if (v:=row[c]) != "?": 
-        add(lys if v <= num.mu else rys, row[-1])
-    return [(ly.mu, x, -BIG, col.mu), (ry.mu, x, col.mu, BIG)]
-
-  for cut in (_sum if type(col) is Sym else _num)(col): yield cut
-
-def chops(data,):
-  a,*_,z = sorted(c for x,col in data.cols.x.items() for c in cuts(col,x,rows))
-  for _,x,lo,hi in [a,z]:
-    yield 
-    
-def percentiles(rows,c,is_num):
-  now,out,last = [],[],None
-  for v,i,y in sorted([(row[c],i,row[-1]) 
-                       for i,row in enumerate(rows) if (row[c]) != "?"]):
-    if v != last and len(now) >= len(rows)/the.bins:
-      out += [now]
-      now  = []
-    now += [(v,i,y)]
-    last = v
-  if now: out +=[now]
-  if is_num:
-    v0,i0,y0 = out[ 0][ 0]  ; out[ 0][ 0] = (-BIG,i0,y0)
-    v1,i1,y1 = out[-1][-1]  ; out[-1][-1] = ( BIG,i1,y1)
-  return out
-
-# chops rows into percentil bins. lo
-def chop(rows,c,col,fn=min)
-  cuts = percentiles(rows,c, data.names[c].isupper())
-  for 
-
-  n,xs,ys = 0,{},{}
+def cuts(col, x, rows):
+  ys, all, sym = {}, [], type(col) is not Sym
   for row in rows:
-    if (v := row[c]) != "?":
-      n   += 1
-      b    = bin(col, v)
-      xs[b] = xs.get(b) or {}    
-      ys[b] = ys.get(b) or Num() 
-      add(xs[b], v)
-      add(ys[b], row[-1])
-  if type(col) is dict: 
-    return [(k,       k,   c, "=", ys[k]) for k in sorted(xs)]
-  out=[]
-  for i,key in enumerate(sorted(xs)):
-     lo= -BIG is i==0 else xs[k].lo
-     hi=  BIG is i==len(xs)-1 else ys[key].hi
-     (xs[k].lo,xs[k].hi, c, "in", ys[k]) for k in sorted(xs)]
-  for i,four in enumerate(tmp);
-    if i > 0:
-      tmp[i-1][1]= tmp[i][0] # [i-1]hi = [i].lo
-  tmp[0][0] 
-      
+    v = row[c]
+    if v == "?": all += [row]; continue
+    k = v <= col.mu if sym else v
+    ys[k] = ys.get(k) or Num()
+    add(ys[k], row[-1])
+  [add(ys[k], row[-1]) for row in all for k in ys]
+  for k, y in ys.items():
+    yield (y.mu, x, -BIG   if sym and not k else col.mu if sym else k,
+                    col.mu if sym and not k else BIG    if sym else k)
 
-sorted(kst,key=lambd
-def splits(data,rows.how=None,stop=2,depth=0)
-  kids=[]
-  if len(rows)> stop and depth > 0:
-     tmp = [cut(rows,c,type(col) is Num))
-            for c,col in data.cols.x.items()]
+def selects(rows, x, lo, hi):
+  yes, no = [], []
+  for row in rows:
+    v = row[x]
+    if v == "?" or     (lo <= v <= hi) : yes += [row]
+    if v == "?" or not (lo <= v <= hi) : no  += [row]
+  return yes, no
 
-  return o(how=how,kids=kids,rows=rows)
-  max(for c,col in data.cols.xa
-ops = dict(le = lambda r,c,v: r[c] <= v,
-           gt = lambda r,c,v: r[c] >  v,
-           eq = lambda r,c,v: r[c] == v)
+def fft(data,rows, data, depth=4):
+  if depth <= 0 or not rows: return None
+  cuts_all = [c for x, col in data.cols.x.items() for c in cuts(col, x, rows)]
+  if not cuts_all: return None:
+  a, *_, z = sorted(cuts_all)
+  yield from [_fft(data,rows,*a), _fft(data,rows, *z)]
 
-def worth(rows): return sum(r[-1] for r in rows) / len(rows)
-
-def mid(rows, c):
-  rows  = sorted(rows, key= lambda r: -BIG of r[c]=="?" else r[c])
-  n     = rows[len(rows) // 2]
-  _eq   = lambda v: v == n or v == "?"
-  _down = lambda v: v <  n or v == "?"
-  _up   = lambda v: v >= n or v == "?"
-  lo,hi = [r for r in rows if _down(r[c])], [r for r in rows in _up(r[c])]
-  return worth(lo), lo, worth(hi), hi
-
-def splits(data):
-  def _fn(rows):
-    for c,col in data.cols.x.items():
-      if type(col) is Num:
-        v = mid(rows,c)
-
-        yield o(col=c, val=v, op='le', 
-                yes= [row for row in rows if g(row[c, 
-                no =rest)
-      else:
-        for v in set(r[c] for r in rows):
-          yield o(col=c, val=v, op='eq',
-                   yes=[r for r in rows if r[c] == v],
-                   no =[r for r in rows if r[c] != v])
-
-def grow(data, score, d):
-  if d == 0: return [data[1:]]
-  meta = roles(data[0])
-  best = max(splits(data, meta), key=lambda r: score(r.yes))
-  c,v,o,ys,ns = best.col, best.val, best.op, best.yes, best.no
-  out = []
-  for t in grow([data[0]]+ns, score, d-1): out += [(c,v,o,ys,t)]
-  for t in grow([data[0]]+ys, score, d-1): out += [(c,v,o,ns,t)]
-  return out
+def _fft(data,rows,mu,x,lo,hi):
+  yes, no = selects(rows, x, lo, hi)
+  return o(
+    x=x, lo=lo, hi=hi, stats=mu,
+    left  = fft(data, yes, depth-1),
+    right = fft(data, yes, depth-1))
 
 def predict(t, row):
   while isinstance(t, tuple):
