@@ -112,8 +112,8 @@ def fft(data, rows, depth=4):
     if (cuts := [cut for c, col in data.cols.x.items() 
                  for cut in fftCuts(col, c, rows, type(col) is Sym)]):
       best, *_, worst = sorted(cuts)
-      yield _fft(data, rows, depth, True, *best)
-      yield _fft(data, rows, depth, False,*worst)
+      yield _fftRecurse(data, rows, depth, True, *best)
+      yield _fftRecurse(data, rows, depth, False,*worst)
 
 def fftCuts(col, c, rows, sym):
   bins, unknowns = {}, []
@@ -129,22 +129,23 @@ def fftCuts(col, c, rows, sym):
     else:   lo, hi = (-BIG, col.mu) if k else (col.mu, BIG)
     yield (y.mu, c,lo,hi)
 
-def _fft(cut, data, rows, depth, exiting, mu,c,lo,hi):
+def _fftRecurse(data, rows, depth, exiting, mu,c,lo,hi):
+  mu, c, lo, hi = cut
   yes, no = selects(rows, c, lo, hi)
   leaf = o(stats=rx(c, yes if exiting else no))
-  rest =               no  if exiting else yes
+  rest = no if exiting else yes
   if depth == 1: return leaf
-  return o(c=c, lo=lo, hi=hi, left=leaf, stats=rx(c, rows), 
-           right=fft(data, rest, depth-1))
+  return o(c=c, lo=lo, hi=hi, left=leaf, right=fft(data, rest, depth - 1))
 
 def predict(t, row):
   while hasattr(t, "c"):
     v = row[t.c]
-    t = t.left if v == "?" or t.lo <= v <= t.hi else next(t.right) if hasattr(t.right, "__iter__") else t.right
+    t = t.left        if v == "?" or t.lo <= v <= t.hi else (
+        next(t.right) if hasattr(t.right, "__iter__")  else t.right)
   return t.stats
 
 def showFFT(t, lvl=0):
-  if not hasattr(t, "c"): print("  " * lvl + f"=> {t.stats:.2f}"); return
+  if not hasattr(t, "c"): return print("  " * lvl + f"=> {t.stats:.2f}")
   print("  " * lvl + f"if {t.c} in [{t.lo:.2f}, {t.hi:.2f}] then")
   showFFT(t.left, lvl + 1)
   print("  " * lvl + "else")
