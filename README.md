@@ -4,6 +4,11 @@ author:  "Tim Menzies<br>timm@ieee.org"
 date: "July, 2025"
 ---
 
+urgetn need to better teaching what goes on iside scropts in general and AI tools on aprticlar.
+students loosing the "our tools" mentanlity. trained on search engiens, not know what is isnde. want surgeons. let lo code and 
+vibe coding and chatgt prompts democsratize coding and let the world be able to code
+but let us alos train scode surgeons who can fix messed up code or offer healt advisoryies on how to write
+better code or design new coding tools
 
 
 ------------------------------------------------------
