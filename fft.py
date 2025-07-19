@@ -97,60 +97,68 @@ def projections(data):
   return poles
 
 #------------------------------------------------------------------------------
-# i know the mean. split up dpen. two halves. m1,m2 best rest
-# descend on best, descend on rest
-#
-#
-# split, find best, rest
-#
-# 012345 67899   aa bb  cc dd
-# best   resst 
-#
-# exit on best 
-# exit on rest
-#
-# if policy==1
-#   split all
-#   find best in all and not best
-#
-# if policy==0
-#   split all
-#   find worst in all. now u have worst and not wrst
 
-def cuts(col, x, rows):
-  ys, all, sym = {}, [], type(col) is not Sym
+def fftChops(col, c, rows):
+  bins, sym = {}, type(col) is not Sym
   for row in rows:
     v = row[c]
-    if v == "?": all += [row]; continue
+    if v == "?": continue
     k = v <= col.mu if sym else v
+    bins[k] = bins.get(k) or Num()
+    add(bins[k], row[-1])
+  for k, y in bins.items():
+    yield (y.mu, c,
+           -BIG if sym and not k else col.mu if sym else k,
+            col.mu if sym and not k else BIG if sym else k)
+    def chops(col, c, rows):
+  ys, tmp, is_sym = {}, [], type(col) is not Sym
+  all = Num()
+  for row in rows:
+    v = row[c]
+    add(all, row[-1])
+    if v == "?": tmp += [row]; continue
+    k = v if is_sym else (v <= col.mu)
     ys[k] = ys.get(k) or Num()
     add(ys[k], row[-1])
-  [add(ys[k], row[-1]) for row in all for k in ys]
+  [add(ys[k], row[-1]) for row in tmp for k in ys]
   for k, y in ys.items():
-    yield (y.mu, x, -BIG   if sym and not k else col.mu if sym else k,
-                    col.mu if sym and not k else BIG    if sym else k)
+    yield (y, c, 
+           -BIG   if is_sym and not k else col.mu if is_sym else k,
+           col.mu if is_sym and not k else BIG    if is_sym else k,
+           (all.mu*all.n - y.mu*y.n) / (all.n - y.n))
 
-def selects(rows, x, lo, hi):
+def selects(rows, c, lo, hi):
   yes, no = [], []
   for row in rows:
-    v = row[x]
+    v = row[c]
     if v == "?" or     (lo <= v <= hi) : yes += [row]
     if v == "?" or not (lo <= v <= hi) : no  += [row]
   return yes, no
 
-def fft(data,rows, data, depth=4):
-  if depth <= 0 or not rows: return None
-  cuts_all = [c for x, col in data.cols.x.items() for c in cuts(col, x, rows)]
-  if not cuts_all: return None:
-  a, *_, z = sorted(cuts_all)
-  yield from [_fft(data,rows,*a), _fft(data,rows, *z)]
+def fft(data, rows=None, depth=4, other=None):
+  rows = rows or data.rows
+  if depth > 0 and len(rows) > 2: return other
+    if (cuts := [cut for c, col in data.cols.c.items() 
+                for cut in chops(col, c, rows)]):
+      a, *_, z = sorted(cuts)
+      yield _fft(data,rows, depth-1, *a)
+      yield _fft(data,rows, depth-1, *z)
+  yield other
 
-def _fft(data,rows,mu,x,lo,hi):
-  yes, no = selects(rows, x, lo, hi)
+def _fft(data, rows, depth, stats, c, lo, hi, other):
+  yes, no = selects(rows, c, lo, hi)
   return o(
-    x=x, lo=lo, hi=hi, stats=mu,
-    left  = fft(data, yes, depth-1),
-    right = fft(data, yes, depth-1))
+    c=c, lo=lo, hi=hi, stats=stats.mu,
+    left  = fft(data, yes, depth, other),
+    right = fft(data, yes, depth, other))
+
+def showFFT(tree, prefix=""):
+  if not hasattr(tree, "left"):
+    print(f"{prefix} ==> {round(tree.stats,2)}")
+    return
+  cond = f"{tree.lo} <= x{tree.x} <= {tree.hi}"
+  showFFT(tree.left,  prefix + f"if {cond} and ")
+  showFFT(tree.right, prefix + f"if not {cond} and ")
 
 def predict(t, row):
   while isinstance(t, tuple):
