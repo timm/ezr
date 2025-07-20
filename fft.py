@@ -24,8 +24,8 @@ def Data(src):
 def _data(names,rows):
   w,x,y,all = {},{},{},{}
   for c, s in enumerate(names):
-    col = Sym if s[0].islower() else Num)()
-    [add(col,v) for row in rows if (v:=row[c]) != "?"]
+    col = (Sym if s[0].islower() else Num)()
+    [add(col, row[c]) for row in rows]
     all[c] = col
     if s[-1] != "X":
       w[c] = s[-1] == "+"
@@ -33,24 +33,29 @@ def _data(names,rows):
   return o(rows=rows, cols=o(names=names, w=w, x=x, y=y, all=all))
 
 def add(col, v):
-  if type(col) is Sym: col[v] = 1 + col.get(v,0)
-  else:
-    v       = float(v)
-    col.n  += 1
-    d       = v - col.mu
-    col.mu += 1 * (d / col.n)
-    col.m2 += 1 * (d * (v - col.mu))
-    col.sd  = (col.m2/(col.n - 1 - 1/BIG))**.5
-    col.lo  = min(v, col.lo)
-    col.hi  = max(v, col.hi)
+  if v != "?":
+    if type(col) is Sym: col[v] = 1 + col.get(v,0)
+    else:
+      col.n  += 1
+      d       = v - col.mu
+      col.mu += 1 * (d / col.n)
+      col.m2 += 1 * (d * (v - col.mu))
+      col.sd  = (col.m2/(col.n - 1 - 1/BIG))**.5
+      col.lo  = min(v, col.lo)
+      col.hi  = max(v, col.hi)
   return v
 
 def size(col): return sum(col.values()) if type(col) is Sym else col.n 
-def mid(col) : return mode(col          if type(col) is Sym else col.mu 
-def div(col):  return ent(col)          if type(col) is Sym else col.sd
+def div(col):  return entropy(col)      if type(col) is Sym else col.sd
 
-def mode(d): return max(d, key=d.get)
-def ent(d) : N=size(); return -sum(p*log(p,2) for n in d.values() if (p:=n/N)>0)
+def mode(d)   : return max(d, key=d.get)
+def entropy(d): N=size(); return -sum(p*log(p,2) for n in d.values() if (p:=n/N)>0)
+
+def mid(col):
+  if isinstance(col, dict): return mode(col)
+  if hasattr(col, "mu"):    return col.mu
+  if isinstance(col, (int, float)): return col
+  return 0  # fallback
 
 #------------------------------------------------------------------------------
 def minkowski(src):
@@ -59,23 +64,23 @@ def minkowski(src):
   return (d/n) ** (1/the.p)
 
 def ydist(data,row):
-  return minkowski(abs(norm(row[y], *col) - data.cols.w[y]) 
+  return minkowski(abs(norm(col,row[y]) - data.cols.w[y]) 
                    for y,col in data.cols.y.items())
 
 def xdist(data, row1, row2):
-  return minkowski(_xdist(row1[x], row2[x], col) 
+  return minkowski(_xdist(col,row1[x], row2[x]) 
                    for x,col in data.cols.x.items())
    
-def _xdist(x1, x2, col):
+def _xdist(col,x1, x2):
   if x1==x2=="?": return 1
   if type(col) is Sym: return x1 != x2
-  x1,x2 = norm(x1,*col), norm(x2,*col)
+  x1,x2 = norm(col, x1), norm(col, x2)
   x1    = x1 if x1 != "?" else (0 if x2>0.5 else 1)
   x2    = x2 if x2 != "?" else (0 if x1>0.5 else 1)
   return abs(x1-x2)
 
-def norm(x,lo,hi): 
-  return (x - lo) / (hi - lo + 1/BIG)
+def norm(col,x):
+  return (x - col.lo) / (col.hi - col.lo + 1/BIG)
 
 def cosine(data,row,best,rest,c):
   a,b = xdist(data, row, best), xdist(data, row, rest)
@@ -97,7 +102,11 @@ def projections(data):
 
 #------------------------------------------------------------------------------
 def rx(c, rows):
-  out = Num(); [add(out, row[c]) for row in rows if row[c] != "?"]; return out.mu
+  out = Num()
+  for r in rows:
+    v = r[c]
+    if v != "?": add(out, v)
+  return out
 
 def selects(rows, c, lo, hi):
   yes, no = [], []
@@ -107,13 +116,14 @@ def selects(rows, c, lo, hi):
     if v == "?" or not (lo <= v <= hi): no.append(row)
   return yes, no
 
-def fft(data, rows, depth=4):
+def fft(data, rows=None, depth=4):
+  rows = rows or data.rows
   if depth > 0 and rows:
     if (cuts := [cut for c, col in data.cols.x.items() 
                  for cut in fftCuts(col, c, rows, type(col) is Sym)]):
       best, *_, worst = sorted(cuts)
-      yield _fftRecurse(data, rows, depth, True, *best)
-      yield _fftRecurse(data, rows, depth, False,*worst)
+      yield from fftRecurse(data, rows, depth, True, *best)
+      yield from fftRecurse(data, rows, depth, False,*worst)
 
 def fftCuts(col, c, rows, sym):
   bins, unknowns = {}, []
@@ -129,41 +139,49 @@ def fftCuts(col, c, rows, sym):
     else:   lo, hi = (-BIG, col.mu) if k else (col.mu, BIG)
     yield (y.mu, c,lo,hi)
 
-def _fftRecurse(data, rows, depth, exiting, mu,c,lo,hi):
-  mu, c, lo, hi = cut
+def fftRecurse(data, rows, depth, exiting, mu,c,lo,hi):
   yes, no = selects(rows, c, lo, hi)
-  leaf = o(stats=rx(c, yes if exiting else no))
-  rest = no if exiting else yes
-  if depth == 1: return leaf
-  return o(c=c, lo=lo, hi=hi, left=leaf, right=fft(data, rest, depth - 1))
+  leaf = rx(c, yes if exiting else no)
+  rest = no        if exiting else yes
+  if depth==1: 
+    yield leaf
+  else:
+    for right in fft(data,rest,depth-1):
+      yield o(c=c, lo=lo, hi=hi, left=leaf, right=right)
 
-def predict(t, row):
+def fftPredict(t, row):
   while hasattr(t, "c"):
     v = row[t.c]
     t = t.left        if v == "?" or t.lo <= v <= t.hi else (
         next(t.right) if hasattr(t.right, "__iter__")  else t.right)
   return t.stats
 
-def showFFT(t, lvl=0):
-  if not hasattr(t, "c"): return print("  " * lvl + f"=> {t.stats:.2f}")
-  print("  " * lvl + f"if {t.c} in [{t.lo:.2f}, {t.hi:.2f}] then")
-  showFFT(t.left, lvl + 1)
-  print("  " * lvl + "else")
-  for r in (t.right if hasattr(t.right, "__iter__") else [t.right]):
-    showFFT(r, lvl + 1)
+def fftShow(data, t, seen=None, prefix=""):
+  seen = seen or set()
+  def show(x): return f"{int(x):.0f}" if abs(x) >= 1 else f"{x:.2f}"
+  while hasattr(t, "c"):
+    if t.c in seen:
+      print(f"{prefix}# skipped redundant test on {data.cols.names[t.c]}")
+      break
+    seen.add(t.c)
+    name = data.cols.names[t.c]
+    if abs(t.lo) < 1e31:
+      print(f"{prefix}if {name} < {show(t.lo)} then", end=" ")
+      fftShow(data, t.right, seen.copy(), prefix + "  ")
+    if abs(t.hi) < 1e31:
+      print(f"{prefix}else if {name} >= {show(t.hi)} then", end=" ")
+      t = t.left
+      continue
+    return
+  print(f"{prefix}{mid(t):.2f}")
 
-   """
-x<1  x>1          y==a y==b y==c
-10   1              3   8    20
+def coerce(s):
+  for fn in [int,float]:
+    try: return fn(s)
+    except Exception as _: pass
+  s = s.strip()
+  return {'True':True,'False':False}.get(s,s)
 
-worst split  y==c
-best split x>1
-
-exit on worst = 0
-exit on best = 0
-
-left is alwaus e xit.
-"""
 def csv(file):
   n = -1
   with open(file,encoding="utf-8") as f:
@@ -171,7 +189,7 @@ def csv(file):
       if (line := line.split("%")[0]):
         n += 1
         suffix = "scoreX" if n==0 else 0
-        yield [s.strip() for s in line.split(",")] + [suffix]
+        yield [coerce(s.strip()) for s in line.split(",")] + [suffix]
 
 r3=lambda n:round(n,3)
 
@@ -183,7 +201,7 @@ def eg__xdata():
   print(sorted([r3(ydist(data,r)) for r in data.rows])[::10])
 
 def eg__data(): 
-  for p in [1,2,4,8]:
+  for p in [4,8,12,16]:
     the.Projections = p
     data = Data(csv(the.file))
     gy = [(row[-1],ydist(data,row)) for row in data.rows]
@@ -196,18 +214,10 @@ def eg__data():
     print(f"{r/1000:.2f} ", end="",flush=True)
   print(the.file)
 
-def eg__one():
-  S = lambda rows: len(rows)
-  data = [
-    ['age', 'color', 'INCOME!', 'BUYS+'],
-    [25, 'red', 50, 'yes'],
-    [30, 'blue', 60, 'no'],
-    [20, 'red', 70, 'yes'],
-    [40, 'green', 80, 'no']]
-  trees = grow(data, S, d=2)
-  best  = max(trees, key=lambda t: S([predict(t, r) for r in data[1:]]))
-  preds = [predict(best, r) for r in data[1:]]
-
+def eg__fft():
+  data = Data(csv(the.file))
+  for tree in fft(data, depth=3): print(""); fftShow(data,tree)
+  
 def cli(d):
   for i,arg in enumerate(sys.argv): 
     if (fn := globals().get(f"eg{arg.replace('-', '_')}")):
