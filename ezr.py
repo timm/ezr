@@ -243,12 +243,11 @@ def nbc(file, wait=5):
 
 def acquires(data, rows,acq=None):
   "Label promising rows, "
-  acq = acq or the.acc
+  acq = acq or the.acq
   def _acquire(row): # Large numbers are better
     nall =len(labels.rows)
     b, r = likes(best, row, 2, nall), likes(rest, row, 2, nall)
     b, r = math.e**b, math.e**r
-    if acq=="klass": return b>r
     if acq=="bore": return (b*b) / (r+1e-32)
     p    = n2 / the.Build
     q    = {"xploit": 0, "xplor": 1}.get(acq, 1 - p)
@@ -256,23 +255,35 @@ def acquires(data, rows,acq=None):
 
   nolabels = rows[:]
   random.shuffle(nolabels)
-  n1,n2      = round(the.Any**0.5), the.Any
+  n1,n2    = round(the.Any**0.5), the.Any
   labels   = clone(data, nolabels[:n2])
-  _ydist     = lambda row: ydist(labels, row) # smaller is better
-  _ysort     = lambda d: sorted(d.rows, key=lambda r: ydist(d,r))
+  _ydist   = lambda row: ydist(labels, row) # smaller is better
+  _ysort   = lambda d: sorted(d.rows, key=lambda r: ydist(d,r))
 
-  best       = clone(data, nolabels[:n1]) # subset of labels
-  rest       = clone(data, nolabels[n1:n2]) # rest = labels - best
+  best     = clone(data, nolabels[:n1]) # subset of labels
+  rest     = clone(data, nolabels[n1:n2]) # rest = labels - best
   nolabels = nolabels[n2:]
 
   _ysort(best)
-  while len(nolabels) > 2 and n2 < the.Build:
-    n2  += 1
-    hi,*lo = sorted(nolabels[:the.Few*2], key=_acquire,reverse=True) # best at start
-    nolabels = lo[:the.Few] + nolabels[the.Few*2:] + lo[the.Few:]
+  while len(nolabels) > 2 and len(labels.rows) < the.Build:
+    # try to guess something good
+    if acq=="klass":
+      random.shuffle(nolabels)
+      nall =len(labels.rows)
+      good,*nolabels = nolabels
+      for i,row in enumerate(nolabels):
+        if i > the.Few*2: break
+        if likes(best, row, 2, nall) > likes(rest, row, 2, nall):
+          good = nolabels.pop(i); break
+    else:
+        good,*nogood = sorted(nolabels[:the.Few*2], key=_acquire,reverse=True) # best at start
+        nolabels = nogood[:the.Few] + nolabels[the.Few*2:] + nogood[the.Few:]
+    # add the good guess to labels and best
     adds(labels, 
-        adds(best if _ydist(hi) < _ydist(best.rows[0]) else rest, hi))
-    if len(best.rows) >= n1:
+        adds(best if _ydist(good) < _ydist(best.rows[0]) else rest, 
+             good))
+    # if best too big, dump some to rest
+    while len(best.rows) >= len(labels.rows)**0.5:
       _ysort(best)
       adds(rest, adds(best, best.rows.pop(-1),-1))
   _ysort(labels)
@@ -640,14 +651,16 @@ def eg__fmap():
     print("\t",n.mu,n.sd)
 
 def eg__acq():
+  print(1)
   data = Data(csv(the.file))
-  for few in [32,64,128,256,512]:
+  base = has(ydist(data,r) for r in data.rows)
+  for few in [15,30,60]:
     the.Few = few
     print(few)
-    for acq in ["xploit"]: #["xplore", "xploit", "adapt","klass"]:
+    for acq in ["klass"]: #["xplore", "xploit", "adapt","klass"]:
       the.acq = acq
-      n=has(daBest(data, acquires(data, data.rows).labels.rows) for _ in range(20))
-      print("\t",the.acq, n.mu,n.sd)
+      n=has(daBest(data, acquires(data, data.rows).labels) for _ in range(20))
+      print("\t",the.acq, base.mu, base.lo, n.mu,n.sd)
 
 def eg__rand():
   data = Data(csv(the.file))
@@ -660,44 +673,58 @@ def eg__old():
   rxs = dict(
              kpp   = lambda d: kpp(d, d.rows),
              sway   = lambda d: fastermap(d, d.rows, sway1=True).labels.rows,
-             sway2  = lambda d: fastermap(d, d.rows).labels.rows
+         sway2  = lambda d: fastermap(d, d.rows).labels.rows # <== winner #<== best
              )
   xper1(data,rxs)
+# 77,  88, 96
+#  195  #file                                       rows    |y|  |x|   asIs  min  kpp:15  sway:15  sway2:15  kpp:30  sway:30  sway2:30  kpp:60  sway:60  sway2:60  kpp:120  sway:120  sway2:120  win A
+#  196  13                                                                         35      36       35        35      38       43        35      38       70        34       39        100           A
              
 def eg__liking():
   data = Data(csv(the.file))
   rxs = dict(#rand   = lambda d: random.choices(d.rows,k=the.Build),
+             klass = lambda d: acquires(d,d.rows,"klass").labels, #<== klass
              xploit = lambda d: acquires(d,d.rows,"xploit").labels,
-             xplor = lambda d: acquires(d,d.rows,"xplor").labels, # <== winner
-             adapt  = lambda d: acquires(d,d.rows,"adapt").labels,
+             xplor = lambda d: acquires(d,d.rows,"xplor").labels, 
+           adapt  = lambda d: acquires(d,d.rows,"adapt").labels
              )
   xper1(data,rxs)
+
+# win percentils 25,50,75 =  76, 84,95 
+# #file,rows,|y|,|x|,asIs,min,klass:15,xploit:15,xplor:15,adapt:15,klass:30,xploit:30,xplor:30,adapt:30,klass:60,xploit:60,xplor:60,adapt:60,klass:120,xploit:120,xplor:120,adapt:120,win,A
+# 13,,,,32,30,31,31,36,33,34,34,64,45,48,50,96,66,72,73,A
+
 
 def eg__final():
   data = Data(csv(the.file))
   rxs = dict(rand   = lambda d: random.choices(d.rows,k=the.Build),
-             xploit = lambda d: acquires(d,d.rows,"xploit").labels,
-             sway2  = lambda d: fastermap(d, d.rows).labels.rows
+             klass = lambda d: acquires(d,d.rows,"klass").labels, #<== klass
+             sway2  = lambda d: fastermap(d, d.rows).labels.rows # <== sway2
              )
   xper1(data,rxs)
 
+# win percentils 25,50,75 =  78, 87,96 
+   # 199  #file                                       rows    |y|  |x|   asIs  min  rand:15  klass:15  sway2:15  rand:30  klass:30  sway2:30  rand:60  klass:60  sway2:60  rand:120  klass:120  sway2:120  win A
+   # 200  13                                                                         30       30        33        39       35        42        59       58        65        82        83         93            A
+fyi=lambda s: print(s,file=sys.stderr, flush=True,end="")
+
 def xper1(data,rxs):
   repeats=30
-  builds=[15,30,45,60,75,100]
+  builds=[15,30,60,120]
   base = has(ydist(data,r) for r in data.rows)
   win  = lambda x: 1 - (x - base.lo) / (base.mu - base.lo + 1e-32)
   out={}
   for build in builds: 
     the.Build = build
-    print("+", file=sys.stderr, end="",flush=True)
+    fyi("+")
     for rx,fn in rxs.items():
-      print("-", file=sys.stderr, end="", flush=True)
+      fyi("-")
       out[(rx,build)] = [daBest(data,fn(data)) for _ in range(repeats)]
-  print("\n", file=sys.stderr, flush=True)
+  fyi("!")
   ranks = scottknott(out, eps=base.sd*0.2)
   rank1 = has(x for k in ranks if ranks[k] == 1 for x in out[k])
   p = lambda z: round(100*z) #"1.00" if z == 1 else (f"{pretty(z,2)[1:]}" if isinstance(z,float) and z< 1 else str(z))
-  q = lambda k: f" {chr(64+ranks[k])} {p(has(out[k]).mu)}"
+  q = lambda k: f" {'A' if ranks[k]==1 else ' '} {p(has(out[k]).mu)}"
   print("#file","rows","|y|","|x|","asIs","min",*[daRx((rx,b)) for b in builds for rx in rxs],"win",sep=",")
   print(re.sub("^.*/","",the.file),
         len(data.rows), len(data.cols.y), len(data.cols.x), p(base.mu), p(base.lo),

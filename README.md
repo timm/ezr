@@ -1,5 +1,5 @@
 ---
-title: "Easier AI for Software Engineers"
+title: "Just Enough AI for Software Engineers"
 author:  "Tim Menzies<br>timm@ieee.org"
 date: "July, 2025"
 ---
@@ -11,45 +11,45 @@ _"YAGNI"_ (you aren't gonna need it) --Kent Beck
 
 _"Less, but better."_  --Dieter Rams  
 
-_"Subtract."_ --Leidy Klotz[^adams21]
+_"Subtract."_ --Leidy Klotz
 ------------------------------------------------------
 
-What should we be teaching newcomers to software engineers?
-Talking with fellow instructors, we have  noticed a new SE teaching
-challenge. Post-COVID, SE students, raised on search
-engines and chatbots, are great at vibing with code (copying,
-tweaking, prompting) but not at dissecting it. Critique and repair,
-the practices of software craftsmanship, are giving way to surface-level
-interaction. Code becomes something that appears on their screen,
-not something they **own**.
+What should we be teaching newcomers to software engineers?  Talking
+with fellow instructors, we have  noticed a new SE teaching challenge.
+The typical Post-COVID SE students, working in isolation  and raised
+on search engines and chatbots, are great at vibing with code
+(copying, tweaking, prompting) but not at dissecting it. Critique
+and repair, the practices of software craftsmanship, are giving way
+to surface-level interaction. Code becomes something that appears
+on their screen, not something they **own**.
 
 D. Richard Hipp, the creator of SQLite, once said: “If you want to
-be free, that means doing things yourself.”[^hipp21] That ethic —
-of simplicity, self-reliance, and deep understanding — is being
-lost. My goal is to bring it back.  We need to teach software
-engineers what happens *inside* code, especially those that drive
-modern AI.  In an era where AI have become widely used, we must
-also train *code surgeons*—developers who can look beneath the
-surface, offer precise interventions, diagnose issues, and even
-design better tools. This is about reclaiming authorship, encouraging
-understanding, and fostering a mindset of critique rather than cargo
-cult reuse.
+be free, that means doing things yourself.”[^hipp21] That
+ethic, or simplicity and self-reliance and deep understanding, is fading.
+For many, this is not a concern since it means they can produce more code,
+more quickly. But for software engineers tasked with delivering
+reliable, high-quality systems within real-world constraints, that
+loss matters. We must teach what happens inside the code, especially
+the complex systems that power today’s AI. As AI tools proliferate,
+we need **code surgeons** who who can diagnose, intervene, and
+improve what lies beneath the surface.  We need to reclaim authorship
+of our code, encouraging understanding and fostering a mindset of
+critique rather than cargo cult reuse.
 
-And this is not  just a teaching issue. It reflects a deeper
-epistemological problem in how we conduct research in software
-enginering.  Much current AI research emphasizes "big AI" methods
-that rely on massive compute resources and vast datasets. These
-systems can produce impressive outputs[^mani23] [^taba23] [^bird23]
-[^bubeck23], but they are often treated as inscrutable black boxes.
-Like students who vibe rather than dissect, researchers increasingly
-report results without understanding, or questioning, what goes on
-inside the models.
+And this is not  just a teaching issue. It reflects a deeper problem
+one how we conduct research in software engineering.  Much current
+AI research emphasizes "big AI" methods that rely on massive compute
+resources and vast datasets. These systems can produce impressive
+outputs[^mani23] [^taba23] [^bird23] [^bubeck23], but they are often
+treated as inscrutable black boxes.  Like students who vibe rather
+than dissect, researchers increasingly report results without
+understanding, or questioning, what goes on inside the models.
 
 This reluctance to look inside has serious consequences. Chief among
 them is the crisis of *reproducibility*: big AI experiments are
 difficult to replicate, and comparative evaluations are rare. For
 example, a recent review[^hou24] of 229 software engineering papers
-using LLMs (large language models) found that only 13 (just 5%)
+using LLMs (a big AI technique) found that only 13 (just 5%)
 compared their results to any alternative. This lack of introspection
 is not only methodologically flawed; it also suppresses innovation.
 As seen in the _[Example](#examples)_ section, simpler approaches
@@ -57,15 +57,15 @@ can often perform just as well—or better—while being faster, more
 transparent, and easier to critique_[^hou24] [^fu17] [^grin22]
 [^ling86] [^maju18] [^somy24] [^tawo23].
 
-So what are those alternatives? “Little AI” offers one path forward.
-Where big AI emphasizes volume, little AI assumes that useful models
+So what are those alternatives? “Less AI” offers one path forward.
+Where big AI emphasizes volume, less AI assumes that useful models
 are tiny gems obscured by irrelevant or noisy or redundant data.
-Finding useful models is a hence a progress of pruning everything
-that  is superflous or confusing. To say that another way:
+Finding useful models is a hence a progress of pruning anything
+that  is superfluous or confusing. To say that another way:
 
-> The best thing to do with most data is throw it away.
+> **Menzies's 4th law:** The best thing to do with most data is throw it away[^men25a].
 
-**EZR** is a compact implementation of this idea. It is an incremental
+**EZR** is a compact implementation of this law. It is an incremental
 _active learner_[^sett09], which means "what to do next" is determined
 from "what has been seen so far". By peeking at the data before
 processing it, tools like **EZR** can avoid irrelevancies, redundancies,
@@ -76,7 +76,7 @@ regression, active learning, multi-objective optimization, and
 explainability.
 
 This research note introduces EZR and explains its design, motivation,
-and implications. After a code walkthrough, we evaluate EZR using
+and implications. After a code walk-through, we evaluate EZR using
 over 100 diverse examples from the [MOOT
 repository](https://github.com/timm/moot)[^moot], which captures
 problems from software engineering optimization, such as tuning
@@ -102,15 +102,42 @@ about EZR:
   Yes— EZR reveals a perspective on learning that encourages explanation and critical analysis, not just automation.
 
 - **RQ5: Is it general?**
-  Within the scope of MOOT-style optimization tasks, yes. While not
+  Within the scope of MOOT-style optimization of SE tasks, yes. While not
   designed for text generation (you’ll still need LLMs for that),
-  EZR excels at fast model building and external critique—an essential
+EZR excels at fast model building and external critique—an essential
   capability when teaching students to open up and reason about AI
   systems.
 
 
 ## A Quick Demo
 
+Just fora quick over of what EZR can do, suppsoe we want to configure ad atabase.
+If we loo at the compiler control files, that database
+migh ahve options for
+
+- storage and indexing options dealing with
+  _table\_type, memory\_tables, cached\_tables, small\_cache, large_cache, small_log
+- transaction and locking options deal with _transcation+control\_ policies and various txc (tranaction control) issues
+like _txc\_mvlocks_, _txc\_mvcc_, _txc\_locks_
+
+Logging and durability:
+
+logging, detailed_logging, no_write_delay
+
+Security:
+
+encryption, crypt_aes, crypt_blowfish
+
+Compression:
+
+compressed_script
+
+sonicert
+
+he problem of finding and exmaplin the dofference between good deas na dnbad dieas.
+In this apprtciualr example, for a ``good idea'', we suppose we are tweaking the control paraameters
+on how to compile software for a database file. Such compiation is controlled by a Makefile
+cotnaining nmerous choises incuding the whether or not to do 11 things A,B...K.
 SLOC XXX
 
 A- =
@@ -197,6 +224,14 @@ $k$ centroids at random from amongst the _rows_ of data; (b) labelling each exam
 # Easer AI: Why?
 
 This section offers motivation for exploring little AI tools like EZR.
+
+## Config is a problem
+
+asdas
+
+## #Config is a very geenratl problem. 
+
+HBO and icsmn '24
 
 ### Learning About AI
 
@@ -588,6 +623,11 @@ in software engineering, 2008, pp. 47–54.
 [^men96a]: T. Menzies, “Applications of abduction: knowledge-level
 modeling,” International journal of human-computer studies, vol.
 45, no. 3, pp. 305–335, 1996.
+
+[^men25a]: T. Menzies, "Retrospective: Data Mining Static Code
+Attributes to Learn Defect Predictors" in IEEE Transactions on
+Software Engineering, vol. 51, no. 03, pp. 858-863, March 2025,
+doi: 10.1109/TSE.2025.3537406.
 
 
 [^moot]: T. Menzies and T. Chen, MOOT repository of Multi-objective

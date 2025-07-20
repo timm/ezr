@@ -2,23 +2,23 @@
 # Usage: 
 #   req1 report ==> sumamrzes results
 #   rq1         ==> regenerates results, then summarizes
-
-DATA=../../../moot/optimize
+DATA=../moot/optimize
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 out="$HOME/tmp/$(basename "$0")"
 tmp=/tmp/rq0
 
-if [ -z "$1" ]; then
-  rq="old"
-else
-  rq="$1"
-fi
-
-generates() {
-  generate 16 $DATA/c*/SS-[C-G]*.csv
-  generate 16 $DATA/h*/Health-ClosedIssues000[06].csv
-  generate 16 $DATA/p*/x*.csv
-  generate 16 $DATA/m*/auto93.csv
+gen0() {
+  generate 16 $DATA/c*/SS-[C-G]*.csv \
+              $DATA/h*/Health-ClosedIssues000[06].csv \
+              $DATA/m*/auto93.csv \
+              $DATA/p*/xomo_o*.csv 
+}
+gen1() {
+  generate 16 $DATA/c*/*.csv \
+              $DATA/h*/*.csv \
+              $DATA/b*/*.csv \
+              $DATA/m*/*.csv \
+              $DATA/p*/*.csv 
 }
 
 generate() {
@@ -30,7 +30,7 @@ generate() {
     out_file="$tmp/$name.csv"
 
     python3 -B "$DIR/../ezr.py" -f "$f" --$rq > "$out_file" &
-    python3 -B "$DIR/../ezr.py" -B 40 -f "$f" --tree 
+    #python3 -B "$DIR/../ezr.py" -B 40 -f "$f" --tree 
 
     while (( $(jobs -r | wc -l) >= max_jobs )); do
       sleep 1
@@ -39,13 +39,25 @@ generate() {
 
   wait
 }
+rq=liking
+gen=gen0
+
+if [ -n "$1" ]; then rq=$1; fi
+if [ -n "$2" ]; then gen=$2; fi
+
 
 mkdir -p $tmp
 rm -f $tmp/*
-generates
+
+case "$gen" in
+  gen0) gen0;; 
+  gen1) gen1;;
+  *) echo "$gen is not a function"
+     exit 1;;
+esac
 
 echo $rq `date`
 cat "$tmp"/*.csv > "$out"
 (cat "$out" | gawk -F, '{ print $(NF), $0 }' | sort -n -k1,1 | cut -d' ' -f2- 
-cat "$out" | gawk -F, -f $DIR/rq1.awk ) | column -s, -t | grep --color A
+cat "$out" | gawk -F, -f $DIR/rq1.awk ) | column -s, -t | cat -n | grep --color A 
 

@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Tim Menzies timm@ieee.org" />
-  <title>Easier AI for Software Engineers</title>
+  <title>Just Enough AI for Software Engineers</title>
   <style>
     html {
       color: #1a1a1a;
@@ -108,8 +108,8 @@
      overflow: visible;
     }
     hr {
-      background-color: #1a1a1a;
       border: none;
+      border-top: 1px solid #1a1a1a;
       height: 1px;
       margin: 1em 0;
     }
@@ -168,8 +168,9 @@
     }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
     /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -180,7 +181,7 @@
     }
     @media print {
     pre > code.sourceCode { white-space: pre-wrap; }
-    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
     }
     pre.numberSource code
       { counter-reset: source-line 0; }
@@ -234,7 +235,7 @@
 </head>
 <body>
 <header id="title-block-header">
-<h1 class="title">Easier AI for Software Engineers</h1>
+<h1 class="title">Just Enough AI for Software Engineers</h1>
 <p class="author">Tim Menzies<br>timm@ieee.org</p>
 <p class="date">July, 2025</p>
 </header>
@@ -254,74 +255,76 @@
 <td><em>“Less, but better.”</em> –Dieter Rams</td>
 </tr>
 <tr>
-<td><em>“Subtract.”</em> –Leidy Klotz<a href="#fn1" class="footnote-ref"
-id="fnref1" role="doc-noteref"><sup>1</sup></a></td>
+<td><em>“Subtract.”</em> –Leidy Klotz</td>
 </tr>
 </tbody>
 </table>
 <p>What should we be teaching newcomers to software engineers? Talking
 with fellow instructors, we have noticed a new SE teaching challenge.
-Post-COVID, SE students, raised on search engines and chatbots, are
-great at vibing with code (copying, tweaking, prompting) but not at
-dissecting it. Critique and repair, the practices of software
-craftsmanship, are giving way to surface-level interaction. Code becomes
-something that appears on their screen, not something they
-<strong>own</strong>.</p>
+The typical Post-COVID SE students, working in isolation and raised on
+search engines and chatbots, are great at vibing with code (copying,
+tweaking, prompting) but not at dissecting it. Critique and repair, the
+practices of software craftsmanship, are giving way to surface-level
+interaction. Code becomes something that appears on their screen, not
+something they <strong>own</strong>.</p>
 <p>D. Richard Hipp, the creator of SQLite, once said: “If you want to be
-free, that means doing things yourself.”<a href="#fn2"
-class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>
-That ethic — of simplicity, self-reliance, and deep understanding — is
-being lost. My goal is to bring it back. We need to teach software
-engineers what happens <em>inside</em> code, especially those that drive
-modern AI. In an era where AI have become widely used, we must also
-train <em>code surgeons</em>—developers who can look beneath the
-surface, offer precise interventions, diagnose issues, and even design
-better tools. This is about reclaiming authorship, encouraging
-understanding, and fostering a mindset of critique rather than cargo
-cult reuse.</p>
-<p>And this is not just a teaching issue. It reflects a deeper
-epistemological problem in how we conduct research in software
-enginering. Much current AI research emphasizes “big AI” methods that
-rely on massive compute resources and vast datasets. These systems can
-produce impressive outputs<a href="#fn3" class="footnote-ref"
+free, that means doing things yourself.”<a href="#fn1"
+class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>
+That ethic, or simplicity and self-reliance and deep understanding, is
+fading. For many, this is not a concern since it means they can produce
+more code, more quickly. But for software engineers tasked with
+delivering reliable, high-quality systems within real-world constraints,
+that loss matters. We must teach what happens inside the code,
+especially the complex systems that power today’s AI. As AI tools
+proliferate, we need <strong>code surgeons</strong> who who can
+diagnose, intervene, and improve what lies beneath the surface. We need
+to reclaim authorship of our code, encouraging understanding and
+fostering a mindset of critique rather than cargo cult reuse.</p>
+<p>And this is not just a teaching issue. It reflects a deeper problem
+one how we conduct research in software engineering. Much current AI
+research emphasizes “big AI” methods that rely on massive compute
+resources and vast datasets. These systems can produce impressive
+outputs<a href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a> <a href="#fn3" class="footnote-ref"
 id="fnref3" role="doc-noteref"><sup>3</sup></a> <a href="#fn4"
 class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> <a
 href="#fn5" class="footnote-ref" id="fnref5"
-role="doc-noteref"><sup>5</sup></a> <a href="#fn6" class="footnote-ref"
-id="fnref6" role="doc-noteref"><sup>6</sup></a>, but they are often
-treated as inscrutable black boxes. Like students who vibe rather than
-dissect, researchers increasingly report results without understanding,
-or questioning, what goes on inside the models.</p>
+role="doc-noteref"><sup>5</sup></a>, but they are often treated as
+inscrutable black boxes. Like students who vibe rather than dissect,
+researchers increasingly report results without understanding, or
+questioning, what goes on inside the models.</p>
 <p>This reluctance to look inside has serious consequences. Chief among
 them is the crisis of <em>reproducibility</em>: big AI experiments are
 difficult to replicate, and comparative evaluations are rare. For
-example, a recent review<a href="#fn7" class="footnote-ref" id="fnref7"
-role="doc-noteref"><sup>7</sup></a> of 229 software engineering papers
+example, a recent review<a href="#fn6" class="footnote-ref" id="fnref6"
+role="doc-noteref"><sup>6</sup></a> of 229 software engineering papers
 using LLMs (large language models) found that only 13 (just 5%) compared
 their results to any alternative. This lack of introspection is not only
 methodologically flawed; it also suppresses innovation. As seen in the
 <em><a href="#examples">Example</a></em> section, simpler approaches can
 often perform just as well—or better—while being faster, more
-transparent, and easier to critique_<a href="#fn8" class="footnote-ref"
-id="fnref8" role="doc-noteref"><sup>8</sup></a> <a href="#fn9"
-class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a> <a
-href="#fn10" class="footnote-ref" id="fnref10"
-role="doc-noteref"><sup>10</sup></a> <a href="#fn11"
+transparent, and easier to critique_<a href="#fn7" class="footnote-ref"
+id="fnref7" role="doc-noteref"><sup>7</sup></a> <a href="#fn8"
+class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a> <a
+href="#fn9" class="footnote-ref" id="fnref9"
+role="doc-noteref"><sup>9</sup></a> <a href="#fn10" class="footnote-ref"
+id="fnref10" role="doc-noteref"><sup>10</sup></a> <a href="#fn11"
 class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a>
 <a href="#fn12" class="footnote-ref" id="fnref12"
 role="doc-noteref"><sup>12</sup></a> <a href="#fn13"
-class="footnote-ref" id="fnref13" role="doc-noteref"><sup>13</sup></a>
-<a href="#fn14" class="footnote-ref" id="fnref14"
-role="doc-noteref"><sup>14</sup></a>.</p>
-<p>So what are those alternatives? “Little AI” offers one path forward.
-Where big AI emphasizes volume, little AI assumes that useful models are
+class="footnote-ref" id="fnref13"
+role="doc-noteref"><sup>13</sup></a>.</p>
+<p>So what are those alternatives? “Less AI” offers one path forward.
+Where big AI emphasizes volume, less AI assumes that useful models are
 tiny gems obscured by irrelevant or noisy or redundant data. Finding
-useful models is a hence a progress of pruning everything that is
-superflous or confusing. To say that another way:</p>
+useful models is a hence a progress of pruning anything that is
+superfluous or confusing. To say that another way:</p>
 <blockquote>
-<p>The best thing to do with most data is throw it away.</p>
+<p><strong>Menzies’s 4th law:</strong> The best thing to do with most
+data is throw it away<a href="#fn14" class="footnote-ref" id="fnref14"
+role="doc-noteref"><sup>14</sup></a>.</p>
 </blockquote>
-<p><strong>EZR</strong> is a compact implementation of this idea. It is
+<p><strong>EZR</strong> is a compact implementation of this law. It is
 an incremental <em>active learner</em><a href="#fn15"
 class="footnote-ref" id="fnref15" role="doc-noteref"><sup>15</sup></a>,
 which means “what to do next” is determined from “what has been seen so
@@ -332,7 +335,7 @@ data. In just a few hundred lines of code, EZR supports a wide range of
 core AI tasks—classification, clustering, regression, active learning,
 multi-objective optimization, and explainability.</p>
 <p>This research note introduces EZR and explains its design,
-motivation, and implications. After a code walkthrough, we evaluate EZR
+motivation, and implications. After a code walk-through, we evaluate EZR
 using over 100 diverse examples from the <a
 href="https://github.com/timm/moot">MOOT repository</a><a href="#fn16"
 class="footnote-ref" id="fnref16" role="doc-noteref"><sup>16</sup></a>,
@@ -863,70 +866,71 @@ labels).</p>
 role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1"><p>Adams, G. S., Converse, B. A., Hales, A. H., &amp;
-Klotz, L. E. (2021). People systematically overlook subtractive changes.
-Nature, 592(7853), 258-261.<a href="#fnref1" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>A.G. Bell 2021, The Untold Story of SQLite With Richard
+<li id="fn1"><p>A.G. Bell 2021, The Untold Story of SQLite With Richard
 Hipp Corecursive podcast. Interview by Adam Gordon Bell. November 30,
 2020. Accessed July 19, 2025.
-https://corecursive.com/066-sqlite-with-richard-hipp/<a href="#fnref2"
+https://corecursive.com/066-sqlite-with-richard-hipp/<a href="#fnref1"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>P, Maniatis and D, Tarlow, 2023 Large sequence models
+<li id="fn2"><p>P, Maniatis and D, Tarlow, 2023 Large sequence models
 for software development activities.” Google Research. [Online].
 Available: https://research.google/blog/
 large-sequence-models-for-software -development-activities/<a
-href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>M. Tabachnyk and S. Nikolov, (20222) “MLenhanced code
+href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>M. Tabachnyk and S. Nikolov, (20222) “MLenhanced code
 completion improves developer productivity.” Google Research Blog.
 [Online]. Available: https://research.google/blog/
 ml-enhanced-code-completion -improves-developer-productivity/<a
-href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>C. Bird et al., “Taking Flight with Copilot: Early
+href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>C. Bird et al., “Taking Flight with Copilot: Early
 insights and opportunities of AI-powered pair-programming tools,” Queue,
-vol. 20, no. 6, pp. 35–57, 2023, doi: 10.1145/3582083.<a href="#fnref5"
+vol. 20, no. 6, pp. 35–57, 2023, doi: 10.1145/3582083.<a href="#fnref4"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>S. Bubeck et al., “Sparks of artificial general
+<li id="fn5"><p>S. Bubeck et al., “Sparks of artificial general
 intelligence: Early experiments with GPT-4,” 2023, arXiv:2303.12712<a
-href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>X. Hou, Y. Zhao, Y. Liu, Z. Yang, K. Wang, L. Li, X.
+Luo, D. Lo, J. Grundy, and H. Wang, “Large language models for software
+engineering: A systematic literature review,” ACM Trans. Softw. Eng.
+Methodol., vol. 33, no. 8, Dec. 2024. [Online]. Available:
+https://doi.org/10.1145/3695988<a href="#fnref6" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
 <li id="fn7"><p>X. Hou, Y. Zhao, Y. Liu, Z. Yang, K. Wang, L. Li, X.
 Luo, D. Lo, J. Grundy, and H. Wang, “Large language models for software
 engineering: A systematic literature review,” ACM Trans. Softw. Eng.
 Methodol., vol. 33, no. 8, Dec. 2024. [Online]. Available:
 https://doi.org/10.1145/3695988<a href="#fnref7" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn8"><p>X. Hou, Y. Zhao, Y. Liu, Z. Yang, K. Wang, L. Li, X.
-Luo, D. Lo, J. Grundy, and H. Wang, “Large language models for software
-engineering: A systematic literature review,” ACM Trans. Softw. Eng.
-Methodol., vol. 33, no. 8, Dec. 2024. [Online]. Available:
-https://doi.org/10.1145/3695988<a href="#fnref8" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>W. Fu and T. Menzies, “Easy over hard: a case study on
+<li id="fn8"><p>W. Fu and T. Menzies, “Easy over hard: a case study on
 deep learning,” in Proceedings of the 2017 11th Joint Meeting on
 Foundations of Software Engineering, ser. ESEC/FSE 2017. New York, NY,
 USA: Association for Computing Machinery, 2017, p. 49–60. [Online].
-Available: https://doi.org/10.1145/3106237. 3106256<a href="#fnref9"
+Available: https://doi.org/10.1145/3106237. 3106256<a href="#fnref8"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p>L. Grinsztajn, E. Oyallon, and G. Varoquaux, “Why do
+<li id="fn9"><p>L. Grinsztajn, E. Oyallon, and G. Varoquaux, “Why do
 tree-based models still outperform deep learning on typical tabular
-data?” in NeurIPS’22, 2022.<a href="#fnref10" class="footnote-back"
+data?” in NeurIPS’22, 2022.<a href="#fnref9" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn11"><p>X. Ling, T. Menzies, C. Hazard, J. Shu, and J. Beel,
+<li id="fn10"><p>X. Ling, T. Menzies, C. Hazard, J. Shu, and J. Beel,
 “Trading off scalability, privacy, and performance in data synthesis,”
-IEEE Access, vol. 12, pp. 26 642–26 654, 2024.<a href="#fnref11"
+IEEE Access, vol. 12, pp. 26 642–26 654, 2024.<a href="#fnref10"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn12"><p>S. Majumder, N. Balaji, K. Brey, W. Fu, and T. Menzies,
+<li id="fn11"><p>S. Majumder, N. Balaji, K. Brey, W. Fu, and T. Menzies,
 “500+ times faster than deep learning,” in Proceedings of the 15th
 International Conference on Mining Software Repositories. ACM, 2018.<a
-href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn13"><p>S. Somvanshi, S. Das, S. A. Javed, G. Antariksa, and A.
+href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn12"><p>S. Somvanshi, S. Das, S. A. Javed, G. Antariksa, and A.
 Hossain, “A survey on deep tabular learning,” arXiv preprint
-arXiv:2410.12034, 2024.<a href="#fnref13" class="footnote-back"
+arXiv:2410.12034, 2024.<a href="#fnref12" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn14"><p>V. Tawosi, R. Moussa, and F. Sarro, “Agile effort
+<li id="fn13"><p>V. Tawosi, R. Moussa, and F. Sarro, “Agile effort
 estimation: Have we solved the problem yet? insights from a replication
 study,” IEEE Transactions on Software Engineering, vol. 49, no. 4,
-pp. 2677– 2697, 2023.<a href="#fnref14" class="footnote-back"
+pp. 2677– 2697, 2023.<a href="#fnref13" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn14"><p>T. Menzies, “Retrospective: Data Mining Static Code
+Attributes to Learn Defect Predictors” in IEEE Transactions on Software
+Engineering, vol. 51, no. 03, pp. 858-863, March 2025, doi:
+10.1109/TSE.2025.3537406.<a href="#fnref14" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
 <li id="fn15"><p>Settles, Burr. “Active learning literature survey.”
 (2009).<a href="#fnref15" class="footnote-back"
