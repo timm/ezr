@@ -18,7 +18,7 @@ ezr.py, multi objective.
  -g  guess=0.5       |hot| is |lit|**guess
  -K  Ks=0.95         confidence for Kolmogorov–Smirnov test
  -k  k=1             Bayes hack for rare classes
- -l  leaf=2          nodes in tree leaves
+ -l  leaf=2          treeNodes in tree leaves
  -m  m=2             Bayes hack for rare attributes
  -p  p=2             distance calculation coefficient
  -s  seed=1234567891 random number seed
@@ -48,7 +48,7 @@ the = o(**{k:coerce(v) for k,v in re.findall(r"(\w+)=(\S+)",__doc__)})
 # _>   |_  |   |_|  (_   |_  _> 
 
 Sym = dict
-Num = lambda: o(lo=1e32, mu=0, m2=0, sd=0, n=0, hi=-1e32, heaven=1)
+def Num(): return o(lo=1e32, mu=0, m2=0, sd=0, n=0, hi=-1e32, heaven=1)
 
 def Data(src):
   "Store rows, and summarizes then in cols."
@@ -98,31 +98,35 @@ def mids(data):
   "Return the central tendency for each column."
   return [mid(col) for col in data.cols.all]
 
-def mid(data):
-  return max(data, key=data.get) if type(data) is Sym else data.mu
+def mid(col):
+  return max(col, key=col.get) if type(col) is Sym else col.mu
 
-def div(data):
+def div(col):
   "Return the diversity)."
-  if type(data) is Sym:
-    N = sum(data.values())
-    return -sum(n/N * math.log(n/N, 2) for n in data.values())
-  return data.sd
+  if type(col) is not Sym: return col.sd
+  N = sum(col.values())
+  return -sum(n/N * math.log(n/N, 2) for n in col.values())
+
+def norm(col, v): 
+  "Normalize a number 0..1 for lo..hi."
+  return v if row=="?" or type(col) is Sym else (v-col.lo)/(col.hi-col.lo + 1E-32)
+
 
 #   _|  o   _  _|_   _.  ._    _   _  
 #  (_|  |  _>   |_  (_|  | |  (_  (/_ 
           
-def minkowski(src):
-  "Generalized distance with a variable power p."
+def dist(src):
+  "Generalized Minkowski distance with a variable power p."
   d,n = 0,0
   for v in src: n,d = n+1, d + v**the.p
   return (d/n) ** (1/the.p)
 
-def ydist(data, row):
+def disty(data, row):
   "Distance between goals and heaven."
   return minkowski(abs(norm(col, row[c]) - col.heaven) 
                    for c,col in data.cols.y.items())
 
-def xdist(data, row1, row2):
+def distx(data, row1, row2):
   "Distance between independent values of two rows."
   def _aha(col, a,b):
     if a==b=="?": return 1
@@ -135,12 +139,7 @@ def xdist(data, row1, row2):
   return minkowski(_aha(col, row1[c], row2[c]) 
                    for c,col in data.cols.x.items())
 
-def norm(col, row): 
-  "Normalize a number 0..1 for lo..hi."
-  if row=="?" or type(col) is Sym: return row
-  return (row - col.lo) / ( col.hi -  col.lo + 1E-32)
-
-def kpp(data, rows=None, k=20, few=None):
+def distKpp(data, rows=None, k=20, few=None):
   "Return key centroids usually separated by distance D^2."
   few = few or the.Few
   rows = rows or data.rows[:]
@@ -148,51 +147,51 @@ def kpp(data, rows=None, k=20, few=None):
   out = [rows[0]]
   while len(out) < k:
     tmp = random.sample(rows, few)
-    ws  = [min(xdist(data, r, c)**2 for c in out) for r in tmp]
+    ws  = [min(distx(data, r, c)**2 for c in out) for r in tmp]
     p   = sum(ws) * random.random()
     for j, w in enumerate(ws):
       if (p := p - w) <= 0: 
           out += [tmp[j]]; break
   return out
 
-def kmeans(data, rows=None, n=10, out=None, err=1, **key):
+def distKmeans(data, rows=None, n=10, out=None, err=1, **key):
   "Return key centroids within data."
   rows = rows or data.rows
-  centroids = [mids(d) for d in out] if out else kpp(data,rows,**key)
+  centroids = [mids(d) for d in out] if out else distKpp(data,rows,**key)
   d,err1 = {},0
   for row in rows:
-    col = min(centroids, key=lambda crow: xdist(data,crow,row))
-    err1 += xdist(data,col,row) / len(rows)
+    col = min(centroids, key=lambda crow: distx(data,crow,row))
+    err1 += distx(data,col,row) / len(rows)
     d[id(col)] = d.get(id(col)) or clone(data)
     adds(d[id(col)],row)
   print(f'err={err1:.3f}')
   return (out if (n==1 or abs(err - err1) <= 0.01) else
-          kmeans(data, rows, n-1, d.values(), err=err1,**key))
+          distKmeans(data, rows, n-1, d.values(), err=err1,**key))
 
-def project(data,row,east,west,c=None):
+def distProject(data,row,east,west,c=None):
   "Map row along a line east -> west."
-  D = lambda r1,r2 : xdist(data,r1,r2)
+  D = lambda r1,r2 : distx(data,r1,r2)
   c = c or D(east,west)  
   a,b = D(row,east), D(row,west)
   return (a*a +c*c - b*b)/(2*c + 1e-32)
 
-def fastmap(data,rows):
+def distFastmap(data,rows):
   "Sort rows along a line between 2 distant points."
-  X = lambda r1,r2:xdist(data,r1,r2)
+  X = lambda r1,r2:distx(data,r1,r2)
   anywhere, *few = random.choices(rows, k=the.Few)
   here  = max(few, key= lambda r: X(anywhere,r))
   there = max(few, key= lambda r: X(here,r))
   c     = X(here,there)
-  return sorted(rows, key=lambda r: project(data,r,here,there,c))
+  return sorted(rows, key=lambda r: distProject(data,r,here,there,c))
 
-def fastermap(data,rows, sway1=False):
+def distFastermap(data,rows, sway1=False):
   "Prune half the rows furthest from best distant pair."
   random.shuffle(rows)
   nolabel = rows[the.Any:]
   labels = clone(data, rows[:the.Any])
-  Y  = lambda r: ydist(labels,r)
+  Y  = lambda r: disty(labels,r)
   while len(labels.rows) < the.Build and len(nolabel) >= 2: 
-    east, *rest, west = fastmap(data,nolabel)
+    east, *rest, west = distFastmap(data,nolabel)
     adds(labels, east)
     adds(labels, west)
     n = len(rest)//2
@@ -224,12 +223,12 @@ def likes(data, row, nall=100, nh=2):
          for c,col in data.cols.x.items() if (v:=row[c]) != "?"]
   return sum(math.log(n) for n in tmp + [prior] if n>0)    
 
-def liked(datas,row, nall=None):
+def likeBest(datas,row, nall=None):
   "Which data likes this row the most?"
   nall = nall or sum(len(data.row) for data in datas.values())
   return max(datas, key=lambda k: likes(datas[k],row,nall,len(datas)))
 
-def nbc(file, wait=5):
+def likeClassifier(file, wait=5):
   "Classify rows by how much each class likes a row."
   cf = Confuse()
   data = Data(csv(file))
@@ -237,11 +236,11 @@ def nbc(file, wait=5):
   for n,row in enumerate(data.rows):
     want = row[key]
     d[want] = d.get(want) or clone(data)
-    if n > wait: confuse(cf, want, liked(d,row, n-wait))
+    if n > wait: confuse(cf, want, likeBest(d,row, n-wait))
     adds(d[want], row)
   return confused(cf)
 
-def acquires(data, rows,acq=None):
+def likeGuessing(data, rows,acq=None):
   "Label promising rows, "
   acq = acq or the.acq
   def _acquire(row): # Large numbers are better
@@ -257,8 +256,8 @@ def acquires(data, rows,acq=None):
   random.shuffle(nolabels)
   n1,n2    = round(the.Any**0.5), the.Any
   labels   = clone(data, nolabels[:n2])
-  _ydist   = lambda row: ydist(labels, row) # smaller is better
-  _ysort   = lambda d: sorted(d.rows, key=lambda r: ydist(d,r))
+  _ydist   = lambda row: disty(labels, row) # smaller is better
+  _ysort   = lambda d: sorted(d.rows, key=lambda r: disty(d,r))
 
   best     = clone(data, nolabels[:n1]) # subset of labels
   rest     = clone(data, nolabels[n1:n2]) # rest = labels - best
@@ -293,13 +292,31 @@ def acquires(data, rows,acq=None):
 # _|_  ._   _    _  
 #  |_  |   (/_  (/_ 
 
-ops = {'<=' : lambda x,y: x <= y, 
-       '==' : lambda x,y:x == y, 
-       '>'  : lambda x,y:x > y}
+treeOps = {'<=' : lambda x,y: x <= y, 
+           '==' : lambda x,y:x == y, 
+           '>'  : lambda x,y:x > y}
 
-def selects(row,op,at,y): return (x := row[at]) == "?" or ops[op](x, y)
+def treeSelects(row,op,at,y): 
+  "Have we selected this row?"
+  return (x := row[at]) == "?" or treeOps[op](x, y)
 
-def cuts(col, rows, at, Y, Klass):
+def tree(data, Klass=Num, Y=None, how=None):
+  "Create regression tree."
+  Y = Y or (lambda row: disty(data, row))
+  data.kids, data.how = [], how
+  data.ys = has(Y(row) for row in data.rows)
+  if len(data.rows) >= the.leaf:
+    hows = [how for at,col in data.cols.x.items() 
+            if (how := treeCuts(col,data.rows,at,Y,Klass))]
+    if hows:
+      for how1 in min(hows, key=lambda c: c.div).hows:
+        rows1 = [r for r in data.rows if treeSelects(r, *how1)]
+        if the.leaf <= len(rows1) < len(data.rows):
+          data.kids += [tree(clone(data,rows1), Klass, Y, how1)]
+  return data
+
+def treeCuts(col, rows, at, Y, Klass):
+  "Divide a col into ranges."
   def _sym(sym):
     d, n = {}, 0
     for row in rows:
@@ -325,40 +342,27 @@ def cuts(col, rows, at, Y, Klass):
 
   return (_sym if type(col) is Sym else _num)(col)
 
-def tree(data, Klass=Num, Y=None, how=None):
-  Y = Y or (lambda row: ydist(data, row))
-  data.kids, data.how = [], how
-  data.ys = has(Y(row) for row in data.rows)
-  if len(data.rows) >= the.leaf:
-    hows = [how for at,col in data.cols.x.items() 
-            if (how := cuts(col,data.rows,at,Y,Klass))]
-    if hows:
-      for how1 in min(hows, key=lambda c: c.div).hows:
-        rows1 = [r for r in data.rows if selects(r, *how1)]
-        if the.leaf <= len(rows1) < len(data.rows):
-          data.kids += [tree(clone(data,rows1), Klass, Y, how1)]
-  return data
 
-def nodes(data, lvl=0, key=None):
-  "iterate over all nodes"
+def treeNodes(data, lvl=0, key=None):
+  "iterate over all treeNodes"
   yield lvl, data
   for j in sorted(data.kids, key=key) if key else data.kids:
-    yield from nodes(j,lvl + 1, key)
+    yield from treeNodes(j,lvl + 1, key)
 
-def leaf(data, row):
+def treeLeaf(data, row):
   "Select a matching leaf"
   for j in data.kids or []:
-    if selects(row, *j.how): return leaf(j,row)
+    if treeSelects(row, *j.how): return treeLeaf(j,row)
   return data
 
-def showTree(data, key=lambda d: d.ys.mu):
+def treeShow(data, key=lambda d: d.ys.mu):
   "Display tree"
   print(f"{'d2h':>4} {'win':>4} {'n':>4}")
   print(f"{'----':>4} {'----':>4} {'----':>4}")
   s, ats = data.ys, {}
   win = lambda x: int(100 * (1-(x-data.ys.lo) / 
                              (data.ys.mu-data.ys.lo+1e-32)))
-  for lvl, d in nodes(data,key=key):
+  for lvl, d in treeNodes(data,key=key):
     op, at, y = d.how if lvl else ('', '', '')
     name = data.cols.names[at] if lvl else ''
     expl = f"{name} {op} {y}" if lvl else ''
@@ -373,11 +377,11 @@ def showTree(data, key=lambda d: d.ys.mu):
 #   _  _|_   _.  _|_   _ 
 #  _>   |_  (_|   |_  _> 
 
-def Confuse() -> "Confuse": 
+def Confuse(): 
   "Create a confusion stats for classification matrix."
   return o(klasses={}, total=0)
 
-def confuse(cf:Confuse, want:str, got:str) -> str:
+def confuse(cf, want, got):
   "Update the confusion matrix."
   for x in (want, got):
     if x not in cf.klasses: 
@@ -412,7 +416,7 @@ def confused(cf, summary=False):
 
 # While ks_code is elegant (IMHO), its slow for large samples. That
 # said, it is nearly instantaneous  for the typical 20*20 cases.
-def ks_cliffs(x, y, ks=the.Ks, cliffs=the.Delta):
+def statsSame(x, y, ks=the.Ks, cliffs=the.Delta):
   "True if x,y indistinguishable and differ by just a small effect."
   x, y = sorted(x), sorted(y)
   n, m = len(x), len(y)
@@ -434,22 +438,22 @@ def ks_cliffs(x, y, ks=the.Ks, cliffs=the.Delta):
   cliffs= {'small':0.11,'smed':0.195,'medium':0.28,'large':0.43}[cliffs]
   return _cliffs() <= cliffs and _ks() <= ks * ((n + m)/(n * m))**0.5
 
-def scottknott(rxs, reverse=False,same=ks_cliffs, eps=0.01):
+def statsRank(rxs, reverse=False,same=statsSame, eps=0.01):
   "Sort rxs, recursively split them, stopping when two splits are same."
   items = [(sum(vs), k, vs, len(vs)) for k, vs in rxs.items()]
-  return _skdiv(sorted(items,reverse=reverse),same,{},eps,rank=1)[1]
+  return statsDiv(sorted(items,reverse=reverse),same,{},eps,rank=1)[1]
 
-def _skdiv(groups, same, out, eps, rank=1):
+def statsDiv(groups, same, out, eps, rank=1):
   "Cut and recurse (if we find a cut). Else, use rank=rank, then inc rank." 
   def flat(lst): return [x for _, _, xs, _ in lst for x in xs]
-  cut = _skcut(groups, eps)
+  cut = statsCut(groups, eps)
   if cut and not same(flat(groups[:cut]), flat(groups[cut:])):
-    return _skdiv(groups[cut:], same, out, eps,
-                  rank=_skdiv(groups[:cut], same, out, eps, rank)[0])
+    return statsDiv(groups[cut:], same, out, eps,
+                    rank=statsDiv(groups[:cut], same, out, eps, rank)[0])
   for _, k, _, _ in groups:  out[k] = rank
   return rank + 1, out
 
-def _skcut(groups, eps):
+def statsCut(groups, eps):
   "Cut to maximize difference in means (if cuts differ bu more than eps)."
   sum1 = sum(s for s, _, _, _ in groups)
   n1   = sum(n for _, _, _, n in groups)
@@ -577,7 +581,7 @@ def eg__stats():
    d, out = 0,[]
    while d < 1:
      now = [x+d*random.random() for x in b4]
-     out += [f"{d:.2f}" + ("y" if ks_cliffs(b4,now) else "n")]
+     out += [f"{d:.2f}" + ("y" if statsSame(b4,now) else "n")]
      d += 0.05
    print(', '.join(out))
 
@@ -598,68 +602,68 @@ def eg__sk():
         elif i <=12 : rxs[chr(97+i)] = G(12)
         elif i <=16 : rxs[chr(97+i)] = G(12)
         else        : rxs[chr(97+i)] = G(14)
-      out=scottknott(rxs,eps=eps)
+      out=statsRank(rxs,eps=eps)
       print("\t",''.join(map(daRx,out.keys())))
       print("\t",''.join([str(x) for x in out.values()]))
 
 def eg__diabetes(): 
-  show(nbc("../moot/classify/diabetes.csv"))
+  show(likeClassifier("../moot/classify/diabetes.csv"))
 
 def eg__soybean():  
-  show(nbc("../moot/classify/soybean.csv"))
+  show(likeClassifier("../moot/classify/soybean.csv"))
 
 def eg__xdist():
   data = Data(csv(the.file))
   r1= data.rows[0]
-  ds= sorted([xdist(data,r1,r2) for r2 in data.rows])
+  ds= sorted([distx(data,r1,r2) for r2 in data.rows])
   print(', '.join(f"{x:.2f}" for x in ds[::20]))
   assert all(0 <= x <= 1 for x in ds)
 
 def eg__ydist():
   data = Data(csv(the.file))
-  data.rows.sort(key=lambda row: ydist(data,row))
-  assert all(0 <= ydist(data,r) <= 1 for r in data.rows)
+  data.rows.sort(key=lambda row: disty(data,row))
+  assert all(0 <= disty(data,r) <= 1 for r in data.rows)
   print(', '.join(data.cols.names))
   print("top4:");   [print("\t",row) for row in data.rows[:4]]
   print("worst4:"); [print("\t",row) for row in data.rows[-4:]]
 
 def eg__irisKpp(): 
-  [print(r) for r in kpp(Data(csv("../moot/classify/iris.csv")),k=10)]
+  [print(r) for r in distKpp(Data(csv("../moot/classify/iris.csv")),k=10)]
 
 def eg__irisK(): 
-  for data in kmeans(Data(csv("../moot/classify/iris.csv")),k=10):
+  for data in distKmeans(Data(csv("../moot/classify/iris.csv")),k=10):
     print(mids(data)) 
 
 def daBest(data,rows=None):
   rows = rows or data.rows
-  Y=lambda r: ydist(data,r)
+  Y=lambda r: disty(data,r)
   return Y(sorted(rows, key=Y)[0])
 
 def eg__tree():
   data = Data(csv(the.file))
   someData= clone(data,
-                  acquires(data,data.rows,"xplor").labels)
+                  likeGuessing(data,data.rows,"xplor").labels)
   print(round(daBest(data),2))
-  showTree(tree(someData))
+  treeShow(tree(someData))
 
 def eg__fmap():
   data = Data(csv(the.file))
   for few in [32,64,128,256,512]:
     the.Few = few
     print(few)
-    n=has(daBest(data, fastermap(data,data.rows).labels.rows) for _ in range(20))
+    n=has(daBest(data, distFastermap(data,data.rows).labels.rows) for _ in range(20))
     print("\t",n.mu,n.sd)
 
 def eg__acq():
   print(1)
   data = Data(csv(the.file))
-  base = has(ydist(data,r) for r in data.rows)
+  base = has(disty(data,r) for r in data.rows)
   for few in [15,30,60]:
     the.Few = few
     print(few)
     for acq in ["klass"]: #["xplore", "xploit", "adapt","klass"]:
       the.acq = acq
-      n=has(daBest(data, acquires(data, data.rows).labels) for _ in range(20))
+      n=has(daBest(data, likeGuessing(data, data.rows).labels) for _ in range(20))
       print("\t",the.acq, base.mu, base.lo, n.mu,n.sd)
 
 def eg__rand():
@@ -671,22 +675,22 @@ def eg__rand():
 def eg__old():
   data = Data(csv(the.file))
   rxs = dict(
-             kpp   = lambda d: kpp(d, d.rows),
-             sway   = lambda d: fastermap(d, d.rows, sway1=True).labels.rows,
-         sway2  = lambda d: fastermap(d, d.rows).labels.rows # <== winner #<== best
+             distKpp   = lambda d: distKpp(d, d.rows),
+             sway   = lambda d: distFastermap(d, d.rows, sway1=True).labels.rows,
+         sway2  = lambda d: distFastermap(d, d.rows).labels.rows # <== winner #<== best
              )
   xper1(data,rxs)
 # 77,  88, 96
-#  195  #file                                       rows    |y|  |x|   asIs  min  kpp:15  sway:15  sway2:15  kpp:30  sway:30  sway2:30  kpp:60  sway:60  sway2:60  kpp:120  sway:120  sway2:120  win A
+#  195  #file                                       rows    |y|  |x|   asIs  min  distKpp:15  sway:15  sway2:15  distKpp:30  sway:30  sway2:30  distKpp:60  sway:60  sway2:60  distKpp:120  sway:120  sway2:120  win A
 #  196  13                                                                         35      36       35        35      38       43        35      38       70        34       39        100           A
              
 def eg__liking():
   data = Data(csv(the.file))
   rxs = dict(#rand   = lambda d: random.choices(d.rows,k=the.Build),
-             klass = lambda d: acquires(d,d.rows,"klass").labels, #<== klass
-             xploit = lambda d: acquires(d,d.rows,"xploit").labels,
-             xplor = lambda d: acquires(d,d.rows,"xplor").labels, 
-           adapt  = lambda d: acquires(d,d.rows,"adapt").labels
+             klass = lambda d: likeGuessing(d,d.rows,"klass").labels, #<== klass
+             xploit = lambda d: likeGuessing(d,d.rows,"xploit").labels,
+             xplor = lambda d: likeGuessing(d,d.rows,"xplor").labels, 
+           adapt  = lambda d: likeGuessing(d,d.rows,"adapt").labels
              )
   xper1(data,rxs)
 
@@ -698,8 +702,8 @@ def eg__liking():
 def eg__final():
   data = Data(csv(the.file))
   rxs = dict(rand   = lambda d: random.choices(d.rows,k=the.Build),
-             klass = lambda d: acquires(d,d.rows,"klass").labels, #<== klass
-             sway2  = lambda d: fastermap(d, d.rows).labels.rows # <== sway2
+             klass = lambda d: likeGuessing(d,d.rows,"klass").labels, #<== klass
+             sway2  = lambda d: distFastermap(d, d.rows).labels.rows # <== sway2
              )
   xper1(data,rxs)
 
@@ -711,7 +715,7 @@ fyi=lambda s: print(s,file=sys.stderr, flush=True,end="")
 def xper1(data,rxs):
   repeats=30
   builds=[15,30,60,120]
-  base = has(ydist(data,r) for r in data.rows)
+  base = has(disty(data,r) for r in data.rows)
   win  = lambda x: 1 - (x - base.lo) / (base.mu - base.lo + 1e-32)
   out={}
   for build in builds: 
@@ -721,7 +725,7 @@ def xper1(data,rxs):
       fyi("-")
       out[(rx,build)] = [daBest(data,fn(data)) for _ in range(repeats)]
   fyi("!")
-  ranks = scottknott(out, eps=base.sd*0.2)
+  ranks = statsRank(out, eps=base.sd*0.2)
   rank1 = has(x for k in ranks if ranks[k] == 1 for x in out[k])
   p = lambda z: round(100*z) #"1.00" if z == 1 else (f"{pretty(z,2)[1:]}" if isinstance(z,float) and z< 1 else str(z))
   q = lambda k: f" {'A' if ranks[k]==1 else ' '} {p(has(out[k]).mu)}"
