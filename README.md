@@ -14,36 +14,38 @@ _"Less, but better."_  --Dieter Rams
 _"Subtract."_ --Leidy Klotz
 ------------------------------------------------------
 
-What should we be teaching newcomers to software engineers?  Talking
-with fellow instructors, we have  noticed a new SE teaching challenge.
-The typical Post-COVID SE students, working in isolation  and raised
-on search engines and chatbots, are great at vibing with code
-(copying, tweaking, prompting) but not at dissecting it. Critique
-and repair, the practices of software craftsmanship, are giving way
-to surface-level interaction. Code becomes something that appears
-on their screen, not something they **own**.
+What should we be teaching newcomers to software engineering? Talking
+with fellow instructors, we’ve noticed two growing challenges.
+First, students often lack practice in analyzing and critiquing
+code. Post-COVID learners, raised on search engines and chatbots,
+are great at vibing with code—copying, tweaking, prompting—but less
+adept at understanding what makes it tick. Second, the systems they
+encounter often feel too large or opaque to examine. As Leidy Klotz notes, people systematically overlook
+subtractive changes—we keep adding, even when taking away would
+serve us better. This leads to complexity and bloat.
+In teaching, it overwhelms. Such complexity means that code is
+something that appears on a screen, not something they can explore and own and shape.
 
-D. Richard Hipp, the creator of SQLite, once said: “If you want to
-be free, that means doing things yourself.”[^hipp21] That
-ethic, or simplicity and self-reliance and deep understanding, is fading.
-For many, this is not a concern since it means they can produce more code,
-more quickly. But for software engineers tasked with delivering
-reliable, high-quality systems within real-world constraints, that
-loss matters. We must teach what happens inside the code, especially
-the complex systems that power today’s AI. As AI tools proliferate,
-we need **code surgeons** who who can diagnose, intervene, and
-improve what lies beneath the surface.  We need to reclaim authorship
-of our code, encouraging understanding and fostering a mindset of
-critique rather than cargo cult reuse.
+These challenges are connected. Simpler systems invite deeper
+engagement and more ownership.  D. Richard Hipp, creator of SQLite,
+says “If you want to be free, that means doing
+things yourself.”[^hipp21] He likens it to backpacking—carrying
+only what you need to move freely. You do not need to build Microsoft
+Windows; you need just enough to do something meaningful. This book
+shows how powerful results can emerge from surprisingly little code
+and data.
 
-And this is not  just a teaching issue. It reflects a deeper problem
-one how we conduct research in software engineering.  Much current
-AI research emphasizes "big AI" methods that rely on massive compute
-resources and vast datasets. These systems can produce impressive
-outputs[^mani23] [^taba23] [^bird23] [^bubeck23], but they are often
-treated as inscrutable black boxes.  Like students who vibe rather
-than dissect, researchers increasingly report results without
-understanding, or questioning, what goes on inside the models.
+That ethic—simplicity, self-reliance, deep understanding—is fading.
+For many, that’s fine; it means producing more code, more quickly.
+But for engineers tasked with building reliable, high-quality systems
+under real-world constraints, that loss matters. We must teach what
+happens inside the code, especially the complex systems that power
+today’s AI. As these tools proliferate, we need code surgeons who
+can diagnose, intervene, and improve what lies beneath the surface.
+We need to reclaim authorship of our code, encouraging understanding
+and fostering a mindset of critique rather than cargo cult reuse.
+
+
 
 This reluctance to look inside has serious consequences. Chief among
 them is the crisis of *reproducibility*: big AI experiments are
