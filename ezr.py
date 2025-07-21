@@ -240,6 +240,43 @@ def likeClassifier(file, wait=5):
     adds(d[want], row)
   return confused(cf)
 
+# def acquireInit(data, rows, acq=None):
+#   acq     = acq or the.acq
+#   nolabels= rows[:]; random.shuffle(nolabels)
+#   n2      = the.Any
+#   labels  = clone(data, nolabels[:n2])
+#   unlabeled = nolabels[n2:]
+#   return acq, unlabeled, labels
+#
+# def acquireFunction(acq, best, rest, labels):
+#   def _acquire(row):
+#     nall = len(labels.rows)
+#     b, r = likes(best, row, 2, nall), likes(rest, row, 2, nall)
+#     b, r = math.e**b, math.e**r
+#     if acq == "klass": return random.random()
+#     if acq == "bore":  return (b*b) / (r + 1e-32)
+#     p = len(labels.rows) / the.Build
+#     q = {"xploit": 0, "xplor": 1}.get(acq, 1 - p)
+#     return (b + r*q) / abs(b*q - r + 1e-32)
+#   return _acquire
+#
+# def acquireGuessGood(unlabeled, labels, acq, data):
+#   while len(labels.rows) < the.Build:
+#     n1 = round(the.Any**0.5)
+#     best = sorted(labels.rows, key=lambda r: disty(labels, r))[:n1]
+#     rest = labels.rows[n1:the.Any]
+#     acquire = acquireFunction(acq, best, rest, labels)
+#     row = min(unlabeled, key=acquire)
+#     labels.rows += [row]
+#     unlabeled.remove(row)
+#   return labels
+#
+# def likeGuessing(data, rows, acq=None):
+#   acq, unlabeled, labels = acquireInit(data, rows, acq)
+#   labels = acquireGuessGood(unlabeled, labels, acq, data)
+#   return o(labels=labels)
+#
+#
 def likeGuessing(data, rows,acq=None):
   "Label promising rows, "
   acq = acq or the.acq
