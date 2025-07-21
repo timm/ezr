@@ -113,16 +113,18 @@ EZR excels at fast model building and external critique—an essential
 
 ## A Quick Demo
 
-Just for a quick over of what EZR can do, suppsoe we want to configure ad atabase.
-If we look at the compiler control files, we see that database is database
-migh ahve options for
+Just for a quick over of what EZR can do, suppose we want to configure a database.
+For this example, we will say our
+database should run quickly wihtout burning up too much energy or CPU time
+
+Looking in the  database's  compiler control files, we see an overwhelming number of options cliding:
 
 - storage and indexing options dealing with
   _table\_type, memory\_tables, cached\_tables, small\_cache, large_cache, small_log
 - transaction and locking options that deal with _transcation+control\_ policies and various txc (tranaction control) issues
 like _txc\_mvlocks_, _txc\_mvcc_, _txc\_locks_
 
-Logging and durability:
+- Logging and durability:
 
 logging, detailed_logging, no_write_delay
 
