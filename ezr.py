@@ -275,7 +275,7 @@ def acquires(data, rows,acq=None):
         if i > the.Few*2: break
         if likes(best, row, 2, nall) > likes(rest, row, 2, nall):
           good = nolabels.pop(i); break
-    else:
+    else: # comment
         good,*nogood = sorted(nolabels[:the.Few*2], key=_acquire,reverse=True) # best at start
         nolabels = nogood[:the.Few] + nolabels[the.Few*2:] + nogood[the.Few:]
     # add the good guess to labels and best
