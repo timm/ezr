@@ -9,29 +9,37 @@ def Sym(): return {}
 def isSym(col): return type(col) is dict
 
 def add(col, x):
-  if isSym(col): col[x] = 1 + col.get(x, 0)
-  elif x != "?":
-    col.n += 1
-    delta = x - col.mu
-    col.mu += delta / col.n
-    col.m2 += delta * (x - col.mu)
-    col.lo = min(col.lo, x)
-    col.hi = max(col.hi, x)
-    col.sd = (col.m2 / (col.n - 1 + 1E-32))**0.5
+  if x != "?":
+    if isSym(col): col[x] = 1 + col.get(x, 0)
+    else:
+      col.n += 1
+      delta = x - col.mu
+      col.mu += delta / col.n
+      col.m2 += delta * (x - col.mu)
+      col.lo = min(col.lo, x)
+      col.hi = max(col.hi, x)
+      col.sd = (col.m2 / (col.n - 1 + 1E-32))**0.5
+  return v
 
 #----------------------------------------------------------------------------------
-def Data(src):
-   names, *rows = list(src)
-   return o(rows=rows, cols=Cols(names,rows))
+def Data(src=[]):
+  data = o(rows=[],cols=Cols(next(src)))
+  [adds(data,row) for row in src]
+  return data
+
+def adds(data,row):
+  if data.cols : data.rows.append([add(col,row[c]) for c,col in data.cols.all])
+  else         : data.cols  = Cols(row)
+  return row
 
 def Cols(names, rows):
-  all, x = {}, {}
+  all, x , klass = {}, {}, None
   for c, s in enumerate(names):
     col = Sym() if s[0].islower() else Num()
-    for r in rows: add(col, r[c])
     all[c] = col
     if s[-1] != "X": x[c] = col
-  return o(names=names, all=all, x=x)
+    if s[-1] == "!" klass = col
+  return o(names=names, all=all, x=x, klass=klass)
 
 #----------------------------------------------------------------------------------
 def Tree(data, rows=None, depth=4):
