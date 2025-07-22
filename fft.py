@@ -1,6 +1,16 @@
+#!/usr/bin/env python3 -B
+"""
+fft.py, multi objective tree building
+(c) 2025, Tim Menzies <timm@ieee.org>, MIT license
 
+Options:
+ -s random seed    seed=1234567891 
+ -f data file      file=../moot/optimize/misc/auto93.csv 
+"""
 from types import SimpleNamespace as o
-import random, math
+import random, math, sys, re
+
+the = o(**{k: v for k, v in re.findall(r"(\w+)=(\S+)", __doc__)}) 
 
 #----------------------------------------------------------------------------------
 BIG = 1e32
@@ -12,92 +22,90 @@ def add(col, x):
   if x != "?":
     if isSym(col): col[x] = 1 + col.get(x, 0)
     else:
-      col.n += 1
-      delta = x - col.mu
+      col.n  += 1
+      delta   = x - col.mu
       col.mu += delta / col.n
       col.m2 += delta * (x - col.mu)
-      col.lo = min(col.lo, x)
-      col.hi = max(col.hi, x)
-      col.sd = (col.m2 / (col.n - 1 + 1E-32))**0.5
+      col.lo  = min(col.lo, x)
+      col.hi  = max(col.hi, x)
+      col.sd  = (col.m2 / (col.n - 1 + 1E-32))**0.5
   return v
 
 #----------------------------------------------------------------------------------
 def Data(src=[]):
-  data = o(rows=[],cols=Cols(next(src)))
-  [adds(data,row) for row in src]
+  data = o(rows=[], cols=None)
+  [dataAdd(data,row) for row in src]
   return data
 
-def adds(data,row):
+def dataClone(data, rows=[]):
+  return Data([data.cols.names] + rows)
+
+def dataAdd(data, row):
   if data.cols : data.rows.append([add(col,row[c]) for c,col in data.cols.all])
-  else         : data.cols  = Cols(row)
-  return row
+  else: data.cols = dataHeader(row)
 
-def Cols(names, rows):
-  all, x , klass = {}, {}, None
-  for c, s in enumerate(names):
-    col = Sym() if s[0].islower() else Num()
-    all[c] = col
-    if s[-1] != "X": x[c] = col
-    if s[-1] == "!" klass = col
-  return o(names=names, all=all, x=x, klass=klass)
+def dataHeader(names):
+  cols = o(names=names, all=[], x={}, y={}, klass=None)
+  for c,s in enumerate(names):
+    cols.all += [Num() if s[0].isupper() else Sym()]
+    if s[-1] != "X":
+      if s[-1] == "!": cols.klass = c
+      if s[-1] == "-": cols.all[-1].goal = 0
+      (cols.y if s[-1] in "!-+" else cols.x)[c] = cols.all[-1]
+  return cols
 
-#----------------------------------------------------------------------------------
-def Tree(data, rows=None, depth=4):
-  def go(rows, d):
-    if d > 0 and rows:
-      if (cuts := [(y.mu, c, *treeBounds(k, col))
-                       for c, col in data.cols.x.items()
-                       for k, y in treeBins(col, c, rows).items()]):
+#-------------------------------------------------------------------------------
+def Tree(data, depth=4):
+  def go(data1, d):  
+    if d > 0 and data1.rows:
+      if cuts := [cut for c, col in data1.cols.x.items()
+                      for cut in treeCuts(data1, col, c, data1.rows)]:
         best, *_, worst = sorted(cuts)
-        for mu, c, lo, hi in [best, worst]:
-          yes, no = treeCuts(rows, c, lo, hi)
-          leaf = rx(c, yes)
-          for subtree in go(no, d - 1):
+        for _, c, (lo, hi), leaf in [best, worst]:
+          yes, no = treeEffects(data1.rows, c, lo, hi)
+          for subtree in go(dataClone(data1, no), d - 1):
             yield o(c=c, lo=lo, hi=hi, left=leaf, right=subtree)
-  yield from go(rows or data.rows, depth)
+  yield from go(data, depth)
 
-def treeBins(col, c, rows):
-  out = {}
-  for r in rows:
-    x = r[c]
+def treeCuts(data, col, c, rows):
+  ys = {}
+  for row in rows:
+    x, y = row[c], row[data.cols.klass]
     if x != "?":
-      k = x if isSym(col) else ("lo" if x < col.mu else "hi")
-      out.setdefault(k, []).append(r)
-  return {k: rx(c, v) for k, v in out.items()}
-
-def treeCuts(rows, c, lo, hi):
+      k = x if isSym(col) else x < col.mu  
+      if k not in ys: ys[k] = Num()
+      add(ys[k], y)
+  b = BIG
+  return [(ys[k].mu,
+           c,
+           (k,k) if isSym(col) else ((-b,col.mu) if k else (col.mu,b)),
+           ys[k]) for k in ys]
+ 
+def treeEffects(rows, c, xlo, xhi):
   yes, no = [], []
-  for r in rows:
-    v = r[c]
-    (yes if v == "?" or lo <= v <= hi else no).append(r)
+  for row in rows:
+    v = row[c]
+    if v == "?" : yes.append(row); no.append(row)
+    else        : (yes if xlo <= v <= xhi else no).append(row)
   return yes, no
-
-def treeBounds(k, col):
-  return (-BIG, BIG) if isSym(col) else (k, k)
-
-def rx(c, rows):
-  col = Num()
-  for r in rows:
-    x = r[c]
-    if x != "?": add(col, x)
-  return col
 
 def treeShow(data, t, pre=""):
   if not t: return
   if not hasattr(t, "c"): print(f"{pre}{t.mu:.2f}")
   else:
     name = data.cols.names[t.c]
-    if abs(t.lo) < BIG: treeShow(data, t.right, f"{pre}if {name} < {int(t.lo)} then ")
-    if abs(t.hi) < BIG: treeShow(data, t.left,  f"{pre}else if {name} >= {int(t.hi)} then ")
+    if abs(t.lo) < BIG: treeShow(data, t.right, 
+                                 f"{pre}if {name} < {int(t.lo)} then ")
+    if abs(t.hi) < BIG: treeShow(data, t.left,  
+                                 f"{pre}else if {name} >= {int(t.hi)} then ")
 
 def treeBest(trees, rows):
-  def predict(t, r):
+  def predict(t, row):
     while hasattr(t, "c"):
-      v = r[t.c]
-      t = t.left if v == "?" or t.lo <= v <= t.hi else t.right
+      t = t.left if row[t.c] == "?" or t.lo <= row[t.c] <= t.hi else t.right
     return t.mu
   def score(t):
-    return sum((r[-1] - predict(t, r))**2 for r in rows) / len(rows)
+    return sum((r[-1] - predict(t, row))**2 for row in rows) / len(rows)
   return min(trees, key=score)
 
 #----------------------------------------------------------------------------------
@@ -114,13 +122,20 @@ def coerce(x):
     try: return float(x)
     except: return x.strip()
 
-#----------------------------------------------------------------------------------
-if __name__ == "__main__":
-  import sys
-  random.seed(1)
-  file = sys.argv[1] if len(sys.argv) > 1 else "../data/auto93.csv"
+the = o( **{k:coerce(v) for k,v in vars(the).items()} )
+
+#-------------------------------------------------------------------------------
+def eg_h(): print(__doc__)
+
+def eg__eg():
   data = Data(csv(file))
   trees = list(Tree(data))
   best = treeBest(trees, data.rows)
   treeShow(data, best)
 
+if __name__ == "__main__": 
+  for n, arg in enumerate(sys.argv):
+    for k in the.__dict__:
+      if arg == "-" + k[0]: the.__dict__[k] = coerce(sys.argv[n+1])
+    if (fn := globals().get(f"eg{arg.replace('-', '_')}")):
+      random.seed(the.seed); fn()
