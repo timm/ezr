@@ -10,11 +10,13 @@ Options:
 from types import SimpleNamespace as o
 import random, math, sys, re
 
-def coerce(x):
-  try: return int(x)
+def coerce(z):
+  try: return int(z)
   except:
-    try: return float(x)
-    except: return x.strip()
+    try: return float(z)
+    except: 
+      z = z.strip()
+      return {'True':True, 'False':False}.get(z,z)
 
 the = o( **{k: coerce(v) for k,v in re.findall(r"(\w+)=(\S+)", __doc__)} ) 
 
@@ -76,10 +78,10 @@ def Tree(data, depth=4):
       if cuts := [cut for c, col in data1.cols.x.items()
                       for cut    in treeCuts(data1, col, c, data1.rows)]:
         best, *_, worst = sorted(cuts)
-        for _, c, (lo, hi), leaf in [best, worst]:
-          yes, no = treeKids(data1.rows, c, lo, hi)
+        for _, c, (xlo, xhi), leaf in [best, worst]:
+          yes, no = treeKids(data1.rows, c, xlo, xhi)
           for subtree in _go(dataClone(data1, no), d - 1):
-            yield o(c=c, lo=lo, hi=hi, left=leaf, right=subtree)
+            yield o(c=c, lo=xlo, hi=xhi, left=leaf, right=subtree)
   yield from _go(data, depth)
 
 def treeCuts(data, col, c, rows):
