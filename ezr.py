@@ -64,21 +64,32 @@ def Data(src):
 
   src = iter(src)
   data = o(rows=[], cols= _cols(next(src)))
-  [adds(data,r) for r in src]
+  [dataAdd(data,r) for r in src]
   return data 
 
-def clone(data,rows=[]): 
-  "Mimic the structure of an existing data."
-  return Data([data.cols.names] + rows)
-
-def adds(data, row, inc=1, zap=False):
+def dataAdd(data, row, inc=1, zap=False):
   "Update data with a row (and to subtract, use inc= -1)."
   if inc>0: data.rows += [row]
   elif zap: data.rows.remove(row) # slow for long rows
   for c,col in enumerate(data.cols.all): add(col,row[c],inc)
   return row
 
-def add(col, v, inc=1):
+def dataClone(data,rows=[]): 
+  "Mimic the structure of an existing data."
+  return Data([data.cols.names] + rows)
+
+def dataRead(file):
+  "Load a csv file into a data."
+  data = None
+  with open(file,encoding="utf-8") as f:
+    for line in f:
+      if (line := line.split("%")[0]):
+        row= [coerce(val.strip()) for val in line.split(",")]
+        if data: dataAdd(data,row)
+        else: data = data or Data([row])
+  return data
+
+def  add(col, v, inc=1):
   "Update a col with a value (and to subtract, use inc= -1)."
   if v != "?":
     if type(col) is Sym: col[v] = inc + col.get(v,0)
@@ -109,7 +120,7 @@ def div(col):
 
 def norm(col, v): 
   "Normalize a number 0..1 for lo..hi."
-  return v if row=="?" or type(col) is Sym else (v-col.lo)/(col.hi-col.lo + 1E-32)
+  return v if v=="?" or type(col) is Sym else (v-col.lo)/(col.hi-col.lo + 1E-32)
 
 
 #   _|  o   _  _|_   _.  ._    _   _  
@@ -123,8 +134,7 @@ def dist(src):
 
 def disty(data, row):
   "Distance between goals and heaven."
-  return minkowski(abs(norm(col, row[c]) - col.heaven) 
-                   for c,col in data.cols.y.items())
+  return dist(abs(norm(col, row[c]) - col.heaven) for c,col in data.cols.y.items())
 
 def distx(data, row1, row2):
   "Distance between independent values of two rows."
@@ -136,8 +146,7 @@ def distx(data, row1, row2):
     b = b if b != "?" else (0 if a>0.5 else 1)
     return abs(a-b)
 
-  return minkowski(_aha(col, row1[c], row2[c]) 
-                   for c,col in data.cols.x.items())
+  return dist(_aha(col, row1[c], row2[c])  for c,col in data.cols.x.items())
 
 def distKpp(data, rows=None, k=20, few=None):
   "Return key centroids usually separated by distance D^2."
@@ -162,8 +171,8 @@ def distKmeans(data, rows=None, n=10, out=None, err=1, **key):
   for row in rows:
     col = min(centroids, key=lambda crow: distx(data,crow,row))
     err1 += distx(data,col,row) / len(rows)
-    d[id(col)] = d.get(id(col)) or clone(data)
-    adds(d[id(col)],row)
+    d[id(col)] = d.get(id(col)) or dataClone(data)
+    dataAdd(d[id(col)],row)
   print(f'err={err1:.3f}')
   return (out if (n==1 or abs(err - err1) <= 0.01) else
           distKmeans(data, rows, n-1, d.values(), err=err1,**key))
@@ -188,12 +197,12 @@ def distFastermap(data,rows, sway1=False):
   "Prune half the rows furthest from best distant pair."
   random.shuffle(rows)
   nolabel = rows[the.Any:]
-  labels = clone(data, rows[:the.Any])
+  labels = dataClone(data, rows[:the.Any])
   Y  = lambda r: disty(labels,r)
   while len(labels.rows) < the.Build and len(nolabel) >= 2: 
     east, *rest, west = distFastmap(data,nolabel)
-    adds(labels, east)
-    adds(labels, west)
+    dataAdd(labels, east)
+    dataAdd(labels, west)
     n = len(rest)//2
     nolabel = nolabel[:n] if Y(east) < Y(west) else nolabel[n:]
     if not sway1 and len(nolabel) < 2:
@@ -231,100 +240,118 @@ def likeBest(datas,row, nall=None):
 def likeClassifier(file, wait=5):
   "Classify rows by how much each class likes a row."
   cf = Confuse()
-  data = Data(csv(file))
+  data = dataRead(file)
   wait,d,key = 5,{},data.cols.klass
   for n,row in enumerate(data.rows):
     want = row[key]
-    d[want] = d.get(want) or clone(data)
+    d[want] = d.get(want) or dataClone(data)
     if n > wait: confuse(cf, want, likeBest(d,row, n-wait))
-    adds(d[want], row)
+    dataAdd(d[want], row)
   return confused(cf)
+
+#    _.   _   _.       o  ._   _  
+#   (_|  (_  (_|  |_|  |  |   (/_ 
+#              |                  
 
-# def acquireInit(data, rows, acq=None):
-#   acq     = acq or the.acq
-#   nolabels= rows[:]; random.shuffle(nolabels)
-#   n2      = the.Any
-#   labels  = clone(data, nolabels[:n2])
-#   unlabeled = nolabels[n2:]
-#   return acq, unlabeled, labels
-#
-# def acquireFunction(acq, best, rest, labels):
-#   def _acquire(row):
-#     nall = len(labels.rows)
-#     b, r = likes(best, row, 2, nall), likes(rest, row, 2, nall)
-#     b, r = math.e**b, math.e**r
-#     if acq == "klass": return random.random()
-#     if acq == "bore":  return (b*b) / (r + 1e-32)
-#     p = len(labels.rows) / the.Build
-#     q = {"xploit": 0, "xplor": 1}.get(acq, 1 - p)
-#     return (b + r*q) / abs(b*q - r + 1e-32)
-#   return _acquire
-#
-# def acquireGuessGood(unlabeled, labels, acq, data):
-#   while len(labels.rows) < the.Build:
-#     n1 = round(the.Any**0.5)
-#     best = sorted(labels.rows, key=lambda r: disty(labels, r))[:n1]
-#     rest = labels.rows[n1:the.Any]
-#     acquire = acquireFunction(acq, best, rest, labels)
-#     row = min(unlabeled, key=acquire)
-#     labels.rows += [row]
-#     unlabeled.remove(row)
-#   return labels
-#
-# def likeGuessing(data, rows, acq=None):
-#   acq, unlabeled, labels = acquireInit(data, rows, acq)
-#   labels = acquireGuessGood(unlabeled, labels, acq, data)
-#   return o(labels=labels)
-#
-#
-def likeGuessing(data, rows,acq=None):
-  "Label promising rows, "
+def acquire(data, rows, acq=None):
   acq = acq or the.acq
-  def _acquire(row): # Large numbers are better
-    nall =len(labels.rows)
-    b, r = likes(best, row, 2, nall), likes(rest, row, 2, nall)
-    b, r = math.e**b, math.e**r
-    if acq=="bore": return (b*b) / (r+1e-32)
-    p    = n2 / the.Build
-    q    = {"xploit": 0, "xplor": 1}.get(acq, 1 - p)
-    return (b + r*q) / abs(b*q - r + 1E-32)
-
-  nolabels = rows[:]
-  random.shuffle(nolabels)
-  n1,n2    = round(the.Any**0.5), the.Any
-  labels   = clone(data, nolabels[:n2])
-  _ydist   = lambda row: disty(labels, row) # smaller is better
-  _ysort   = lambda d: sorted(d.rows, key=lambda r: disty(d,r))
-
-  best     = clone(data, nolabels[:n1]) # subset of labels
-  rest     = clone(data, nolabels[n1:n2]) # rest = labels - best
+  nolabels = rows[:]; random.shuffle(nolabels)
+  n1, n2 = round(the.Any**0.5), the.Any
+  labels = dataClone(data, nolabels[:n2])
+  labels.rows.sort(key=lambda r: disty(labels, r))
+  best   = dataClone(data, labels.rows[:n1])
+  rest   = dataClone(data, labels.rows[n1:])
   nolabels = nolabels[n2:]
 
-  _ysort(best)
   while len(nolabels) > 2 and len(labels.rows) < the.Build:
-    # try to guess something good
-    if acq=="klass":
-      random.shuffle(nolabels)
-      nall =len(labels.rows)
-      good,*nolabels = nolabels
-      for i,row in enumerate(nolabels):
-        if i > the.Few*2: break
-        if likes(best, row, 2, nall) > likes(rest, row, 2, nall):
-          good = nolabels.pop(i); break
-    else: # comment
-        good,*nogood = sorted(nolabels[:the.Few*2], key=_acquire,reverse=True) # best at start
-        nolabels = nogood[:the.Few] + nolabels[the.Few*2:] + nogood[the.Few:]
-    # add the good guess to labels and best
-    adds(labels, 
-        adds(best if _ydist(good) < _ydist(best.rows[0]) else rest, 
-             good))
-    # if best too big, dump some to rest
+    if acq == "klass":
+      good, nolabels = acquirePickKlass(best, rest, labels, nolabels)
+    else:
+      acqFun = acquireScore(acq, best, rest, labels)
+      good, nolabels = acquirePick(acqFun, nolabels)
+
+    dataAdd(labels, dataAdd(best, good))
     while len(best.rows) >= len(labels.rows)**0.5:
-      _ysort(best)
-      adds(rest, adds(best, best.rows.pop(-1),-1))
-  _ysort(labels)
-  return o(best=best, rest=rest, 
-           labels=labels.rows, nolabels=nolabels)
+      best.rows.sort(key=lambda r: disty(best, r))
+      dataAdd(rest, dataAdd(best, best.rows.pop(-1), -1))
+
+  labels.rows.sort(key=lambda r: disty(labels, r))
+  return o(labels=labels.rows, best=best, rest=rest, nolabels=nolabels)
+
+def acquireScore(acq, best, rest, labels):
+  n = len(labels.rows)
+  def _score(row):
+    b, r = likes(best, row, 2, n), likes(rest, row, 2, n)
+    b, r = math.e**b, math.e**r
+    if acq == "bore": return (b*b) / (r + 1e-32)
+    p = n / the.Build
+    q = {"xploit": 0, "xplor": 1}.get(acq, 1 - p)
+    return (b + r*q) / abs(b*q - r + 1e-32)
+  return _score
+
+def acquirePick(acqFun, nolabels):
+  scored = sorted(nolabels[:the.Few*2], key=acqFun, reverse=True)
+  good, *nogood = scored
+  nolabels = nogood[:the.Few] + nolabels[the.Few*2:] + nogood[the.Few:]
+  return good, nolabels
+
+def acquirePickKlass(best, rest, labels, nolabels):
+  random.shuffle(nolabels)
+  good, *nolabels = nolabels
+  for i, row in enumerate(nolabels[:the.Few*2]):
+    if likes(best, row, 2, len(labels.rows)) > likes(rest, row, 2, len(labels.rows)):
+      good = nolabels.pop(i); break
+  return good, nolabels
+
+
+# def likeGuessing(data, rows,acq=None):
+#   "Label promising rows, "
+#   acq = acq or the.acq
+#   def _acquire(row): # Large numbers are better
+#     nall =len(labels.rows)
+#     b, r = likes(best, row, 2, nall), likes(rest, row, 2, nall)
+#     b, r = math.e**b, math.e**r
+#     if acq=="bore": return (b*b) / (r+1e-32)
+#     p    = n2 / the.Build
+#     q    = {"xploit": 0, "xplor": 1}.get(acq, 1 - p)
+#     return (b + r*q) / abs(b*q - r + 1E-32)
+#
+#   nolabels = rows[:]
+#   random.shuffle(nolabels)
+#   n1,n2    = round(the.Any**0.5), the.Any
+#   labels   = dataClone(data, nolabels[:n2])
+#   _ydist   = lambda row: disty(labels, row) # smaller is better
+#   _ysort   = lambda d: sorted(d.rows, key=lambda r: disty(d,r))
+#
+#   best     = dataClone(data, nolabels[:n1]) # subset of labels
+#   rest     = dataClone(data, nolabels[n1:n2]) # rest = labels - best
+#   nolabels = nolabels[n2:]
+#
+#   _ysort(best)
+#   while len(nolabels) > 2 and len(labels.rows) < the.Build:
+#     # try to guess something good
+#     if acq=="klass":
+#       random.shuffle(nolabels)
+#       nall =len(labels.rows)
+#       good,*nolabels = nolabels
+#       for i,row in enumerate(nolabels):
+#         if i > the.Few*2: break
+#         if likes(best, row, 2, nall) > likes(rest, row, 2, nall):
+#           good = nolabels.pop(i); break
+#     else: # comment
+#         good,*nogood = sorted(nolabels[:the.Few*2], key=_acquire,reverse=True) # best at start
+#         nolabels = nogood[:the.Few] + nolabels[the.Few*2:] + nogood[the.Few:]
+#     # add the good guess to labels and best
+#     dataAdd(labels, 
+#         dataAdd(best if _ydist(good) < _ydist(best.rows[0]) else rest, 
+#              good))
+#     # if best too big, dump some to rest
+#     while len(best.rows) >= len(labels.rows)**0.5:
+#       _ysort(best)
+#       dataAdd(rest, dataAdd(best, best.rows.pop(-1),-1))
+#   _ysort(labels)
+#   return o(best=best, rest=rest, 
+#            labels=labels.rows, nolabels=nolabels)
 
 # _|_  ._   _    _  
 #  |_  |   (/_  (/_ 
@@ -349,7 +376,7 @@ def tree(data, Klass=Num, Y=None, how=None):
       for how1 in min(hows, key=lambda c: c.div).hows:
         rows1 = [r for r in data.rows if treeSelects(r, *how1)]
         if the.leaf <= len(rows1) < len(data.rows):
-          data.kids += [tree(clone(data,rows1), Klass, Y, how1)]
+          data.kids += [tree(dataClone(data,rows1), Klass, Y, how1)]
   return data
 
 def treeCuts(col, rows, at, Y, Klass):
@@ -509,13 +536,6 @@ def statsCut(groups, eps):
 # _|_       ._    _  _|_  o   _   ._    _ 
 #  |   |_|  | |  (_   |_  |  (_)  | |  _> 
                                                        
-def csv(file):
-  "Iterate over all rows."
-  with open(file,encoding="utf-8") as f:
-    for line in f:
-      if (line := line.split("%")[0]):
-        yield [coerce(val.strip()) for val in line.split(",")]
-
 def has(src, col=None):
   "Summarize src into col (if col is None, them and guess what col to use)."
   for row in src:
@@ -562,7 +582,6 @@ def eg__all() : all_egs(run=True)
 def eg__list(): all_egs()
 
 def eg__the(): print(the)
-def eg__csv(): [print(t) for t in list(csv(the.file))[::40]]
 def eg__sym(): print(has("aaaabbc"))
 def eg__Sym(): s = has("aaaabbc"); assert 0.44 == round(like(s,"a"),2)
 def eg__num(): print(has(random.gauss(10,2) for _ in range(1000)))
@@ -570,25 +589,28 @@ def eg__Num() :
   n = has(random.gauss(10,2) for _ in range(1000))
   assert 0.13 == round(like(n,10.5),2)
 
-def eg__data(): [print(col) for col in Data(csv(the.file)).cols.all]
+def eg__data(): [print(col) for col in dataRead(the.file).cols.all]
 
 def eg__inc():
   "Check i can add/delete rows incrementally."
-  d1 = Data(csv(the.file))
-  d2 = clone(d1)
+  d1 = dataRead(the.file)
+  d2 = dataClone(d1)
   x  = d2.cols.x[1]
   for row in d1.rows:
-    adds(d2,row)
+    dataAdd(d2,row)
     if len(d2.rows)==100:  
       mu1,sd1 = x.mu,x.sd 
+      print(mu1,sd1)
   for row in d1.rows[::-1]:
     if len(d2.rows)==100: 
       mu2,sd2 = x.mu,x.sd
+      print(mu2,sd2)
       assert abs(mu2 - mu1) < 1.01 and abs(sd2 - sd1) < 1.01
       break
+    dataAdd(d2,row,inc=-1,zap=True)
 
 def eg__bayes():
-  data = Data(csv(the.file))
+  data = dataRead(the.file)
   assert all(-30 <= likes(data,t) <= 0 for t in data.rows)
   print(sorted([round(likes(data,t),2) for t in data.rows])[::20])
 
@@ -649,15 +671,15 @@ def eg__diabetes():
 def eg__soybean():  
   show(likeClassifier("../moot/classify/soybean.csv"))
 
-def eg__xdist():
-  data = Data(csv(the.file))
+def eg__distx():
+  data = dataRead(the.file)
   r1= data.rows[0]
   ds= sorted([distx(data,r1,r2) for r2 in data.rows])
   print(', '.join(f"{x:.2f}" for x in ds[::20]))
   assert all(0 <= x <= 1 for x in ds)
 
-def eg__ydist():
-  data = Data(csv(the.file))
+def eg__disty():
+  data = dataRead(the.file)
   data.rows.sort(key=lambda row: disty(data,row))
   assert all(0 <= disty(data,r) <= 1 for r in data.rows)
   print(', '.join(data.cols.names))
@@ -665,10 +687,10 @@ def eg__ydist():
   print("worst4:"); [print("\t",row) for row in data.rows[-4:]]
 
 def eg__irisKpp(): 
-  [print(r) for r in distKpp(Data(csv("../moot/classify/iris.csv")),k=10)]
+  [print(r) for r in distKpp(dataRead("../moot/classify/iris.csv"),k=10)]
 
 def eg__irisK(): 
-  for data in distKmeans(Data(csv("../moot/classify/iris.csv")),k=10):
+  for data in distKmeans(dataRead("../moot/classify/iris.csv"),k=10):
     print(mids(data)) 
 
 def daBest(data,rows=None):
@@ -677,14 +699,14 @@ def daBest(data,rows=None):
   return Y(sorted(rows, key=Y)[0])
 
 def eg__tree():
-  data = Data(csv(the.file))
-  someData= clone(data,
-                  likeGuessing(data,data.rows,"xplor").labels)
+  data = dataRead(the.file)
+  someData= dataClone(data,
+                  acquire(data,data.rows,"xplor").labels)
   print(round(daBest(data),2))
   treeShow(tree(someData))
 
 def eg__fmap():
-  data = Data(csv(the.file))
+  data = dataRead(the.file)
   for few in [32,64,128,256,512]:
     the.Few = few
     print(few)
@@ -693,24 +715,24 @@ def eg__fmap():
 
 def eg__acq():
   print(1)
-  data = Data(csv(the.file))
+  data = dataRead(the.file)
   base = has(disty(data,r) for r in data.rows)
   for few in [15,30,60]:
     the.Few = few
     print(few)
     for acq in ["klass"]: #["xplore", "xploit", "adapt","klass"]:
       the.acq = acq
-      n=has(daBest(data, likeGuessing(data, data.rows).labels) for _ in range(20))
+      n=has(daBest(data, acquire(data, data.rows).labels) for _ in range(20))
       print("\t",the.acq, base.mu, base.lo, n.mu,n.sd)
 
 def eg__rand():
-  data = Data(csv(the.file))
+  data = dataRead(the.file)
   n = has(daBest(data, random.choices(data.rows, k=the.Build)) for _ in range(20))
   print("\t",n.mu,n.sd)
 
 
 def eg__old():
-  data = Data(csv(the.file))
+  data = dataRead(the.file)
   rxs = dict(
              distKpp   = lambda d: distKpp(d, d.rows),
              sway   = lambda d: distFastermap(d, d.rows, sway1=True).labels.rows,
@@ -722,12 +744,12 @@ def eg__old():
 #  196  13                                                                         35      36       35        35      38       43        35      38       70        34       39        100           A
              
 def eg__liking():
-  data = Data(csv(the.file))
+  data = dataRead(the.file)
   rxs = dict(#rand   = lambda d: random.choices(d.rows,k=the.Build),
-             klass = lambda d: likeGuessing(d,d.rows,"klass").labels, #<== klass
-             xploit = lambda d: likeGuessing(d,d.rows,"xploit").labels,
-             xplor = lambda d: likeGuessing(d,d.rows,"xplor").labels, 
-           adapt  = lambda d: likeGuessing(d,d.rows,"adapt").labels
+             klass = lambda d: acquire(d,d.rows,"klass").labels, #<== klass
+             xploit = lambda d: acquire(d,d.rows,"xploit").labels,
+             xplor = lambda d: acquire(d,d.rows,"xplor").labels, 
+           adapt  = lambda d: acquire(d,d.rows,"adapt").labels
              )
   xper1(data,rxs)
 
@@ -737,9 +759,9 @@ def eg__liking():
 
 
 def eg__final():
-  data = Data(csv(the.file))
+  data = dataRead(the.file)
   rxs = dict(rand   = lambda d: random.choices(d.rows,k=the.Build),
-             klass = lambda d: likeGuessing(d,d.rows,"klass").labels, #<== klass
+             klass = lambda d: acquire(d,d.rows,"klass").labels, #<== klass
              sway2  = lambda d: distFastermap(d, d.rows).labels.rows # <== sway2
              )
   xper1(data,rxs)

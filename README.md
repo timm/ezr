@@ -113,36 +113,58 @@ EZR excels at fast model building and external critique—an essential
 
 ## A Quick Demo
 
-Just for a quick over of what EZR can do, suppose we want to configure a database.
-For this example, we will say our
-database should run quickly wihtout burning up too much energy or CPU time
+Just for a quick overview of what EZR can do, suppose we want to configure a database.
+For this example, we want our
+database to run quick, without burning up too much energy or CPU time
 
-Looking in the  database's  compiler control files, we see an overwhelming number of options cliding:
+Looking in the  database's  compiler control files, we see an overwhelming number of options for configuring the database,
+including:
 
 - storage and indexing options dealing with
-  _table\_type, memory\_tables, cached\_tables, small\_cache, large_cache, small_log
-- transaction and locking options that deal with _transcation+control\_ policies and various txc (tranaction control) issues
-like _txc\_mvlocks_, _txc\_mvcc_, _txc\_locks_
+  _table\_type, memory\_tables, cached\_tables, small\_cache, large\_cache, small\_log_;
+- transaction and locking options that deal with _transaction+control\_ policies and various other txc (tranaction ) issues
+  such as  _txc\_mvlocks_, _txc\_mvcc_, and _txc\_locks_
+- Logging and durability options that described options for  _detailed\_logging_ and _write\_delay_
+- Security options such as  _crypt\_aes_ and _crypt\_blowfish_;
+- Compression (which might be enabled or disabled);
+- etc
 
-- Logging and durability:
+Like many developers, you are probably puzzled on how any of these these effect runtimes, cpu, or energy usage. But say you
+had access to a of log of the effects of these optios.
+If so, they you might want to  ask
+questions like:
 
-logging, detailed_logging, no_write_delay
+- What are the values usually seen for our goals (runtimes, cpu and energy usage)?
+- What are the best values ever for those goals?
+- What settings select for those best values?
 
-Security:
+To answer those questions, first you have to check out the log (from the MOOT repository) and our code:
 
-encryption, crypt_aes, crypt_blowfish
+    mkdir demo; cd demo
+    git clone https://github.com/timm/moot # <== data
+    git clone https://github.com/timm/ezr  # <== code
+    cd ezr
+    python3 -B ezr.py -f ../moot/optimize/config/SS-M.csv --tree 
 
-Compression:
-
-compressed_script
-
-sonicert
+SS.M.csv is a comma-seperated fi
 
 he problem of finding and exmaplin the dofference between good deas na dnbad dieas.
 In this apprtciualr example, for a ``good idea'', we suppose we are tweaking the control paraameters
 on how to compile software for a database file. Such compiation is controlled by a Makefile
 cotnaining nmerous choises incuding the whether or not to do 11 things A,B...K.
 SLOC XXX
+
+top4:                                                        Energy-, time-   cpu- 
+         0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,  6.6232 , 248.4, 2.053942
+         0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,  6.6386 , 248.6, 2.042798
+         0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0,  6.6326 , 249.2, 2.011727
+         0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0,  6.6436 , 248.6, 2.069627
+
+worst4:                                                      Energy-, time-  cpu- 
+         0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.6626, 519.8, 14.10719
+         1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1,  16.8008, 518.8, 14.078158
+         1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.743 , 519, 14.148283
+         1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.783 , 518.6, 14.146937
 
 A- =
 
