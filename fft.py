@@ -27,7 +27,8 @@ def Num(at=0,txt=""): return o(at=at,txt=txt,lo=BIG,hi=-BIG,mu=0,n=0)
 def Sym(at=0,txt=""): return o(at=at,txt=txt,has={})
 def Data()          : return o(rows=[], cols=[])
 
-def isSym(col): return "has" in col.__dict__
+def isNum(col) : return "mu"   in col.__dict__
+def isSym(col) : return "has"  in col.__dict__
 def isData(col): return "rows" in col.__dict__
 
 def add(it, v):
@@ -45,7 +46,8 @@ def add(it, v):
   return v
 
 def adds(src,it=None):
-  for x in src: it = it or Num(); add(it,x)
+  it = it or Num()
+  for x in src: add(it,x)
   return it 
   
 #---------------------------------------------------------------------
