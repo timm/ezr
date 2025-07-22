@@ -5,6 +5,7 @@ fft.py, multi objective tree building
    
 Options:  
  -s random seed    seed=1234567891    
+ -d depth of tree  depth=4
  -f data file      file=../moot/regression/auto93.csv   
 """
 from types import SimpleNamespace as o
@@ -21,8 +22,8 @@ def coerce(z):
 the= o(**{k:coerce(v) for k,v in re.findall(r"(\w+)=(\S+)", __doc__)})
 
 #---------------------------------------------------------------------
-BIG = 1e32
-def Num(at=0,txt=""): return o(at=at,txt=txt,lo=BIG, hi= -BIG, mu=0, n=0)
+BIG = math.inf
+def Num(at=0,txt=""): return o(at=at,txt=txt,lo=BIG,hi=-BIG,mu=0,n=0)
 def Sym(at=0,txt=""): return o(at=at,txt=txt,has={})
 def Data()          : return o(rows=[], cols=[])
 
@@ -71,21 +72,24 @@ def dataRead(file):
   return data
 
 #---------------------------------------------------------------------
-def Tree(data, depth=4):
+def Tree(data, depth=the.depth):
+  print("\n")
   def _go(data1, d):  
     sub=False
-    if d > 0 and len(data1.rows)>2:
+    print('|.. '* d, len(data1.rows))
+    if d <= the.depth and len(data1.rows)>2:
       if cuts := [cut for col in data1.cols.x
                       for cut in treeCuts(data1, col, data1.rows)]:
         best, *_, worst = sorted(cuts)
-        for _, c, (xlo, xhi), leaf in [best, worst]:
+        for how,(_, c, (xlo, xhi), leaf) in enumerate([worst,best]):
           yes, no = treeKids(data1.rows, c, xlo, xhi)
-          for subtree in _go(dataClone(data1, no), d - 1):
+          for subtree in _go(dataClone(data1, no), d + 1):
             sub=True
-            yield o(c=c, lo=xlo, hi=xhi, left=leaf, right=subtree)
+            yield o(c=c, lo=xlo, hi=xhi, left=leaf,
+                    bias=how,right=subtree)
     if not sub:
       yield adds([row[data.cols.klass.at] for row in data1.rows])
-  yield from _go(data, depth)
+  yield from _go(data, 1)
 
 def treeCuts(data, col, rows):
   ys = {}
@@ -109,15 +113,15 @@ def treeKids(rows, c, xlo, xhi):
   (yes if len(yes) > len(no) else no).extend(maybe)
   return yes, no
 
-def treeShow(data, t):
-  if not hasattr(t, "c"): print(f"{t.mu:.2f}")
+def treeShow(data, t,last=1):
+  if not hasattr(t, "c"): print(f"{1-last} : {t.n:>4} : {t.mu:.2f}")
   else:
     name = data.cols.all[t.c].txt
     if   t.lo == t.hi:      txt= f"{name} == {t.hi}"
-    elif abs(t.lo) == -BIG: txt= f"{name} <= {t.hi:.3f}"
-    else:                   txt= f"{name} >= {t.lo:.3f}"
-    print(f"if {txt} then {t.left.mu} else")
-    treeShow(data,t.right) 
+    elif abs(t.hi) == BIG : txt= f"{name} >= {t.lo:.3f}"
+    else:                   txt= f"{name} <= {t.hi:.3f}"
+    print(f"{t.bias} : {t.left.n:>4} : if {txt} then {t.left.mu:.3f} else")
+    treeShow(data,t.right,t.bias) 
 
 def treeTune(trees, rows):
   def _predict(t, row):
@@ -125,7 +129,9 @@ def treeTune(trees, rows):
       t = t.left if row[t.c]=="?" or t.lo<=row[t.c]<=t.hi else t.right
     return t.mu
   def _score(t):
-    return sum((row[-1]-_predict(t,row))**2 for row in rows) / len(rows)
+    tmp=sum(abs(row[-1]-_predict(t,row)) for row in rows) / len(rows)
+    print(f"{tmp:.3f}")
+    return tmp
   return min(trees, key=_score)
 
 #---------------------------------------------------------------------
