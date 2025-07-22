@@ -18,9 +18,9 @@ def coerce(z):
       z = z.strip()
       return {'True':True, 'False':False}.get(z,z)
 
-the = o( **{k: coerce(v) for k,v in re.findall(r"(\w+)=(\S+)", __doc__)} ) 
+the= o(**{k:coerce(v) for k,v in re.findall(r"(\w+)=(\S+)", __doc__)})
 
-#----------------------------------------------------------------------------------
+#---------------------------------------------------------------------
 BIG = 1e32
 def Num(): return o(lo = BIG, hi = -BIG, mu=0, m2=0, n=0, sd=0)
 def Sym(): return {}
@@ -39,14 +39,15 @@ def add(col, v):
     col.sd  = (col.m2 / (col.n - 1 + 1E-32))**0.5
   return v
 
-#----------------------------------------------------------------------------------
+#---------------------------------------------------------------------
 def Data(src=[]):
   data = o(rows=[], cols=None)
   for row in src: dataAdd(data, row)
   return data
 
 def dataAdd(data, row):
-  if data.cols : data.rows.append([add(col,row[c]) for c,col in data.cols.all])
+  if data.cols : data.rows.append([add(col,row[c]) 
+                                   for c,col in data.cols.all])
   else: data.cols = dataHeader(row)
 
 def dataClone(data, rows=[]):
@@ -70,13 +71,13 @@ def dataRead(file):
       if line and not line.startswith("#"):
         dataAdd(data, [coerce(x) for x in line.split(",")])
   return data
-
-#-------------------------------------------------------------------------------
+
+#---------------------------------------------------------------------
 def Tree(data, depth=4):
   def _go(data1, d):  
     if d > 0 and data1.rows:
       if cuts := [cut for c, col in data1.cols.x.items()
-                      for cut    in treeCuts(data1, col, c, data1.rows)]:
+                      for cut in treeCuts(data1, col, c, data1.rows)]:
         best, *_, worst = sorted(cuts)
         for _, c, (xlo, xhi), leaf in [best, worst]:
           yes, no = treeKids(data1.rows, c, xlo, xhi)
@@ -92,10 +93,11 @@ def treeCuts(data, col, c, rows):
     k = x if isSym(col) else x <= col.mu  
     if k not in ys: ys[k] = Num()
     add(ys[k], y)
-  return [(ys[k].mu,
-           c,
-           (k,k) if isSym(col) else ((-BIG,col.mu) if k else (col.mu,BIG)),
-           ys[k]) for k in ys]
+  return [
+   (ys[k].mu,
+    c,
+    (k,k) if isSym(col) else ((-BIG,col.mu) if k else (col.mu,BIG)),
+    ys[k]) for k in ys]
  
 def treeKids(rows, c, xlo, xhi):
   yes, no, maybe = [], [], []
@@ -111,20 +113,20 @@ def treeShow(data, t, pre=""):
   else:
     name = data.cols.names[t.c]
     if abs(t.lo) < BIG: treeShow(data, t.right, 
-                                 f"{pre}if {name} < {int(t.lo)} then ")
+                            f"{pre}if {name} < {int(t.lo)} then ")
     if abs(t.hi) < BIG: treeShow(data, t.left,  
-                                 f"{pre}else if {name} >= {int(t.hi)} then ")
+                            f"{pre}else if {name} >= {int(t.hi)} then ")
 
 def treeTune(trees, rows):
   def _predict(t, row):
     while hasattr(t, "c"):
-      t = t.left if row[t.c] == "?" or t.lo <= row[t.c] <= t.hi else t.right
+      t = t.left if row[t.c]=="?" or t.lo<=row[t.c]<=t.hi else t.right
     return t.mu
   def _score(t):
-    return sum((r[-1] - _predict(t, row))**2 for row in rows) / len(rows)
+    return sum((r[-1]-_predict(t,row))**2 for row in rows) / len(rows)
   return min(trees, key=_score)
 
-#-------------------------------------------------------------------------------
+#---------------------------------------------------------------------
 def eg_h(): print(__doc__)
 
 def eg__eg():
