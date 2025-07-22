@@ -129,14 +129,50 @@ including:
 - Compression (which might be enabled or disabled);
 - etc
 
-Like many developers, you are probably puzzled on how any of these these effect runtimes, cpu, or energy usage. But say you
-had access to a of log of the effects of these optios.
-If so, they you might want to  ask
-questions like:
+Like many people, you are probably puzzled on how any of these
+these effect runtimes, cpu, or energy usage. 
+But suppose you had access
+to a of log of the effects of these option.
+We could  sort the log such that the good rows are first and
+the bad rows are last. In the following, all the 0,1 show it if used or ignored
+any of the options listed above:
 
-- What are the values usually seen for our goals (runtimes, cpu and energy usage)?
-- What are the best values ever for those goals?
-- What settings select for those best values?
+                                                        Energy-, time-   cpu- 
+    0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,  6.6232 , 248.4, 2.053942
+    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,  6.6386 , 248.6, 2.042798
+    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0,  6.6326 , 249.2, 2.011727
+    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0,  6.6436 , 248.6, 2.069627
+ 
+    [skipping 800 lines...]
+
+    0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.6626, 519.8, 14.10719
+    1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1,  16.8008, 518.8, 14.078158
+    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.743 , 519, 14.148283
+    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.783 , 518.6, 14.146937
+
+
+ALl these rows show what happens when we run the same benchmark suite of tests.
+Observe how:
+
+- the four first rows have low energy, runtimes, and cpu;
+- while the final four rows run much slower and use more energy and cpu.
+
+So (begin sarcasm), all we have to do is just use the control options seen in the best rows,
+and avoid the options seen in the last rows. But here are so many things wrong with that last sentence:
+
+- Firstly, as shown above, some columns seem to be using the same settings in the best and worst rows.
+  So we really need to be looking at _contrast sets_; i.e. things that are usually seen in best **and**
+  not seen in rest. What EZR does it builds two predictive models: one for the best examples and one for the rest.
+  These models check candidate configurations before we waste time running bad ones.
+  Each of these models guesses how likely a candidate is _best_ or _rest_. It then only runs
+  candidates where _likelihood(best)_ &gt; _likelihood(rest)_.
+- Secondly, and this one is a huge problems,  it can be hard to access this log. Here, we got lucky: some
+  researcehrs in Europe were kind enough to melt down their CPU farm and run nearly 1000 configurations.
+  In practice, we it is often easy to know the space of control options, but very hard to access
+  all the effects of thise opions. 
+
+
+
 
 To answer those questions, first you have to check out the log (from the MOOT repository) and our code:
 
@@ -154,17 +190,6 @@ on how to compile software for a database file. Such compiation is controlled by
 cotnaining nmerous choises incuding the whether or not to do 11 things A,B...K.
 SLOC XXX
 
-top4:                                                        Energy-, time-   cpu- 
-         0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,  6.6232 , 248.4, 2.053942
-         0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,  6.6386 , 248.6, 2.042798
-         0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0,  6.6326 , 249.2, 2.011727
-         0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0,  6.6436 , 248.6, 2.069627
-
-worst4:                                                      Energy-, time-  cpu- 
-         0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.6626, 519.8, 14.10719
-         1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1,  16.8008, 518.8, 14.078158
-         1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.743 , 519, 14.148283
-         1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.783 , 518.6, 14.146937
 
 A- =
 
