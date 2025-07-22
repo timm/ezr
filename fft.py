@@ -22,7 +22,7 @@ the= o(**{k:coerce(v) for k,v in re.findall(r"(\w+)=(\S+)", __doc__)})
 
 #---------------------------------------------------------------------
 BIG = 1e32
-def Num(): return o(lo = BIG, hi = -BIG, mu=0, m2=0, n=0, sd=0)
+def Num(): return o(lo=BIG, hi= -BIG, mu=0, n=0)
 def Sym(): return {}
 def isSym(col): return type(col) is dict
 
@@ -33,10 +33,8 @@ def add(col, v):
     col.n  += 1
     delta   = v - col.mu
     col.mu += delta / col.n
-    col.m2 += delta * (v - col.mu)
     col.lo  = min(col.lo, v)
     col.hi  = max(col.hi, v)
-    col.sd  = (col.m2 / (col.n - 1 + 1E-32))**0.5
   return v
 
 #---------------------------------------------------------------------
@@ -59,7 +57,6 @@ def dataHeader(names):
     cols.all += [Num() if s[0].isupper() else Sym()]
     if s[-1] == "X": continue
     if s[-1] == "!": cols.klass = c
-    if s[-1] == "-": cols.all[-1].goal = 0
     (cols.y if s[-1] in "!-+" else cols.x)[c] = cols.all[-1]
   return cols
 
@@ -107,15 +104,15 @@ def treeKids(rows, c, xlo, xhi):
   (yes if len(yes) > len(no) else no).extend(maybe)
   return yes, no
 
-def treeShow(data, t, pre=""):
-  if not t: return
-  if not hasattr(t, "c"): print(f"{pre}{t.mu:.2f}")
+def treeShow(data, t):
+  if not hasattr(t, "c"): print(f"{t.leaf.mu:.2f}")
   else:
     name = data.cols.names[t.c]
-    if abs(t.lo) < BIG: treeShow(data, t.right, 
-                            f"{pre}if {name} < {int(t.lo)} then ")
-    if abs(t.hi) < BIG: treeShow(data, t.left,  
-                            f"{pre}else if {name} >= {int(t.hi)} then ")
+    if   t.lo == t.hi:      txt= f"{pre}if {name} == {int(t.hi)}")
+    elif abs(t.lo) == -BIG: txt= f"{pre}if {name} <= {int(t.hi)}")
+    else:                   txt= f"{pre}else if {name} >= {int(t.lo)}")
+    print(f"if {txt} then {t.leaf.mu} else")
+    treeShow(data,right) 
 
 def treeTune(trees, rows):
   def _predict(t, row):
