@@ -5,7 +5,7 @@ fft.py, multi objective tree building
    
 Options:  
  -s random seed    seed=1234567891    
- -f data file      file=../moot/optimize/misc/auto93.csv   
+ -f data file      file=../moot/regression/auto93.csv   
 """
 from types import SimpleNamespace as o
 import random, math, sys, re
@@ -30,6 +30,7 @@ def add(col, v):
   if v == "?": return v
   if isSym(col): col[v] = 1 + col.get(v, 0)
   else:
+    print(col)
     col.n  += 1
     delta   = v - col.mu
     col.mu += delta / col.n
@@ -44,20 +45,21 @@ def Data(src=[]):
   return data
 
 def dataAdd(data, row):
-  if data.cols : data.rows.append([add(col,row[c]) 
-                                   for c,col in data.cols.all])
+  if data.cols : 
+     data.rows.append([add(col,row[c]) 
+                       for c,col in data.cols.all.items()])
   else: data.cols = dataHeader(row)
 
 def dataClone(data, rows=[]):
   return Data([data.cols.names] + rows)
 
 def dataHeader(names):
-  cols = o(names=names, all=[], x={}, y={}, klass=None)
+  cols = o(names=names, all={}, x={}, y={}, klass=None)
   for c,s in enumerate(names):
-    cols.all += [Num() if s[0].isupper() else Sym()]
+    col = cols.all[c] = Num() if s[0].isupper() else Sym()
     if s[-1] == "X": continue
     if s[-1] == "!": cols.klass = c
-    (cols.y if s[-1] in "!-+" else cols.x)[c] = cols.all[-1]
+    (cols.y if s[-1] in "!-+" else cols.x)[c] = col
   return cols
 
 def dataRead(file):
@@ -91,8 +93,8 @@ def treeCuts(data, col, c, rows):
     if k not in ys: ys[k] = Num()
     add(ys[k], y)
   return [
-   (ys[k].mu,
-    c,
+   (ys[k].mu, # what to sort on
+    c,        
     (k,k) if isSym(col) else ((-BIG,col.mu) if k else (col.mu,BIG)),
     ys[k]) for k in ys]
  
@@ -108,9 +110,9 @@ def treeShow(data, t):
   if not hasattr(t, "c"): print(f"{t.leaf.mu:.2f}")
   else:
     name = data.cols.names[t.c]
-    if   t.lo == t.hi:      txt= f"{pre}if {name} == {int(t.hi)}")
-    elif abs(t.lo) == -BIG: txt= f"{pre}if {name} <= {int(t.hi)}")
-    else:                   txt= f"{pre}else if {name} >= {int(t.lo)}")
+    if   t.lo == t.hi:      txt= f"{pre}if {name} == {int(t.hi)}"
+    elif abs(t.lo) == -BIG: txt= f"{pre}if {name} <= {int(t.hi)}"
+    else:                   txt= f"{pre}else if {name} >= {int(t.lo)}"
     print(f"if {txt} then {t.leaf.mu} else")
     treeShow(data,right) 
 
@@ -127,7 +129,7 @@ def treeTune(trees, rows):
 def eg_h(): print(__doc__)
 
 def eg__eg():
-  data = dataRead(file)
+  data = dataRead(the.file)
   trees = list(Tree(data))
   best = treeTune(trees, data.rows)
   treeShow(data, best)
@@ -139,4 +141,4 @@ if __name__ == "__main__":
         the.__dict__[k] = coerce(sys.argv[n+1])
     if (fn := globals().get(f"eg{arg.replace('-', '_')}")):
       random.seed(the.seed)
-      fn() $ sddssffsdfsd 
+      fn() 
