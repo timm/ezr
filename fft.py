@@ -98,10 +98,11 @@ def treeCuts(data, col, c, rows):
            ys[k]) for k in ys]
  
 def treeKids(rows, c, xlo, xhi):
-  yes, no = [], []
+  yes, no, maybe = [], [], []
   for row in rows:
-    if (v := row[c]) == "?": yes.append(row); no.append(row)
-    else: (yes if xlo <= v <= xhi else no).append(row)
+    v=row[c]
+    (maybe if v=="?" else yes if xlo <= v <=xhi else no).append(row)
+  (yes if len(yes) > len(no) else no).extend(maybe)
   return yes, no
 
 def treeShow(data, t, pre=""):
@@ -139,4 +140,4 @@ if __name__ == "__main__":
         the.__dict__[k] = coerce(sys.argv[n+1])
     if (fn := globals().get(f"eg{arg.replace('-', '_')}")):
       random.seed(the.seed)
-      fn()
+      fn() $ sddssffsdfsd 
