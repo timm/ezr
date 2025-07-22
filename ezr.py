@@ -276,7 +276,7 @@ def acquire(data, rows, acq=None):
       dataAdd(rest, dataAdd(best, best.rows.pop(-1), -1))
 
   labels.rows.sort(key=lambda r: disty(labels, r))
-  return o(labels=labels.rows, best=best, rest=rest, nolabels=nolabels)
+  return o(labels=labels.rows,best=best,rest=rest,nolabels=nolabels)
 
 def acquireScore(acq, best, rest, labels):
   n = len(labels.rows)
@@ -292,66 +292,18 @@ def acquireScore(acq, best, rest, labels):
 def acquirePick(acqFun, nolabels):
   scored = sorted(nolabels[:the.Few*2], key=acqFun, reverse=True)
   good, *nogood = scored
-  nolabels = nogood[:the.Few] + nolabels[the.Few*2:] + nogood[the.Few:]
+  nolabels= nogood[:the.Few] + nolabels[the.Few*2:] + nogood[the.Few:]
   return good, nolabels
 
 def acquirePickKlass(best, rest, labels, nolabels):
   random.shuffle(nolabels)
   good, *nolabels = nolabels
   for i, row in enumerate(nolabels[:the.Few*2]):
-    if likes(best, row, 2, len(labels.rows)) > likes(rest, row, 2, len(labels.rows)):
+    if ( likes(best,row,2,len(labels.rows)) >
+         likes(rest,row,2,len(labels.rows)) ):
       good = nolabels.pop(i); break
   return good, nolabels
 
-
-# def likeGuessing(data, rows,acq=None):
-#   "Label promising rows, "
-#   acq = acq or the.acq
-#   def _acquire(row): # Large numbers are better
-#     nall =len(labels.rows)
-#     b, r = likes(best, row, 2, nall), likes(rest, row, 2, nall)
-#     b, r = math.e**b, math.e**r
-#     if acq=="bore": return (b*b) / (r+1e-32)
-#     p    = n2 / the.Build
-#     q    = {"xploit": 0, "xplor": 1}.get(acq, 1 - p)
-#     return (b + r*q) / abs(b*q - r + 1E-32)
-#
-#   nolabels = rows[:]
-#   random.shuffle(nolabels)
-#   n1,n2    = round(the.Any**0.5), the.Any
-#   labels   = dataClone(data, nolabels[:n2])
-#   _ydist   = lambda row: disty(labels, row) # smaller is better
-#   _ysort   = lambda d: sorted(d.rows, key=lambda r: disty(d,r))
-#
-#   best     = dataClone(data, nolabels[:n1]) # subset of labels
-#   rest     = dataClone(data, nolabels[n1:n2]) # rest = labels - best
-#   nolabels = nolabels[n2:]
-#
-#   _ysort(best)
-#   while len(nolabels) > 2 and len(labels.rows) < the.Build:
-#     # try to guess something good
-#     if acq=="klass":
-#       random.shuffle(nolabels)
-#       nall =len(labels.rows)
-#       good,*nolabels = nolabels
-#       for i,row in enumerate(nolabels):
-#         if i > the.Few*2: break
-#         if likes(best, row, 2, nall) > likes(rest, row, 2, nall):
-#           good = nolabels.pop(i); break
-#     else: # comment
-#         good,*nogood = sorted(nolabels[:the.Few*2], key=_acquire,reverse=True) # best at start
-#         nolabels = nogood[:the.Few] + nolabels[the.Few*2:] + nogood[the.Few:]
-#     # add the good guess to labels and best
-#     dataAdd(labels, 
-#         dataAdd(best if _ydist(good) < _ydist(best.rows[0]) else rest, 
-#              good))
-#     # if best too big, dump some to rest
-#     while len(best.rows) >= len(labels.rows)**0.5:
-#       _ysort(best)
-#       dataAdd(rest, dataAdd(best, best.rows.pop(-1),-1))
-#   _ysort(labels)
-#   return o(best=best, rest=rest, 
-#            labels=labels.rows, nolabels=nolabels)
 
 # _|_  ._   _    _  
 #  |_  |   (/_  (/_ 
