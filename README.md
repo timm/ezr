@@ -122,7 +122,7 @@ including:
 
 - storage and indexing options dealing with
   _table\_type, memory\_tables, cached\_tables, small\_cache, large\_cache, small\_log_;
-- transaction and locking options that deal with _transaction+control\_ policies and various other txc (tranaction ) issues
+- transaction and locking options that deal with _transaction\_control\_ policies and various other txc (transaction ) issues
   such as  _txc\_mvlocks_, _txc\_mvcc_, and _txc\_locks_
 - Logging and durability options that described options for  _detailed\_logging_ and _write\_delay_
 - Security options such as  _crypt\_aes_ and _crypt\_blowfish_;
