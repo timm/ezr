@@ -219,38 +219,75 @@ _without_ having access to all those effects. If some control setting
 looks promising, EZR can ask for details  on its associated effects.
 But for all the above reasons, those questions should only be asked a few times.
 
-EZR uses a simple A-B-C strategy to find good control options while
-asking the fewest questions.
-_A_ is the first step and this is short for ``ask anything''.
-EZE picks  $A$
+EZR works using  a simple A-B-C strategy.
+_A_ is the first step and this is short for "ask anything".
+EZE picks  _A_
 control settings  (selected at random), then sorts them by ther effects
 into
 two _best_ and the two _rest_ rows.
-At this point EZr's memory contains (a) a few rows with labelled effects;
-and (b) many more rows 
+At this point EZr's memory contains (i) a few rows with labelled effects;
+and (ii) many more rows 
 showing many control options, but without any effect information. For _A=4_,
 this looks
 like this:
 
-                                                     Energy-, time-,  cpu- 
-    0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,   6.6, 248.4,  2.1 <== Best1
-    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,   6.6, 248.6,  2.0 <== Best2
-    0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.7, 519.8, 14.1 <== Rest1
-    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.8, 518.6, 14.1 <== Rest2
-    0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,     ?,     ?,    ?
-    1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1,     ?,     ?,    ?
-    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,     ?,     ?,    ?
-    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,     ?,     ?,    ?
 
-    [skipping 800 lines...]
+    2 Best rows:
+                                                         Energy-, time-,  cpu- 
+        0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,   6.6, 248.4,  2.1 <== Best1
+        0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,   6.6, 248.6,  2.0 <== Best2
+    
+    2 Rest rows:
+    
+        0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.7, 519.8, 14.1 <== Rest1
+        1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.8, 518.6, 14.1 <== Rest2
+    
+    Many more rows, with nothing known about their effects:
+    
+        0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,     ?,     ?,    ?
+        1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1,     ?,     ?,    ?
+        1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,     ?,     ?,    ?
+        1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,     ?,     ?,    ?
+    
+        [skipping 800 lines...]
+    
+Next, in the _B_ (for "build") phase, we label up to _B_ rows in order
+to "build" models. "Labeling" is the process of taking some options, and
+finding out the effects. This can be done many ways including running some code,
+go out and take a look and some specific effect, or manual annotation (i.e. asking a subject matter expert).
 
-Next, for anything not yet labelled, EZR looks for one row that is
+"Building" is an incremental process.
+For anything not yet labelled, EZR looks for one row that is
 more more likely to be _best_,
 then _rest_. This labelled and sorted into _best_ or  _rest_ rows.
 If _best_ ever grows in size more than the square root of the number of labels,
-then the worst _best_ row is jumped over to _rest_. In this way, _best_ 
-progressively contains more and more of the better rows. 
+then the worst _best_ row is jumped over to _rest_ (in this way, _best_ 
+progressively contains more and more of the better rows). After one more label
+is collected, EZR's emmory looks like this (note that five thigns are labelled
+and divided into 2 best and 3 rest).
+)
 
+
+    2 Best rows:
+                                                         Energy-, time-,  cpu- 
+        0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,   6.6, 248.4,  2.1 <== Best1
+        0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,   6.6, 248.6,  2.0 <== Best2
+    
+    3 Rest rows:
+    
+        0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0,   6.6, 249.2,  2.0 <== Rest1
+        0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.7, 519.8, 14.1 <== Rest2
+        1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.8, 518.6, 14.1 <== Rest3
+    
+    Many more rows, with nothing known about their effects:
+    
+        0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,     ?,     ?,    ?
+        1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1,     ?,     ?,    ?
+        1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,     ?,     ?,    ?
+        1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,     ?,     ?,    ?
+    
+        [skipping 800 lines...]
+    
 EZR repeats this, a few dozen times, to generate a few dozen labelled rows. This
 is given to a tree learner that generates:
     

@@ -379,12 +379,19 @@ policies and various other txc (transaction ) issues such as
 <li>etc</li>
 </ul>
 <p>Like many people, you are probably puzzled on how any of these these
-effect runtimes, cpu, or energy usage. But suppose you had access to a
-of log of the effects of these option. We could sort the log such that
-the good rows are first and the bad rows are last. In the following, all
-the 0,1 show it if used or ignored any of the options listed above:</p>
+effect runtimes, cpu, or energy usage. In an ideal world, some AI tool
+could help by learning from a large log that shows what options lead to
+what effects. All the <em>control options</em> are shown at left (these
+are all the 0,1s) and the <em>effects</em> are shown at right
+(<em>energy, time, cpu</em>). For demonstration purposes the rows are
+sorted:</p>
+<ul>
+<li>The four first rows have low energy, runtimes, and cpu;</li>
+<li>While the final four rows run much slower and use more energy and
+cpu.</li>
+</ul>
 <div class="sourceCode" id="cb1"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>                                                 Energy<span class="op">-</span>, time<span class="op">-</span>,  cpu<span class="op">-</span> </span>
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>                                                 Energy<span class="op">-</span>, time<span class="op">-</span>,t   cpu<span class="op">-</span> </span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.4</span>,  <span class="fl">2.1</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.6</span>,  <span class="fl">2.0</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">249.2</span>,  <span class="fl">2.0</span></span>
@@ -396,71 +403,47 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a hr
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.8</span>, <span class="fl">518.8</span>, <span class="fl">14.1</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.7</span>, <span class="fl">519.0</span>, <span class="fl">14.1</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.8</span>, <span class="fl">518.6</span>, <span class="fl">14.1</span></span></code></pre></div>
-<p>ALl these rows show what happens when we run the same benchmark suite
-of tests. The <em>control options</em> are shown at left (these are all
-the 0,1s) and the <em>effects</em> are shown at right (<em>energy, time,
-cpu</em>). Observe how:</p>
-<ul>
-<li>the four first rows have low energy, runtimes, and cpu;</li>
-<li>while the final four rows run much slower and use more energy and
-cpu.</li>
-</ul>
-<p>So (begin sarcasm), all we have to do is use the control options from
-the best rows. But here are so many things wrong with doing that.
-Firstly, as shown above, some columns seem to be using the same settings
-in the best and worst rows. So we really need to be looking at
-<em>contrast sets</em>; i.e. things that are usually seen in best
-<strong>and</strong> not seen in rest. What EZR does it builds two
-predictive models: one for the best examples and one for the rest. These
-models check candidate configurations before we waste time running bad
-ones. Each of these models guesses how likely a candidate is
-<em>best</em> or <em>rest</em>. It then only runs candidates where
-<em>likelihood(best)</em> &gt; <em>likelihood(rest)</em>.</p>
-<p>Secondly, and this one is a huge problem, it can be hard to access a
-large log of data showing the control options <strong>and</strong> their
-effects. In this example, we got lucky: some researchers in Europe were
-kind enough to melt down their CPU farm and run nearly 1000
-configurations. In practice, this rarely happens. For one thing, it can
-be slow, expensive, or impossible to run a large number of
-benchmarks.</p>
+<p>The problem here is that real-wrold examples do not come with lots of
+accurate labels. For one thing, it can be slow, expensive, or impossible
+to run a large number of benchmarks.</p>
 <ul>
 <li>Some benchmarks are so CPU expensive that we cannot run more a few
 dozen.</li>
 <li>Some models (and their associated data collection and
 pre-processing) are so expensive to run more than a few times.</li>
-<li>Some data sets measure the effects of their control variables using
-data collected from the field. For anything associated with data from
-communities of humans, it can be impossible to ask (say) a software
-development team to reset and rebuidl from scratch their entire product
-using diffeernt tools.</li>
+<li>For any data discussing data from communities of humans, it can be
+impossible to ask (say) a software development team to reset and rebuild
+from scratch their entire product using different options.</li>
 </ul>
 <p>For this reason, SE makes extensive use of manual annotation
 methods<a href="#fn13" class="footnote-ref" id="fnref13"
 role="doc-noteref"><sup>13</sup></a>, i.e. some subejct matter expert
 makes up values for the effects columns within a data set. But manual
-annocation can be both be expensive<a href="#fn14" class="footnote-ref"
+annotation can be both be expensive<a href="#fn14" class="footnote-ref"
 id="fnref14" role="doc-noteref"><sup>14</sup></a> and error prone<a
 href="#fn15" class="footnote-ref" id="fnref15"
-role="doc-noteref"><sup>15</sup></a>. Some resarechers have recently
-turned to large language models to automate that kind of reasoning, with
-only mixed resuts. In one recent detailed study on four differnt SE
-domains. Ahmed et al.<a href="#fn16" class="footnote-ref" id="fnref16"
-role="doc-noteref"><sup>16</sup></a> concluded that these large language
-models should be used as conditional collaborators rather than drop-in
-replacements for human annotators sicne their their utility depends on
-careful deployment, the use of confidence thresholds, and restriction to
-tasks with well-structured, repetitive data.</p>
-<p>To EZR’s task is to find control options that lead to the better
+role="doc-noteref"><sup>15</sup></a>. To avoid that problem, some
+researchers have recently turned to large language models to automate
+that kind of reasoning, with only mixed resuts. That research concluded
+that AI tools cannot be used as drop-in replacements for human
+annotators sicne their their utility depends on careful deployment, the
+use of confidence thresholds, and restriction to tasks with
+well-structured, and repetitive data<a href="#fn16" class="footnote-ref"
+id="fnref16" role="doc-noteref"><sup>16</sup></a></p>
+<p>So EZR’s task is to find control options that lead to the better
 effects, <em>without</em> having access to all those effects. If some
-control setting looks promising, it can ask that someone finds out its
-assocaited effects. But for all the above reasons, it really needs to
-ask the fewest number of times.</p>
-<p>To achieve this magic, EZR uses active learning. Four control
-settings are randomly selected, their effects accessed, then sorted into
-the two <em>best</em> and the two <em>rest</em> rows. At this point
-EZr’s memory contains a few rows with labelled effects; and many more
-rows where we know what control optinons might be set, but we do not
-know their effects:</p>
+control setting looks promising, EZR can ask for details on its
+associated effects. But for all the above reasons, those questions
+should only be asked a few times.</p>
+<p>EZR uses a simple A-B-C strategy to find good control options while
+asking the fewest questions. <em>A</em> is the first step and this is
+short for ``ask anything’’. EZE picks <span
+class="math inline"><em>A</em></span> control settings (selected at
+random), then sorts them by ther effects into two <em>best</em> and the
+two <em>rest</em> rows. At this point EZr’s memory contains (a) a few
+rows with labelled effects; and (b) many more rows showing many control
+options, but without any effect information. For <em>A=4</em>,
+thishlooks like this:</p>
 <div class="sourceCode" id="cb4"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>                                                 Energy<span class="op">-</span>, time<span class="op">-</span>,  cpu<span class="op">-</span> </span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.4</span>,  <span class="fl">2.1</span> <span class="op">&lt;==</span> Best1</span>
@@ -492,7 +475,7 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a hr
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fl">0.00</span>   <span class="dv">96</span>   <span class="dv">11</span>    <span class="op">|</span>  <span class="op">|</span>  small_log <span class="op">==</span> <span class="dv">0</span></span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="fl">0.00</span>   <span class="dv">97</span>    <span class="dv">6</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  logging <span class="op">==</span> <span class="dv">0</span></span>
 <span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fl">0.00</span>   <span class="dv">98</span>    <span class="dv">5</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  txc_mvlocks <span class="op">==</span> <span class="dv">0</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="fl">0.00</span>   <span class="dv">99</span>    <span class="dv">2</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  no_write_delay <span class="op">==</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="fl">0.00</span>   <span class="dv">99</span>    <span class="dv">2</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  no_write_delay <span class="op">==</span> <span class="dv">0</span><span class="op">;</span>   <span class="op">&lt;====</span> LEAF <span class="co">#1</span></span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fl">0.00</span>   <span class="dv">97</span>    <span class="dv">3</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  no_write_delay <span class="op">==</span> <span class="dv">1</span></span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="fl">0.00</span>   <span class="dv">97</span>    <span class="dv">2</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  encryption <span class="op">==</span> <span class="dv">1</span><span class="op">;</span></span>
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fl">0.01</span>   <span class="dv">95</span>    <span class="dv">5</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  logging <span class="op">==</span> <span class="dv">1</span></span>
