@@ -137,43 +137,166 @@ We could  sort the log such that the good rows are first and
 the bad rows are last. In the following, all the 0,1 show it if used or ignored
 any of the options listed above:
 
-                                                        Energy-, time-   cpu- 
-    0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,  6.6232 , 248.4, 2.053942
-    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,  6.6386 , 248.6, 2.042798
-    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0,  6.6326 , 249.2, 2.011727
-    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0,  6.6436 , 248.6, 2.069627
- 
+                                                     Energy-, time-,  cpu- 
+    0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,   6.6, 248.4,  2.1
+    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,   6.6, 248.6,  2.0
+    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0,   6.6, 249.2,  2.0
+    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0,   6.6, 248.6,  2.1
+
     [skipping 800 lines...]
 
-    0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.6626, 519.8, 14.10719
-    1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1,  16.8008, 518.8, 14.078158
-    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.743 , 519, 14.148283
-    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.783 , 518.6, 14.146937
+    0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.7, 519.8, 14.1
+    1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1,  16.8, 518.8, 14.1
+    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.7, 519.0, 14.1
+    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.8, 518.6, 14.1
+
 
 
 ALl these rows show what happens when we run the same benchmark suite of tests.
+The _control options_ are shown at left (these are all the 0,1s) and the _effects_
+are shown at right (_energy, time, cpu_).
 Observe how:
 
 - the four first rows have low energy, runtimes, and cpu;
 - while the final four rows run much slower and use more energy and cpu.
 
-So (begin sarcasm), all we have to do is just use the control options seen in the best rows,
-and avoid the options seen in the last rows. But here are so many things wrong with that last sentence:
-
-- Firstly, as shown above, some columns seem to be using the same settings in the best and worst rows.
+So (begin sarcasm), all we have to do is use the control options from  the best rows.
+But here are so many things wrong with doing that. 
+Firstly, as shown above, some columns seem to be using the same settings in the best and worst rows.
   So we really need to be looking at _contrast sets_; i.e. things that are usually seen in best **and**
   not seen in rest. What EZR does it builds two predictive models: one for the best examples and one for the rest.
   These models check candidate configurations before we waste time running bad ones.
   Each of these models guesses how likely a candidate is _best_ or _rest_. It then only runs
   candidates where _likelihood(best)_ &gt; _likelihood(rest)_.
-- Secondly, and this one is a huge problems,  it can be hard to access this log. Here, we got lucky: some
-  researcehrs in Europe were kind enough to melt down their CPU farm and run nearly 1000 configurations.
-  In practice, we it is often easy to know the space of control options, but very hard to access
-  all the effects of thise opions. 
+
+Secondly, and this one is a huge problem,  it can be hard to access a large log
+of data showing the control options **and** their effects.
+In this example, we got lucky: some
+  researchers in Europe were kind enough to melt down their CPU farm and run nearly 1000 configurations.
+  In practice, this rarely happens. For one thing, it can be slow, expensive,
+  or impossible to run a large number of benchmarks.
+
+- Some benchmarks are so CPU expensive that we cannot run more a few dozen.
+- Some models (and their associated data collection and pre-processing) are so expensive to run more than a few times.
+- Some data sets measure the effects of their control variables using data collected from the field. For anything
+  associated with data from communities of humans, it can be impossible to ask (say) a software development team
+  to reset and rebuidl from scratch their entire product using diffeernt tools.
+
+For this reason, SE makes extensive use of manual annotation methods[^ahmed25],  i.e. some subejct matter
+expert
+makes up values for the effects columns within a data set.
+  But manual annocation
+  can be both be  expensive[^costly] and error prone[^error]. Some resarechers have recently turned to large
+  language models to automate that kind of reasoning, with only mixed resuts. In one recent detailed
+  study on four differnt SE domains. Ahmed et al.[^ahmed25] concluded that these large
+  language models
+  should be used
+as conditional collaborators rather than drop-in replacements for human annotators
+sicne their their utility depends on careful deployment, the use of confidence
+thresholds, and restriction to tasks with well-structured, repetitive data.
 
 
+[^ahmed25]:  Toufique Ahmed, Premkumar Devanbu, Christoph Treude, and
+Michael Pradel. Can LLMs replace manual annotation of software
+engineering artifacts? In MSR’25, 2025
 
+[^costly]: slow Recently Tu et al.[^tu20] we were studying one same
+of 700+ software projects, including 476K commit files. After an
+extensive analysis, they proposed a cost model for labeling that
+data. Assuming two people checking per commit, that data would need
+three years of effort to label the data.
 
+[^tu20]: Tu, Huy, Zhe Yu, and Tim Menzies. "Better data labelling
+with emblem (and how that impacts defect prediction)." IEEE
+Transactions on Software Engineering 48.1 (2020): 278-294.
+
+[^error]: Human annotators often make many mismakes.  For example,
+Yu et al.’s technical debt analysis [^yu22] revealed that 90% of
+purported false positives actually represented manual labeling er-
+rors. Similar patterns of errors in manual annotations are found
+in security defect identification [^wu22] and static analysis false
+positive classification [^yang22].
+
+[^wu22]: Xiaoxue Wu, Wei Zheng, Xin Xia, and David Lo. Data quality
+matters: A case study on data label correctness for security bug
+report prediction. IEEE Transactions on Software Engineering,
+48(7):2541–2556, 2022.
+
+[^yu22]: Zhe Yu, Fahmid Morshed Fahid, Huy Tu, and Tim Menzies.
+Identifying self-admitted technical debts with jitterbug: A two-step
+approach. IEEE Transactions on Software Engineering, 48(5):1676–1691,
+2022.
+
+[^yan22]: Hong Jin Kang, Khai Loong Aw, and David Lo. Detecting
+false alarms from automatic static analysis tools: How far are we?
+In Proceedings of the 44th International Con- ference on Software
+Engineering, ICSE ’22, page 698–709, New York, NY, USA, 2022.
+Association for Computing Machinery
+
+To EZR's task is to find control options that lead to the better effects,
+_without_ having access to all those effects. If some control setting
+looks promising, it can ask that someone finds out its assocaited effects.
+But for all the above reasons, it really needs to ask the fewest number of times.
+
+To achieve this magic, EZR uses active learning. Four 
+control settings are randomly selected, their effects accessed,
+then sorted into the two _best_ and the two _rest_ rows.
+At this point EZr's memory contains a few rows with labelled effects;
+and many more rows 
+where we know what control optinons might be set, but we do not know their effects:
+
+                                                     Energy-, time-,  cpu- 
+    0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,   6.6, 248.4,  2.1 <== Best1
+    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,   6.6, 248.6,  2.0 <== Best2
+    0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.7, 519.8, 14.1 <== Rest1
+    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.8, 518.6, 14.1 <== Rest2
+    0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,     ?,     ?,    ?
+    1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1,     ?,     ?,    ?
+    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,     ?,     ?,    ?
+    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,     ?,     ?,    ?
+
+    [skipping 800 lines...]
+
+Next, for anything not yet labelled, EZR looks for one row that is
+more more likely to be _best_,
+then _rest_. This labelled and sorted into _best_ or  _rest_ rows.
+If _best_ ever grows in size more than the square root of the number of labels,
+then the worst _best_ row is jumped over to _rest_. In this way, _best_ 
+progressively contains more and more of the better rows. 
+
+EZR repeats this, a few dozen times, to generate a few dozen labelled rows. This
+is given to a tree learner that generates:
+    
+     d2h  win    n
+    ---- ---- ----
+    0.09    0   24
+    0.02   74   21    crypt_blowfish == 0
+    0.01   90   18    |  memory_tables == 1
+    0.00   96   11    |  |  small_log == 0
+    0.00   97    6    |  |  |  logging == 0
+    0.00   98    5    |  |  |  |  txc_mvlocks == 0
+    0.00   99    2    |  |  |  |  |  no_write_delay == 0;   <==== LEAF #1
+    0.00   97    3    |  |  |  |  |  no_write_delay == 1
+    0.00   97    2    |  |  |  |  |  |  encryption == 1;
+    0.01   95    5    |  |  |  logging == 1
+    0.01   95    4    |  |  |  |  no_write_delay == 1
+    0.01   96    2    |  |  |  |  |  encryption == 1;
+    0.01   95    2    |  |  |  |  |  encryption == 0;
+    0.02   80    7    |  |  small_log == 1
+    0.02   84    6    |  |  |  txc_mvcc == 0
+    0.01   87    4    |  |  |  |  compressed_script == 0
+    0.01   90    2    |  |  |  |  |  encryption == 0;
+    0.01   85    2    |  |  |  |  |  encryption == 1;
+    0.02   76    2    |  |  |  |  compressed_script == 1;
+    0.11  -23    3    |  memory_tables == 0
+    0.11  -15    2    |  |  compressed_script == 0;
+    0.56 -518    3    crypt_blowfish == 1
+    0.34 -273    2    |  txc_mvlocks == 0;
+    17 9 compressed_script, encryption, crypt_blowfish, txc_mvlocks, 
+        txc_mvcc, memory_tables, logging, no_write_delay, small_log
+    
+
+taht
 To answer those questions, first you have to check out the log (from the MOOT repository) and our code:
 
     mkdir demo; cd demo

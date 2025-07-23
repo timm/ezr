@@ -384,52 +384,141 @@ of log of the effects of these option. We could sort the log such that
 the good rows are first and the bad rows are last. In the following, all
 the 0,1 show it if used or ignored any of the options listed above:</p>
 <div class="sourceCode" id="cb1"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>                                                    Energy<span class="op">-</span>, time<span class="op">-</span>   cpu<span class="op">-</span> </span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>,  <span class="fl">6.6232</span> , <span class="fl">248.4</span>, <span class="fl">2.053942</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,  <span class="fl">6.6386</span> , <span class="fl">248.6</span>, <span class="fl">2.042798</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,  <span class="fl">6.6326</span> , <span class="fl">249.2</span>, <span class="fl">2.011727</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>,  <span class="fl">6.6436</span> , <span class="fl">248.6</span>, <span class="fl">2.069627</span></span></code></pre></div>
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>                                                 Energy<span class="op">-</span>, time<span class="op">-</span>,  cpu<span class="op">-</span> </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.4</span>,  <span class="fl">2.1</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.6</span>,  <span class="fl">2.0</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">249.2</span>,  <span class="fl">2.0</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.6</span>,  <span class="fl">2.1</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>[skipping <span class="dv">800</span> lines...]</span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.6626</span>, <span class="fl">519.8</span>, <span class="fl">14.10719</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.8008</span>, <span class="fl">518.8</span>, <span class="fl">14.078158</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.743</span> , <span class="dv">519</span>, <span class="fl">14.148283</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.783</span> , <span class="fl">518.6</span>, <span class="fl">14.146937</span></span></code></pre></div>
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.7</span>, <span class="fl">519.8</span>, <span class="fl">14.1</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.8</span>, <span class="fl">518.8</span>, <span class="fl">14.1</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.7</span>, <span class="fl">519.0</span>, <span class="fl">14.1</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.8</span>, <span class="fl">518.6</span>, <span class="fl">14.1</span></span></code></pre></div>
 <p>ALl these rows show what happens when we run the same benchmark suite
-of tests. Observe how:</p>
+of tests. The <em>control options</em> are shown at left (these are all
+the 0,1s) and the <em>effects</em> are shown at right (<em>energy, time,
+cpu</em>). Observe how:</p>
 <ul>
 <li>the four first rows have low energy, runtimes, and cpu;</li>
 <li>while the final four rows run much slower and use more energy and
 cpu.</li>
 </ul>
-<p>So (begin sarcasm), all we have to do is just use the control options
-seen in the best rows, and avoid the options seen in the last rows. But
-here are so many things wrong with that last sentence:</p>
-<ul>
-<li>Firstly, as shown above, some columns seem to be using the same
-settings in the best and worst rows. So we really need to be looking at
+<p>So (begin sarcasm), all we have to do is use the control options from
+the best rows. But here are so many things wrong with doing that.
+Firstly, as shown above, some columns seem to be using the same settings
+in the best and worst rows. So we really need to be looking at
 <em>contrast sets</em>; i.e. things that are usually seen in best
 <strong>and</strong> not seen in rest. What EZR does it builds two
 predictive models: one for the best examples and one for the rest. These
 models check candidate configurations before we waste time running bad
 ones. Each of these models guesses how likely a candidate is
 <em>best</em> or <em>rest</em>. It then only runs candidates where
-<em>likelihood(best)</em> &gt; <em>likelihood(rest)</em>.</li>
-<li>Secondly, and this one is a huge problems, it can be hard to access
-this log. Here, we got lucky: some researcehrs in Europe were kind
-enough to melt down their CPU farm and run nearly 1000 configurations.
-In practice, we it is often easy to know the space of control options,
-but very hard to access all the effects of thise opions.</li>
+<em>likelihood(best)</em> &gt; <em>likelihood(rest)</em>.</p>
+<p>Secondly, and this one is a huge problem, it can be hard to access a
+large log of data showing the control options <strong>and</strong> their
+effects. In this example, we got lucky: some researchers in Europe were
+kind enough to melt down their CPU farm and run nearly 1000
+configurations. In practice, this rarely happens. For one thing, it can
+be slow, expensive, or impossible to run a large number of
+benchmarks.</p>
+<ul>
+<li>Some benchmarks are so CPU expensive that we cannot run more a few
+dozen.</li>
+<li>Some models (and their associated data collection and
+pre-processing) are so expensive to run more than a few times.</li>
+<li>Some data sets measure the effects of their control variables using
+data collected from the field. For anything associated with data from
+communities of humans, it can be impossible to ask (say) a software
+development team to reset and rebuidl from scratch their entire product
+using diffeernt tools.</li>
 </ul>
-<p>To answer those questions, first you have to check out the log (from
-the MOOT repository) and our code:</p>
+<p>For this reason, SE makes extensive use of manual annotation
+methods<a href="#fn13" class="footnote-ref" id="fnref13"
+role="doc-noteref"><sup>13</sup></a>, i.e. some subejct matter expert
+makes up values for the effects columns within a data set. But manual
+annocation can be both be expensive<a href="#fn14" class="footnote-ref"
+id="fnref14" role="doc-noteref"><sup>14</sup></a> and error prone<a
+href="#fn15" class="footnote-ref" id="fnref15"
+role="doc-noteref"><sup>15</sup></a>. Some resarechers have recently
+turned to large language models to automate that kind of reasoning, with
+only mixed resuts. In one recent detailed study on four differnt SE
+domains. Ahmed et al.<a href="#fn16" class="footnote-ref" id="fnref16"
+role="doc-noteref"><sup>16</sup></a> concluded that these large language
+models should be used as conditional collaborators rather than drop-in
+replacements for human annotators sicne their their utility depends on
+careful deployment, the use of confidence thresholds, and restriction to
+tasks with well-structured, repetitive data.</p>
+<p>To EZR’s task is to find control options that lead to the better
+effects, <em>without</em> having access to all those effects. If some
+control setting looks promising, it can ask that someone finds out its
+assocaited effects. But for all the above reasons, it really needs to
+ask the fewest number of times.</p>
+<p>To achieve this magic, EZR uses active learning. Four control
+settings are randomly selected, their effects accessed, then sorted into
+the two <em>best</em> and the two <em>rest</em> rows. At this point
+EZr’s memory contains a few rows with labelled effects; and many more
+rows where we know what control optinons might be set, but we do not
+know their effects:</p>
 <div class="sourceCode" id="cb4"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>mkdir demo<span class="op">;</span> cd demo</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>moot <span class="co"># &lt;== data</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>ezr  <span class="co"># &lt;== code</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>cd ezr</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>python3 <span class="op">-</span>B ezr.py <span class="op">-</span>f ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>config<span class="op">/</span>SS<span class="op">-</span>M.csv <span class="op">--</span>tree </span></code></pre></div>
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>                                                 Energy<span class="op">-</span>, time<span class="op">-</span>,  cpu<span class="op">-</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.4</span>,  <span class="fl">2.1</span> <span class="op">&lt;==</span> Best1</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.6</span>,  <span class="fl">2.0</span> <span class="op">&lt;==</span> Best2</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.7</span>, <span class="fl">519.8</span>, <span class="fl">14.1</span> <span class="op">&lt;==</span> Rest1</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.8</span>, <span class="fl">518.6</span>, <span class="fl">14.1</span> <span class="op">&lt;==</span> Rest2</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,     ?,     ?,    ?</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,     ?,     ?,    ?</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,     ?,     ?,    ?</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>,     ?,     ?,    ?</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>[skipping <span class="dv">800</span> lines...]</span></code></pre></div>
+<p>Next, for anything not yet labelled, EZR looks for one row that is
+more more likely to be <em>best</em>, then <em>rest</em>. This labelled
+and sorted into <em>best</em> or <em>rest</em> rows. If <em>best</em>
+ever grows in size more than the square root of the number of labels,
+then the worst <em>best</em> row is jumped over to <em>rest</em>. In
+this way, <em>best</em> progressively contains more and more of the
+better rows.</p>
+<p>EZR repeats this, a few dozen times, to generate a few dozen labelled
+rows. This is given to a tree learner that generates:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a> d2h  win    n</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">----</span> <span class="op">----</span> <span class="op">----</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fl">0.09</span>    <span class="dv">0</span>   <span class="dv">24</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fl">0.02</span>   <span class="dv">74</span>   <span class="dv">21</span>    crypt_blowfish <span class="op">==</span> <span class="dv">0</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fl">0.01</span>   <span class="dv">90</span>   <span class="dv">18</span>    <span class="op">|</span>  memory_tables <span class="op">==</span> <span class="dv">1</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fl">0.00</span>   <span class="dv">96</span>   <span class="dv">11</span>    <span class="op">|</span>  <span class="op">|</span>  small_log <span class="op">==</span> <span class="dv">0</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="fl">0.00</span>   <span class="dv">97</span>    <span class="dv">6</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  logging <span class="op">==</span> <span class="dv">0</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fl">0.00</span>   <span class="dv">98</span>    <span class="dv">5</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  txc_mvlocks <span class="op">==</span> <span class="dv">0</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="fl">0.00</span>   <span class="dv">99</span>    <span class="dv">2</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  no_write_delay <span class="op">==</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fl">0.00</span>   <span class="dv">97</span>    <span class="dv">3</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  no_write_delay <span class="op">==</span> <span class="dv">1</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="fl">0.00</span>   <span class="dv">97</span>    <span class="dv">2</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  encryption <span class="op">==</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fl">0.01</span>   <span class="dv">95</span>    <span class="dv">5</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  logging <span class="op">==</span> <span class="dv">1</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="fl">0.01</span>   <span class="dv">95</span>    <span class="dv">4</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  no_write_delay <span class="op">==</span> <span class="dv">1</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="fl">0.01</span>   <span class="dv">96</span>    <span class="dv">2</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  encryption <span class="op">==</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="fl">0.01</span>   <span class="dv">95</span>    <span class="dv">2</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  encryption <span class="op">==</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="fl">0.02</span>   <span class="dv">80</span>    <span class="dv">7</span>    <span class="op">|</span>  <span class="op">|</span>  small_log <span class="op">==</span> <span class="dv">1</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="fl">0.02</span>   <span class="dv">84</span>    <span class="dv">6</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  txc_mvcc <span class="op">==</span> <span class="dv">0</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="fl">0.01</span>   <span class="dv">87</span>    <span class="dv">4</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  compressed_script <span class="op">==</span> <span class="dv">0</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="fl">0.01</span>   <span class="dv">90</span>    <span class="dv">2</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  encryption <span class="op">==</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="fl">0.01</span>   <span class="dv">85</span>    <span class="dv">2</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  encryption <span class="op">==</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="fl">0.02</span>   <span class="dv">76</span>    <span class="dv">2</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  compressed_script <span class="op">==</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="fl">0.11</span>  <span class="op">-</span><span class="dv">23</span>    <span class="dv">3</span>    <span class="op">|</span>  memory_tables <span class="op">==</span> <span class="dv">0</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="fl">0.11</span>  <span class="op">-</span><span class="dv">15</span>    <span class="dv">2</span>    <span class="op">|</span>  <span class="op">|</span>  compressed_script <span class="op">==</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="fl">0.56</span> <span class="op">-</span><span class="dv">518</span>    <span class="dv">3</span>    crypt_blowfish <span class="op">==</span> <span class="dv">1</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="fl">0.34</span> <span class="op">-</span><span class="dv">273</span>    <span class="dv">2</span>    <span class="op">|</span>  txc_mvlocks <span class="op">==</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="dv">17</span> <span class="dv">9</span> compressed_script, encryption, crypt_blowfish, txc_mvlocks, </span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    txc_mvcc, memory_tables, logging, no_write_delay, small_log</span></code></pre></div>
+<p>taht To answer those questions, first you have to check out the log
+(from the MOOT repository) and our code:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>mkdir demo<span class="op">;</span> cd demo</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>moot <span class="co"># &lt;== data</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>ezr  <span class="co"># &lt;== code</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>cd ezr</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>python3 <span class="op">-</span>B ezr.py <span class="op">-</span>f ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>config<span class="op">/</span>SS<span class="op">-</span>M.csv <span class="op">--</span>tree </span></code></pre></div>
 <p>SS.M.csv is a comma-seperated fi</p>
 <p>he problem of finding and exmaplin the dofference between good deas
 na dnbad dieas. In this apprtciualr example, for a ``good idea’’, we
@@ -438,28 +527,28 @@ software for a database file. Such compiation is controlled by a
 Makefile cotnaining nmerous choises incuding the whether or not to do 11
 things A,B…K. SLOC XXX</p>
 <p>A- =</p>
-<div class="sourceCode" id="cb5"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>  <span class="fl">3.0247</span> <span class="op">*</span> B <span class="op">+</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fl">1.7922</span> <span class="op">*</span> C <span class="op">+</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.6417</span> <span class="op">*</span> D <span class="op">+</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fl">2.2354</span> <span class="op">*</span> E <span class="op">+</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fl">1.6558</span> <span class="op">*</span> F <span class="op">+</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fl">1.1448</span> <span class="op">*</span> G <span class="op">+</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a> <span class="fl">15.6973</span> <span class="op">*</span> H <span class="op">+</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a> <span class="fl">12.4552</span> <span class="op">*</span> I <span class="op">+</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a> <span class="fl">16.5112</span> <span class="op">*</span> J <span class="op">+</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a> <span class="fl">16.8096</span> <span class="op">*</span> K <span class="op">+</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fl">200.4093</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>  <span class="fl">3.0247</span> <span class="op">*</span> B <span class="op">+</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fl">1.7922</span> <span class="op">*</span> C <span class="op">+</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.6417</span> <span class="op">*</span> D <span class="op">+</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fl">2.2354</span> <span class="op">*</span> E <span class="op">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fl">1.6558</span> <span class="op">*</span> F <span class="op">+</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fl">1.1448</span> <span class="op">*</span> G <span class="op">+</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a> <span class="fl">15.6973</span> <span class="op">*</span> H <span class="op">+</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a> <span class="fl">12.4552</span> <span class="op">*</span> I <span class="op">+</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a> <span class="fl">16.5112</span> <span class="op">*</span> J <span class="op">+</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a> <span class="fl">16.8096</span> <span class="op">*</span> K <span class="op">+</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="fl">200.4093</span></span></code></pre></div>
 <p>B- =</p>
-<div class="sourceCode" id="cb6"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a> <span class="op">-</span><span class="fl">0.1742</span> <span class="op">*</span> C <span class="op">+</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.2132</span> <span class="op">*</span> F <span class="op">+</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.1585</span> <span class="op">*</span> G <span class="op">+</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="op">-</span><span class="fl">11.7985</span> <span class="op">*</span> H <span class="op">+</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fl">2.2523</span> <span class="op">*</span> I <span class="op">+</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.7718</span> <span class="op">*</span> J <span class="op">+</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a> <span class="op">-</span><span class="fl">0.7594</span> <span class="op">*</span> K <span class="op">+</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a> <span class="fl">27.0068</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a> <span class="op">-</span><span class="fl">0.1742</span> <span class="op">*</span> C <span class="op">+</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.2132</span> <span class="op">*</span> F <span class="op">+</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.1585</span> <span class="op">*</span> G <span class="op">+</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="op">-</span><span class="fl">11.7985</span> <span class="op">*</span> H <span class="op">+</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fl">2.2523</span> <span class="op">*</span> I <span class="op">+</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.7718</span> <span class="op">*</span> J <span class="op">+</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a> <span class="op">-</span><span class="fl">0.7594</span> <span class="op">*</span> K <span class="op">+</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a> <span class="fl">27.0068</span></span></code></pre></div>
 <table>
 <thead>
 <tr>
@@ -715,8 +804,8 @@ with tiny local stubs.</p>
 <p>Also, for <strong>teaching (or self-study)</strong>, it has often
 been suggested that 1,000 lines of code represents the practical limit
 in size for a program which is to be understood and maintained by a
-single individual<a href="#fn13" class="footnote-ref" id="fnref13"
-role="doc-noteref"><sup>13</sup></a>. Most AI tools either exceed this
+single individual<a href="#fn17" class="footnote-ref" id="fnref17"
+role="doc-noteref"><sup>17</sup></a>. Most AI tools either exceed this
 limit by two orders of magnitude, or else offer the user a very limited
 set of facilities, i.e. either the details of the system are
 inaccessible to all but the most determined, dedicated and
@@ -773,23 +862,23 @@ for some current data/</p>
 <h3 id="can-make-i-simpler">Can make i simpler</h3>
 <p>EZR was motivated by the current industrial obsession on Big AI that
 seems to be forgetting centuries of experience with data mining. As far
-back as 1901, Pearson<a href="#fn14" class="footnote-ref" id="fnref14"
-role="doc-noteref"><sup>14</sup></a> showed that tables of data with
+back as 1901, Pearson<a href="#fn18" class="footnote-ref" id="fnref18"
+role="doc-noteref"><sup>18</sup></a> showed that tables of data with
 <span class="math inline"><em>N</em></span> columns can be modeled with
 far fewer columns (where the latter are derived from the eigenvectors of
 a correlation information).</p>
 <p>Decades of subsequent work has shown that effective models can be
 built from data that cover tiny fractions of the possible data space<a
-href="#fn15" class="footnote-ref" id="fnref15"
-role="doc-noteref"><sup>15</sup></a>. Levnina and Biclet cwnote that</p>
+href="#fn19" class="footnote-ref" id="fnref19"
+role="doc-noteref"><sup>19</sup></a>. Levnina and Biclet cwnote that</p>
 <blockquote>
 <p>“The only reason any (learning) methods work … is that, in fact, the
 data are not truly high-dimensional. Rather, they are .. can be
 efficiently summarized in a space of a much lower dimension.</p>
 </blockquote>
 <p>(This remarks echoes an early conclusion from Johnson and
-Lindenstrauss <a href="#fn16" class="footnote-ref" id="fnref16"
-role="doc-noteref"><sup>16</sup></a>.).</p>
+Lindenstrauss <a href="#fn20" class="footnote-ref" id="fnref20"
+role="doc-noteref"><sup>20</sup></a>.).</p>
 <p>For example:</p>
 <ul>
 <li><strong>Many rows can be ignored</strong>: Data sets with thousands
@@ -800,8 +889,8 @@ that many rows in a table can be be replaced by a smaller number of
 exemplars.</li>
 <li><strong>Many columns can be ignored</strong>: High-dimensional
 tables (with many colummns) can be projected into lower dimensional
-tables while nearly preserving all pairwise distances<a href="#fn17"
-class="footnote-ref" id="fnref17" role="doc-noteref"><sup>17</sup></a>.
+tables while nearly preserving all pairwise distances<a href="#fn21"
+class="footnote-ref" id="fnref21" role="doc-noteref"><sup>21</sup></a>.
 This means that data sets with many columns can be modeled with
 surprisingly few columns. e.g. A table of (say) of <span
 class="math inline"><em>C</em> = 20</span> columns of binary variables
@@ -824,8 +913,8 @@ controlling the keys.</p>
 names: Variable subset selection, narrows, master variables, and
 backdoors. In the 1960s, Amarel observed that search problems contain
 narrows; i.e. tiny sets of variable settings that must be used in any
-solution<a href="#fn18" class="footnote-ref" id="fnref18"
-role="doc-noteref"><sup>18</sup></a>. Amarel’s work defined macros that
+solution<a href="#fn22" class="footnote-ref" id="fnref22"
+role="doc-noteref"><sup>22</sup></a>. Amarel’s work defined macros that
 encode paths between the narrows in the search space, effectively
 permitting a search engine to leap quickly from one narrow to
 another.</p>
@@ -833,16 +922,16 @@ another.</p>
 examined what happens when a data miner deliberately ignores some of the
 variables in the training data. Kohavi and John report trials of data
 sets where up to 80% of the variables can be ignored without degrading
-classification accuracy<a href="#fn19" class="footnote-ref" id="fnref19"
-role="doc-noteref"><sup>19</sup></a>. Note the similarity with Amarel’s
+classification accuracy<a href="#fn23" class="footnote-ref" id="fnref23"
+role="doc-noteref"><sup>23</sup></a>. Note the similarity with Amarel’s
 work: it is more important to reason about a small set of important
 variables than about all the variables. At the same time, researchers in
 constraint satisfaction found “random search with retries” was a very
 effective strategy.</p>
 <p>Crawford and Baker reported that such searches took less time than a
 complete search to find more solutions using just a small number of
-retries<a href="#fn20" class="footnote-ref" id="fnref20"
-role="doc-noteref"><sup>20</sup></a>. Their ISAMP “iterative sampler”
+retries<a href="#fn24" class="footnote-ref" id="fnref24"
+role="doc-noteref"><sup>24</sup></a>. Their ISAMP “iterative sampler”
 makes random choices within a model until it gets “stuck”; i.e. until
 further choices do not satisfy expectations. When “stuck”, ISAMP does
 not waste time fiddling with current choices (as was done by older
@@ -862,8 +951,8 @@ far-flung master variables. For such models, if the reasoning gets stuck
 in one region, then the best thing to do is to leap at random to some
 distant part of the model.</p>
 <p>A similar conclusion comes from the work of Williams et al.<a
-href="#fn21" class="footnote-ref" id="fnref21"
-role="doc-noteref"><sup>21</sup></a>. They found that if a randomized
+href="#fn25" class="footnote-ref" id="fnref25"
+role="doc-noteref"><sup>25</sup></a>. They found that if a randomized
 search is repeated many times, that a small number of variable settings
 were shared by all solutions. They also found that if they set those
 variables before conducting the rest of the search, then formerly
@@ -876,20 +965,20 @@ the “key” decisions in RE models. Second, have stakeholders debate, and
 then decide, about the keys before exploring anything else. Third, to
 avoid trivially small solutions, our random search should strive to
 cover much of the model. Code:</p>
-<div class="sourceCode" id="cb7"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Data(src):</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(row):</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(interpolate(data,row,<span class="op">*</span>pole) <span class="cf">for</span> pole <span class="kw">in</span> poles)<span class="op">/</span><span class="bu">len</span>(poles)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  head, <span class="op">*</span>rows <span class="op">=</span> <span class="bu">list</span>(src)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  data  <span class="op">=</span> _data(head, rows)</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  poles <span class="op">=</span> projections(data)</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row <span class="kw">in</span> rows: row[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> _guess(row)</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> data</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Data(src):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(row):</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(interpolate(data,row,<span class="op">*</span>pole) <span class="cf">for</span> pole <span class="kw">in</span> poles)<span class="op">/</span><span class="bu">len</span>(poles)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  head, <span class="op">*</span>rows <span class="op">=</span> <span class="bu">list</span>(src)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  data  <span class="op">=</span> _data(head, rows)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  poles <span class="op">=</span> projections(data)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row <span class="kw">in</span> rows: row[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> _guess(row)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> data</span></code></pre></div>
 <h3 id="data">Data</h3>
 <p>Shared datasets from research papers by Apel [2], Chen <a
-href="#fn22" class="footnote-ref" id="fnref22"
-role="doc-noteref"><sup>22</sup></a>, and Menzies [^nair] are often used
+href="#fn26" class="footnote-ref" id="fnref26"
+role="doc-noteref"><sup>26</sup></a>, and Menzies [^nair] are often used
 as case studies of optimization in SE research papers. Chen and Menzies
 are collaborating to curate the MOOT repository (Multi-Objective
 Optimization Testing4) which offers datasets from recent SE optimization
@@ -908,19 +997,19 @@ summary:</p>
 maximize and minimize.</li>
 </ul>
 <p>Data:</p>
-<div class="sourceCode" id="cb8"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>  x <span class="op">=</span> independent values          <span class="op">|</span> y <span class="op">=</span> dependent values</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">--------------------------------|----------------------</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  Spout_wait, Spliters, Counters, <span class="op">|</span> Throughput<span class="op">+</span>, Latency<span class="op">-</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>     <span class="dv">10</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">23075</span>,    <span class="fl">158.68</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">8</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22887</span>,    <span class="fl">172.74</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22799</span>,    <span class="fl">156.83</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">3</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22430</span>,    <span class="fl">160.14</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    ...,      ...,      ...,           ...,    ...</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">10</span>,      <span class="op">|</span>   <span class="fl">460.81</span>,    <span class="fl">8761.6</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">18</span>,      <span class="op">|</span>   <span class="fl">402.53</span>,    <span class="fl">8797.5</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">12</span>,      <span class="op">|</span>   <span class="fl">365.07</span>,    <span class="fl">9098.9</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,        <span class="dv">1</span>,      <span class="op">|</span>   <span class="fl">310.06</span>,    <span class="dv">9421</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>  x <span class="op">=</span> independent values          <span class="op">|</span> y <span class="op">=</span> dependent values</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">--------------------------------|----------------------</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  Spout_wait, Spliters, Counters, <span class="op">|</span> Throughput<span class="op">+</span>, Latency<span class="op">-</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>     <span class="dv">10</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">23075</span>,    <span class="fl">158.68</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">8</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22887</span>,    <span class="fl">172.74</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22799</span>,    <span class="fl">156.83</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">3</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22430</span>,    <span class="fl">160.14</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    ...,      ...,      ...,           ...,    ...</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">10</span>,      <span class="op">|</span>   <span class="fl">460.81</span>,    <span class="fl">8761.6</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">18</span>,      <span class="op">|</span>   <span class="fl">402.53</span>,    <span class="fl">8797.5</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">12</span>,      <span class="op">|</span>   <span class="fl">365.07</span>,    <span class="fl">9098.9</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,        <span class="dv">1</span>,      <span class="op">|</span>   <span class="fl">310.06</span>,    <span class="dv">9421</span></span></code></pre></div>
 <p>Note that our data is much larger than the Table 3 example. The 39
 data sets in Table I have up to 86,000 rows, 88 independent variables,
 and three y goals. For the purposes of illustration, the rows in Table 3
@@ -1000,47 +1089,68 @@ role="doc-backlink">↩︎</a></p></li>
 Multi-objective optimization tests. 2025. <a
 href="http://github.com/timm/moot">http://github.com/timm/moot</a><a
 href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn13"><p>Lions, John (1996). Lions’ Commentary on UNIX 6th
+<li id="fn13"><p>Toufique Ahmed, Premkumar Devanbu, Christoph Treude,
+and Michael Pradel. Can LLMs replace manual annotation of software
+engineering artifacts? In MSR’25, 2025<a href="#fnref13"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn14"><p>slow Recently Tu et al.[^tu20] we were studying one
+same of 700+ software projects, including 476K commit files. After an
+extensive analysis, they proposed a cost model for labeling that data.
+Assuming two people checking per commit, that data would need three
+years of effort to label the data.<a href="#fnref14"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn15"><p>Human annotators often make many mismakes. For example,
+Yu et al.’s technical debt analysis [^yu22] revealed that 90% of
+purported false positives actually represented manual labeling er- rors.
+Similar patterns of errors in manual annotations are found in security
+defect identification [^wu22] and static analysis false positive
+classification [^yang22].<a href="#fnref15" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn16"><p>Toufique Ahmed, Premkumar Devanbu, Christoph Treude,
+and Michael Pradel. Can LLMs replace manual annotation of software
+engineering artifacts? In MSR’25, 2025<a href="#fnref16"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn17"><p>Lions, John (1996). Lions’ Commentary on UNIX 6th
 Edition with Source Code. Peer-to-Peer Communications. ISBN
-978-1-57398-013-5.<a href="#fnref13" class="footnote-back"
+978-1-57398-013-5.<a href="#fnref17" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn14"><p>Pearson, K. (1901). “On Lines and Planes of Closest Fit
+<li id="fn18"><p>Pearson, K. (1901). “On Lines and Planes of Closest Fit
 to Systems of Points in Space”. Philosophical Magazine. 2 (11): 559–572.
-10.1080/14786440109462720.<a href="#fnref14" class="footnote-back"
+10.1080/14786440109462720.<a href="#fnref18" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn15"><p>I. Witten, E. Frank, and M. Hall. Data Mining:
+<li id="fn19"><p>I. Witten, E. Frank, and M. Hall. Data Mining:
 Practical Machine Learning Tools and Techniques Morgan Kaufmann Series
 in Data Management Systems Morgan Kaufmann, Amsterdam, 3 edition,
-(2011)<a href="#fnref15" class="footnote-back"
+(2011)<a href="#fnref19" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn16"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+<li id="fn20"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
 lipschitz mappings into a hilbert space,” Contemporary Mathematics,
-vol. 26, pp. 189–206, 1984.<a href="#fnref16" class="footnote-back"
+vol. 26, pp. 189–206, 1984.<a href="#fnref20" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn17"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+<li id="fn21"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
 lipschitz mappings into a hilbert space,” Contemporary Mathematics,
-vol. 26, pp. 189–206, 1984.<a href="#fnref17" class="footnote-back"
+vol. 26, pp. 189–206, 1984.<a href="#fnref21" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn18"><p>S. Amarel, “Program synthesis as a theory formation
+<li id="fn22"><p>S. Amarel, “Program synthesis as a theory formation
 task: problem representations and solution methods,” in Machine
 Learning: An Artificial Intelligence Approach. Morgan Kaufmann, 1986.<a
-href="#fnref18" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn19"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
+href="#fnref22" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn23"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
 selection,” Artif. Intell., vol. 97, no. 1-2, pp. 273–324, Dec. 1997.<a
-href="#fnref19" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn20"><p>J. M. Crawford and A. B. Baker, “Experimental results
+href="#fnref23" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn24"><p>J. M. Crawford and A. B. Baker, “Experimental results
 on the application of satisfiability algorithms to scheduling problems,”
 in Proceedings of the Twelfth National Conference on Artificial
 Intelligence (Vol. 2), Menlo Park, CA, USA, 1994, pp. 1092–1097.<a
-href="#fnref20" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn21"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
+href="#fnref24" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn25"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
 typical case complexity,” in Proceedings of the International Joint
-Conference on Artificial Intelligence, 2003.<a href="#fnref21"
+Conference on Artificial Intelligence, 2003.<a href="#fnref25"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn22"><p>M. Li, T. Chen, and X. Yao, “How to evaluate solutions
+<li id="fn26"><p>M. Li, T. Chen, and X. Yao, “How to evaluate solutions
 in pareto-based search-based software engineering: A critical review and
 methodological guidance,” IEEE Transactions on Software Engineering,
-vol. 48, no. 5, pp. 1771–1799, 2022<a href="#fnref22"
+vol. 48, no. 5, pp. 1771–1799, 2022<a href="#fnref26"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
