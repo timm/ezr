@@ -75,20 +75,19 @@ def dataRead(file):
 
 #---------------------------------------------------------------------
 def Tree(data, depth=the.depth):
-  print("\n")
   def _go(data1, d):  
     sub=False
-    print('|.. '* d, len(data1.rows))
-    if d <= the.depth and len(data1.rows)>2:
+    if d <= the.depth :
       if cuts := [cut for col in data1.cols.x
                       for cut in treeCuts(data1, col, data1.rows)]:
         best, *_, worst = sorted(cuts)
         for how,(_, c, (xlo, xhi), leaf) in enumerate([worst,best]):
           yes, no = treeKids(data1.rows, c, xlo, xhi)
-          for subtree in _go(dataClone(data1, no), d + 1):
-            sub=True
-            yield o(c=c, lo=xlo, hi=xhi, left=leaf,
-                    bias=how,right=subtree)
+          if len(yes) > len(data.rows)**.33:
+            for subtree in _go(dataClone(data1, no), d + 1):
+              sub=True
+              yield o(c=c, lo=xlo, hi=xhi, left=leaf,
+                      bias=how,right=subtree)
     if not sub:
       yield adds([row[data.cols.klass.at] for row in data1.rows])
   yield from _go(data, 1)
@@ -131,9 +130,7 @@ def treeTune(trees, rows):
       t = t.left if row[t.c]=="?" or t.lo<=row[t.c]<=t.hi else t.right
     return t.mu
   def _score(t):
-    tmp=sum(abs(row[-1]-_predict(t,row)) for row in rows) / len(rows)
-    print(f"{tmp:.3f}")
-    return tmp
+    return sum(abs(row[-1]-_predict(t,row)) for row in rows) / len(rows)
   return min(trees, key=_score)
 
 #---------------------------------------------------------------------
