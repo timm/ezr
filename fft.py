@@ -124,13 +124,14 @@ def treeShow(data, t,last=1):
     print(f"{t.bias} : {t.left.n:>4} : if {txt} then {t.left.mu:.3f} else")
     treeShow(data,t.right,t.bias) 
 
+def treePredict(t, row):
+  while hasattr(t, "c"):
+    t = t.left if row[t.c]=="?" or t.lo<=row[t.c]<=t.hi else t.right
+  return t.mu
+
 def treeTune(trees, rows):
-  def _predict(t, row):
-    while hasattr(t, "c"):
-      t = t.left if row[t.c]=="?" or t.lo<=row[t.c]<=t.hi else t.right
-    return t.mu
   def _score(t):
-    return sum(abs(row[-1]-_predict(t,row)) for row in rows) / len(rows)
+    return sum(abs(row[-1]-treePredict(t,row)) for row in rows) / len(rows)
   return min(trees, key=_score)
 
 #---------------------------------------------------------------------
@@ -142,8 +143,28 @@ def eg__data():
 def eg__tune():
   data = dataRead(the.file)
   trees = list(Tree(data))
-  best = treeTune(trees, data.rows)
-  treeShow(data, best)
+  best = treeTune(trees,data.rows)
+  treeShow(data,best)
+
+def eg__tunes():
+  d0 = dataRead(the.file)
+  kl = d0.cols.klass.at
+  stats = adds([r[kl] for r in d0.rows])
+  n = len(d0.rows)//2
+  rand,fft = Num(),Num()
+  for _ in range(20):
+    random.shuffle(d0.rows)
+    add(rand, sorted(d0.rows[:4], key=lambda r: r[kl])[0][kl])
+    train,test = dataClone(d0, d0.rows[:n]), dataClone(d0, d0.rows[n:])
+    trees = list(Tree(train))
+    best = treeTune(trees, train.rows)
+    rows = sorted(test.rows, key=lambda r: treePredict(best,r))[:4]
+    row  = sorted(rows, key=lambda r: r[kl])[0]
+    add(fft, row[kl])
+  winFft  = 1 - (fft.mu - stats.lo)/ (stats.mu - stats.lo)
+  winRand  = 1 - (rand.mu - stats.lo)/ (stats.mu - stats.lo)
+  print(f"mu0 {stats.mu:.2f} lo {stats.lo:.2f} winF {winFft:.2f}",end="")
+  print(f" muF {fft.mu:.2f} winR {winRand:.2f} muR {rand.mu:.2f}",the.file)
 
 if __name__ == "__main__": 
   for n, arg in enumerate(sys.argv):
