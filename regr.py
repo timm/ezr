@@ -5,9 +5,9 @@ reggr.py, multi objective tree building
    
 Options:  
  -s random seed      seed=1234567891    
- -P number of poles  Poles=28
+ -P number of poles  Poles=4
  -p dist coeffecient p=2
- -f data file        file=../moot/regression/auto93.csv   
+ -f data file        file=../moot/optimize/misc/auto93.csv   
 """
 from types import SimpleNamespace as o
 import random, math, sys, re
@@ -23,12 +23,12 @@ def coerce(z):
 the= o(**{k:coerce(v) for k,v in re.findall(r"(\w+)=(\S+)", __doc__)})
 
 #---------------------------------------------------------------------
-BIG = math.inf
+BIG = 1E30
 def Data()            : return o(rows=[], cols=[])
-def Sym(at=0,txt="")  : return o(at=at,txt=txt,has={})
+def Sym(at=0,txt="")  : return o(at=at,txt=txt,has={},w=1)
 def Num(at=0,txt=" ") : 
- return o(at=at,txt=txt,lo=BIG,hi=-BIG,mu=0,n=0,
-          goal= 0 if txt[0] else 1)
+ return o(at=at,txt=txt,lo=BIG,hi=-BIG,mu=0,n=0,w=1,
+          goal= 0 if txt[0]=="-" else 1)
 
 def isNum(col) : return "mu"   in col.__dict__
 def isSym(col) : return "has"  in col.__dict__
@@ -67,6 +67,7 @@ def dataHeader(names):
     col = Num(c, s) if s[0].isupper() else Sym(c, s)
     cols.all += [col]
     if s[-1] == "X": continue
+    if s[-1] == "!": cols.klass = col
     (cols.y if s[-1] in "!-+" else cols.x).append(col)
   return cols
 
@@ -86,17 +87,18 @@ def dist(src):
   return (d/n) ** (1/the.p)
 
 def disty(data, row):
-  return dist(abs(norm(col, row[c]) - col.heaven) for c,col in data.cols.y.items())
+  return dist(abs(norm(c, row[c.at]) - c.goal) for c in data.cols.y)
 
 def distx(data, row1, row2):
-  def _aha(col, a,b):
-    if a==b=="?": return 1
-    if isSym(col) : return a != b
-    a,b = norm(col,a), norm(col,b)
-    a = a if a != "?" else (0 if b>0.5 else 1)
-    b = b if b != "?" else (0 if a>0.5 else 1)
-    return abs(a-b)
-  return dist(_aha(c, row1[c.at], row2[c.at]) for c in data.cols.x)
+  return dist(distCol(c, row1[c.at], row2[c.at]) for c in data.cols.x)
+
+def distCol(col, a,b):
+  if a==b=="?": return 1
+  if isSym(col) : return a != b
+  a,b = norm(col,a), norm(col,b)
+  a = a if a != "?" else (0 if b>0.5 else 1)
+  b = b if b != "?" else (0 if a>0.5 else 1)
+  return col.w*abs(a-b)
 
 def distProject(data,row,east,west,c=None):
   D = lambda r1,r2 : distx(data,r1,r2)
@@ -105,23 +107,35 @@ def distProject(data,row,east,west,c=None):
   return (a*a +c*c - b*b)/(2*c + 1e-32)
 
 def distInterpolate(data,row,east,west,c=None):
-  x = distProject(data,row,east,west,c)
+  x = distProject(data,row,east,west,c) / (c + 1/BIG)
   y1,y2 = disty(data,east), disty(data,west)
-  return y1 + (x/c)*(y2 - y1)
+  return y1 + x*(y2 - y1)
 
 def distPoles(data):
   out = []
   for _ in range(the.Poles):
-    east,west=random.choices(data.rows,k=2)
+    east,west = random.choices(data.rows,k=2)
     c = distx(data,east,west)
     out += [(east,west,c)]
   return out
 
-def distInterpolates(data,row,poles):
+def distGuessY(data,row,poles):
   y = 0
   for pole in poles:
      y += distInterpolate(data,row,*pole)
   return y/len(poles)
+
+def distWeights(data, poles, n=1000):
+  Y     = lambda r: distGuessY(data, r,poles)
+  tmp   = {col.at:1e-32 for col in data.cols.x}
+  for _ in range(n):
+    a,b = random.sample(data.rows,2)
+    dY  = abs(Y(a) - Y(b))
+    dX  = distx(data,a,b)
+    for c in data.cols.x:
+      tmp[c.at] += dY / (dX + 1e-32) 
+  s = sum(tmp.values())
+  for col in data.cols.x: col.w = tmp[col.at]/s
 
 #---------------------------------------------------------------------
 def eg_h(): print(__doc__)
@@ -131,10 +145,31 @@ def eg__data():
 
 def eg__int():
   data = dataRead(the.file)
+  _eg__int(data)
+
+def _eg__int(data):
   poles = distPoles(data)
-  for _ in range(100):
+  repeats=1000
+  acc=0
+  n=0
+  Guess=lambda r: distGuessY(data,r,poles)
+  Y=lambda r: disty(data,r)
+  for _ in range(repeats):
+     a=b=None
+     while a==b:
+       a,b=random.choices(data.rows,k=2)
+     d=0.95
+     if Y(a) >= d*Y(b):  n+=1; acc += Guess(a)>=d*Guess(b)
+     if Y(a) < Y(b)/d:  n+=1; acc += Guess(a)<Guess(b)/d
+  print(f"{acc/n:.2f}")
 
-
+def eg__weights(): 
+  print(" ")
+  data = dataRead(the.file)
+  _eg__int(data)
+  distWeights(data,distPoles(data))
+  print([col.w for col in data.cols.x])
+  _eg__int(data)
 
 if __name__ == "__main__": 
   for n, arg in enumerate(sys.argv):

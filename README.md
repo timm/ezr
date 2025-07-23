@@ -131,13 +131,17 @@ including:
 
 Like many people, you are probably puzzled on how any of these
 these effect runtimes, cpu, or energy usage. 
-But suppose you had access
-to a of log of the effects of these option.
-We could  sort the log such that the good rows are first and
-the bad rows are last. In the following, all the 0,1 show it if used or ignored
-any of the options listed above:
+In an ideal world, some AI tool could help by learning from a large
+log that shows what options lead to what effects.
+All the _control options_ are shown at left (these are all the 0,1s) and the _effects_
+are shown at right (_energy, time, cpu_). For demonstration purposes the rows
+are sorted:
 
-                                                     Energy-, time-,  cpu- 
+- The four first rows have low energy, runtimes, and cpu;
+- While the final four rows run much slower and use more energy and cpu.
+
+
+                                                     Energy-, time-,t   cpu- 
     0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,   6.6, 248.4,  2.1
     0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,   6.6, 248.6,  2.0
     0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0,   6.6, 249.2,  2.0
@@ -150,50 +154,27 @@ any of the options listed above:
     1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.7, 519.0, 14.1
     1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.8, 518.6, 14.1
 
-
-
-ALl these rows show what happens when we run the same benchmark suite of tests.
-The _control options_ are shown at left (these are all the 0,1s) and the _effects_
-are shown at right (_energy, time, cpu_).
-Observe how:
-
-- the four first rows have low energy, runtimes, and cpu;
-- while the final four rows run much slower and use more energy and cpu.
-
-So (begin sarcasm), all we have to do is use the control options from  the best rows.
-But here are so many things wrong with doing that. 
-Firstly, as shown above, some columns seem to be using the same settings in the best and worst rows.
-  So we really need to be looking at _contrast sets_; i.e. things that are usually seen in best **and**
-  not seen in rest. What EZR does it builds two predictive models: one for the best examples and one for the rest.
-  These models check candidate configurations before we waste time running bad ones.
-  Each of these models guesses how likely a candidate is _best_ or _rest_. It then only runs
-  candidates where _likelihood(best)_ &gt; _likelihood(rest)_.
-
-Secondly, and this one is a huge problem,  it can be hard to access a large log
-of data showing the control options **and** their effects.
-In this example, we got lucky: some
-  researchers in Europe were kind enough to melt down their CPU farm and run nearly 1000 configurations.
-  In practice, this rarely happens. For one thing, it can be slow, expensive,
+The problem here is that real-wrold examples do not come with lots of accurate labels.
+For one thing, it can be slow, expensive,
   or impossible to run a large number of benchmarks.
 
 - Some benchmarks are so CPU expensive that we cannot run more a few dozen.
 - Some models (and their associated data collection and pre-processing) are so expensive to run more than a few times.
-- Some data sets measure the effects of their control variables using data collected from the field. For anything
-  associated with data from communities of humans, it can be impossible to ask (say) a software development team
-  to reset and rebuidl from scratch their entire product using diffeernt tools.
+- For any data discussing data
+  from communities of humans, it can be impossible to ask (say) a software development team
+  to reset and rebuild from scratch their entire product using different options.
 
 For this reason, SE makes extensive use of manual annotation methods[^ahmed25],  i.e. some subejct matter
 expert
 makes up values for the effects columns within a data set.
-  But manual annocation
-  can be both be  expensive[^costly] and error prone[^error]. Some resarechers have recently turned to large
-  language models to automate that kind of reasoning, with only mixed resuts. In one recent detailed
-  study on four differnt SE domains. Ahmed et al.[^ahmed25] concluded that these large
-  language models
-  should be used
-as conditional collaborators rather than drop-in replacements for human annotators
+  But manual annotation
+  can be both be  expensive[^costly] and error prone[^error]. To avoid that problem, some researchers have recently turned to large
+  language models to automate that kind of reasoning, with only mixed resuts.
+  That research concluded that AI tools 
+  cannot be used as 
+drop-in replacements for human annotators
 sicne their their utility depends on careful deployment, the use of confidence
-thresholds, and restriction to tasks with well-structured, repetitive data.
+thresholds, and restriction to tasks with well-structured, and repetitive data[^ahmed25]
 
 
 [^ahmed25]:  Toufique Ahmed, Premkumar Devanbu, Christoph Treude, and
@@ -233,17 +214,23 @@ In Proceedings of the 44th International Con- ference on Software
 Engineering, ICSE ’22, page 698–709, New York, NY, USA, 2022.
 Association for Computing Machinery
 
-To EZR's task is to find control options that lead to the better effects,
+So EZR's task is to find control options that lead to the better effects,
 _without_ having access to all those effects. If some control setting
-looks promising, it can ask that someone finds out its assocaited effects.
-But for all the above reasons, it really needs to ask the fewest number of times.
+looks promising, EZR can ask for details  on its associated effects.
+But for all the above reasons, those questions should only be asked a few times.
 
-To achieve this magic, EZR uses active learning. Four 
-control settings are randomly selected, their effects accessed,
-then sorted into the two _best_ and the two _rest_ rows.
-At this point EZr's memory contains a few rows with labelled effects;
-and many more rows 
-where we know what control optinons might be set, but we do not know their effects:
+EZR uses a simple A-B-C strategy to find good control options while
+asking the fewest questions.
+_A_ is the first step and this is short for ``ask anything''.
+EZE picks  $A$
+control settings  (selected at random), then sorts them by ther effects
+into
+two _best_ and the two _rest_ rows.
+At this point EZr's memory contains (a) a few rows with labelled effects;
+and (b) many more rows 
+showing many control options, but without any effect information. For _A=4_,
+this looks
+like this:
 
                                                      Energy-, time-,  cpu- 
     0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,   6.6, 248.4,  2.1 <== Best1
