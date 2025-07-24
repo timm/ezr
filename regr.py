@@ -81,13 +81,27 @@ def dataRead(file):
   return data
 
 #---------------------------------------------------------------------
-def distPoles(data):
-  out, east = [], random.choice(data.rows)
-  for _ in range(the.Poles):
-    west = random.choice(data.rows)
-    out += [(east, west, distx(data,east,west))]
-    east = west
-  return out
+def Tree(data):
+  stop = 2 * (len(data.rows)**.33)
+  def _go(rows, b4, depth, above)
+    if b4 > len(rows) >= stop:
+      one, *few = random.choices(rows, k=the.Few)
+      east = above or max(few, key=lambda r: distx(data,r,one))
+      west = max(few, key=lambda r: distx(data,r,east))
+      l,r,c = [], [], distx(data, east,west)
+      _project = lambda r: distProject(data,,r,east,west,c)
+      n = len(rows)
+      for i,row in enumerate(sorted(rows, key = _project)):
+        (l if i <= n//2 else r).append(row)
+      return o(left  = left,
+               right = right,
+               c     = c,
+               cut   = r[0],
+               depth = depth
+               here  = rows,
+               left  = _go(l, n, depth+1, east),  
+               right = _go(r, n, depth+1, west))
+  return _go(data.rows, BIG, 0, None)
 
 def disty(data,row):
   d = sum(abs(norm(c,row[c.at]) - c.goal)**the.p for c in data.cols.y)
@@ -107,21 +121,32 @@ def distx(data,r1,r2):
   d = sum(_dist(col)**the.p for col in data.cols.x)
   return (d / len(data.cols.x))**(1/the.p)
 
-def distInterpolate(data,row,east,west,c):
+def distProject(data,row,east,west,c):
   a = distx(data,row,east)
   b = distx(data,row,west)
-  x = (a*a + c*c - b*b) / (2*c + 1/BIG) / (c + 1/BIG)
-  y1,y2 = disty(data,east), disty(data,west)
-  return y1 + x*(y2 - y1)
-
-def distGuessY(data,row,poles): 
-  return sum(distInterpolate(data,row,*p) for p in poles)/len(poles)
+  return  (a*a + c*c - b*b) / (2*c + 1/BIG) 
 
 #---------------------------------------------------------------------
 def eg_h(): print(__doc__)
 
 def eg__data():
   for col in dataRead(the.file).cols.all: print(col)
+
+def eg__one():
+  data = dataRead(the.file)
+  out  = Num()
+  for _ in range(20):
+    random.shuffle(data.rows)
+    Y     = lambda r: disty(data,r)
+    R     = lambda x: str(round(x,2))
+    stats = adds([Y(r) for r in data.rows])
+    poles = distPoles(data)
+    Guess = lambda r: distGuessY(data,r,poles)
+    best  = sorted(data.rows, key=lambda r: Guess(r))
+    add(out, Y(sorted(best[:20], key=Y)[0]))
+  report = [(1- (out.mu - stats.lo)/(stats.mu - stats.lo)),
+            stats.mu, stats.lo, out.mu]
+  print(' '.join([R(x) for x in report]), the.file)
 
 def eg__int():
   data = dataRead(the.file)
