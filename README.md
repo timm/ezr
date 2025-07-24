@@ -237,8 +237,9 @@ The history of "Less AI":
 |----------|--------------------------|-----------------------|-----------------------------------------------------------------------------------------|
 | 1902     | PCA                      | Pearson               | Large datasets projected to a few components.                                           |
 | 1960s    | Narrows         | Amarel [^amarel]      | Chess search guided by tiny sets of key variable settings.                              |
+|1974|     | Prototypes| Chang [^chang74] | Speeding up nearest neighbor. Only use best exemplars. Discard 90% of data. |
 | 1980s    | ATMS       | de Kleer              | Diagnoses focus only on assumptions independent of others.                              |
-| 1984     | Distance-Preseration | Johnson & Lindenstrauss [^john84] | High-dimensional data can be embedded in low dimensions while preserving pairwise distances. |
+| 1984     | Distance-Preseration | Johnson and Lindenstrauss [^john84] | High-dimensional data can be embedded in low dimensions while preserving pairwise distances. |
 | 1996     | ISAMP                    | Crawford & Baker [^crawford] | Fast random retries outperform exhaustive backtracking.                                  |
 | 1997     | Feature Subset Selection | John & Kohavi [^kohavi97] | Up to 80% of features can be ignored without hurting accuracy.                          |
 | 2002     | Backdoors                | Williams et al. [^backdoor] | Setting a few variables reduces exponential runtimes to polynomial.                     |
@@ -249,7 +250,8 @@ The history of "Less AI":
 | 2010+    | Surrogate Models         | Various               | Optimizers can be approximated from small training sets.                                |
 | 2020s    | Model Distillation       | Various               | Large AI models reduced in size by orders of magnitude with little performance loss.    |
 
----
+
+[^chang74]: Chang, C. L. (1974). Finding Prototypes for Nearest Neighbor Classifiers. IEEE Transactions on Computers, C-23(11), 1179–1184.--
 
 
 Inspired by all this, I once write a quick and dirty demonstrator while teaching a graduate class
