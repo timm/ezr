@@ -1,5 +1,5 @@
 ---
-title: "Just Enough AI for Software Engineers"
+title: "A Little Less AI (tiny models, more power)"
 author:  "Tim Menzies<br>timm@ieee.org"
 date: "July, 2025"
 ---
@@ -13,6 +13,8 @@ _"Less, but better."_  --Dieter Rams
 
 _"Subtract."_ --Leidy Klotz
 ------------------------------------------------------
+
+To say the least, everyone is focused on big AI right that assumes
 
 What should we be teaching newcomers to software engineering? Talking
 with fellow instructors, we’ve noticed two growing challenges.
@@ -111,73 +113,6 @@ EZR excels at fast model building and external critique—an essential
   systems.
 
 
-## A Quick Demo
-
-Just for a quick overview of what EZR can do, suppose we want to configure a database.
-For this example, we want our
-database to run quick, without burning up too much energy or CPU time
-
-Looking in the  database's  compiler control files, we see an overwhelming number of options for configuring the database,
-including:
-
-- storage and indexing options dealing with
-  _table\_type, memory\_tables, cached\_tables, small\_cache, large\_cache, small\_log_;
-- transaction and locking options that deal with _transaction\_control\_ policies and various other txc (transaction ) issues
-  such as  _txc\_mvlocks_, _txc\_mvcc_, and _txc\_locks_
-- Logging and durability options that described options for  _detailed\_logging_ and _write\_delay_
-- Security options such as  _crypt\_aes_ and _crypt\_blowfish_;
-- Compression (which might be enabled or disabled);
-- etc
-
-Like many people, you are probably puzzled on how any of these
-these effect runtimes, cpu, or energy usage. 
-In an ideal world, some AI tool could help by learning from a large
-log that shows what options lead to what effects.
-In such a log,
-the _control options_ are shown at left (these are all the 0,1s) and the _effects_
-are shown at right (_energy, time, cpu_). If we sorted those rows best to worst
-then, as shown here:
-
-- The four first rows have low energy, runtimes, and cpu;
-- While the final four rows run much slower and use more energy and cpu.
-
-
-                                                     Energy-, time-,t   cpu- 
-    0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,   6.6, 248.4,  2.1
-    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,   6.6, 248.6,  2.0
-    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0,   6.6, 249.2,  2.0
-    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0,   6.6, 248.6,  2.1
-
-    [skipping 800 lines...]
-
-    0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.7, 519.8, 14.1
-    1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1,  16.8, 518.8, 14.1
-    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.7, 519.0, 14.1
-    1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.8, 518.6, 14.1
-
-The problem here is that real-world examples do not come with lots of accurate labels.
-For one thing, it can be slow, expensive,
-  or impossible to run a large number of benchmarks.
-
-- Some benchmarks are so CPU expensive that we cannot run more a few dozen.
-- Some models (and their associated data collection and pre-processing) are so expensive to run more than a few times.
-- For any data discussing data
-  from communities of humans, it can be impossible to ask (say) a software development team
-  to reset and rebuild from scratch their entire product using different options.
-
-For this reason, SE makes extensive use of manual annotation methods[^ahmed25],  i.e. some subejct matter
-expert
-makes up values for the effects columns within a data set.
-  But manual annotation
-  can be both be  expensive[^costly] and error prone[^error]. To avoid that problem, some researchers have recently turned to large
-  language models to automate that kind of reasoning, with only mixed resuts.
-  That research concluded that AI tools 
-  cannot be used as 
-drop-in replacements for human annotators
-sicne their their utility depends on careful deployment, the use of confidence
-thresholds, and restriction to tasks with well-structured, and repetitive data[^ahmed25]
-
-
 [^ahmed25]:  Toufique Ahmed, Premkumar Devanbu, Christoph Treude, and
 Michael Pradel. Can LLMs replace manual annotation of software
 engineering artifacts? In MSR’25, 2025
@@ -215,184 +150,63 @@ In Proceedings of the 44th International Con- ference on Software
 Engineering, ICSE ’22, page 698–709, New York, NY, USA, 2022.
 Association for Computing Machinery
 
-So EZR's task is to find control options that lead to the better effects,
-_without_ having access to all those effects. If some control setting
-looks promising, EZR can ask for details  on its associated effects.
-But for all the above reasons, those questions should only be asked a few times.
+## Installation
 
-EZR works using  a simple A-B-C strategy:
+To run the examples of this book:
 
-- _A_ is "ask anything". Here, EZR ask about, say,  _A=4_ randomly selected rows.
-- _B_ is "build models". Here, EZR can ask for the effects of up to, say,  _B=24_ rows.
-- _C_ is "check models". Here, 
-
-In the following example, EZR explores 800+ possible configurations after selecting:
-
-- _A=4_ randomly selected rows;
-- then building a model using the effects from up to _B=24_ rows;
-- then applying that model to _C=5_ further examples.
-
-In  the following, we build a configuration tool after looking at (24+5)/800=4% of the data.
-
-_A_ is the first step and this is short for "ask anything".
-EZE picks  _A_
-control settings  (selected at random), then sorts them by their effects.
-This set is the dvided
-into
-two _best_ and the two _rest_ rows.
-At this point EZr's memory contains (i) a few rows with labelled effects;
-and (ii) many more rows 
-showing many control options, but without any effect information. For _A=4_,
-this looks
-like this:
-
-
-    2 Best rows:
-                                                         Energy-, time-,  cpu- 
-        0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,   6.6, 248.4,  2.1 <== Best1
-        0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,   6.6, 248.6,  2.0 <== Best2
-    
-    2 Rest rows:
-    
-        0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.7, 519.8, 14.1 <== Rest1
-        1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.8, 518.6, 14.1 <== Rest2
-    
-    Many more rows, with nothing known about their effects:
-    
-        0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,     ?,     ?,    ?
-        1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1,     ?,     ?,    ?
-        1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,     ?,     ?,    ?
-        1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,     ?,     ?,    ?
-    
-        [skipping 800 lines...]
-    
-Next, in the _B_ (for "build") phase, we label up to _B_ rows in order
-to "build" models. "Labeling" is the process of taking some options, and
-finding out the effects. This can be done many ways including running some code,
-go out and take a look and some specific effect, or manual annotation (i.e. asking a subject matter expert).
-
-"Building" is an incremental process.
-For anything not yet labelled, EZR looks for one row that is
-more more likely to be _best_,
-then _rest_. This is labelled and sorted into _best_ or  _rest_ rows.
-If _best_ ever grows in size more than the square root of the number of labels,
-then the worst _best_ row is jumped over to _rest_ (in this way, _best_ 
-progressively contains more and more of the better rows). After one more label
-is collected, EZR's memory looks like this (note that five things are labelled
-and divided into 2 best and 3 rest).
-)
-
-
-    2 Best rows:
-                                                         Energy-, time-,  cpu- 
-        0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0,   6.6, 248.4,  2.1 <== Best1
-        0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,   6.6, 248.6,  2.0 <== Best2
-    
-    3 Rest rows:
-    
-        0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0,   6.6, 249.2,  2.0 <== Rest1
-        0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.7, 519.8, 14.1 <== Rest2
-        1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.8, 518.6, 14.1 <== Rest3
-    
-    Many more rows, with nothing known about their effects:
-    
-        0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,     ?,     ?,    ?
-        1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1,     ?,     ?,    ?
-        1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,     ?,     ?,    ?
-        1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,     ?,     ?,    ?
-    
-        [skipping 800 lines...]
-
-"Build" repeats itself until _B_ items are labelled.  The labelled rows are then given
-to a tree learner that 
-is given to a tree learner. For _B=24_,  that generates  a tree with 21 nodes and niWe ne leaf nodes:
-    
-     win 
-    ----
-      74    crypt_blowfish == 0
-      90    |  memory_tables == 1
-      96    |  |  small_log == 0
-      97    |  |  |  logging == 0
-      98    |  |  |  |  txc_mvlocks == 0
-      99    |  |  |  |  |  no_write_delay == 0;   <==== LEAF #1
-      97    |  |  |  |  |  no_write_delay == 1
-      97    |  |  |  |  |  |  encryption == 1;    <==== LEAF #2
-      95    |  |  |  logging == 1
-      95    |  |  |  |  no_write_delay == 1
-      96    |  |  |  |  |  encryption == 1;       <==== LEAF #3
-      95    |  |  |  |  |  encryption == 0;       <==== LEAF #4
-      80    |  |  small_log == 1
-      84    |  |  |  txc_mvcc == 0
-      87    |  |  |  |  compressed_script == 0
-      90    |  |  |  |  |  encryption == 0;       <==== LEAF #5
-      85    |  |  |  |  |  encryption == 1;       <==== LEAF #6
-      76    |  |  |  |  compressed_script == 1;   <==== LEAF #7
-     -23    |  memory_tables == 0
-     -15    |  |  compressed_script == 0;         <==== LEAF #8
-    -518    crypt_blowfish == 1
-    -273    |  txc_mvlocks == 0;                  <==== LEAD #9
-      
-In this tree, "win" reports how close we get to the best value. 
-In this example, we have over 800 rows. 
-"Win" is calculated by an agent with  magical powers that  knows all the effects on all the rows.
-In our 800 rows there is a middle and best value for all effects. If this tree selects rows with a mean effect of _x_,  then: 
-
-$$win=100*(1- (x-best)/(middle-best))$$
-
-Negative "wins" mean you are making things worst. A zero "win" means not improvement. And a "win" of 100 means you have found the best.
-We see in this tree that of the 18 configurations we might use, we only need to adjust give to achieve
-the
-largest win (see the 99% win of "LEAF \#1"). Reading from the top of the tree, those five choices are:
-
-    crypt_blowfish == 0
-    |  memory_tables == 1
-    |  |  small_log == 0
-    |  |  |  logging == 0
-    |  |  |  |  txc_mvlocks == 0
-    |  |  |  |  |  no_write_delay == 0;   <==== LEAF #1; win = 99%
-    
-It is prudent to ask if this tree, learned from just _B=24_ examples, is a good summary of
-the 800 rows used to generate it.
-Hence in the _C_ phas ("C" for "check") we apply the tree to all the rows.
-Each row selects for one of the leaves of the trees. Rows are then sorted by the mean of their selected leaves.
-If the  top _C=5_ rows are evaluated, the best row found in this way has a win in 98% (i.e. just a tiny
-bit less than the win predicted by the tree).
-
-How is it possible that we can build an effective model using just (24+5)/800=4% of the data?
-Well, returning to the little AI assumption,
-models are rare tiny gems obscured by irrelevant or noisy or redundant data.
-By ignoring superflous or confusing data, and focusing on just the things that distinguish
-good rsults from abd results,
-we can very quickly build very effective 
-models.
+    mkdir demo; cd demo
+    git clone https://github.com/timm/moot # <== data
+    git clone https://github.com/timm/ezr  # <== code
+    cd ezr
+    python3 -B ezr.py -f ../moot/optimize/config/SS-M.csv 
 
 ## A Quick Example
 
-Let’s say we want to configure a database to reduce energy use, runtime, and CPU load. The database exposes dozens of tuning options—storage, logging, locking, compression, encryption, and more. Understanding how each setting impacts performance is daunting.
+Just to give all this a little context, here's a quick example to get us going.
 
-Imagine we have a log of 800+ configurations, each showing binary control options and their effects:
+Say we want to configure a database to reduce energy use,
+runtime, and CPU load. The database exposes dozens of tuning
+options—storage, logging, locking, compression, encryption, and
+more. Understanding how each setting impacts performance is daunting.
+
+Imagine we have a log of 800+ configurations, each showing binary
+control options and their effects. Some settings are "best"
+and lead to low energy, runtime and cpu usage; e.g. 
 
 ```
+choices                     Effects
+----------------            -----------------------
 control settings →            Energy-, time-,  cpu-
-0,0,0,0,1,0,...               6.6,    248.4,   2.1   ← good
-1,1,0,1,1,1,...              16.8,    518.6,  14.1   ← bad
+0,0,0,0,1,0,...               6.6,    248.4,   2.1   ← best
+1,1,0,1,1,1,...              16.8,    518.6,  14.1   ← rest
 ...
 ```
 
-But here’s the problem: most real-world scenarios don’t come with complete logs. Labeling each configuration—e.g., by running benchmarks or consulting experts—is expensive, slow, or even impossible. So how can we learn anything useful?
+Given such a log, any number of AI tools could learn a model for what predicts for "best"
+and what avoids "rest".
+But here’s the problem: most real-world scenarios don’t come with
+complete logs. Labeling each configuration (e.g., by running benchmarks
+or consulting some human expert) is expensive, slow, and (sometimes) even impossible. So
+how can we learn anything useful, with least effort (i.e. after asking for fewest labels).
 
-That’s where **EZR** comes in. It follows a minimalist **A-B-C** strategy:
+That’s where **EZR** comes in. It uses a minimalist **A-B-C** strategy:
 
 - **A: Ask anything**  
-  Randomly sample a few rows (e.g., _A = 4_) and label them to seed the process.
+  Randomly sample a few rows (e.g., _A = 4_) and label them to seed the process. In this seed,
+  we build two models (one for "best" and one for "rest"). For unballed rows, this
+  models can report 
+  the likelihood that
+  some new example belongs to "best" or "rest" (these are called _b,r_).
   
 - **B: Build a model**  
-  Iteratively label up to _B = 24_ additional rows. Each new row is selected based on its potential to improve the model.
+  Iteratively label up to _B = 24_ additional rows. Each new row is selected based on its potential to improve the model
+  (specifically, we look for things that maximize $b/r$).
 
 - **C: Check the model**  
   Apply the model to all unlabeled rows, then evaluate just a few (e.g., _C = 5_) of the most promising ones.
 
-In this example, after labeling just 28 out of 800 rows (∼4%), EZR constructs a decision tree with interpretable rules. One path to a near-optimal configuration is:
+
+In this example, after labeling just 24 out of 800 rows (∼4%), EZR constructs a decision tree with interpretable rules. One path to a near-optimal configuration is:
 
 ```
 if crypt_blowfish == 0 and 
@@ -404,11 +218,58 @@ if crypt_blowfish == 0 and
 then win ≈ 99%
 ```
 
-To test this model, EZR applies it to all 800 rows and selects the top _C = 5_ rows it predicts to be best. The actual measured performance of those five rows confirms the model's judgment: the top pick is within 2% of the global best.
+In the above "win" is a measure of how close we get to optimum. A
+"win" of zero means we have not changed anything and a "win" of 100
+means we are found ways to select for the best values. This branch
+achieves a 99% "win" so it very nearly perfect.
 
-All this was achieved with only a few dozen queries and a few hundred lines of code.
+To test this model, EZR applies it to all 800 rows and selects the
+top _C = 5_ rows it predicts to be best. The actual measured
+performance of those five rows confirms the model's judgment: the
+top pick is within 2% of the global best.
+
+All this was achieved with only a few dozen queries, processed by just a few hundred lines of code.  
+Think of it as the Pareto principle on steroids. **Vilfredo Pareto** proposed that 80% of the gain often comes from just 20% of the work — and throughout the history of AI, many analogous results reinforce this idea:
+
+The history of "Less AI":
+
+| Year     | What                     | Who / System         | Notes                                                                                   |
+|----------|--------------------------|-----------------------|-----------------------------------------------------------------------------------------|
+| 1902     | PCA                      | Pearson               | Large datasets projected to a few components.                                           |
+| 1960s    | Narrows         | Amarel [^amarel]      | Chess search guided by tiny sets of key variable settings.                              |
+| 1980s    | ATMS       | de Kleer              | Diagnoses focus only on assumptions independent of others.                              |
+| 1984     | Distance-Preseration | Johnson & Lindenstrauss [^john84] | High-dimensional data can be embedded in low dimensions while preserving pairwise distances. |
+| 1996     | ISAMP                    | Crawford & Baker [^crawford] | Fast random retries outperform exhaustive backtracking.                                  |
+| 1997     | Feature Subset Selection | John & Kohavi [^kohavi97] | Up to 80% of features can be ignored without hurting accuracy.                          |
+| 2002     | Backdoors                | Williams et al. [^backdoor] | Setting a few variables reduces exponential runtimes to polynomial.                     |
+| 2005     | Semi-Supervised Learning | Zhou et al. [^zh05]   | Data often lies on low-dimensional manifolds inside high-dimensional spaces.            |
+| 2008     | Exemplars                | Menzies [^me08a]      | Small samples can summarize and model large datasets.                                   |
+| 2009     | Active Learning          | Settles [^settles09]  | Selectively query the most informative examples. <br>Unlike semi-supervised methods, the learner actively shapes its training set. |
+| 2005–20  | Key Vars in SE           | Menzies et al.        | Dozens of SE models controlled by just a few parameters.                                |
+| 2010+    | Surrogate Models         | Various               | Optimizers can be approximated from small training sets.                                |
+| 2020s    | Model Distillation       | Various               | Large AI models reduced in size by orders of magnitude with little performance loss.    |
 
 ---
+
+
+Inspired by all this, I once write a quick and dirty demonstrator while teaching a graduate class
+The resulting code (EZR, version 0.1) 
+ peeked at a random sample of the data to learn two tiny models _best_ and _rest_ models. 
+ It performed startlingly well. That led to several papers comparing EZR’s minimalist approach to state-of-the-art optimizers. In all cases, **EZR’s “less AI” performed just as well as the more complex systems.**
+
+**Long story short**: with EZR, as with much of intelligent system design,
+**success does not come from reasoning about everything**, but from identifying and leveraging just the **right few things**. This idea is widely known but rarely applied. In most cases, new problems are still tackled with overly complex, heavyweight AI tools. Perhaps we need to change that
+
+
+[^amarel]: S. Amarel, "On representations of problems of reasoning about actions", 1960s.  
+[^crawford]: C. Crawford & A. Baker, "Experimental Results with ISAMP", 1994.  
+[^john84]: W. Johnson and J. Lindenstrauss, "Extensions of Lipschitz mappings...", 1984.  
+[^kohavi97]: R. Kohavi and G. John, "Wrappers for feature subset selection", 1997.  
+[^zh05]: D. Zhou et al., "Learning with Local and Global Consistency", 2005.  
+[^backdoor]: R. Williams et al., "Backdoors to typical case complexity", 2002.  
+[^me08a]: T. Menzies, "The Few Key Rows", 2008 (or your actual source).  
+[^settles09]: B. Settles, "Active Learning Literature Survey", 2009.
+
 
 ## Discussion: Why This Works
 
@@ -420,17 +281,36 @@ Because labeling is expensive:
 - Some require rebuilding complex systems.
 - Manual annotation is costly and error-prone.
 
-Prior work shows that labeling large datasets can take years[^tu20][^yu22][^wu22]. Even using LLMs has limitations: they help only in narrow, well-structured tasks and still require careful deployment[^ahmed25].
+Prior work shows that labeling large datasets can take years[^tu20][^yu22][^wu22]. Even using big AI and large language models has limitations: they help only in narrow, well-structured tasks and still require careful deployment[^ahmed25].
 
 ### So how does EZR help?
 
-EZR is an **active learner**. It labels only the most informative rows and builds a model from them. This reflects the *little AI* philosophy: useful models are often tiny gems hidden in noisy or redundant data.
+The tiny AI assumption is that 
+models are  tiny gems obscured by much irrelevant or noisy or redundant data.
+Internally, EZR is an **contrastive active learner**. 
+By focusing on examples with large $b/r$ score, EZR 
+only processes a handful of examples that most distinguish good from bad.
+It labels only the most informative rows (and updates in models from that label).
+As a side-effect, this also  dodges 
+superfluous or confusing data.
+In this way, EZR 
+we can very quickly build very effective 
+models.
 
-You don’t need a mountain of information—just the right few examples.
+To say all that another way, you do not  need a mountain of information—just the right few examples.
+
 
 ### Why use a decision tree?
 
-Because trees are:
+Doing, without learning, means you are doomed to doing it all again, every time that  need arises.
+But if you can learn some generalization, then the next time something comes up, you already
+know how to handle it. According the physicist Enrst Rutherford, your explainations should be as simple
+as possible.
+
+
+> Ernst Rutherford: A theory that you can't explain to a bartender is probably no damn good
+
+Decision trees learned from $_B=24_$ examples are:
 
 - Fast to learn  
 - Interpretable  
@@ -442,18 +322,75 @@ Each node splits examples based on a binary feature. Leaves group similar config
 
 EZR uses a normalized utility score:
 
-```
-win = 100 × (1 - (x - best) / (median - best))
-```
+    win = 100 × (1 - (x - best) / (median - best))
 
-Where `x` is the performance of a configuration, `best` is the global best, and `median` is a typical value.  
-- A win of **100** means matching the best.  
-- A win of **0** means average.  
-- Negative wins mean regression.
+Here `x` is the performance of a configuration, `best` is the global best, and `median` is a typical value.  
+    - A win of **100** means matching the best.  
+    - A win of **0** means average.  
+    - Negative wins mean regression.
 
-### And what does this tell us?
+### How General is This?
 
-That complexity is often unnecessary. With small tools, small data, and smart strategies, we can solve real problems efficiently.
+For years, we have been collecting what are known as "search-based
+SE" problems into the MOOT repository (MOOT= multi-objective
+optimization tests).  The above case study is one of over 110 data
+sets in MOOT.  As shown by the following table, MOOT data can have up tp
+has 100,000 rows, over 1000 choices, and up to 3 effects. More usually,
+MOOT data
+has 10,000 rows,9 choices and 3 effects.
+
+|percentile|25| 50| 75|100|
+|---------:|---:|------:|-:|--:|
+|#rows     | 1023| 10,000|10,000| 100,000| 
+|#choices  | 5  | 9 | 20 |1,044|
+|#effects  | 2 | 3 | 3|3|
+
+
+To assess EZR on all that data, ten times, we divided each data set into a train and test set (50:50). Next:
+
+- A tree was built by EZR on the training data;
+- Test rows were sorted using the tree's predictions;
+- The top _C=5_  predictions were then labelled and the win of the best row was printed. 
+- Just as a prudence check, this was compared against dumb guessing. _C=5_ rows were picked random from the test set, sorted them by their labels, and win of the best row (selected by this
+dumb 
+   method) was printed.
+
+For this experiment, we used the same control parameters as seen above; i.e. _A,B,C_=4,24,5.
+Across these 10 experiments with 110 case studies, EZR usually found a "win" of 70%.
+
+|percentile| EZR | delta = EZR - dumb|
+---------:|-----:|-----:|
+|10 | 17 | -12|
+|20|  35| 0|
+| 30|  42| 0|
+| 40|  59| 3|
+| 50|  70| 8|
+| 60|  81| 15|
+| 70|  93| 27|
+| 80|  99| 43|
+| 90| 100 | 64|
+| 100| 100| 148|
+
+Here if the delta to "dumb" is zero or less, then EZR's trees do no better than dumb guessing.
+Note that "dumb" dies surprisingly well: 30% of the time, just bumbling around looking at five things does as good as anything else. 
+The success of "dumb" speaks volumes on the current obsession with big AI. Sure, sometimes we need very complex solutions. But in a surprisingly
+large number of cases, dumb old guessing does very well.
+
+That said, we should not use "dumb":
+
+- EZR's trees  often do  much better than dumb (see the large number of positive deltas). 
+- With the dumb method, there is no generalizing. From five randomly selected rows, it is hard to learn any generalization about the domain.
+- On the other hand, EZR does not just make recommendations. It also returns a 
+  tree describing how those recommendations are generated. That is, EZR lets other people audit or critique (or even complain) about how decisions are being made.
+
+It might be argued that "dumb" is preferred to EZR since it it so simple. That is perhaps not the  strongest argument. As shown below, EZR is not complex code (just a few hundred lines). 
+Also, it runs very
+fast. The entire experiment described about (10 trials over 110 data sets) took
+just 65 seconds (on a 10 core mac mini with no GPUs and only 16GB of memory.).
+
+### And what does all this tell us?
+
+That, sometimes, complexity is unnecessary. With small tools, small data, and smart strategies, we can solve real problems efficiently.
 
 **EZR** demonstrates how to teach and practice software engineering grounded in:
 
@@ -461,116 +398,11 @@ That complexity is often unnecessary. With small tools, small data, and smart st
 - Critique  
 - Ownership  
 
-—all without sacrificing performance.
+all without sacrificing performance.
 
----
 
 [^tu20]: Tu, Huy, Zhe Yu, and Tim Menzies. "Better data labelling with emblem (and how that impacts defect prediction)." *IEEE TSE*, 48.1 (2020): 2
 
-
-
-## Crap
-Finding useful models is a hence a progress of pruning anything
-that  is superfluous or confusing. To say that another way:
-
-In summary, 
-taht
-To answer those questions, first you have to check out the log (from the MOOT repository) and our code:
-
-    mkdir demo; cd demo
-    git clone https://github.com/timm/moot # <== data
-    git clone https://github.com/timm/ezr  # <== code
-    cd ezr
-    python3 -B ezr.py -f ../moot/optimize/config/SS-M.csv --tree 
-
-SS.M.csv is a comma-seperated fi
-
-he problem of finding and exmaplin the dofference between good deas na dnbad dieas.
-In this apprtciualr example, for a ``good idea'', we suppose we are tweaking the control paraameters
-on how to compile software for a database file. Such compiation is controlled by a Makefile
-cotnaining nmerous choises incuding the whether or not to do 11 things A,B...K.
-SLOC XXX
-
-the algenrativeXXX...
-A- =
-
-      3.0247 * B +
-      1.7922 * C +
-      0.6417 * D +
-      2.2354 * E +
-      1.6558 * F +
-      1.1448 * G +
-     15.6973 * H +
-     12.4552 * I +
-     16.5112 * J +
-     16.8096 * K +
-    200.4093
-
-B- =
-
-     -0.1742 * C +
-      0.2132 * F +
-      0.1585 * G +
-    -11.7985 * H +
-      2.2523 * I +
-      0.7718 * J +
-     -0.7594 * K +
-     27.0068
-
-|what | notes|
-|-----+------|
-|file  | SS-L.csv |
-|ows   | 1023 |
-|y    | 2 |
-|x    | 11 |
-|asIs   | 63 |
-|min    | 16 |
-
-|Samples |explit     | exokire| adapt |
-|--------+-----------+--------+-------|
-|15      |   29      |     38 |    30 |
-| 30     |  23       |     35 |    30 |
-|45      | **18 !!** |     35 |    38 |
-|60      | **20 !!** |     38 |    31 |
-|75      | **17 !!** |     33 |    28 |
-|100     | **17 !!** |     28 |    28 |
-
-
- d2h  win    n
----- ---- ----
-0.53    0   24
-0.38   60   10    K <= 0
-0.32   81    2    |  G <= 0;
-0.39   54    8    |  G > 0
-0.37   61    4    |  |  F <= 0
-0.36   66    2    |  |  |  D <= 0;
-0.38   57    2    |  |  |  D > 0;
-0.41   47    4    |  |  F > 0
-0.40   52    2    |  |  |  D <= 0;
-0.42   43    2    |  |  |  D > 0;
-0.63  -42   14    K > 0
-0.62  -35   12    |  H > 0
-0.61  -34    8    |  |  D > 0
-0.60  -31    6    |  |  |  G > 0
-0.59  -25    4    |  |  |  |  F > 0;
-0.63  -41    2    |  |  |  |  F <= 0;
-0.64  -44    2    |  |  |  G <= 0;
-0.62  -38    4    |  |  D <= 0
-0.61  -33    2    |  |  |  F <= 0;
-0.64  -43    2    |  |  |  F > 0;
-0.74  -85    2    |  H <= 0;
-
-The file ezr.py contains numerous demos that can be executed from the command line.
-For example, k-means clustering groups together similar examples by (a) picking
-$k$ centroids at random from amongst the rows of data; (b) labelling each example with he iid of of its nearest centroid; then (c) 
-
-<table>
-<tr><td>Fig1: axxx</td></tr><tr><td>
-
-The file ezr.py contains numerous demos that can be executed from the command line.
-For example, k-means clustering groups together similar examples by (a) picking
-$k$ centroids at random from amongst the _rows_ of data; (b) labelling each example with he iid of of its nearest centroid; then (c) 
-</td></tr></table>
 
 
 # Easer AI: Why?
@@ -636,11 +468,6 @@ people, this code comes with extensive digressions on how parts of
 it illustrate various aspects of SE, AI, or computer science.
 
 
-## A Quick Demo
-
-- A 
-- B
-- C
 ## Coding Style
 
 ### No OO
@@ -662,7 +489,6 @@ docu
 
 
 ### DSL 
-
 
 
 Rule of three

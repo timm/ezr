@@ -652,16 +652,20 @@ def daBest(data,rows=None):
 
 def eg__tree():
   data = dataRead(the.file)
-  base = has(disty(data,r) for r in data.rows)
-  someData= dataClone(data,
-                  acquire(data,data.rows,"klass").labels)
-  print(round(daBest(data),2))
-  tree = Tree(someData)
-  treeShow(tree)
-  for what,rows in dict(test=sorted(data.rows, key=lambda r: treeLeaf(tree,r).ys.mu)[:the.Check],
-                        rand=random.choices(data.rows,k=the.Check)).items():
-     win  = 100*(1 - (daBest(data,rows) - base.lo)/(base.mu - base.lo))
-     print(what,win)
+  n = len(data.rows)//2
+  repeats= 10
+  for _ in range(repeats):
+    random.shuffle(data.rows)
+    train, test = dataClone(data, data.rows[:n]), dataClone(data, data.rows[n:])
+    tree= Tree(
+                dataClone(data,
+                    acquire(train,train.rows,"klass").labels))
+    base = has(disty(test,r) for r in test.rows)
+    rx   = sorted(test.rows, key=lambda r: treeLeaf(tree,r).ys.mu)[:the.Check]
+    rx0  = random.choices(test.rows,k=the.Check)
+    win  = 100*(1 - (daBest(test,rx)  - base.lo)/(base.mu - base.lo))
+    win0 = 100*(1 - (daBest(test,rx0) - base.lo)/(base.mu - base.lo))
+    print("tree", int(win), "rand", int(win0) , "diff", int(win-win0))
 
 
 def eg__fmap():

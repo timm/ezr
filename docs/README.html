@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Tim Menzies timm@ieee.org" />
-  <title>Just Enough AI for Software Engineers</title>
+  <title>A Little Less AI (tiny models, more power)</title>
   <style>
     html {
       color: #1a1a1a;
@@ -235,7 +235,7 @@
 </head>
 <body>
 <header id="title-block-header">
-<h1 class="title">Just Enough AI for Software Engineers</h1>
+<h1 class="title">A Little Less AI (tiny models, more power)</h1>
 <p class="author">Tim Menzies<br>timm@ieee.org</p>
 <p class="date">July, 2025</p>
 </header>
@@ -259,6 +259,8 @@
 </tr>
 </tbody>
 </table>
+<p>To say the least, everyone is focused on big AI right that
+assumes</p>
 <p>What should we be teaching newcomers to software engineering? Talking
 with fellow instructors, we’ve noticed two growing challenges. First,
 students often lack practice in analyzing and critiquing code.
@@ -357,448 +359,420 @@ generation (you’ll still need LLMs for that), EZR excels at fast model
 building and external critique—an essential capability when teaching
 students to open up and reason about AI systems.</p></li>
 </ul>
-<h2 id="a-quick-demo">A Quick Demo</h2>
-<p>Just for a quick overview of what EZR can do, suppose we want to
-configure a database. For this example, we want our database to run
-quick, without burning up too much energy or CPU time</p>
-<p>Looking in the database’s compiler control files, we see an
-overwhelming number of options for configuring the database,
-including:</p>
-<ul>
-<li>storage and indexing options dealing with <em>table_type,
-memory_tables, cached_tables, small_cache, large_cache,
-small_log</em>;</li>
-<li>transaction and locking options that deal with _transaction_control_
-policies and various other txc (transaction ) issues such as
-<em>txc_mvlocks</em>, <em>txc_mvcc</em>, and <em>txc_locks</em></li>
-<li>Logging and durability options that described options for
-<em>detailed_logging</em> and <em>write_delay</em></li>
-<li>Security options such as <em>crypt_aes</em> and
-<em>crypt_blowfish</em>;</li>
-<li>Compression (which might be enabled or disabled);</li>
-<li>etc</li>
-</ul>
-<p>Like many people, you are probably puzzled on how any of these these
-effect runtimes, cpu, or energy usage. In an ideal world, some AI tool
-could help by learning from a large log that shows what options lead to
-what effects. All the <em>control options</em> are shown at left (these
-are all the 0,1s) and the <em>effects</em> are shown at right
-(<em>energy, time, cpu</em>). For demonstration purposes the rows are
-sorted:</p>
-<ul>
-<li>The four first rows have low energy, runtimes, and cpu;</li>
-<li>While the final four rows run much slower and use more energy and
-cpu.</li>
-</ul>
+<h2 id="installation">Installation</h2>
+<p>To run the examples of this book:</p>
 <div class="sourceCode" id="cb1"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>                                                 Energy<span class="op">-</span>, time<span class="op">-</span>,t   cpu<span class="op">-</span> </span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.4</span>,  <span class="fl">2.1</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.6</span>,  <span class="fl">2.0</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">249.2</span>,  <span class="fl">2.0</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.6</span>,  <span class="fl">2.1</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>[skipping <span class="dv">800</span> lines...]</span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.7</span>, <span class="fl">519.8</span>, <span class="fl">14.1</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.8</span>, <span class="fl">518.8</span>, <span class="fl">14.1</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.7</span>, <span class="fl">519.0</span>, <span class="fl">14.1</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.8</span>, <span class="fl">518.6</span>, <span class="fl">14.1</span></span></code></pre></div>
-<p>The problem here is that real-wrold examples do not come with lots of
-accurate labels. For one thing, it can be slow, expensive, or impossible
-to run a large number of benchmarks.</p>
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>mkdir demo<span class="op">;</span> cd demo</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>moot <span class="co"># &lt;== data</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>ezr  <span class="co"># &lt;== code</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>cd ezr</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>python3 <span class="op">-</span>B ezr.py <span class="op">-</span>f ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>config<span class="op">/</span>SS<span class="op">-</span>M.csv </span></code></pre></div>
+<h2 id="a-quick-example">A Quick Example</h2>
+<p>Just to give all this a little context, here’s a quick example to get
+us going.</p>
+<p>Say we want to configure a database to reduce energy use, runtime,
+and CPU load. The database exposes dozens of tuning options—storage,
+logging, locking, compression, encryption, and more. Understanding how
+each setting impacts performance is daunting.</p>
+<p>Imagine we have a log of 800+ configurations, each showing binary
+control options and their effects. Some settings are “best” and lead to
+low energy, runtime and cpu usage; e.g. </p>
+<pre><code>choices                     Effects
+----------------            -----------------------
+control settings →            Energy-, time-,  cpu-
+0,0,0,0,1,0,...               6.6,    248.4,   2.1   ← best
+1,1,0,1,1,1,...              16.8,    518.6,  14.1   ← rest
+...</code></pre>
+<p>Given such a log, any number of AI tools could learn a model for what
+predicts for “best” and what avoids “rest”. But here’s the problem: most
+real-world scenarios don’t come with complete logs. Labeling each
+configuration (e.g., by running benchmarks or consulting some human
+expert) is expensive, slow, and (sometimes) even impossible. So how can
+we learn anything useful, with least effort (i.e. after asking for
+fewest labels).</p>
+<p>That’s where <strong>EZR</strong> comes in. It uses a minimalist
+<strong>A-B-C</strong> strategy:</p>
 <ul>
-<li>Some benchmarks are so CPU expensive that we cannot run more a few
-dozen.</li>
-<li>Some models (and their associated data collection and
-pre-processing) are so expensive to run more than a few times.</li>
-<li>For any data discussing data from communities of humans, it can be
-impossible to ask (say) a software development team to reset and rebuild
-from scratch their entire product using different options.</li>
+<li><p><strong>A: Ask anything</strong><br />
+Randomly sample a few rows (e.g., <em>A = 4</em>) and label them to seed
+the process. In this seed, we build two models (one for “best” and one
+for “rest”). For unballed rows, this models can report the likelihood
+that some new example belongs to “best” or “rest” (these are called
+<em>b,r</em>).</p></li>
+<li><p><strong>B: Build a model</strong><br />
+Iteratively label up to <em>B = 24</em> additional rows. Each new row is
+selected based on its potential to improve the model (specifically, we
+look for things that maximize <span
+class="math inline"><em>b</em>/<em>r</em></span>).</p></li>
+<li><p><strong>C: Check the model</strong><br />
+Apply the model to all unlabeled rows, then evaluate just a few (e.g.,
+<em>C = 5</em>) of the most promising ones.</p></li>
 </ul>
-<p>For this reason, SE makes extensive use of manual annotation
-methods<a href="#fn13" class="footnote-ref" id="fnref13"
-role="doc-noteref"><sup>13</sup></a>, i.e. some subejct matter expert
-makes up values for the effects columns within a data set. But manual
-annotation can be both be expensive<a href="#fn14" class="footnote-ref"
-id="fnref14" role="doc-noteref"><sup>14</sup></a> and error prone<a
-href="#fn15" class="footnote-ref" id="fnref15"
-role="doc-noteref"><sup>15</sup></a>. To avoid that problem, some
-researchers have recently turned to large language models to automate
-that kind of reasoning, with only mixed resuts. That research concluded
-that AI tools cannot be used as drop-in replacements for human
-annotators sicne their their utility depends on careful deployment, the
-use of confidence thresholds, and restriction to tasks with
-well-structured, and repetitive data<a href="#fn16" class="footnote-ref"
-id="fnref16" role="doc-noteref"><sup>16</sup></a></p>
-<p>So EZR’s task is to find control options that lead to the better
-effects, <em>without</em> having access to all those effects. If some
-control setting looks promising, EZR can ask for details on its
-associated effects. But for all the above reasons, those questions
-should only be asked a few times.</p>
-<p>EZR works using a simple A-B-C strategy. <em>A</em> is the first step
-and this is short for “ask anything”. EZE picks <em>A</em> control
-settings (selected at random), then sorts them by their effects. This
-set is the dvided into two <em>best</em> and the two <em>rest</em> rows.
-At this point EZr’s memory contains (i) a few rows with labelled
-effects; and (ii) many more rows showing many control options, but
-without any effect information. For <em>A=4</em>, this looks like
-this:</p>
+<p>In this example, after labeling just 24 out of 800 rows (∼4%), EZR
+constructs a decision tree with interpretable rules. One path to a
+near-optimal configuration is:</p>
+<pre><code>if crypt_blowfish == 0 and 
+   memory_tables == 1 and 
+   small_log == 0 and 
+   logging == 0 and 
+   txc_mvlocks == 0 and 
+   no_write_delay == 0
+then win ≈ 99%</code></pre>
+<p>In the above “win” is a measure of how close we get to optimum. A
+“win” of zero means we have not changed anything and a “win” of 100
+means we are found ways to select for the best values. This branch
+achieves a 99% “win” so it very nearly perfect.</p>
+<p>To test this model, EZR applies it to all 800 rows and selects the
+top <em>C = 5</em> rows it predicts to be best. The actual measured
+performance of those five rows confirms the model’s judgment: the top
+pick is within 2% of the global best.</p>
+<p>All this was achieved with only a few dozen queries, processed by
+just a few hundred lines of code.<br />
+Think of it as the Pareto principle on steroids. <strong>Vilfredo
+Pareto</strong> proposed that 80% of the gain often comes from just 20%
+of the work — and throughout the history of AI, many analogous results
+reinforce this idea:</p>
+<p>The history of “Less AI”:</p>
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 17%" />
+<col style="width: 15%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr>
+<th>Year</th>
+<th>What</th>
+<th>Who / System</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1902</td>
+<td>PCA</td>
+<td>Pearson</td>
+<td>Large datasets projected to a few components.</td>
+</tr>
+<tr>
+<td>1960s</td>
+<td>Narrows</td>
+<td>Amarel <a href="#fn13" class="footnote-ref" id="fnref13"
+role="doc-noteref"><sup>13</sup></a></td>
+<td>Chess search guided by tiny sets of key variable settings.</td>
+</tr>
+<tr>
+<td>1980s</td>
+<td>ATMS</td>
+<td>de Kleer</td>
+<td>Diagnoses focus only on assumptions independent of others.</td>
+</tr>
+<tr>
+<td>1984</td>
+<td>Distance-Preseration</td>
+<td>Johnson &amp; Lindenstrauss <a href="#fn14" class="footnote-ref"
+id="fnref14" role="doc-noteref"><sup>14</sup></a></td>
+<td>High-dimensional data can be embedded in low dimensions while
+preserving pairwise distances.</td>
+</tr>
+<tr>
+<td>1996</td>
+<td>ISAMP</td>
+<td>Crawford &amp; Baker <a href="#fn15" class="footnote-ref"
+id="fnref15" role="doc-noteref"><sup>15</sup></a></td>
+<td>Fast random retries outperform exhaustive backtracking.</td>
+</tr>
+<tr>
+<td>1997</td>
+<td>Feature Subset Selection</td>
+<td>John &amp; Kohavi <a href="#fn16" class="footnote-ref" id="fnref16"
+role="doc-noteref"><sup>16</sup></a></td>
+<td>Up to 80% of features can be ignored without hurting accuracy.</td>
+</tr>
+<tr>
+<td>2002</td>
+<td>Backdoors</td>
+<td>Williams et al. <a href="#fn17" class="footnote-ref" id="fnref17"
+role="doc-noteref"><sup>17</sup></a></td>
+<td>Setting a few variables reduces exponential runtimes to
+polynomial.</td>
+</tr>
+<tr>
+<td>2005</td>
+<td>Semi-Supervised Learning</td>
+<td>Zhou et al. <a href="#fn18" class="footnote-ref" id="fnref18"
+role="doc-noteref"><sup>18</sup></a></td>
+<td>Data often lies on low-dimensional manifolds inside high-dimensional
+spaces.</td>
+</tr>
+<tr>
+<td>2008</td>
+<td>Exemplars</td>
+<td>Menzies <a href="#fn19" class="footnote-ref" id="fnref19"
+role="doc-noteref"><sup>19</sup></a></td>
+<td>Small samples can summarize and model large datasets.</td>
+</tr>
+<tr>
+<td>2009</td>
+<td>Active Learning</td>
+<td>Settles <a href="#fn20" class="footnote-ref" id="fnref20"
+role="doc-noteref"><sup>20</sup></a></td>
+<td>Selectively query the most informative examples. <br>Unlike
+semi-supervised methods, the learner actively shapes its training
+set.</td>
+</tr>
+<tr>
+<td>2005–20</td>
+<td>Key Vars in SE</td>
+<td>Menzies et al.</td>
+<td>Dozens of SE models controlled by just a few parameters.</td>
+</tr>
+<tr>
+<td>2010+</td>
+<td>Surrogate Models</td>
+<td>Various</td>
+<td>Optimizers can be approximated from small training sets.</td>
+</tr>
+<tr>
+<td>2020s</td>
+<td>Model Distillation</td>
+<td>Various</td>
+<td>Large AI models reduced in size by orders of magnitude with little
+performance loss.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p>Inspired by all this, I once write a quick and dirty demonstrator
+while teaching a graduate class The resulting code (EZR, version 0.1)
+peeked at a random sample of the data to learn two tiny models
+<em>best</em> and <em>rest</em> models. It performed startlingly well.
+That led to several papers comparing EZR’s minimalist approach to
+state-of-the-art optimizers. In all cases, <strong>EZR’s “less AI”
+performed just as well as the more complex systems.</strong></p>
+<p><strong>Long story short</strong>: with EZR, as with much of
+intelligent system design, <strong>success does not come from reasoning
+about everything</strong>, but from identifying and leveraging just the
+<strong>right few things</strong>. This idea is widely known but rarely
+applied. In most cases, new problems are still tackled with overly
+complex, heavyweight AI tools. Perhaps we need to change that</p>
+<h2 id="discussion-why-this-works">Discussion: Why This Works</h2>
+<h3 id="why-not-label-everything">Why not label everything?</h3>
+<p>Because labeling is expensive:</p>
+<ul>
+<li>Some benchmarks are slow to run.</li>
+<li>Some require rebuilding complex systems.</li>
+<li>Manual annotation is costly and error-prone.</li>
+</ul>
+<p>Prior work shows that labeling large datasets can take years<a
+href="#fn21" class="footnote-ref" id="fnref21"
+role="doc-noteref"><sup>21</sup></a><a href="#fn22" class="footnote-ref"
+id="fnref22" role="doc-noteref"><sup>22</sup></a><a href="#fn23"
+class="footnote-ref" id="fnref23" role="doc-noteref"><sup>23</sup></a>.
+Even using big AI and large language models has limitations: they help
+only in narrow, well-structured tasks and still require careful
+deployment<a href="#fn24" class="footnote-ref" id="fnref24"
+role="doc-noteref"><sup>24</sup></a>.</p>
+<h3 id="so-how-does-ezr-help">So how does EZR help?</h3>
+<p>The tiny AI assumption is that models are tiny gems obscured by much
+irrelevant or noisy or redundant data. Internally, EZR is an
+<strong>contrastive active learner</strong>. By focusing on examples
+with large <span class="math inline"><em>b</em>/<em>r</em></span> score,
+EZR only processes a handful of examples that most distinguish good from
+bad. It labels only the most informative rows (and updates in models
+from that label). As a side-effect, this also dodges superfluous or
+confusing data. In this way, EZR we can very quickly build very
+effective models.</p>
+<p>To say all that another way, you do not need a mountain of
+information—just the right few examples.</p>
+<h3 id="why-use-a-decision-tree">Why use a decision tree?</h3>
+<p>Doing, without learning, means you are doomed to doing it all again,
+every time that need arises. But if you can learn some generalization,
+then the next time something comes up, you already know how to handle
+it. According the physicist Enrst Rutherford, your explainations should
+be as simple as possible.</p>
+<div class="line-block">Enrst Rtherford: A theory that you can’t explain
+to a bartender is probably no damn good</div>
+<p>Decision trees learned from <span class="math inline">$_B=24_$</span>
+examples are:</p>
+<ul>
+<li>Fast to learn<br />
+</li>
+<li>Interpretable<br />
+</li>
+<li>Naturally sparse</li>
+</ul>
+<p>Each node splits examples based on a binary feature. Leaves group
+similar configurations. A single path in the tree becomes a recipe for
+improvement.</p>
+<h3 id="how-is-win-defined">How is “win” defined?</h3>
+<p>EZR uses a normalized utility score:</p>
 <div class="sourceCode" id="cb4"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> Best rows:</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                                                     Energy<span class="op">-</span>, time<span class="op">-</span>,  cpu<span class="op">-</span> </span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.4</span>,  <span class="fl">2.1</span> <span class="op">&lt;==</span> Best1</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.6</span>,  <span class="fl">2.0</span> <span class="op">&lt;==</span> Best2</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> Rest rows:</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.7</span>, <span class="fl">519.8</span>, <span class="fl">14.1</span> <span class="op">&lt;==</span> Rest1</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.8</span>, <span class="fl">518.6</span>, <span class="fl">14.1</span> <span class="op">&lt;==</span> Rest2</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>Many more rows, <span class="cf">with</span> nothing known about their effects:</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,     ?,     ?,    ?</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,     ?,     ?,    ?</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,     ?,     ?,    ?</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>,     ?,     ?,    ?</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    [skipping <span class="dv">800</span> lines...]</span></code></pre></div>
-<p>Next, in the <em>B</em> (for “build”) phase, we label up to
-<em>B</em> rows in order to “build” models. “Labeling” is the process of
-taking some options, and finding out the effects. This can be done many
-ways including running some code, go out and take a look and some
-specific effect, or manual annotation (i.e. asking a subject matter
-expert).</p>
-<p>“Building” is an incremental process. For anything not yet labelled,
-EZR looks for one row that is more more likely to be <em>best</em>, then
-<em>rest</em>. This is labelled and sorted into <em>best</em> or
-<em>rest</em> rows. If <em>best</em> ever grows in size more than the
-square root of the number of labels, then the worst <em>best</em> row is
-jumped over to <em>rest</em> (in this way, <em>best</em> progressively
-contains more and more of the better rows). After one more label is
-collected, EZR’s memory looks like this (note that five things are
-labelled and divided into 2 best and 3 rest). )</p>
-<p><small></p>
+class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>win <span class="op">=</span> <span class="dv">100</span> × (<span class="dv">1</span> <span class="op">-</span> (x <span class="op">-</span> best) <span class="op">/</span> (median <span class="op">-</span> best))</span></code></pre></div>
+<p>Here <code>x</code> is the performance of a configuration,
+<code>best</code> is the global best, and <code>median</code> is a
+typical value.</p>
 <div class="sourceCode" id="cb5"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> Best rows:</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                                                     Energy<span class="op">-</span>, time<span class="op">-</span>,  cpu<span class="op">-</span> </span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.4</span>,  <span class="fl">2.1</span> <span class="op">&lt;==</span> Best1</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">248.6</span>,  <span class="fl">2.0</span> <span class="op">&lt;==</span> Best2</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span> Rest rows:</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>,   <span class="fl">6.6</span>, <span class="fl">249.2</span>,  <span class="fl">2.0</span> <span class="op">&lt;==</span> Rest1</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.7</span>, <span class="fl">519.8</span>, <span class="fl">14.1</span> <span class="op">&lt;==</span> Rest2</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>,  <span class="fl">16.8</span>, <span class="fl">518.6</span>, <span class="fl">14.1</span> <span class="op">&lt;==</span> Rest3</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>Many more rows, <span class="cf">with</span> nothing known about their effects:</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,     ?,     ?,    ?</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,     ?,     ?,    ?</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>,     ?,     ?,    ?</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>,     ?,     ?,    ?</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    [skipping <span class="dv">800</span> lines...]</span></code></pre></div>
-<p></small></p>
-<p>“Build” repeats itself until <em>B</em> items are labelled. The
-labelled rows are then given to a tree learner that is given to a tree
-learner. For <em>B=24</em>, that generates a tree with 21 nodes and nice
-leaf nodes:</p>
-<div class="sourceCode" id="cb6"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a> win </span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="op">----</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="dv">74</span>    crypt_blowfish <span class="op">==</span> <span class="dv">0</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dv">90</span>    <span class="op">|</span>  memory_tables <span class="op">==</span> <span class="dv">1</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="dv">96</span>    <span class="op">|</span>  <span class="op">|</span>  small_log <span class="op">==</span> <span class="dv">0</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="dv">97</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  logging <span class="op">==</span> <span class="dv">0</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="dv">98</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  txc_mvlocks <span class="op">==</span> <span class="dv">0</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="dv">99</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  no_write_delay <span class="op">==</span> <span class="dv">0</span><span class="op">;</span>   <span class="op">&lt;====</span> LEAF <span class="co">#1</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="dv">97</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  no_write_delay <span class="op">==</span> <span class="dv">1</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">97</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  encryption <span class="op">==</span> <span class="dv">1</span><span class="op">;</span>    <span class="op">&lt;====</span> LEAF <span class="co">#2</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="dv">95</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  logging <span class="op">==</span> <span class="dv">1</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="dv">95</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  no_write_delay <span class="op">==</span> <span class="dv">1</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="dv">96</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  encryption <span class="op">==</span> <span class="dv">1</span><span class="op">;</span>       <span class="op">&lt;====</span> LEAF <span class="co">#3</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="dv">95</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  encryption <span class="op">==</span> <span class="dv">0</span><span class="op">;</span>       <span class="op">&lt;====</span> LEAF <span class="co">#4</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="dv">80</span>    <span class="op">|</span>  <span class="op">|</span>  small_log <span class="op">==</span> <span class="dv">1</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="dv">84</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  txc_mvcc <span class="op">==</span> <span class="dv">0</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="dv">87</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  compressed_script <span class="op">==</span> <span class="dv">0</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="dv">90</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  encryption <span class="op">==</span> <span class="dv">0</span><span class="op">;</span>       <span class="op">&lt;====</span> LEAF <span class="co">#5</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="dv">85</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  encryption <span class="op">==</span> <span class="dv">1</span><span class="op">;</span>       <span class="op">&lt;====</span> LEAF <span class="co">#6</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  <span class="dv">76</span>    <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  <span class="op">|</span>  compressed_script <span class="op">==</span> <span class="dv">1</span><span class="op">;</span>   <span class="op">&lt;====</span> LEAF <span class="co">#7</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a> <span class="op">-</span><span class="dv">23</span>    <span class="op">|</span>  memory_tables <span class="op">==</span> <span class="dv">0</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a> <span class="op">-</span><span class="dv">15</span>    <span class="op">|</span>  <span class="op">|</span>  compressed_script <span class="op">==</span> <span class="dv">0</span><span class="op">;</span>         <span class="op">&lt;====</span> LEAF <span class="co">#8</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="op">-</span><span class="dv">518</span>    crypt_blowfish <span class="op">==</span> <span class="dv">1</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="op">-</span><span class="dv">273</span>    <span class="op">|</span>  txc_mvlocks <span class="op">==</span> <span class="dv">0</span><span class="op">;</span>                  <span class="op">&lt;====</span> LEAD <span class="co">#9</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  </span></code></pre></div>
-<p>In this tree, “win” reports how close we get to the best value.
-Negative “wins” mean you are making things worst. A zero “win” means not
-improvement. And a “win” of 100 means you have found the best. In this
-example, we have over 800 rows. “Win” is calculated by an agent with
-magical powers that knows all the effects on all the rows. In those 800
-rows there is a middle and best value for all effects. If this tree
-selects rows with a mean effect of <em>x</em>, then:</p>
-<p><span
-class="math display"><em>w</em><em>i</em><em>n</em> = 100 * (1 − (<em>x</em> − <em>b</em><em>e</em><em>s</em><em>t</em>)/(<em>m</em><em>i</em><em>d</em><em>d</em><em>l</em><em>e</em> − <em>b</em><em>e</em><em>s</em><em>t</em>))</span></p>
-<p>Each branch of this tree selects f</p>
-<p>negative numbers say how far each conditions moves us from the mean
-result (of the original data) to the lowest</p>
-<p>taht To answer those questions, first you have to check out the log
-(from the MOOT repository) and our code:</p>
-<div class="sourceCode" id="cb7"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>mkdir demo<span class="op">;</span> cd demo</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>moot <span class="co"># &lt;== data</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>ezr  <span class="co"># &lt;== code</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>cd ezr</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>python3 <span class="op">-</span>B ezr.py <span class="op">-</span>f ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>config<span class="op">/</span>SS<span class="op">-</span>M.csv <span class="op">--</span>tree </span></code></pre></div>
-<p>SS.M.csv is a comma-seperated fi</p>
-<p>he problem of finding and exmaplin the dofference between good deas
-na dnbad dieas. In this apprtciualr example, for a ``good idea’’, we
-suppose we are tweaking the control paraameters on how to compile
-software for a database file. Such compiation is controlled by a
-Makefile cotnaining nmerous choises incuding the whether or not to do 11
-things A,B…K. SLOC XXX</p>
-<p>A- =</p>
-<div class="sourceCode" id="cb8"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>  <span class="fl">3.0247</span> <span class="op">*</span> B <span class="op">+</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fl">1.7922</span> <span class="op">*</span> C <span class="op">+</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.6417</span> <span class="op">*</span> D <span class="op">+</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fl">2.2354</span> <span class="op">*</span> E <span class="op">+</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fl">1.6558</span> <span class="op">*</span> F <span class="op">+</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fl">1.1448</span> <span class="op">*</span> G <span class="op">+</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a> <span class="fl">15.6973</span> <span class="op">*</span> H <span class="op">+</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a> <span class="fl">12.4552</span> <span class="op">*</span> I <span class="op">+</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a> <span class="fl">16.5112</span> <span class="op">*</span> J <span class="op">+</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a> <span class="fl">16.8096</span> <span class="op">*</span> K <span class="op">+</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="fl">200.4093</span></span></code></pre></div>
-<p>B- =</p>
-<div class="sourceCode" id="cb9"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a> <span class="op">-</span><span class="fl">0.1742</span> <span class="op">*</span> C <span class="op">+</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.2132</span> <span class="op">*</span> F <span class="op">+</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.1585</span> <span class="op">*</span> G <span class="op">+</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="op">-</span><span class="fl">11.7985</span> <span class="op">*</span> H <span class="op">+</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fl">2.2523</span> <span class="op">*</span> I <span class="op">+</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fl">0.7718</span> <span class="op">*</span> J <span class="op">+</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a> <span class="op">-</span><span class="fl">0.7594</span> <span class="op">*</span> K <span class="op">+</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a> <span class="fl">27.0068</span></span></code></pre></div>
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> A win of <span class="op">**</span><span class="dv">100</span><span class="op">**</span> means matching the best.  </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> A win of <span class="op">**</span><span class="dv">0</span><span class="op">**</span> means average.  </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> Negative wins mean regression.</span></code></pre></div>
+<h3 id="how-general-is-this">How General is This?</h3>
+<p>For years, we have been collecting what are known as “search-based
+SE” problems into the MOOT repository (MOOT= multi-objective
+optimization tests). The above case study is one of over 110 data sets
+in MOOT. As shown by the following table, MOOT data can have up tp has
+100,000 rows, over 1000 choices, and up to 3 effects. More usually, MOOT
+data has 10,000 rows,9 choices and 3 effects.</p>
 <table>
 <thead>
 <tr>
-<th>what</th>
-<th>notes</th>
+<th style="text-align: right;">percentile</th>
+<th style="text-align: right;">25</th>
+<th style="text-align: right;">50</th>
+<th style="text-align: right;">75</th>
+<th style="text-align: right;">100</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>file</td>
-<td>SS-L.csv</td>
+<td style="text-align: right;">#rows</td>
+<td style="text-align: right;">1023</td>
+<td style="text-align: right;">10,000</td>
+<td style="text-align: right;">10,000</td>
+<td style="text-align: right;">100,000</td>
 </tr>
 <tr>
-<td>ows</td>
-<td>1023</td>
+<td style="text-align: right;">#choices</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">1,044</td>
 </tr>
 <tr>
-<td>y</td>
-<td>2</td>
-</tr>
-<tr>
-<td>x</td>
-<td>11</td>
-</tr>
-<tr>
-<td>asIs</td>
-<td>63</td>
-</tr>
-<tr>
-<td>min</td>
-<td>16</td>
+<td style="text-align: right;">#effects</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
 </tr>
 </tbody>
 </table>
+<p>To assess EZR on all that data, ten times, we divided each data set
+into a train and test set (50:50). Next:</p>
+<ul>
+<li>A tree was built by EZR on the training data;</li>
+<li>Test rows were sorted using the tree’s predictions;</li>
+<li>The top <em>C=5</em> predictions were then labelled and the win of
+the best row was printed.</li>
+<li>Just as a prudence check, this was compared against dumb guessing.
+<em>C=5</em> rows were picked random from the test set, sorted them by
+their labels, and win of the best row (selected by this dumb method) was
+printed.</li>
+</ul>
+<p>For this experiment, we used the same control parameters as seen
+above; i.e. <em>A,B,C</em>=4,24,5. Across these 10 experiments with 110
+case studies, EZR usually found a “win” of 70%.</p>
 <table>
 <thead>
 <tr>
-<th>Samples</th>
-<th>explit</th>
-<th>exokire</th>
-<th>adapt</th>
+<th style="text-align: right;">percentile</th>
+<th style="text-align: right;">EZR</th>
+<th style="text-align: right;">delta = EZR - dumb</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>15</td>
-<td>29</td>
-<td>38</td>
-<td>30</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">-12</td>
 </tr>
 <tr>
-<td>30</td>
-<td>23</td>
-<td>35</td>
-<td>30</td>
-</tr>
-<tr>
-<td>45</td>
-<td><strong>18 !!</strong></td>
-<td>35</td>
-<td>38</td>
-</tr>
-<tr>
-<td>60</td>
-<td><strong>20 !!</strong></td>
-<td>38</td>
-<td>31</td>
-</tr>
-<tr>
-<td>75</td>
-<td><strong>17 !!</strong></td>
-<td>33</td>
-<td>28</td>
-</tr>
-<tr>
-<td>100</td>
-<td><strong>17 !!</strong></td>
-<td>28</td>
-<td>28</td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr>
-<th style="text-align: right;">d2h</th>
-<th style="text-align: right;">win</th>
-<th style="text-align: right;">n</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: right;">0.53</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">35</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">24</td>
 </tr>
 <tr>
-<td style="text-align: right;">0.38</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">42</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">8</td>
+</tr>
+<tr>
 <td style="text-align: right;">60</td>
-<td style="text-align: right;">10 K &lt;= 0</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.32</td>
 <td style="text-align: right;">81</td>
-<td style="text-align: right;">2 | G &lt;= 0;</td>
+<td style="text-align: right;">15</td>
 </tr>
 <tr>
-<td style="text-align: right;">0.39</td>
-<td style="text-align: right;">54</td>
-<td style="text-align: right;">8 | G &gt; 0</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">27</td>
 </tr>
 <tr>
-<td style="text-align: right;">0.37</td>
-<td style="text-align: right;">61</td>
-<td style="text-align: right;">4 | | F &lt;= 0</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.36</td>
-<td style="text-align: right;">66</td>
-<td style="text-align: right;">2 | | | D &lt;= 0;</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.38</td>
-<td style="text-align: right;">57</td>
-<td style="text-align: right;">2 | | | D &gt; 0;</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.41</td>
-<td style="text-align: right;">47</td>
-<td style="text-align: right;">4 | | F &gt; 0</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.40</td>
-<td style="text-align: right;">52</td>
-<td style="text-align: right;">2 | | | D &lt;= 0;</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">99</td>
 <td style="text-align: right;">43</td>
-<td style="text-align: right;">2 | | | D &gt; 0;</td>
 </tr>
 <tr>
-<td style="text-align: right;">0.63</td>
-<td style="text-align: right;">-42</td>
-<td style="text-align: right;">14 K &gt; 0</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">64</td>
 </tr>
 <tr>
-<td style="text-align: right;">0.62</td>
-<td style="text-align: right;">-35</td>
-<td style="text-align: right;">12 | H &gt; 0</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.61</td>
-<td style="text-align: right;">-34</td>
-<td style="text-align: right;">8 | | D &gt; 0</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.60</td>
-<td style="text-align: right;">-31</td>
-<td style="text-align: right;">6 | | | G &gt; 0</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.59</td>
-<td style="text-align: right;">-25</td>
-<td style="text-align: right;">4 | | | | F &gt; 0;</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.63</td>
-<td style="text-align: right;">-41</td>
-<td style="text-align: right;">2 | | | | F &lt;= 0;</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.64</td>
-<td style="text-align: right;">-44</td>
-<td style="text-align: right;">2 | | | G &lt;= 0;</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.62</td>
-<td style="text-align: right;">-38</td>
-<td style="text-align: right;">4 | | D &lt;= 0</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.61</td>
-<td style="text-align: right;">-33</td>
-<td style="text-align: right;">2 | | | F &lt;= 0;</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.64</td>
-<td style="text-align: right;">-43</td>
-<td style="text-align: right;">2 | | | F &gt; 0;</td>
-</tr>
-<tr>
-<td style="text-align: right;">0.74</td>
-<td style="text-align: right;">-85</td>
-<td style="text-align: right;">2 | H &lt;= 0;</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">148</td>
 </tr>
 </tbody>
 </table>
-<p>The file ezr.py contains numerous demos that can be executed from the
-command line. For example, k-means clustering groups together similar
-examples by (a) picking <span class="math inline"><em>k</em></span>
-centroids at random from amongst the rows of data; (b) labelling each
-example with he iid of of its nearest centroid; then (c)</p>
-<table>
-<tr>
-<td>
-Fig1: axxx
-</td>
-</tr>
-<tr>
-<td>
-The file ezr.py contains numerous demos that can be executed from the
-command line. For example, k-means clustering groups together similar
-examples by (a) picking <span class="math inline"><em>k</em></span>
-centroids at random from amongst the <em>rows</em> of data; (b)
-labelling each example with he iid of of its nearest centroid; then (c)
-</td>
-</tr>
-</table>
+<p>Here if the delta to “dumb” is zero or less, then EZR’s trees do no
+better than dumb guessing. Note that “dumb” dies surprisingly well: 30%
+of the time, just bumbling around looking at five things does as good as
+anything else. The success of “dumb” speaks volumes on the current
+obsession with big AI. Sure, sometimes we need very complex solutions.
+But in a surprisingly large number of cases, dumb old guessing does very
+well.</p>
+<p>That said, we should not use “dumb”:</p>
+<ul>
+<li>EZR’s trees often do much better than dumb (see the large number of
+positive deltas).</li>
+<li>With the dumb method, there is no generalizing. From five randomly
+selected rows, it is hard to learn any generalization about the
+domain.</li>
+<li>On the other hand, EZR does not just make recommendations. It also
+returns a tree describing how those recommendations are generated. That
+is, EZR lets other people audit or critique (or even complain) about how
+decisions are being made.</li>
+</ul>
+<p>It might be argued that “dumb” is preferred to EZR since it it so
+simple. That is perhaps not the strongest argument. As shown below, EZR
+is not complex code (just a few hundred lines). Also, it runs very fast.
+The entire experiment described about (10 trials over 110 data sets)
+took just 65 seconds (on a 10 core mac mini with no GPUs and only 16GB
+of memory.).</p>
+<h3 id="and-what-does-all-this-tell-us">And what does all this tell
+us?</h3>
+<p>That, sometimes, complexity is unnecessary. With small tools, small
+data, and smart strategies, we can solve real problems efficiently.</p>
+<p><strong>EZR</strong> demonstrates how to teach and practice software
+engineering grounded in:</p>
+<ul>
+<li>Simplicity<br />
+</li>
+<li>Critique<br />
+</li>
+<li>Ownership</li>
+</ul>
+<p>all without sacrificing performance.</p>
 <h1 id="easer-ai-why">Easer AI: Why?</h1>
 <p>This section offers motivation for exploring little AI tools like
 EZR.</p>
@@ -835,8 +809,8 @@ with tiny local stubs.</p>
 <p>Also, for <strong>teaching (or self-study)</strong>, it has often
 been suggested that 1,000 lines of code represents the practical limit
 in size for a program which is to be understood and maintained by a
-single individual<a href="#fn17" class="footnote-ref" id="fnref17"
-role="doc-noteref"><sup>17</sup></a>. Most AI tools either exceed this
+single individual<a href="#fn25" class="footnote-ref" id="fnref25"
+role="doc-noteref"><sup>25</sup></a>. Most AI tools either exceed this
 limit by two orders of magnitude, or else offer the user a very limited
 set of facilities, i.e. either the details of the system are
 inaccessible to all but the most determined, dedicated and
@@ -853,12 +827,7 @@ and practitioners of AI. Although not prepared primarily for use as a
 reference work, some will wish to use it as such. For those people, this
 code comes with extensive digressions on how parts of it illustrate
 various aspects of SE, AI, or computer science.</p>
-<h2 id="a-quick-demo-1">A Quick Demo</h2>
-<ul>
-<li>A</li>
-<li>B</li>
-<li>C ## Coding Style</li>
-</ul>
+<h2 id="coding-style">Coding Style</h2>
 <h3 id="no-oo">No OO</h3>
 <p>No OO. hatton.</p>
 <h3 id="dry">DRY</h3>
@@ -893,35 +862,36 @@ for some current data/</p>
 <h3 id="can-make-i-simpler">Can make i simpler</h3>
 <p>EZR was motivated by the current industrial obsession on Big AI that
 seems to be forgetting centuries of experience with data mining. As far
-back as 1901, Pearson<a href="#fn18" class="footnote-ref" id="fnref18"
-role="doc-noteref"><sup>18</sup></a> showed that tables of data with
+back as 1901, Pearson<a href="#fn26" class="footnote-ref" id="fnref26"
+role="doc-noteref"><sup>26</sup></a> showed that tables of data with
 <span class="math inline"><em>N</em></span> columns can be modeled with
 far fewer columns (where the latter are derived from the eigenvectors of
 a correlation information).</p>
 <p>Decades of subsequent work has shown that effective models can be
 built from data that cover tiny fractions of the possible data space<a
-href="#fn19" class="footnote-ref" id="fnref19"
-role="doc-noteref"><sup>19</sup></a>. Levnina and Biclet cwnote that</p>
+href="#fn27" class="footnote-ref" id="fnref27"
+role="doc-noteref"><sup>27</sup></a>. Levnina and Biclet cwnote that</p>
 <blockquote>
 <p>“The only reason any (learning) methods work … is that, in fact, the
 data are not truly high-dimensional. Rather, they are .. can be
 efficiently summarized in a space of a much lower dimension.</p>
 </blockquote>
 <p>(This remarks echoes an early conclusion from Johnson and
-Lindenstrauss <a href="#fn20" class="footnote-ref" id="fnref20"
-role="doc-noteref"><sup>20</sup></a>.).</p>
+Lindenstrauss <a href="#fn28" class="footnote-ref" id="fnref28"
+role="doc-noteref"><sup>28</sup></a>.).</p>
 <p>For example:</p>
 <ul>
 <li><strong>Many rows can be ignored</strong>: Data sets with thousands
-of rows can be modeled with just a few dozen samples[^me08a]. To explain
-this, suppose we only want to use models that are well supported by the
-data; i.e. supported by multiple rows in a table of data. This means
-that many rows in a table can be be replaced by a smaller number of
-exemplars.</li>
+of rows can be modeled with just a few dozen samples<a href="#fn29"
+class="footnote-ref" id="fnref29" role="doc-noteref"><sup>29</sup></a>.
+To explain this, suppose we only want to use models that are well
+supported by the data; i.e. supported by multiple rows in a table of
+data. This means that many rows in a table can be be replaced by a
+smaller number of exemplars.</li>
 <li><strong>Many columns can be ignored</strong>: High-dimensional
 tables (with many colummns) can be projected into lower dimensional
-tables while nearly preserving all pairwise distances<a href="#fn21"
-class="footnote-ref" id="fnref21" role="doc-noteref"><sup>21</sup></a>.
+tables while nearly preserving all pairwise distances<a href="#fn30"
+class="footnote-ref" id="fnref30" role="doc-noteref"><sup>30</sup></a>.
 This means that data sets with many columns can be modeled with
 surprisingly few columns. e.g. A table of (say) of <span
 class="math inline"><em>C</em> = 20</span> columns of binary variables
@@ -933,7 +903,8 @@ This is only possible if the signal in this data condenses to a small
 regions within the total data space.</li>
 <li>Researchers in semi-supervised learning note that high-dimensional
 data often lies on a simpler, lower-dimensional ”manifold” embedded
-within that higher space [^zh05].</li>
+within that higher space <a href="#fn31" class="footnote-ref"
+id="fnref31" role="doc-noteref"><sup>31</sup></a>.</li>
 </ul>
 <p>Numerous AI researchers studying NP-hard tasks report the existence
 of a small number of key variables that determine the behavior of the
@@ -944,8 +915,8 @@ controlling the keys.</p>
 names: Variable subset selection, narrows, master variables, and
 backdoors. In the 1960s, Amarel observed that search problems contain
 narrows; i.e. tiny sets of variable settings that must be used in any
-solution<a href="#fn22" class="footnote-ref" id="fnref22"
-role="doc-noteref"><sup>22</sup></a>. Amarel’s work defined macros that
+solution<a href="#fn32" class="footnote-ref" id="fnref32"
+role="doc-noteref"><sup>32</sup></a>. Amarel’s work defined macros that
 encode paths between the narrows in the search space, effectively
 permitting a search engine to leap quickly from one narrow to
 another.</p>
@@ -953,16 +924,16 @@ another.</p>
 examined what happens when a data miner deliberately ignores some of the
 variables in the training data. Kohavi and John report trials of data
 sets where up to 80% of the variables can be ignored without degrading
-classification accuracy<a href="#fn23" class="footnote-ref" id="fnref23"
-role="doc-noteref"><sup>23</sup></a>. Note the similarity with Amarel’s
+classification accuracy<a href="#fn33" class="footnote-ref" id="fnref33"
+role="doc-noteref"><sup>33</sup></a>. Note the similarity with Amarel’s
 work: it is more important to reason about a small set of important
 variables than about all the variables. At the same time, researchers in
 constraint satisfaction found “random search with retries” was a very
 effective strategy.</p>
 <p>Crawford and Baker reported that such searches took less time than a
 complete search to find more solutions using just a small number of
-retries<a href="#fn24" class="footnote-ref" id="fnref24"
-role="doc-noteref"><sup>24</sup></a>. Their ISAMP “iterative sampler”
+retries<a href="#fn34" class="footnote-ref" id="fnref34"
+role="doc-noteref"><sup>34</sup></a>. Their ISAMP “iterative sampler”
 makes random choices within a model until it gets “stuck”; i.e. until
 further choices do not satisfy expectations. When “stuck”, ISAMP does
 not waste time fiddling with current choices (as was done by older
@@ -982,8 +953,8 @@ far-flung master variables. For such models, if the reasoning gets stuck
 in one region, then the best thing to do is to leap at random to some
 distant part of the model.</p>
 <p>A similar conclusion comes from the work of Williams et al.<a
-href="#fn25" class="footnote-ref" id="fnref25"
-role="doc-noteref"><sup>25</sup></a>. They found that if a randomized
+href="#fn35" class="footnote-ref" id="fnref35"
+role="doc-noteref"><sup>35</sup></a>. They found that if a randomized
 search is repeated many times, that a small number of variable settings
 were shared by all solutions. They also found that if they set those
 variables before conducting the rest of the search, then formerly
@@ -996,20 +967,20 @@ the “key” decisions in RE models. Second, have stakeholders debate, and
 then decide, about the keys before exploring anything else. Third, to
 avoid trivially small solutions, our random search should strive to
 cover much of the model. Code:</p>
-<div class="sourceCode" id="cb10"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Data(src):</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(row):</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(interpolate(data,row,<span class="op">*</span>pole) <span class="cf">for</span> pole <span class="kw">in</span> poles)<span class="op">/</span><span class="bu">len</span>(poles)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  head, <span class="op">*</span>rows <span class="op">=</span> <span class="bu">list</span>(src)</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  data  <span class="op">=</span> _data(head, rows)</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  poles <span class="op">=</span> projections(data)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row <span class="kw">in</span> rows: row[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> _guess(row)</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> data</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Data(src):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(row):</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(interpolate(data,row,<span class="op">*</span>pole) <span class="cf">for</span> pole <span class="kw">in</span> poles)<span class="op">/</span><span class="bu">len</span>(poles)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  head, <span class="op">*</span>rows <span class="op">=</span> <span class="bu">list</span>(src)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  data  <span class="op">=</span> _data(head, rows)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  poles <span class="op">=</span> projections(data)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row <span class="kw">in</span> rows: row[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> _guess(row)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> data</span></code></pre></div>
 <h3 id="data">Data</h3>
 <p>Shared datasets from research papers by Apel [2], Chen <a
-href="#fn26" class="footnote-ref" id="fnref26"
-role="doc-noteref"><sup>26</sup></a>, and Menzies [^nair] are often used
+href="#fn36" class="footnote-ref" id="fnref36"
+role="doc-noteref"><sup>36</sup></a>, and Menzies [^nair] are often used
 as case studies of optimization in SE research papers. Chen and Menzies
 are collaborating to curate the MOOT repository (Multi-Objective
 Optimization Testing4) which offers datasets from recent SE optimization
@@ -1028,19 +999,19 @@ summary:</p>
 maximize and minimize.</li>
 </ul>
 <p>Data:</p>
-<div class="sourceCode" id="cb11"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>  x <span class="op">=</span> independent values          <span class="op">|</span> y <span class="op">=</span> dependent values</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">--------------------------------|----------------------</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  Spout_wait, Spliters, Counters, <span class="op">|</span> Throughput<span class="op">+</span>, Latency<span class="op">-</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>     <span class="dv">10</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">23075</span>,    <span class="fl">158.68</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">8</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22887</span>,    <span class="fl">172.74</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22799</span>,    <span class="fl">156.83</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">3</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22430</span>,    <span class="fl">160.14</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    ...,      ...,      ...,           ...,    ...</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">10</span>,      <span class="op">|</span>   <span class="fl">460.81</span>,    <span class="fl">8761.6</span></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">18</span>,      <span class="op">|</span>   <span class="fl">402.53</span>,    <span class="fl">8797.5</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">12</span>,      <span class="op">|</span>   <span class="fl">365.07</span>,    <span class="fl">9098.9</span></span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,        <span class="dv">1</span>,      <span class="op">|</span>   <span class="fl">310.06</span>,    <span class="dv">9421</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>  x <span class="op">=</span> independent values          <span class="op">|</span> y <span class="op">=</span> dependent values</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">--------------------------------|----------------------</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  Spout_wait, Spliters, Counters, <span class="op">|</span> Throughput<span class="op">+</span>, Latency<span class="op">-</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>     <span class="dv">10</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">23075</span>,    <span class="fl">158.68</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">8</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22887</span>,    <span class="fl">172.74</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22799</span>,    <span class="fl">156.83</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">3</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22430</span>,    <span class="fl">160.14</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    ...,      ...,      ...,           ...,    ...</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">10</span>,      <span class="op">|</span>   <span class="fl">460.81</span>,    <span class="fl">8761.6</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">18</span>,      <span class="op">|</span>   <span class="fl">402.53</span>,    <span class="fl">8797.5</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">12</span>,      <span class="op">|</span>   <span class="fl">365.07</span>,    <span class="fl">9098.9</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,        <span class="dv">1</span>,      <span class="op">|</span>   <span class="fl">310.06</span>,    <span class="dv">9421</span></span></code></pre></div>
 <p>Note that our data is much larger than the Table 3 example. The 39
 data sets in Table I have up to 86,000 rows, 88 independent variables,
 and three y goals. For the purposes of illustration, the rows in Table 3
@@ -1120,68 +1091,100 @@ role="doc-backlink">↩︎</a></p></li>
 Multi-objective optimization tests. 2025. <a
 href="http://github.com/timm/moot">http://github.com/timm/moot</a><a
 href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn13"><p>Toufique Ahmed, Premkumar Devanbu, Christoph Treude,
-and Michael Pradel. Can LLMs replace manual annotation of software
-engineering artifacts? In MSR’25, 2025<a href="#fnref13"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn14"><p>slow Recently Tu et al.[^tu20] we were studying one
-same of 700+ software projects, including 476K commit files. After an
-extensive analysis, they proposed a cost model for labeling that data.
-Assuming two people checking per commit, that data would need three
-years of effort to label the data.<a href="#fnref14"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn15"><p>Human annotators often make many mismakes. For example,
-Yu et al.’s technical debt analysis [^yu22] revealed that 90% of
-purported false positives actually represented manual labeling er- rors.
-Similar patterns of errors in manual annotations are found in security
-defect identification [^wu22] and static analysis false positive
-classification [^yang22].<a href="#fnref15" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn16"><p>Toufique Ahmed, Premkumar Devanbu, Christoph Treude,
-and Michael Pradel. Can LLMs replace manual annotation of software
-engineering artifacts? In MSR’25, 2025<a href="#fnref16"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn17"><p>Lions, John (1996). Lions’ Commentary on UNIX 6th
-Edition with Source Code. Peer-to-Peer Communications. ISBN
-978-1-57398-013-5.<a href="#fnref17" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn18"><p>Pearson, K. (1901). “On Lines and Planes of Closest Fit
-to Systems of Points in Space”. Philosophical Magazine. 2 (11): 559–572.
-10.1080/14786440109462720.<a href="#fnref18" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn19"><p>I. Witten, E. Frank, and M. Hall. Data Mining:
-Practical Machine Learning Tools and Techniques Morgan Kaufmann Series
-in Data Management Systems Morgan Kaufmann, Amsterdam, 3 edition,
-(2011)<a href="#fnref19" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn20"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
-lipschitz mappings into a hilbert space,” Contemporary Mathematics,
-vol. 26, pp. 189–206, 1984.<a href="#fnref20" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn21"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
-lipschitz mappings into a hilbert space,” Contemporary Mathematics,
-vol. 26, pp. 189–206, 1984.<a href="#fnref21" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn22"><p>S. Amarel, “Program synthesis as a theory formation
+<li id="fn13"><p>S. Amarel, “Program synthesis as a theory formation
 task: problem representations and solution methods,” in Machine
 Learning: An Artificial Intelligence Approach. Morgan Kaufmann, 1986.<a
-href="#fnref22" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn23"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
-selection,” Artif. Intell., vol. 97, no. 1-2, pp. 273–324, Dec. 1997.<a
-href="#fnref23" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn24"><p>J. M. Crawford and A. B. Baker, “Experimental results
+href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn14"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+lipschitz mappings into a hilbert space,” Contemporary Mathematics,
+vol. 26, pp. 189–206, 1984.<a href="#fnref14" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn15"><p>J. M. Crawford and A. B. Baker, “Experimental results
 on the application of satisfiability algorithms to scheduling problems,”
 in Proceedings of the Twelfth National Conference on Artificial
 Intelligence (Vol. 2), Menlo Park, CA, USA, 1994, pp. 1092–1097.<a
-href="#fnref24" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn25"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
+href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn16"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
+selection,” Artif. Intell., vol. 97, no. 1-2, pp. 273–324, Dec. 1997.<a
+href="#fnref16" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn17"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
 typical case complexity,” in Proceedings of the International Joint
-Conference on Artificial Intelligence, 2003.<a href="#fnref25"
+Conference on Artificial Intelligence, 2003.<a href="#fnref17"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn26"><p>M. Li, T. Chen, and X. Yao, “How to evaluate solutions
+<li id="fn18"><p>D. Zhou et al., “Learning with Local and Global
+Consistency”, 2005.<a href="#fnref18" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn19"><p>T. Menzies, “The Few Key Rows”, 2008 (or your actual
+source).<a href="#fnref19" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn20"><p>B. Settles, “Active Learning Literature Survey”,
+2009.<a href="#fnref20" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn21"><p>Tu, Huy, Zhe Yu, and Tim Menzies. “Better data
+labelling with emblem (and how that impacts defect prediction).”
+<em>IEEE TSE</em>, 48.1 (2020): 2<a href="#fnref21"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn22"><p>Zhe Yu, Fahmid Morshed Fahid, Huy Tu, and Tim Menzies.
+Identifying self-admitted technical debts with jitterbug: A two-step
+approach. IEEE Transactions on Software Engineering, 48(5):1676–1691,
+2022.<a href="#fnref22" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn23"><p>Xiaoxue Wu, Wei Zheng, Xin Xia, and David Lo. Data
+quality matters: A case study on data label correctness for security bug
+report prediction. IEEE Transactions on Software Engineering,
+48(7):2541–2556, 2022.<a href="#fnref23" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn24"><p>Toufique Ahmed, Premkumar Devanbu, Christoph Treude,
+and Michael Pradel. Can LLMs replace manual annotation of software
+engineering artifacts? In MSR’25, 2025<a href="#fnref24"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn25"><p>Lions, John (1996). Lions’ Commentary on UNIX 6th
+Edition with Source Code. Peer-to-Peer Communications. ISBN
+978-1-57398-013-5.<a href="#fnref25" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn26"><p>Pearson, K. (1901). “On Lines and Planes of Closest Fit
+to Systems of Points in Space”. Philosophical Magazine. 2 (11): 559–572.
+10.1080/14786440109462720.<a href="#fnref26" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn27"><p>I. Witten, E. Frank, and M. Hall. Data Mining:
+Practical Machine Learning Tools and Techniques Morgan Kaufmann Series
+in Data Management Systems Morgan Kaufmann, Amsterdam, 3 edition,
+(2011)<a href="#fnref27" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn28"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+lipschitz mappings into a hilbert space,” Contemporary Mathematics,
+vol. 26, pp. 189–206, 1984.<a href="#fnref28" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn29"><p>T. Menzies, “The Few Key Rows”, 2008 (or your actual
+source).<a href="#fnref29" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn30"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+lipschitz mappings into a hilbert space,” Contemporary Mathematics,
+vol. 26, pp. 189–206, 1984.<a href="#fnref30" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn31"><p>D. Zhou et al., “Learning with Local and Global
+Consistency”, 2005.<a href="#fnref31" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn32"><p>S. Amarel, “Program synthesis as a theory formation
+task: problem representations and solution methods,” in Machine
+Learning: An Artificial Intelligence Approach. Morgan Kaufmann, 1986.<a
+href="#fnref32" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn33"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
+selection,” Artif. Intell., vol. 97, no. 1-2, pp. 273–324, Dec. 1997.<a
+href="#fnref33" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn34"><p>J. M. Crawford and A. B. Baker, “Experimental results
+on the application of satisfiability algorithms to scheduling problems,”
+in Proceedings of the Twelfth National Conference on Artificial
+Intelligence (Vol. 2), Menlo Park, CA, USA, 1994, pp. 1092–1097.<a
+href="#fnref34" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn35"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
+typical case complexity,” in Proceedings of the International Joint
+Conference on Artificial Intelligence, 2003.<a href="#fnref35"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn36"><p>M. Li, T. Chen, and X. Yao, “How to evaluate solutions
 in pareto-based search-based software engineering: A critical review and
 methodological guidance,” IEEE Transactions on Software Engineering,
-vol. 48, no. 5, pp. 1771–1799, 2022<a href="#fnref26"
+vol. 48, no. 5, pp. 1771–1799, 2022<a href="#fnref36"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
