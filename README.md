@@ -133,9 +133,10 @@ Like many people, you are probably puzzled on how any of these
 these effect runtimes, cpu, or energy usage. 
 In an ideal world, some AI tool could help by learning from a large
 log that shows what options lead to what effects.
-All the _control options_ are shown at left (these are all the 0,1s) and the _effects_
-are shown at right (_energy, time, cpu_). For demonstration purposes the rows
-are sorted:
+In such a log,
+the _control options_ are shown at left (these are all the 0,1s) and the _effects_
+are shown at right (_energy, time, cpu_). If we sorted those rows best to worst
+then, as shown here:
 
 - The four first rows have low energy, runtimes, and cpu;
 - While the final four rows run much slower and use more energy and cpu.
@@ -154,7 +155,7 @@ are sorted:
     1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1,  16.7, 519.0, 14.1
     1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,  16.8, 518.6, 14.1
 
-The problem here is that real-wrold examples do not come with lots of accurate labels.
+The problem here is that real-world examples do not come with lots of accurate labels.
 For one thing, it can be slow, expensive,
   or impossible to run a large number of benchmarks.
 
@@ -219,10 +220,24 @@ _without_ having access to all those effects. If some control setting
 looks promising, EZR can ask for details  on its associated effects.
 But for all the above reasons, those questions should only be asked a few times.
 
-EZR works using  a simple A-B-C strategy.
+EZR works using  a simple A-B-C strategy:
+
+- _A_ is "ask anything". Here, EZR ask about, say,  _A=4_ randomly selected rows.
+- _B_ is "build models". Here, EZR can ask for the effects of up to, say,  _B=24_ rows.
+- _C_ is "check models". Here, 
+
+In the following example, EZR explores 800+ possible configurations after selecting:
+
+- _A=4_ randomly selected rows;
+- then building a model using the effects from up to _B=24_ rows;
+- then applying that model to _C=5_ further examples.
+
+In  the following, we build a configuration tool after looking at (24+5)/800=4% of the data.
+
 _A_ is the first step and this is short for "ask anything".
 EZE picks  _A_
-control settings  (selected at random), then sorts them by ther effects
+control settings  (selected at random), then sorts them by their effects.
+This set is the dvided
 into
 two _best_ and the two _rest_ rows.
 At this point EZr's memory contains (i) a few rows with labelled effects;
@@ -259,11 +274,11 @@ go out and take a look and some specific effect, or manual annotation (i.e. aski
 "Building" is an incremental process.
 For anything not yet labelled, EZR looks for one row that is
 more more likely to be _best_,
-then _rest_. This labelled and sorted into _best_ or  _rest_ rows.
+then _rest_. This is labelled and sorted into _best_ or  _rest_ rows.
 If _best_ ever grows in size more than the square root of the number of labels,
 then the worst _best_ row is jumped over to _rest_ (in this way, _best_ 
 progressively contains more and more of the better rows). After one more label
-is collected, EZR's emmory looks like this (note that five thigns are labelled
+is collected, EZR's memory looks like this (note that five things are labelled
 and divided into 2 best and 3 rest).
 )
 
@@ -287,39 +302,178 @@ and divided into 2 best and 3 rest).
         1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1,     ?,     ?,    ?
     
         [skipping 800 lines...]
-    
-EZR repeats this, a few dozen times, to generate a few dozen labelled rows. This
-is given to a tree learner that generates:
-    
-     d2h  win    n
-    ---- ---- ----
-    0.09    0   24
-    0.02   74   21    crypt_blowfish == 0
-    0.01   90   18    |  memory_tables == 1
-    0.00   96   11    |  |  small_log == 0
-    0.00   97    6    |  |  |  logging == 0
-    0.00   98    5    |  |  |  |  txc_mvlocks == 0
-    0.00   99    2    |  |  |  |  |  no_write_delay == 0;   <==== LEAF #1
-    0.00   97    3    |  |  |  |  |  no_write_delay == 1
-    0.00   97    2    |  |  |  |  |  |  encryption == 1;
-    0.01   95    5    |  |  |  logging == 1
-    0.01   95    4    |  |  |  |  no_write_delay == 1
-    0.01   96    2    |  |  |  |  |  encryption == 1;
-    0.01   95    2    |  |  |  |  |  encryption == 0;
-    0.02   80    7    |  |  small_log == 1
-    0.02   84    6    |  |  |  txc_mvcc == 0
-    0.01   87    4    |  |  |  |  compressed_script == 0
-    0.01   90    2    |  |  |  |  |  encryption == 0;
-    0.01   85    2    |  |  |  |  |  encryption == 1;
-    0.02   76    2    |  |  |  |  compressed_script == 1;
-    0.11  -23    3    |  memory_tables == 0
-    0.11  -15    2    |  |  compressed_script == 0;
-    0.56 -518    3    crypt_blowfish == 1
-    0.34 -273    2    |  txc_mvlocks == 0;
-    17 9 compressed_script, encryption, crypt_blowfish, txc_mvlocks, 
-        txc_mvcc, memory_tables, logging, no_write_delay, small_log
-    
 
+"Build" repeats itself until _B_ items are labelled.  The labelled rows are then given
+to a tree learner that 
+is given to a tree learner. For _B=24_,  that generates  a tree with 21 nodes and niWe ne leaf nodes:
+    
+     win 
+    ----
+      74    crypt_blowfish == 0
+      90    |  memory_tables == 1
+      96    |  |  small_log == 0
+      97    |  |  |  logging == 0
+      98    |  |  |  |  txc_mvlocks == 0
+      99    |  |  |  |  |  no_write_delay == 0;   <==== LEAF #1
+      97    |  |  |  |  |  no_write_delay == 1
+      97    |  |  |  |  |  |  encryption == 1;    <==== LEAF #2
+      95    |  |  |  logging == 1
+      95    |  |  |  |  no_write_delay == 1
+      96    |  |  |  |  |  encryption == 1;       <==== LEAF #3
+      95    |  |  |  |  |  encryption == 0;       <==== LEAF #4
+      80    |  |  small_log == 1
+      84    |  |  |  txc_mvcc == 0
+      87    |  |  |  |  compressed_script == 0
+      90    |  |  |  |  |  encryption == 0;       <==== LEAF #5
+      85    |  |  |  |  |  encryption == 1;       <==== LEAF #6
+      76    |  |  |  |  compressed_script == 1;   <==== LEAF #7
+     -23    |  memory_tables == 0
+     -15    |  |  compressed_script == 0;         <==== LEAF #8
+    -518    crypt_blowfish == 1
+    -273    |  txc_mvlocks == 0;                  <==== LEAD #9
+      
+In this tree, "win" reports how close we get to the best value. 
+In this example, we have over 800 rows. 
+"Win" is calculated by an agent with  magical powers that  knows all the effects on all the rows.
+In our 800 rows there is a middle and best value for all effects. If this tree selects rows with a mean effect of _x_,  then: 
+
+$$win=100*(1- (x-best)/(middle-best))$$
+
+Negative "wins" mean you are making things worst. A zero "win" means not improvement. And a "win" of 100 means you have found the best.
+We see in this tree that of the 18 configurations we might use, we only need to adjust give to achieve
+the
+largest win (see the 99% win of "LEAF \#1"). Reading from the top of the tree, those five choices are:
+
+    crypt_blowfish == 0
+    |  memory_tables == 1
+    |  |  small_log == 0
+    |  |  |  logging == 0
+    |  |  |  |  txc_mvlocks == 0
+    |  |  |  |  |  no_write_delay == 0;   <==== LEAF #1; win = 99%
+    
+It is prudent to ask if this tree, learned from just _B=24_ examples, is a good summary of
+the 800 rows used to generate it.
+Hence in the _C_ phas ("C" for "check") we apply the tree to all the rows.
+Each row selects for one of the leaves of the trees. Rows are then sorted by the mean of their selected leaves.
+If the  top _C=5_ rows are evaluated, the best row found in this way has a win in 98% (i.e. just a tiny
+bit less than the win predicted by the tree).
+
+How is it possible that we can build an effective model using just (24+5)/800=4% of the data?
+Well, returning to the little AI assumption,
+models are rare tiny gems obscured by irrelevant or noisy or redundant data.
+By ignoring superflous or confusing data, and focusing on just the things that distinguish
+good rsults from abd results,
+we can very quickly build very effective 
+models.
+
+## A Quick Example
+
+Let’s say we want to configure a database to reduce energy use, runtime, and CPU load. The database exposes dozens of tuning options—storage, logging, locking, compression, encryption, and more. Understanding how each setting impacts performance is daunting.
+
+Imagine we have a log of 800+ configurations, each showing binary control options and their effects:
+
+```
+control settings →            Energy-, time-,  cpu-
+0,0,0,0,1,0,...               6.6,    248.4,   2.1   ← good
+1,1,0,1,1,1,...              16.8,    518.6,  14.1   ← bad
+...
+```
+
+But here’s the problem: most real-world scenarios don’t come with complete logs. Labeling each configuration—e.g., by running benchmarks or consulting experts—is expensive, slow, or even impossible. So how can we learn anything useful?
+
+That’s where **EZR** comes in. It follows a minimalist **A-B-C** strategy:
+
+- **A: Ask anything**  
+  Randomly sample a few rows (e.g., _A = 4_) and label them to seed the process.
+  
+- **B: Build a model**  
+  Iteratively label up to _B = 24_ additional rows. Each new row is selected based on its potential to improve the model.
+
+- **C: Check the model**  
+  Apply the model to all unlabeled rows, then evaluate just a few (e.g., _C = 5_) of the most promising ones.
+
+In this example, after labeling just 28 out of 800 rows (∼4%), EZR constructs a decision tree with interpretable rules. One path to a near-optimal configuration is:
+
+```
+if crypt_blowfish == 0 and 
+   memory_tables == 1 and 
+   small_log == 0 and 
+   logging == 0 and 
+   txc_mvlocks == 0 and 
+   no_write_delay == 0
+then win ≈ 99%
+```
+
+To test this model, EZR applies it to all 800 rows and selects the top _C = 5_ rows it predicts to be best. The actual measured performance of those five rows confirms the model's judgment: the top pick is within 2% of the global best.
+
+All this was achieved with only a few dozen queries and a few hundred lines of code.
+
+---
+
+## Discussion: Why This Works
+
+### Why not label everything?
+
+Because labeling is expensive:
+
+- Some benchmarks are slow to run.
+- Some require rebuilding complex systems.
+- Manual annotation is costly and error-prone.
+
+Prior work shows that labeling large datasets can take years[^tu20][^yu22][^wu22]. Even using LLMs has limitations: they help only in narrow, well-structured tasks and still require careful deployment[^ahmed25].
+
+### So how does EZR help?
+
+EZR is an **active learner**. It labels only the most informative rows and builds a model from them. This reflects the *little AI* philosophy: useful models are often tiny gems hidden in noisy or redundant data.
+
+You don’t need a mountain of information—just the right few examples.
+
+### Why use a decision tree?
+
+Because trees are:
+
+- Fast to learn  
+- Interpretable  
+- Naturally sparse  
+
+Each node splits examples based on a binary feature. Leaves group similar configurations. A single path in the tree becomes a recipe for improvement.
+
+### How is "win" defined?
+
+EZR uses a normalized utility score:
+
+```
+win = 100 × (1 - (x - best) / (median - best))
+```
+
+Where `x` is the performance of a configuration, `best` is the global best, and `median` is a typical value.  
+- A win of **100** means matching the best.  
+- A win of **0** means average.  
+- Negative wins mean regression.
+
+### And what does this tell us?
+
+That complexity is often unnecessary. With small tools, small data, and smart strategies, we can solve real problems efficiently.
+
+**EZR** demonstrates how to teach and practice software engineering grounded in:
+
+- Simplicity  
+- Critique  
+- Ownership  
+
+—all without sacrificing performance.
+
+---
+
+[^tu20]: Tu, Huy, Zhe Yu, and Tim Menzies. "Better data labelling with emblem (and how that impacts defect prediction)." *IEEE TSE*, 48.1 (2020): 2
+
+
+
+## Crap
+Finding useful models is a hence a progress of pruning anything
+that  is superfluous or confusing. To say that another way:
+
+In summary, 
 taht
 To answer those questions, first you have to check out the log (from the MOOT repository) and our code:
 
@@ -337,7 +491,7 @@ on how to compile software for a database file. Such compiation is controlled by
 cotnaining nmerous choises incuding the whether or not to do 11 things A,B...K.
 SLOC XXX
 
-
+the algenrativeXXX...
 A- =
 
       3.0247 * B +

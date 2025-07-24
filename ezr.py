@@ -316,7 +316,7 @@ def treeSelects(row,op,at,y):
   "Have we selected this row?"
   return (x := row[at]) == "?" or treeOps[op](x, y)
 
-def tree(data, Klass=Num, Y=None, how=None):
+def Tree(data, Klass=Num, Y=None, how=None):
   "Create regression tree."
   Y = Y or (lambda row: disty(data, row))
   data.kids, data.how = [], how
@@ -328,7 +328,7 @@ def tree(data, Klass=Num, Y=None, how=None):
       for how1 in min(hows, key=lambda c: c.div).hows:
         rows1 = [r for r in data.rows if treeSelects(r, *how1)]
         if the.leaf <= len(rows1) < len(data.rows):
-          data.kids += [tree(dataClone(data,rows1), Klass, Y, how1)]
+          data.kids += [Tree(dataClone(data,rows1), Klass, Y, how1)]
   return data
 
 def treeCuts(col, rows, at, Y, Klass):
@@ -652,10 +652,17 @@ def daBest(data,rows=None):
 
 def eg__tree():
   data = dataRead(the.file)
+  base = has(disty(data,r) for r in data.rows)
   someData= dataClone(data,
-                  acquire(data,data.rows,"xplor").labels)
+                  acquire(data,data.rows,"klass").labels)
   print(round(daBest(data),2))
-  treeShow(tree(someData))
+  tree = Tree(someData)
+  treeShow(tree)
+  for what,rows in dict(test=sorted(data.rows, key=lambda r: treeLeaf(tree,r).ys.mu)[:the.Check],
+                        rand=random.choices(data.rows,k=the.Check)).items():
+     win  = 100*(1 - (daBest(data,rows) - base.lo)/(base.mu - base.lo))
+     print(what,win)
+
 
 def eg__fmap():
   data = dataRead(the.file)

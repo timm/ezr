@@ -11,5 +11,5 @@ pandoc                 \
   --standalone              \
   -o $html 
 
-sed -i ''  's?<.style>? pre {font-size: small;} </style>?' $html
+sed -i ''  's?<.style>? pre {font-size: x-small;} </style>?' $html
 open $html
