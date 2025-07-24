@@ -27,7 +27,7 @@ BIG = 1E30
 def Data()            : return o(rows=[], cols=[])
 def Sym(at=0,txt="")  : return o(at=at,txt=txt,has={},w=1)
 def Num(at=0,txt=" ") : 
- return o(at=at,txt=txt,lo=BIG,hi=-BIG,mu=0,n=0,w=1,
+ return o(at=at,txt=txt,lo=BIG,hi=-BIG,mu=0,n=0,
           goal= 0 if txt[0]=="-" else 1)
 
 def isNum(col) : return "mu"   in col.__dict__
@@ -81,61 +81,41 @@ def dataRead(file):
   return data
 
 #---------------------------------------------------------------------
-def dist(src):
-  d,n = 0,0
-  for v in src: n,d = n+1, d + v**the.p
-  return (d/n) ** (1/the.p)
+def distPoles(data):
+  out, east = [], random.choice(data.rows)
+  for _ in range(the.Poles):
+    west = random.choice(data.rows)
+    out += [(east, west, distx(data,east,west))]
+    east = west
+  return out
 
-def disty(data, row):
-  return dist(abs(norm(c, row[c.at]) - c.goal) for c in data.cols.y)
+def disty(data,row):
+  d = sum(abs(norm(c,row[c.at]) - c.goal)**the.p for c in data.cols.y)
+  return (d / len(data.cols.y))**(1/the.p)
 
-def distx(data, row1, row2):
-  return dist(distCol(c, row1[c.at], row2[c.at]) for c in data.cols.x)
+def distx(data,r1,r2):
+  def _dist(col):
+    a = r1[col.at]
+    b = r2[col.at]
+    if a==b=="?": return 1
+    if isSym(col): return a != b
+    a,b = norm(col,a), norm(col,b)
+    a = a if a != "?" else (0 if b > .5 else 1)
+    b = b if b != "?" else (0 if a > .5 else 1)
+    return abs(a - b)
 
-def distCol(col, a,b):
-  if a==b=="?": return 1
-  if isSym(col) : return a != b
-  a,b = norm(col,a), norm(col,b)
-  a = a if a != "?" else (0 if b>0.5 else 1)
-  b = b if b != "?" else (0 if a>0.5 else 1)
-  return col.w*abs(a-b)
+  d = sum(_dist(col)**the.p for col in data.cols.x)
+  return (d / len(data.cols.x))**(1/the.p)
 
-def distProject(data,row,east,west,c=None):
-  D = lambda r1,r2 : distx(data,r1,r2)
-  c = c or D(east,west)  
-  a,b = D(row,east), D(row,west)
-  return (a*a +c*c - b*b)/(2*c + 1e-32)
-
-def distInterpolate(data,row,east,west,c=None):
-  x = distProject(data,row,east,west,c) / (c + 1/BIG)
+def distInterpolate(data,row,east,west,c):
+  a = distx(data,row,east)
+  b = distx(data,row,west)
+  x = (a*a + c*c - b*b) / (2*c + 1/BIG) / (c + 1/BIG)
   y1,y2 = disty(data,east), disty(data,west)
   return y1 + x*(y2 - y1)
 
-def distPoles(data):
-  out = []
-  for _ in range(the.Poles):
-    east,west = random.choices(data.rows,k=2)
-    c = distx(data,east,west)
-    out += [(east,west,c)]
-  return out
-
-def distGuessY(data,row,poles):
-  y = 0
-  for pole in poles:
-     y += distInterpolate(data,row,*pole)
-  return y/len(poles)
-
-def distWeights(data, poles, n=1000):
-  Y     = lambda r: distGuessY(data, r,poles)
-  tmp   = {col.at:1e-32 for col in data.cols.x}
-  for _ in range(n):
-    a,b = random.sample(data.rows,2)
-    dY  = abs(Y(a) - Y(b))
-    dX  = distx(data,a,b)
-    for c in data.cols.x:
-      tmp[c.at] += dY / (dX + 1e-32) 
-  s = sum(tmp.values())
-  for col in data.cols.x: col.w = tmp[col.at]/s
+def distGuessY(data,row,poles): 
+  return sum(distInterpolate(data,row,*p) for p in poles)/len(poles)
 
 #---------------------------------------------------------------------
 def eg_h(): print(__doc__)
@@ -149,18 +129,20 @@ def eg__int():
 
 def _eg__int(data):
   poles = distPoles(data)
-  repeats=1000
+  repeats=32
   acc=0
   n=0
   Guess=lambda r: distGuessY(data,r,poles)
   Y=lambda r: disty(data,r)
-  for _ in range(repeats):
-     a=b=None
-     while a==b:
-       a,b=random.choices(data.rows,k=2)
-     d=0.95
-     if Y(a) >= d*Y(b):  n+=1; acc += Guess(a)>=d*Guess(b)
-     if Y(a) < Y(b)/d:  n+=1; acc += Guess(a)<Guess(b)/d
+  for __ in range(32):
+    random.shuffle(data.rows)
+    for _ in range(repeats):
+       a=b=None
+       while a==b:
+         a,b=random.choices(data.rows,k=2)
+       d=1
+       if Y(a) >= d*Y(b):  n+=1; acc += Guess(a)>=d*Guess(b)
+       if Y(a) <  Y(b)/d:  n+=1; acc += Guess(a)<Guess(b)/d
   print(f"{acc/n:.2f}")
 
 def eg__weights(): 
