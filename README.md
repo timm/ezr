@@ -255,6 +255,8 @@ The database example is just one of over 100 benchmarks in the [MOOT](https://gi
 - 5 to 1,000+ configuration choices
 - Up to 3 goal metrics
 
+XXXX need to explain ABC
+
 We tested EZR 10× on each dataset. In each trial:
 - _A = 4_, _B = 24_, _C = 5_
 - EZR built a model from training data
