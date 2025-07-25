@@ -14,224 +14,73 @@ _"Less, but better."_  --Dieter Rams
 _"Subtract."_ --Leidy Klotz
 ------------------------------------------------------
 
-To say the least, everyone is focused on big AI right that assumes
+## Introduction
+Years ago, in a graduate AI class, a student asked:
 
-What should we be teaching newcomers to software engineering? Talking
-with fellow instructors, we’ve noticed two growing challenges.
-First, students often lack practice in analyzing and critiquing
-code. Post-COVID learners, raised on search engines and chatbots,
-are great at vibing with code—copying, tweaking, prompting—but less
-adept at understanding what makes it tick. Second, the systems they
-encounter often feel too large or opaque to examine. As Leidy Klotz notes, people systematically overlook
-subtractive changes—we keep adding, even when taking away would
-serve us better. This leads to complexity and bloat.
-In teaching, it overwhelms. Such complexity means that code is
-something that appears on a screen, not something they can explore and own and shape.
+>  Why our models needed so much data?
 
-These challenges are connected. Simpler systems invite deeper
-engagement and more ownership.  D. Richard Hipp, creator of SQLite,
-says “If you want to be free, that means doing
-things yourself.”[^hipp21] He likens it to backpacking—carrying
-only what you need to move freely. You do not need to build Microsoft
-Windows; you need just enough to do something meaningful. This book
-shows how powerful results can emerge from surprisingly little code
-and data.
+“Maybe they don’t,” I said. “Maybe we just haven’t learned how to
+ask the right questions.”
 
-That ethic—simplicity, self-reliance, deep understanding—is fading.
-For many, that’s fine; it means producing more code, more quickly.
-But for engineers tasked with building reliable, high-quality systems
-under real-world constraints, that loss matters. We must teach what
-happens inside the code, especially the complex systems that power
-today’s AI. As these tools proliferate, we need code surgeons who
-can diagnose, intervene, and improve what lies beneath the surface.
-We need to reclaim authorship of our code, encouraging understanding
-and fostering a mindset of critique rather than cargo cult reuse.
+That turned into a dare: could we build useful models from just a
+few labeled examples? So we wrote a quick prototype. It peeked at
+a handful of data points, built two tiny models—one for “good,” one
+for “bad”—then guided learning by comparing the two. Afterwards, a
+tree learner summarized the data discovred along the way.  It was
+fast, simple, and surprisingly effective.  We were able to find
+excellent configurations—database tunings, optimization settings,
+even architectural choices—after labeling just a tiny fraction of
+the data.
 
+This small experiment raised a powerful question:
 
+> Does good AI need thousands, millions, or billions of examples?
 
-This reluctance to look inside has serious consequences. Chief among
-them is the crisis of *reproducibility*: big AI experiments are
-difficult to replicate, and comparative evaluations are rare. For
-example, a recent review[^hou24] of 229 software engineering papers
-using LLMs (a big AI technique) found that only 13 (just 5%)
-compared their results to any alternative. This lack of introspection
-is not only methodologically flawed; it also suppresses innovation.
-As seen in the _[Example](#examples)_ section, simpler approaches
-can often perform just as well—or better—while being faster, more
-transparent, and easier to critique_[^hou24] [^fu17] [^grin22]
-[^ling86] [^maju18] [^somy24] [^tawo23].
+Perhaps the above was just a fluke? This elad to another questions:
 
-So what are those alternatives? “Less AI” offers one path forward.
-Where big AI emphasizes volume, less AI assumes that useful models
-are tiny gems obscured by irrelevant or noisy or redundant data.
-Finding useful models is a hence a progress of pruning anything
-that  is superfluous or confusing. To say that another way:
+> “Did we just get lucky? Was the dataset used above unusually
+easy?”
 
-> **Menzies's 4th law:** The best thing to do with most data is throw it away[^men25a].
+To find out, we went looking. We pulled together case studies seen
+in dozens of state-of-the-ar search-based software engineering
+papers. Configuration optimization. Architecture tuning. Effort
+estimation. We built a library of **over 110 real-world problems**,
+drawn from recent, peer-reviewed software engineering research.
+Using that data, we we reran the experiment, this time at scale.
+And again, it worked very fast and it worked very well.
 
-**EZR** is a compact implementation of this law. It is an incremental
-_active learner_[^sett09], which means "what to do next" is determined
-from "what has been seen so far". By peeking at the data before
-processing it, tools like **EZR** can avoid irrelevancies, redundancies,
-and noisy data.  In this way, models can be built, very quickly,
-from very little data.  In just a few hundred lines of code, EZR
-supports a wide range of core AI tasks—classification, clustering,
-regression, active learning, multi-objective optimization, and
-explainability.
+Accordingly,  now we think that that first  result was not  magic
+or luck. Instead, it reflects something deeper: a tradition in
+software engineering and AI where **small, well-chosen examples**
+outperform brute-force data collection. Over decades, researchers
+have shown that smart sampling, contrastive modeling, and key
+variable detection can rival—or even beat—more complex strategies.
 
-This research note introduces EZR and explains its design, motivation,
-and implications. After a code walk-through, we evaluate EZR using
-over 100 diverse examples from the [MOOT
-repository](https://github.com/timm/moot)[^moot], which captures
-problems from software engineering optimization, such as tuning
-analytic tools, adjusting configuration parameters, and guiding
-software process decisions.
+EZR builds on that legacy. It learns by comparing “better” and
+“worse,” asking what separates them, and steering future exploration
+in that direction. It skips the layers of opaque math and instead
+relies on simple, auditable, symbolic reasoning. And it's fast
+enough to run **1,000+ experiments across 100+ datasets in under
+two minutes**.
 
-The MOOT benchmarks help answer several core questions
-about EZR:
+The idea that "less can be better" is not new. For literally
+centuries,
+researchers have shown that
+careful sampling, dimensionality reduction, and contrastive analysis
+can outperform brute-force techniques. The table below summarizes
+key milestones in this tradition.
 
-- **RQ1: Is it simple?**  
-  Yes- EZR has a compact, readable codebase, ideal for teaching 
-  and tinkering.
-
-- **RQ2: Is it fast?**  
-  Yes— EZR completes tasks in milliseconds that take 
-  hours for big AI.
-
-- **RQ3: Is it effective?**  
-  Yes— MOOT's active learners achieve near-optimal results 
-  after seeing just a few dozen examples.
-
-- **RQ4: Is it insightful?**  
-  Yes— EZR reveals a perspective on learning that encourages explanation and critical analysis, not just automation.
-
-- **RQ5: Is it general?**
-  Within the scope of MOOT-style optimization of SE tasks, yes. While not
-  designed for text generation (you’ll still need LLMs for that),
-EZR excels at fast model building and external critique—an essential
-  capability when teaching students to open up and reason about AI
-  systems.
+Despite this long history of elegant,
+minimalist solutions, the trend in AI and software engineering has
+often moved in the opposite direction—toward bigger models, more
+data, and increasing complexity. There are many reasons for this [^subtract].
+Increasing  complexity is often seen as  progress even though often
+that is just   the momentun of our ideas makes it hard to stop.
+People usually overlook subtractive change, favoring instead to add
+needless complexity.
 
 
-[^ahmed25]:  Toufique Ahmed, Premkumar Devanbu, Christoph Treude, and
-Michael Pradel. Can LLMs replace manual annotation of software
-engineering artifacts? In MSR’25, 2025
 
-[^costly]: slow Recently Tu et al.[^tu20] we were studying one same
-of 700+ software projects, including 476K commit files. After an
-extensive analysis, they proposed a cost model for labeling that
-data. Assuming two people checking per commit, that data would need
-three years of effort to label the data.
-
-[^tu20]: Tu, Huy, Zhe Yu, and Tim Menzies. "Better data labelling
-with emblem (and how that impacts defect prediction)." IEEE
-Transactions on Software Engineering 48.1 (2020): 278-294.
-
-[^error]: Human annotators often make many mismakes.  For example,
-Yu et al.’s technical debt analysis [^yu22] revealed that 90% of
-purported false positives actually represented manual labeling er-
-rors. Similar patterns of errors in manual annotations are found
-in security defect identification [^wu22] and static analysis false
-positive classification [^yang22].
-
-[^wu22]: Xiaoxue Wu, Wei Zheng, Xin Xia, and David Lo. Data quality
-matters: A case study on data label correctness for security bug
-report prediction. IEEE Transactions on Software Engineering,
-48(7):2541–2556, 2022.
-
-[^yu22]: Zhe Yu, Fahmid Morshed Fahid, Huy Tu, and Tim Menzies.
-Identifying self-admitted technical debts with jitterbug: A two-step
-approach. IEEE Transactions on Software Engineering, 48(5):1676–1691,
-2022.
-
-[^yan22]: Hong Jin Kang, Khai Loong Aw, and David Lo. Detecting
-false alarms from automatic static analysis tools: How far are we?
-In Proceedings of the 44th International Con- ference on Software
-Engineering, ICSE ’22, page 698–709, New York, NY, USA, 2022.
-Association for Computing Machinery
-
-## Installation
-
-To run the examples of this book:
-
-    mkdir demo; cd demo
-    git clone https://github.com/timm/moot # <== data
-    git clone https://github.com/timm/ezr  # <== code
-    cd ezr
-    python3 -B ezr.py -f ../moot/optimize/config/SS-M.csv 
-
-## A Quick Example
-
-Just to give all this a little context, here's a quick example to get us going.
-
-Say we want to configure a database to reduce energy use,
-runtime, and CPU load. The database exposes dozens of tuning
-options—storage, logging, locking, compression, encryption, and
-more. Understanding how each setting impacts performance is daunting.
-
-Imagine we have a log of 800+ configurations, each showing binary
-control options and their effects. Some settings are "best"
-and lead to low energy, runtime and cpu usage; e.g. 
-
-```
-choices                     Effects
-----------------            -----------------------
-control settings →            Energy-, time-,  cpu-
-0,0,0,0,1,0,...               6.6,    248.4,   2.1   ← best
-1,1,0,1,1,1,...              16.8,    518.6,  14.1   ← rest
-...
-```
-
-Given such a log, any number of AI tools could learn a model for what predicts for "best"
-and what avoids "rest".
-But here’s the problem: most real-world scenarios don’t come with
-complete logs. Labeling each configuration (e.g., by running benchmarks
-or consulting some human expert) is expensive, slow, and (sometimes) even impossible. So
-how can we learn anything useful, with least effort (i.e. after asking for fewest labels).
-
-That’s where **EZR** comes in. It uses a minimalist **A-B-C** strategy:
-
-- **A: Ask anything**  
-  Randomly sample a few rows (e.g., _A = 4_) and label them to seed the process. In this seed,
-  we build two models (one for "best" and one for "rest"). For unballed rows, this
-  models can report 
-  the likelihood that
-  some new example belongs to "best" or "rest" (these are called _b,r_).
-  
-- **B: Build a model**  
-  Iteratively label up to _B = 24_ additional rows. Each new row is selected based on its potential to improve the model
-  (specifically, we look for things that maximize $b/r$).
-
-- **C: Check the model**  
-  Apply the model to all unlabeled rows, then evaluate just a few (e.g., _C = 5_) of the most promising ones.
-
-
-In this example, after labeling just 24 out of 800 rows (∼4%), EZR constructs a decision tree with interpretable rules. One path to a near-optimal configuration is:
-
-```
-if crypt_blowfish == 0 and 
-   memory_tables == 1 and 
-   small_log == 0 and 
-   logging == 0 and 
-   txc_mvlocks == 0 and 
-   no_write_delay == 0
-then win ≈ 99%
-```
-
-In the above "win" is a measure of how close we get to optimum. A
-"win" of zero means we have not changed anything and a "win" of 100
-means we are found ways to select for the best values. This branch
-achieves a 99% "win" so it very nearly perfect.
-
-To test this model, EZR applies it to all 800 rows and selects the
-top _C = 5_ rows it predicts to be best. The actual measured
-performance of those five rows confirms the model's judgment: the
-top pick is within 2% of the global best.
-
-All this was achieved with only a few dozen queries, processed by just a few hundred lines of code.  
-Think of it as the Pareto principle on steroids. **Vilfredo Pareto** proposed that 80% of the gain often comes from just 20% of the work — and throughout the history of AI, many analogous results reinforce this idea:
-
-The history of "Less AI":
 
 | Year     | What                     | Who / System         | Notes                                                                                   |
 |----------|--------------------------|-----------------------|-----------------------------------------------------------------------------------------|
@@ -254,14 +103,205 @@ The history of "Less AI":
 [^chang74]: Chang, C. L. (1974). Finding Prototypes for Nearest Neighbor Classifiers. IEEE Transactions on Computers, C-23(11), 1179–1184.--
 
 
-Inspired by all this, I once write a quick and dirty demonstrator while teaching a graduate class
-The resulting code (EZR, version 0.1) 
- peeked at a random sample of the data to learn two tiny models _best_ and _rest_ models. 
- It performed startlingly well. That led to several papers comparing EZR’s minimalist approach to state-of-the-art optimizers. In all cases, **EZR’s “less AI” performed just as well as the more complex systems.**
 
-**Long story short**: with EZR, as with much of intelligent system design,
-**success does not come from reasoning about everything**, but from identifying and leveraging just the **right few things**. This idea is widely known but rarely applied. In most cases, new problems are still tackled with overly complex, heavyweight AI tools. Perhaps we need to change that
+So what to do? Perhaps, what is needed is an example. Some tiny code base running over many data sets achieving good performance without needing much data.
+Enter this doc
+We need to ask:
 
+> Can we still get most of the value with much less?
+
+
+
+So this document is about:
+- an idea: **less, but better**
+- a very small code base: **that operationalizes that idea**
+- and a large test suite: **that checks if the idea generalizes across diverse domains**
+
+Using this code and data, we ask five questions:
+
+- **RQ1: Is it simple?**  
+  Is our code base  compact abd readable and suitabke for teaching and tinkering?
+
+- **RQ2: Is it fast?**  
+  Can our code complete tasks in milliseconds rather than hours?
+
+- **RQ3: Is it effective?**  
+  Can our achieve strong results after seeing only a few examples?
+
+- **RQ4: Is it insightful?**  
+  Does our code support explainability, critique, and understanding?
+
+- **RQ5: Is it general?**  
+  Does our code apply across varied SE optimization tasks?
+
+
+All the code and data used here can be accessed as fllows
+
+    mkdir demo; cd demo
+    git clone https://github.com/timm/moot # <== data
+    git clone https://github.com/timm/ezr  # <== code
+    cd ezr
+    python3 -B ezr.py -f ../moot/optimize/config/SS-M.csv # <== test case 
+
+## A Quick Example
+
+Just to give this some context, here’s a concrete case.
+
+Say we want to configure a database to reduce energy use, runtime, and CPU load. The system exposes dozens of tuning knobs—storage, logging, locking, encryption, and more. Understanding how each setting impacts performance is daunting.
+
+Imagine we have a log of 800+ configurations, each showing the settings and their measured effects. Some settings lead to excellent results:
+
+```
+choices                     Effects
+----------------            -----------------------
+control settings →            Energy-, time-,  cpu-
+0,0,0,0,1,0,...               6.6,    248.4,   2.1   ← best
+1,1,0,1,1,1,...              16.8,    518.6,  14.1   ← rest
+...
+```
+
+In theory, any number of AI tools could learn what separates “best” from “rest.” But here's the challenge: **labeling** each configuration—e.g., by running benchmarks—is expensive. So how can we learn a model with minimal effort?
+
+That’s where **EZR** comes in. It uses a minimalist A–B–C strategy:
+
+- **A: Ask anything**  
+  Randomly label a few examples (e.g., _A = 4_) to seed the process.
+
+- **B: Build a model**  
+  Build contrastive models for “best” and “rest,” then label up to _B = 24_ more rows that maximize the score _b/r_, where `b` and `r` are likelihoods from those two models.
+
+- **C: Check the model**  
+  Apply the learned model to unlabeled data and evaluate a small set (e.g., _C = 5_) of the most promising rows.
+
+In this task, after labeling just 24 out of 800 rows (∼3%), EZR constructs a readable decision tree. One high-performing path looks like this:
+
+```
+if crypt_blowfish == 0 and 
+   memory_tables == 1 and 
+   small_log == 0 and 
+   logging == 0 and 
+   txc_mvlocks == 0 and 
+   no_write_delay == 0
+then win ≈ 99%
+```
+
+That “win” score means we’re nearly matching the globally best result—using only a fraction of the available data.
+
+In testing, EZR applied its model to all 800 configurations, selected the top _C = 5_, and found that the best of those was within 2% of the known global best.
+
+All of this took just a few dozen queries—and a few hundred lines of code. It’s a striking illustration of the Pareto principle: **most of the value often comes from just a small fraction of the effort**. EZR shows that with the right strategy, a handful of examples can uncover nearly all the signal.  
+**EZR is Pareto on steroids.** While Pareto said that 80% of the results come from 20% of the effort, **EZR is more like 99% of the gain from 1% of the work**.
+
+
+## Discussion: Why This Works
+
+### Why not label everything?
+
+Because labeling is costly:
+
+- Benchmarks take time to run.
+- Some configurations require complex rebuilds.
+- Human evaluation is slow, expensive, and error-prone.
+
+Prior work has shown that even with big compute, building labeled datasets takes **months or years**. EZR sidesteps this by labeling only what matters most.
+
+---
+
+### So how does EZR help?
+
+EZR operates under a **tiny-AI assumption**: most of the signal is buried under a layer of irrelevant or redundant data. It learns by contrast—focusing on what most separates good from bad using a simple `b/r` score.
+
+This means:
+- Fewer labeled examples  
+- Less noise  
+- Faster inference  
+- Smaller, more transparent models  
+
+---
+
+### Why use a decision tree?
+
+Decision trees are:
+
+- **Fast to train**  
+- **Sparse by nature**  
+- **Easy to read**
+
+As physicist Ernest Rutherford famously quipped:  
+> “A theory that you can’t explain to a bartender is probably no damn good.”
+
+Each path in the tree offers a **human-readable recipe for improvement**, grounded in real measurements.
+
+---
+
+### How is “win” defined?
+
+We normalize utility as:
+
+```python
+win = 100 × (1 - (x - best) / (median - best))
+```
+
+- A win of **100** means we match the best.  
+- A win of **0** means we’re at the median.  
+- Negative scores mean we’ve regressed.  
+
+---
+
+### How General Is This?
+
+The database example is just one of over 100 benchmarks in the [MOOT](https://github.com/timm/moot) repository. Each MOOT dataset has:
+- Between 1,000 and 100,000 rows
+- 5 to 1,000+ configuration choices
+- Up to 3 goal metrics
+
+We tested EZR 10× on each dataset. In each trial:
+- _A = 4_, _B = 24_, _C = 5_
+- EZR built a model from training data
+- Test data was ranked by the model
+- Top 5 predictions were compared to ground truth
+- We recorded the “win” of the best predicted row
+
+As a baseline, we also tested **dumb guessing**: picking 5 random test rows, and scoring the best one.
+
+#### Result (Percentiles of Win Scores)
+
+The results were sorted and divided into percentils (top 10%, next 10%, etc):
+
+| Percentile | EZR | Bar Chart(of EZR)         | EZR - Dumb |
+|-----------:|----:|:--------------------------|-----------:|
+| 100        | 100 | ************************* | 148        |
+|  90        | 100 | ************************* |  64        |
+|  80        |  99 | ************************* |  43        |
+|  70        |  93 | ************************  |  27        |
+|  60        |  81 | *********************     |  15        |
+|  50        |  70 | *******************       |   8        |
+|  40        |  59 | ****************          |   3        |
+|  30        |  42 | *************             |   0        |
+|  20        |  35 | ************              |   0        |
+|  10        |  17 | ******                    | -12        |
+
+
+Note that, one time in ten, even dumb guessing gets lucky and does  surprisingly well (the 10% case where "dumb" is 12% better than ABC).
+But we do not want to be "dumb"
+since dumb reasoning does not generalize. On the other hand, **ABC’s trees provide both performance and understanding.** To say that another way,
+dumb reasonng just says yes or now. ABC tells you how and why.
+
+ALso,  while dumb guessing is simple, EZR is barely more complex—just a few hundred lines of code—and runs fast. The full experiment (10× on 110 datasets) took just **65 seconds** on a Mac mini with no GPU.
+
+### And What Does All This Tell Us?
+
+That sometimes, **complexity is unnecessary**.
+
+With small tools, small data, and smart strategies, we can solve real-world optimization tasks—effectively, quickly, and transparently.
+
+EZR demonstrates how to teach and practice software engineering grounded in:
+
+- **Simplicity**
+- **Critique**
+- **Ownership**
+
+—all without sacrificing performance.
 
 [^amarel]: S. Amarel, "On representations of problems of reasoning about actions", 1960s.  
 [^crawford]: C. Crawford & A. Baker, "Experimental Results with ISAMP", 1994.  
@@ -271,136 +311,6 @@ The resulting code (EZR, version 0.1)
 [^backdoor]: R. Williams et al., "Backdoors to typical case complexity", 2002.  
 [^me08a]: T. Menzies, "The Few Key Rows", 2008 (or your actual source).  
 [^settles09]: B. Settles, "Active Learning Literature Survey", 2009.
-
-
-## Discussion: Why This Works
-
-### Why not label everything?
-
-Because labeling is expensive:
-
-- Some benchmarks are slow to run.
-- Some require rebuilding complex systems.
-- Manual annotation is costly and error-prone.
-
-Prior work shows that labeling large datasets can take years[^tu20][^yu22][^wu22]. Even using big AI and large language models has limitations: they help only in narrow, well-structured tasks and still require careful deployment[^ahmed25].
-
-### So how does EZR help?
-
-The tiny AI assumption is that 
-models are  tiny gems obscured by much irrelevant or noisy or redundant data.
-Internally, EZR is an **contrastive active learner**. 
-By focusing on examples with large $b/r$ score, EZR 
-only processes a handful of examples that most distinguish good from bad.
-It labels only the most informative rows (and updates in models from that label).
-As a side-effect, this also  dodges 
-superfluous or confusing data.
-In this way, EZR 
-we can very quickly build very effective 
-models.
-
-To say all that another way, you do not  need a mountain of information—just the right few examples.
-
-
-### Why use a decision tree?
-
-Doing, without learning, means you are doomed to doing it all again, every time that  need arises.
-But if you can learn some generalization, then the next time something comes up, you already
-know how to handle it. According the physicist Enrst Rutherford, your explainations should be as simple
-as possible.
-
-
-> Ernst Rutherford: A theory that you can't explain to a bartender is probably no damn good
-
-Decision trees learned from $_B=24_$ examples are:
-
-- Fast to learn  
-- Interpretable  
-- Naturally sparse  
-
-Each node splits examples based on a binary feature. Leaves group similar configurations. A single path in the tree becomes a recipe for improvement.
-
-### How is "win" defined?
-
-EZR uses a normalized utility score:
-
-    win = 100 × (1 - (x - best) / (median - best))
-
-Here `x` is the performance of a configuration, `best` is the global best, and `median` is a typical value.  
-    - A win of **100** means matching the best.  
-    - A win of **0** means average.  
-    - Negative wins mean regression.
-
-### How General is This?
-
-For years, we have been collecting what are known as "search-based
-SE" problems into the MOOT repository (MOOT= multi-objective
-optimization tests).  The above case study is one of over 110 data
-sets in MOOT.  As shown by the following table, MOOT data can have up tp
-has 100,000 rows, over 1000 choices, and up to 3 effects. More usually,
-MOOT data
-has 10,000 rows,9 choices and 3 effects.
-
-|percentile|25| 50| 75|100|
-|---------:|---:|------:|-:|--:|
-|#rows     | 1023| 10,000|10,000| 100,000| 
-|#choices  | 5  | 9 | 20 |1,044|
-|#effects  | 2 | 3 | 3|3|
-
-
-To assess EZR on all that data, ten times, we divided each data set into a train and test set (50:50). Next:
-
-- A tree was built by EZR on the training data;
-- Test rows were sorted using the tree's predictions;
-- The top _C=5_  predictions were then labelled and the win of the best row was printed. 
-- Just as a prudence check, this was compared against dumb guessing. _C=5_ rows were picked random from the test set, sorted them by their labels, and win of the best row (selected by this
-dumb 
-   method) was printed.
-
-For this experiment, we used the same control parameters as seen above; i.e. _A,B,C_=4,24,5.
-Across these 10 experiments with 110 case studies, EZR usually found a "win" of 70%.
-
-|percentile| EZR | delta = EZR - dumb|
----------:|-----:|-----:|
-|10 | 17 | -12|
-|20|  35| 0|
-| 30|  42| 0|
-| 40|  59| 3|
-| 50|  70| 8|
-| 60|  81| 15|
-| 70|  93| 27|
-| 80|  99| 43|
-| 90| 100 | 64|
-| 100| 100| 148|
-
-Here if the delta to "dumb" is zero or less, then EZR's trees do no better than dumb guessing.
-Note that "dumb" dies surprisingly well: 30% of the time, just bumbling around looking at five things does as good as anything else. 
-The success of "dumb" speaks volumes on the current obsession with big AI. Sure, sometimes we need very complex solutions. But in a surprisingly
-large number of cases, dumb old guessing does very well.
-
-That said, we should not use "dumb":
-
-- EZR's trees  often do  much better than dumb (see the large number of positive deltas). 
-- With the dumb method, there is no generalizing. From five randomly selected rows, it is hard to learn any generalization about the domain.
-- On the other hand, EZR does not just make recommendations. It also returns a 
-  tree describing how those recommendations are generated. That is, EZR lets other people audit or critique (or even complain) about how decisions are being made.
-
-It might be argued that "dumb" is preferred to EZR since it it so simple. That is perhaps not the  strongest argument. As shown below, EZR is not complex code (just a few hundred lines). 
-Also, it runs very
-fast. The entire experiment described about (10 trials over 110 data sets) took
-just 65 seconds (on a 10 core mac mini with no GPUs and only 16GB of memory.).
-
-### And what does all this tell us?
-
-That, sometimes, complexity is unnecessary. With small tools, small data, and smart strategies, we can solve real problems efficiently.
-
-**EZR** demonstrates how to teach and practice software engineering grounded in:
-
-- Simplicity  
-- Critique  
-- Ownership  
-
-all without sacrificing performance.
 
 
 [^tu20]: Tu, Huy, Zhe Yu, and Tim Menzies. "Better data labelling with emblem (and how that impacts defect prediction)." *IEEE TSE*, 48.1 (2020): 2
