@@ -2,6 +2,37 @@
 
 This is a dumping ground for side excursions, some of which will be folded back into main.
 
+Years ago, in a graduate AI class, a student asked why our models needed so much data.  
+“They don’t,” I said. “We just haven’t learned how to ask the right questions.”  
+
+That turned into a dare: could we build useful models from just a few labeled examples? So we wrote a quick prototype. It peeked at a handful of data points, built two tiny models—one for “good,” one for “bad”—then guided learning by comparing the two. It was fast, simple, and surprisingly effective.
+
+That spirit—minimalist, contrastive, purposeful—runs counter to much of today’s AI. The dominant trend is maximalist: larger models, larger datasets, larger compute. But with scale comes cost: complexity, slowness, and opacity. Reproducibility suffers. In a recent review of 229 software engineering papers using LLMs, only 13 (just 5%) compared their results to any alternative. Students and practitioners alike are left in the dark—unable to look inside, to question, or to adapt.
+
+This report proposes a different path. We introduce **EZR**, a fast, compact active learner built around the idea that small, well-chosen examples can carry most of the signal. EZR builds interpretable models from minimal data and uses them to guide optimization, classification, and explanation. It’s not just a tool—it’s a case study in what becomes possible when we reclaim simplicity and control.
+
+Others explore similar options—**active learning**, **semi-supervised learning**, and **contrastive sampling**—but often through thousands of lines of evolutionary algorithms, Parzen windows, or Gaussian process models. **EZR achieves similar goals with just a few dozen lines of ultra-simple code**: fast Bayes classifiers, greedy search, and decision trees. That brevity isn’t just aesthetic—it makes EZR easier to teach, easier to maintain, and far easier to modify or extend. It’s a tool built for **experimentation and understanding**, not just automation. It’s also fast: **1,000+ experiments across 100+ datasets run in under two minutes**. And unlike incomprehensible LLMs, EZR is grounded in **explicit theory**—transparent, auditable, and open to critique (or even complaint).
+
+We evaluate EZR using over 100 diverse examples from the [MOOT repository](https://github.com/timm/moot), drawn from real-world SE tasks like tuning, configuration, and process design. Our goal is not just performance—but also clarity, speed, and insight.
+
+**Our research questions:**
+
+- **RQ1: Is it simple?**  
+  Does EZR offer a compact, readable codebase for teaching and tinkering?
+
+- **RQ2: Is it fast?**  
+  Can it complete tasks in milliseconds rather than hours?
+
+- **RQ3: Is it effective?**  
+  Can it achieve strong results after seeing only a few examples?
+
+- **RQ4: Is it insightful?**  
+  Does it support explainability, critique, and understanding?
+
+- **RQ5: Is it general?**  
+  How well does it apply across varied SE optimization tasks?
+
+----------
 _____
 In an ideal world, some AI tool could help by learning from a large
 log that shows what options lead to what effects.
