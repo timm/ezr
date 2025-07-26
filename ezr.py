@@ -320,7 +320,7 @@ def Tree(data, Klass=Num, Y=None, how=None):
   "Create regression tree."
   Y = Y or (lambda row: disty(data, row))
   data.kids, data.how = [], how
-  data.ys = has(Y(row) for row in data.rows)
+  data.ys = adds(Y(row) for row in data.rows)
   if len(data.rows) >= the.leaf:
     hows = [how for at,col in data.cols.x.items() 
             if (how := treeCuts(col,data.rows,at,Y,Klass))]
@@ -488,7 +488,7 @@ def statsCut(groups, eps):
 # _|_       ._    _  _|_  o   _   ._    _ 
 #  |   |_|  | |  (_   |_  |  (_)  | |  _> 
                                                        
-def has(src, col=None):
+def adds(src, col=None):
   "Summarize src into col (if col is None, them and guess what col to use)."
   for row in src:
     col = col or (Num if type(row) in [int,float] else Sym)()
@@ -534,11 +534,11 @@ def eg__all() : all_egs(run=True)
 def eg__list(): all_egs()
 
 def eg__the(): print(the)
-def eg__sym(): print(has("aaaabbc"))
-def eg__Sym(): s = has("aaaabbc"); assert 0.44 == round(like(s,"a"),2)
-def eg__num(): print(has(random.gauss(10,2) for _ in range(1000)))
+def eg__sym(): print(adds("aaaabbc"))
+def eg__Sym(): s = adds("aaaabbc"); assert 0.44 == round(like(s,"a"),2)
+def eg__num(): print(adds(random.gauss(10,2) for _ in range(1000)))
 def eg__Num() : 
-  n = has(random.gauss(10,2) for _ in range(1000))
+  n = adds(random.gauss(10,2) for _ in range(1000))
   assert 0.13 == round(like(n,10.5),2)
 
 def eg__data(): [print(col) for col in dataRead(the.file).cols.all]
@@ -660,7 +660,7 @@ def eg__tree():
     tree= Tree(
                 dataClone(data,
                     acquire(train,train.rows,"klass").labels))
-    base = has(disty(test,r) for r in test.rows)
+    base = adds(disty(test,r) for r in test.rows)
     rx   = sorted(test.rows, key=lambda r: treeLeaf(tree,r).ys.mu)[:the.Check]
     rx0  = random.choices(test.rows,k=the.Check)
     win  = 100*(1 - (daBest(test,rx)  - base.lo)/(base.mu - base.lo))
@@ -673,24 +673,24 @@ def eg__fmap():
   for few in [32,64,128,256,512]:
     the.Few = few
     print(few)
-    n=has(daBest(data, distFastermap(data,data.rows).labels.rows) for _ in range(20))
+    n=adds(daBest(data, distFastermap(data,data.rows).labels.rows) for _ in range(20))
     print("\t",n.mu,n.sd)
 
 def eg__acq():
   print(1)
   data = dataRead(the.file)
-  base = has(disty(data,r) for r in data.rows)
+  base = adds(disty(data,r) for r in data.rows)
   for few in [15,30,60]:
     the.Few = few
     print(few)
     for acq in ["klass"]: #["xplore", "xploit", "adapt","klass"]:
       the.acq = acq
-      n=has(daBest(data, acquire(data, data.rows).labels) for _ in range(20))
+      n=adds(daBest(data, acquire(data, data.rows).labels) for _ in range(20))
       print("\t",the.acq, base.mu, base.lo, n.mu,n.sd)
 
 def eg__rand():
   data = dataRead(the.file)
-  n = has(daBest(data, random.choices(data.rows, k=the.Build)) for _ in range(20))
+  n = adds(daBest(data, random.choices(data.rows, k=the.Build)) for _ in range(20))
   print("\t",n.mu,n.sd)
 
 
@@ -737,7 +737,7 @@ fyi=lambda s: print(s,file=sys.stderr, flush=True,end="")
 def xper1(data,rxs):
   repeats=30
   builds=[15,30,60,120]
-  base = has(disty(data,r) for r in data.rows)
+  base = adds(disty(data,r) for r in data.rows)
   win  = lambda x: 1 - (x - base.lo) / (base.mu - base.lo + 1e-32)
   out={}
   for build in builds: 
@@ -748,9 +748,9 @@ def xper1(data,rxs):
       out[(rx,build)] = [daBest(data,fn(data)) for _ in range(repeats)]
   fyi("!")
   ranks = statsRank(out, eps=base.sd*0.2)
-  rank1 = has(x for k in ranks if ranks[k] == 1 for x in out[k])
+  rank1 = adds(x for k in ranks if ranks[k] == 1 for x in out[k])
   p = lambda z: round(100*z) #"1.00" if z == 1 else (f"{pretty(z,2)[1:]}" if isinstance(z,float) and z< 1 else str(z))
-  q = lambda k: f" {'A' if ranks[k]==1 else ' '} {p(has(out[k]).mu)}"
+  q = lambda k: f" {'A' if ranks[k]==1 else ' '} {p(adds(out[k]).mu)}"
   print("#file","rows","|y|","|x|","asIs","min",*[daRx((rx,b)) for b in builds for rx in rxs],"win",sep=",")
   print(re.sub("^.*/","",the.file),
         len(data.rows), len(data.cols.y), len(data.cols.x), p(base.mu), p(base.lo),
