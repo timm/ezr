@@ -335,6 +335,9 @@ Each path in the tree offers a **human-readable recipe for improvement**, ground
 
 ### How is “win” defined?
 
+Each row has _n_ goals we are trying to minimize or maximize and each goal column has, in the labelled data, a min and max value seen so far.
+After normalizng each goal value 0..1 (for min..max), we can say that minimizing goals have a best value of "0" and maximizing goals have a best value of "1"/
+
 We normalize utility as:
 
 ```python
