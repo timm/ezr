@@ -108,8 +108,8 @@
      overflow: visible;
     }
     hr {
+      background-color: #1a1a1a;
       border: none;
-      border-top: 1px solid #1a1a1a;
       height: 1px;
       margin: 1em 0;
     }
@@ -168,9 +168,8 @@
     }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
     /* CSS for syntax highlighting */
-    html { -webkit-text-size-adjust: 100%; }
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -181,7 +180,7 @@
     }
     @media print {
     pre > code.sourceCode { white-space: pre-wrap; }
-    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
     }
     pre.numberSource code
       { counter-reset: source-line 0; }
@@ -259,180 +258,63 @@
 </tr>
 </tbody>
 </table>
-<p>To say the least, everyone is focused on big AI right that
-assumes</p>
-<p>What should we be teaching newcomers to software engineering? Talking
-with fellow instructors, we’ve noticed two growing challenges. First,
-students often lack practice in analyzing and critiquing code.
-Post-COVID learners, raised on search engines and chatbots, are great at
-vibing with code—copying, tweaking, prompting—but less adept at
-understanding what makes it tick. Second, the systems they encounter
-often feel too large or opaque to examine. As Leidy Klotz notes, people
-systematically overlook subtractive changes—we keep adding, even when
-taking away would serve us better. This leads to complexity and bloat.
-In teaching, it overwhelms. Such complexity means that code is something
-that appears on a screen, not something they can explore and own and
-shape.</p>
-<p>These challenges are connected. Simpler systems invite deeper
-engagement and more ownership. D. Richard Hipp, creator of SQLite, says
-“If you want to be free, that means doing things yourself.”<a
-href="#fn1" class="footnote-ref" id="fnref1"
-role="doc-noteref"><sup>1</sup></a> He likens it to backpacking—carrying
-only what you need to move freely. You do not need to build Microsoft
-Windows; you need just enough to do something meaningful. This book
-shows how powerful results can emerge from surprisingly little code and
-data.</p>
-<p>That ethic—simplicity, self-reliance, deep understanding—is fading.
-For many, that’s fine; it means producing more code, more quickly. But
-for engineers tasked with building reliable, high-quality systems under
-real-world constraints, that loss matters. We must teach what happens
-inside the code, especially the complex systems that power today’s AI.
-As these tools proliferate, we need code surgeons who can diagnose,
-intervene, and improve what lies beneath the surface. We need to reclaim
-authorship of our code, encouraging understanding and fostering a
-mindset of critique rather than cargo cult reuse.</p>
-<p>This reluctance to look inside has serious consequences. Chief among
-them is the crisis of <em>reproducibility</em>: big AI experiments are
-difficult to replicate, and comparative evaluations are rare. For
-example, a recent review<a href="#fn2" class="footnote-ref" id="fnref2"
-role="doc-noteref"><sup>2</sup></a> of 229 software engineering papers
-using LLMs (a big AI technique) found that only 13 (just 5%) compared
-their results to any alternative. This lack of introspection is not only
-methodologically flawed; it also suppresses innovation. As seen in the
-<em><a href="#examples">Example</a></em> section, simpler approaches can
-often perform just as well—or better—while being faster, more
-transparent, and easier to critique_<a href="#fn3" class="footnote-ref"
-id="fnref3" role="doc-noteref"><sup>3</sup></a> <a href="#fn4"
-class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> <a
-href="#fn5" class="footnote-ref" id="fnref5"
-role="doc-noteref"><sup>5</sup></a> <a href="#fn6" class="footnote-ref"
-id="fnref6" role="doc-noteref"><sup>6</sup></a> <a href="#fn7"
-class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> <a
-href="#fn8" class="footnote-ref" id="fnref8"
-role="doc-noteref"><sup>8</sup></a> <a href="#fn9" class="footnote-ref"
-id="fnref9" role="doc-noteref"><sup>9</sup></a>.</p>
-<p>So what are those alternatives? “Less AI” offers one path forward.
-Where big AI emphasizes volume, less AI assumes that useful models are
-tiny gems obscured by irrelevant or noisy or redundant data. Finding
-useful models is a hence a progress of pruning anything that is
-superfluous or confusing. To say that another way:</p>
+<h2 id="introduction">Introduction</h2>
+<p>Years ago, in a graduate AI class, a student asked:</p>
 <blockquote>
-<p><strong>Menzies’s 4th law:</strong> The best thing to do with most
-data is throw it away<a href="#fn10" class="footnote-ref" id="fnref10"
-role="doc-noteref"><sup>10</sup></a>.</p>
+<p>Why our models needed so much data?</p>
 </blockquote>
-<p><strong>EZR</strong> is a compact implementation of this law. It is
-an incremental <em>active learner</em><a href="#fn11"
-class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a>,
-which means “what to do next” is determined from “what has been seen so
-far”. By peeking at the data before processing it, tools like
-<strong>EZR</strong> can avoid irrelevancies, redundancies, and noisy
-data. In this way, models can be built, very quickly, from very little
-data. In just a few hundred lines of code, EZR supports a wide range of
-core AI tasks—classification, clustering, regression, active learning,
-multi-objective optimization, and explainability.</p>
-<p>This research note introduces EZR and explains its design,
-motivation, and implications. After a code walk-through, we evaluate EZR
-using over 100 diverse examples from the <a
-href="https://github.com/timm/moot">MOOT repository</a><a href="#fn12"
-class="footnote-ref" id="fnref12" role="doc-noteref"><sup>12</sup></a>,
-which captures problems from software engineering optimization, such as
-tuning analytic tools, adjusting configuration parameters, and guiding
-software process decisions.</p>
-<p>The MOOT benchmarks help answer several core questions about EZR:</p>
-<ul>
-<li><p><strong>RQ1: Is it simple?</strong><br />
-Yes- EZR has a compact, readable codebase, ideal for teaching and
-tinkering.</p></li>
-<li><p><strong>RQ2: Is it fast?</strong><br />
-Yes— EZR completes tasks in milliseconds that take hours for big
-AI.</p></li>
-<li><p><strong>RQ3: Is it effective?</strong><br />
-Yes— MOOT’s active learners achieve near-optimal results after seeing
-just a few dozen examples.</p></li>
-<li><p><strong>RQ4: Is it insightful?</strong><br />
-Yes— EZR reveals a perspective on learning that encourages explanation
-and critical analysis, not just automation.</p></li>
-<li><p><strong>RQ5: Is it general?</strong> Within the scope of
-MOOT-style optimization of SE tasks, yes. While not designed for text
-generation (you’ll still need LLMs for that), EZR excels at fast model
-building and external critique—an essential capability when teaching
-students to open up and reason about AI systems.</p></li>
-</ul>
-<h2 id="installation">Installation</h2>
-<p>To run the examples of this book:</p>
-<div class="sourceCode" id="cb1"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>mkdir demo<span class="op">;</span> cd demo</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>moot <span class="co"># &lt;== data</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>ezr  <span class="co"># &lt;== code</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>cd ezr</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>python3 <span class="op">-</span>B ezr.py <span class="op">-</span>f ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>config<span class="op">/</span>SS<span class="op">-</span>M.csv </span></code></pre></div>
-<h2 id="a-quick-example">A Quick Example</h2>
-<p>Just to give all this a little context, here’s a quick example to get
-us going.</p>
-<p>Say we want to configure a database to reduce energy use, runtime,
-and CPU load. The database exposes dozens of tuning options—storage,
-logging, locking, compression, encryption, and more. Understanding how
-each setting impacts performance is daunting.</p>
-<p>Imagine we have a log of 800+ configurations, each showing binary
-control options and their effects. Some settings are “best” and lead to
-low energy, runtime and cpu usage; e.g. </p>
-<pre><code>choices                     Effects
-----------------            -----------------------
-control settings →            Energy-, time-,  cpu-
-0,0,0,0,1,0,...               6.6,    248.4,   2.1   ← best
-1,1,0,1,1,1,...              16.8,    518.6,  14.1   ← rest
-...</code></pre>
-<p>Given such a log, any number of AI tools could learn a model for what
-predicts for “best” and what avoids “rest”. But here’s the problem: most
-real-world scenarios don’t come with complete logs. Labeling each
-configuration (e.g., by running benchmarks or consulting some human
-expert) is expensive, slow, and (sometimes) even impossible. So how can
-we learn anything useful, with least effort (i.e. after asking for
-fewest labels).</p>
-<p>That’s where <strong>EZR</strong> comes in. It uses a minimalist
-<strong>A-B-C</strong> strategy:</p>
-<ul>
-<li><p><strong>A: Ask anything</strong><br />
-Randomly sample a few rows (e.g., <em>A = 4</em>) and label them to seed
-the process. In this seed, we build two models (one for “best” and one
-for “rest”). For unballed rows, this models can report the likelihood
-that some new example belongs to “best” or “rest” (these are called
-<em>b,r</em>).</p></li>
-<li><p><strong>B: Build a model</strong><br />
-Iteratively label up to <em>B = 24</em> additional rows. Each new row is
-selected based on its potential to improve the model (specifically, we
-look for things that maximize <span
-class="math inline"><em>b</em>/<em>r</em></span>).</p></li>
-<li><p><strong>C: Check the model</strong><br />
-Apply the model to all unlabeled rows, then evaluate just a few (e.g.,
-<em>C = 5</em>) of the most promising ones.</p></li>
-</ul>
-<p>In this example, after labeling just 24 out of 800 rows (∼4%), EZR
-constructs a decision tree with interpretable rules. One path to a
-near-optimal configuration is:</p>
-<pre><code>if crypt_blowfish == 0 and 
-   memory_tables == 1 and 
-   small_log == 0 and 
-   logging == 0 and 
-   txc_mvlocks == 0 and 
-   no_write_delay == 0
-then win ≈ 99%</code></pre>
-<p>In the above “win” is a measure of how close we get to optimum. A
-“win” of zero means we have not changed anything and a “win” of 100
-means we are found ways to select for the best values. This branch
-achieves a 99% “win” so it very nearly perfect.</p>
-<p>To test this model, EZR applies it to all 800 rows and selects the
-top <em>C = 5</em> rows it predicts to be best. The actual measured
-performance of those five rows confirms the model’s judgment: the top
-pick is within 2% of the global best.</p>
-<p>All this was achieved with only a few dozen queries, processed by
-just a few hundred lines of code.<br />
-Think of it as the Pareto principle on steroids. <strong>Vilfredo
-Pareto</strong> proposed that 80% of the gain often comes from just 20%
-of the work — and throughout the history of AI, many analogous results
-reinforce this idea:</p>
-<p>The history of “Less AI”:</p>
+<p>“Maybe they don’t,” I said. “Maybe we just haven’t learned how to ask
+the right questions.”</p>
+<p>That turned into a dare: could we build useful models from just a few
+labeled examples? So we wrote a quick prototype. It peeked at a handful
+of data points, built two tiny models—one for “good,” one for “bad”—then
+guided learning by comparing the two. Afterwards, a tree learner
+summarized the data discovred along the way. It was fast, simple, and
+surprisingly effective. We were able to find excellent
+configurations—database tunings, optimization settings, even
+architectural choices—after labeling just a tiny fraction of the
+data.</p>
+<p>This small experiment raised a powerful question:</p>
+<blockquote>
+<p>Does good AI need thousands, millions, or billions of examples?</p>
+</blockquote>
+<p>Perhaps the above was just a fluke? This elad to another
+questions:</p>
+<blockquote>
+<p>“Did we just get lucky? Was the dataset used above unusually
+easy?”</p>
+</blockquote>
+<p>To find out, we went looking. We pulled together case studies seen in
+dozens of state-of-the-ar search-based software engineering papers.
+Configuration optimization. Architecture tuning. Effort estimation. We
+built a library of <strong>over 110 real-world problems</strong>, drawn
+from recent, peer-reviewed software engineering research. Using that
+data, we we reran the experiment, this time at scale. And again, it
+worked very fast and it worked very well.</p>
+<p>Accordingly, now we think that that first result was not magic or
+luck. Instead, it reflects something deeper: a tradition in software
+engineering and AI where <strong>small, well-chosen examples</strong>
+outperform brute-force data collection. Over decades, researchers have
+shown that smart sampling, contrastive modeling, and key variable
+detection can rival—or even beat—more complex strategies.</p>
+<p>EZR builds on that legacy. It learns by comparing “better” and
+“worse,” asking what separates them, and steering future exploration in
+that direction. It skips the layers of opaque math and instead relies on
+simple, auditable, symbolic reasoning. And it’s fast enough to run
+<strong>1,000+ experiments across 100+ datasets in under two
+minutes</strong>.</p>
+<p>The idea that “less can be better” is not new. For literally
+centuries, researchers have shown that careful sampling, dimensionality
+reduction, and contrastive analysis can outperform brute-force
+techniques. The table below summarizes key milestones in this
+tradition.</p>
+<p>Despite this long history of elegant, minimalist solutions, the trend
+in AI and software engineering has often moved in the opposite
+direction—toward bigger models, more data, and increasing complexity.
+There are many reasons for this [^subtract]. Increasing complexity is
+often seen as progress even though often that is just the momentun of
+our ideas makes it hard to stop. People usually overlook subtractive
+change, favoring instead to add needless complexity.</p>
 <table>
 <colgroup>
 <col style="width: 6%" />
@@ -458,9 +340,16 @@ reinforce this idea:</p>
 <tr>
 <td>1960s</td>
 <td>Narrows</td>
-<td>Amarel <a href="#fn13" class="footnote-ref" id="fnref13"
-role="doc-noteref"><sup>13</sup></a></td>
+<td>Amarel <a href="#fn1" class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a></td>
 <td>Chess search guided by tiny sets of key variable settings.</td>
+</tr>
+<tr>
+<td>1974</td>
+<td></td>
+<td>Prototypes</td>
+<td>Chang <a href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a></td>
 </tr>
 <tr>
 <td>1980s</td>
@@ -471,53 +360,53 @@ role="doc-noteref"><sup>13</sup></a></td>
 <tr>
 <td>1984</td>
 <td>Distance-Preseration</td>
-<td>Johnson &amp; Lindenstrauss <a href="#fn14" class="footnote-ref"
-id="fnref14" role="doc-noteref"><sup>14</sup></a></td>
+<td>Johnson and Lindenstrauss <a href="#fn3" class="footnote-ref"
+id="fnref3" role="doc-noteref"><sup>3</sup></a></td>
 <td>High-dimensional data can be embedded in low dimensions while
 preserving pairwise distances.</td>
 </tr>
 <tr>
 <td>1996</td>
 <td>ISAMP</td>
-<td>Crawford &amp; Baker <a href="#fn15" class="footnote-ref"
-id="fnref15" role="doc-noteref"><sup>15</sup></a></td>
+<td>Crawford &amp; Baker <a href="#fn4" class="footnote-ref" id="fnref4"
+role="doc-noteref"><sup>4</sup></a></td>
 <td>Fast random retries outperform exhaustive backtracking.</td>
 </tr>
 <tr>
 <td>1997</td>
 <td>Feature Subset Selection</td>
-<td>John &amp; Kohavi <a href="#fn16" class="footnote-ref" id="fnref16"
-role="doc-noteref"><sup>16</sup></a></td>
+<td>John &amp; Kohavi <a href="#fn5" class="footnote-ref" id="fnref5"
+role="doc-noteref"><sup>5</sup></a></td>
 <td>Up to 80% of features can be ignored without hurting accuracy.</td>
 </tr>
 <tr>
 <td>2002</td>
 <td>Backdoors</td>
-<td>Williams et al. <a href="#fn17" class="footnote-ref" id="fnref17"
-role="doc-noteref"><sup>17</sup></a></td>
+<td>Williams et al. <a href="#fn6" class="footnote-ref" id="fnref6"
+role="doc-noteref"><sup>6</sup></a></td>
 <td>Setting a few variables reduces exponential runtimes to
 polynomial.</td>
 </tr>
 <tr>
 <td>2005</td>
 <td>Semi-Supervised Learning</td>
-<td>Zhou et al. <a href="#fn18" class="footnote-ref" id="fnref18"
-role="doc-noteref"><sup>18</sup></a></td>
+<td>Zhou et al. <a href="#fn7" class="footnote-ref" id="fnref7"
+role="doc-noteref"><sup>7</sup></a></td>
 <td>Data often lies on low-dimensional manifolds inside high-dimensional
 spaces.</td>
 </tr>
 <tr>
 <td>2008</td>
 <td>Exemplars</td>
-<td>Menzies <a href="#fn19" class="footnote-ref" id="fnref19"
-role="doc-noteref"><sup>19</sup></a></td>
+<td>Menzies <a href="#fn8" class="footnote-ref" id="fnref8"
+role="doc-noteref"><sup>8</sup></a></td>
 <td>Small samples can summarize and model large datasets.</td>
 </tr>
 <tr>
 <td>2009</td>
 <td>Active Learning</td>
-<td>Settles <a href="#fn20" class="footnote-ref" id="fnref20"
-role="doc-noteref"><sup>20</sup></a></td>
+<td>Settles <a href="#fn9" class="footnote-ref" id="fnref9"
+role="doc-noteref"><sup>9</sup></a></td>
 <td>Selectively query the most informative examples. <br>Unlike
 semi-supervised methods, the learner actively shapes its training
 set.</td>
@@ -543,236 +432,257 @@ performance loss.</td>
 </tr>
 </tbody>
 </table>
-<hr />
-<p>Inspired by all this, I once write a quick and dirty demonstrator
-while teaching a graduate class The resulting code (EZR, version 0.1)
-peeked at a random sample of the data to learn two tiny models
-<em>best</em> and <em>rest</em> models. It performed startlingly well.
-That led to several papers comparing EZR’s minimalist approach to
-state-of-the-art optimizers. In all cases, <strong>EZR’s “less AI”
-performed just as well as the more complex systems.</strong></p>
-<p><strong>Long story short</strong>: with EZR, as with much of
-intelligent system design, <strong>success does not come from reasoning
-about everything</strong>, but from identifying and leveraging just the
-<strong>right few things</strong>. This idea is widely known but rarely
-applied. In most cases, new problems are still tackled with overly
-complex, heavyweight AI tools. Perhaps we need to change that</p>
+<p>So what to do? Perhaps, what is needed is an example. Some tiny code
+base running over many data sets achieving good performance without
+needing much data. Enter this doc We need to ask:</p>
+<blockquote>
+<p>Can we still get most of the value with much less?</p>
+</blockquote>
+<p>So this document is about: - an idea: <strong>less, but
+better</strong> - a very small code base: <strong>that operationalizes
+that idea</strong> - and a large test suite: <strong>that checks if the
+idea generalizes across diverse domains</strong></p>
+<p>Using this code and data, we ask five questions:</p>
+<ul>
+<li><p><strong>RQ1: Is it simple?</strong><br />
+Is our code base compact abd readable and suitabke for teaching and
+tinkering?</p></li>
+<li><p><strong>RQ2: Is it fast?</strong><br />
+Can our code complete tasks in milliseconds rather than hours?</p></li>
+<li><p><strong>RQ3: Is it effective?</strong><br />
+Can our achieve strong results after seeing only a few
+examples?</p></li>
+<li><p><strong>RQ4: Is it insightful?</strong><br />
+Does our code support explainability, critique, and
+understanding?</p></li>
+<li><p><strong>RQ5: Is it general?</strong><br />
+Does our code apply across varied SE optimization tasks?</p></li>
+</ul>
+<p>All the code and data used here can be accessed as fllows</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>mkdir demo<span class="op">;</span> cd demo</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>moot <span class="co"># &lt;== data</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>ezr  <span class="co"># &lt;== code</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>cd ezr</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>python3 <span class="op">-</span>B ezr.py <span class="op">-</span>f ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>config<span class="op">/</span>SS<span class="op">-</span>M.csv <span class="co"># &lt;== test case </span></span></code></pre></div>
+<h2 id="a-quick-example">A Quick Example</h2>
+<p>Just to give this some context, here’s a concrete case.</p>
+<p>Say we want to configure a database to reduce energy use, runtime,
+and CPU load. The system exposes dozens of tuning knobs—storage,
+logging, locking, encryption, and more. Understanding how each setting
+impacts performance is daunting.</p>
+<p>Imagine we have a log of 800+ configurations, each showing the
+settings and their measured effects. Some settings lead to excellent
+results:</p>
+<pre><code>choices                     Effects
+----------------            -----------------------
+control settings →            Energy-, time-,  cpu-
+0,0,0,0,1,0,...               6.6,    248.4,   2.1   ← best
+1,1,0,1,1,1,...              16.8,    518.6,  14.1   ← rest
+...</code></pre>
+<p>In theory, any number of AI tools could learn what separates “best”
+from “rest.” But here’s the challenge: <strong>labeling</strong> each
+configuration—e.g., by running benchmarks—is expensive. So how can we
+learn a model with minimal effort?</p>
+<p>That’s where <strong>EZR</strong> comes in. It uses a minimalist
+A–B–C strategy:</p>
+<ul>
+<li><p><strong>A: Ask anything</strong><br />
+Randomly label a few examples (e.g., <em>A = 4</em>) to seed the
+process.</p></li>
+<li><p><strong>B: Build a model</strong><br />
+Build contrastive models for “best” and “rest,” then label up to <em>B =
+24</em> more rows that maximize the score <em>b/r</em>, where
+<code>b</code> and <code>r</code> are likelihoods from those two
+models.</p></li>
+<li><p><strong>C: Check the model</strong><br />
+Apply the learned model to unlabeled data and evaluate a small set
+(e.g., <em>C = 5</em>) of the most promising rows.</p></li>
+</ul>
+<p>In this task, after labeling just 24 out of 800 rows (∼3%), EZR
+constructs a readable decision tree. One high-performing path looks like
+this:</p>
+<pre><code>if crypt_blowfish == 0 and 
+   memory_tables == 1 and 
+   small_log == 0 and 
+   logging == 0 and 
+   txc_mvlocks == 0 and 
+   no_write_delay == 0
+then win ≈ 99%</code></pre>
+<p>That “win” score means we’re nearly matching the globally best
+result—using only a fraction of the available data.</p>
+<p>In testing, EZR applied its model to all 800 configurations, selected
+the top <em>C = 5</em>, and found that the best of those was within 2%
+of the known global best.</p>
+<p>All of this took just a few dozen queries—and a few hundred lines of
+code. It’s a striking illustration of the Pareto principle: <strong>most
+of the value often comes from just a small fraction of the
+effort</strong>. EZR shows that with the right strategy, a handful of
+examples can uncover nearly all the signal.<br />
+<strong>EZR is Pareto on steroids.</strong> While Pareto said that 80%
+of the results come from 20% of the effort, <strong>EZR is more like 99%
+of the gain from 1% of the work</strong>.</p>
 <h2 id="discussion-why-this-works">Discussion: Why This Works</h2>
 <h3 id="why-not-label-everything">Why not label everything?</h3>
-<p>Because labeling is expensive:</p>
+<p>Because labeling is costly:</p>
 <ul>
-<li>Some benchmarks are slow to run.</li>
-<li>Some require rebuilding complex systems.</li>
-<li>Manual annotation is costly and error-prone.</li>
+<li>Benchmarks take time to run.</li>
+<li>Some configurations require complex rebuilds.</li>
+<li>Human evaluation is slow, expensive, and error-prone.</li>
 </ul>
-<p>Prior work shows that labeling large datasets can take years<a
-href="#fn21" class="footnote-ref" id="fnref21"
-role="doc-noteref"><sup>21</sup></a><a href="#fn22" class="footnote-ref"
-id="fnref22" role="doc-noteref"><sup>22</sup></a><a href="#fn23"
-class="footnote-ref" id="fnref23" role="doc-noteref"><sup>23</sup></a>.
-Even using big AI and large language models has limitations: they help
-only in narrow, well-structured tasks and still require careful
-deployment<a href="#fn24" class="footnote-ref" id="fnref24"
-role="doc-noteref"><sup>24</sup></a>.</p>
+<p>Prior work has shown that even with big compute, building labeled
+datasets takes <strong>months or years</strong>. EZR sidesteps this by
+labeling only what matters most.</p>
+<hr />
 <h3 id="so-how-does-ezr-help">So how does EZR help?</h3>
-<p>The tiny AI assumption is that models are tiny gems obscured by much
-irrelevant or noisy or redundant data. Internally, EZR is an
-<strong>contrastive active learner</strong>. By focusing on examples
-with large <span class="math inline"><em>b</em>/<em>r</em></span> score,
-EZR only processes a handful of examples that most distinguish good from
-bad. It labels only the most informative rows (and updates in models
-from that label). As a side-effect, this also dodges superfluous or
-confusing data. In this way, EZR we can very quickly build very
-effective models.</p>
-<p>To say all that another way, you do not need a mountain of
-information—just the right few examples.</p>
+<p>EZR operates under a <strong>tiny-AI assumption</strong>: most of the
+signal is buried under a layer of irrelevant or redundant data. It
+learns by contrast—focusing on what most separates good from bad using a
+simple <code>b/r</code> score.</p>
+<p>This means: - Fewer labeled examples<br />
+- Less noise<br />
+- Faster inference<br />
+- Smaller, more transparent models</p>
+<hr />
 <h3 id="why-use-a-decision-tree">Why use a decision tree?</h3>
-<p>Doing, without learning, means you are doomed to doing it all again,
-every time that need arises. But if you can learn some generalization,
-then the next time something comes up, you already know how to handle
-it. According the physicist Enrst Rutherford, your explainations should
-be as simple as possible.</p>
-<div class="line-block">Enrst Rtherford: A theory that you can’t explain
-to a bartender is probably no damn good</div>
-<p>Decision trees learned from <span class="math inline">$_B=24_$</span>
-examples are:</p>
+<p>Decision trees are:</p>
 <ul>
-<li>Fast to learn<br />
+<li><strong>Fast to train</strong><br />
 </li>
-<li>Interpretable<br />
+<li><strong>Sparse by nature</strong><br />
 </li>
-<li>Naturally sparse</li>
+<li><strong>Easy to read</strong></li>
 </ul>
-<p>Each node splits examples based on a binary feature. Leaves group
-similar configurations. A single path in the tree becomes a recipe for
-improvement.</p>
+<p>As physicist Ernest Rutherford famously quipped:<br />
+&gt; “A theory that you can’t explain to a bartender is probably no damn
+good.”</p>
+<p>Each path in the tree offers a <strong>human-readable recipe for
+improvement</strong>, grounded in real measurements.</p>
+<hr />
 <h3 id="how-is-win-defined">How is “win” defined?</h3>
-<p>EZR uses a normalized utility score:</p>
+<p>We normalize utility as:</p>
 <div class="sourceCode" id="cb4"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>win <span class="op">=</span> <span class="dv">100</span> × (<span class="dv">1</span> <span class="op">-</span> (x <span class="op">-</span> best) <span class="op">/</span> (median <span class="op">-</span> best))</span></code></pre></div>
-<p>Here <code>x</code> is the performance of a configuration,
-<code>best</code> is the global best, and <code>median</code> is a
-typical value.</p>
-<div class="sourceCode" id="cb5"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> A win of <span class="op">**</span><span class="dv">100</span><span class="op">**</span> means matching the best.  </span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> A win of <span class="op">**</span><span class="dv">0</span><span class="op">**</span> means average.  </span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="op">-</span> Negative wins mean regression.</span></code></pre></div>
-<h3 id="how-general-is-this">How General is This?</h3>
-<p>For years, we have been collecting what are known as “search-based
-SE” problems into the MOOT repository (MOOT= multi-objective
-optimization tests). The above case study is one of over 110 data sets
-in MOOT. As shown by the following table, MOOT data can have up tp has
-100,000 rows, over 1000 choices, and up to 3 effects. More usually, MOOT
-data has 10,000 rows,9 choices and 3 effects.</p>
-<table>
-<thead>
-<tr>
-<th style="text-align: right;">percentile</th>
-<th style="text-align: right;">25</th>
-<th style="text-align: right;">50</th>
-<th style="text-align: right;">75</th>
-<th style="text-align: right;">100</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: right;">#rows</td>
-<td style="text-align: right;">1023</td>
-<td style="text-align: right;">10,000</td>
-<td style="text-align: right;">10,000</td>
-<td style="text-align: right;">100,000</td>
-</tr>
-<tr>
-<td style="text-align: right;">#choices</td>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: right;">1,044</td>
-</tr>
-<tr>
-<td style="text-align: right;">#effects</td>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">3</td>
-</tr>
-</tbody>
-</table>
-<p>To assess EZR on all that data, ten times, we divided each data set
-into a train and test set (50:50). Next:</p>
 <ul>
-<li>A tree was built by EZR on the training data;</li>
-<li>Test rows were sorted using the tree’s predictions;</li>
-<li>The top <em>C=5</em> predictions were then labelled and the win of
-the best row was printed.</li>
-<li>Just as a prudence check, this was compared against dumb guessing.
-<em>C=5</em> rows were picked random from the test set, sorted them by
-their labels, and win of the best row (selected by this dumb method) was
-printed.</li>
+<li>A win of <strong>100</strong> means we match the best.<br />
+</li>
+<li>A win of <strong>0</strong> means we’re at the median.<br />
+</li>
+<li>Negative scores mean we’ve regressed.</li>
 </ul>
-<p>For this experiment, we used the same control parameters as seen
-above; i.e. <em>A,B,C</em>=4,24,5. Across these 10 experiments with 110
-case studies, EZR usually found a “win” of 70%.</p>
+<hr />
+<h3 id="how-general-is-this">How General Is This?</h3>
+<p>The database example is just one of over 100 benchmarks in the <a
+href="https://github.com/timm/moot">MOOT</a> repository. Each MOOT
+dataset has: - Between 1,000 and 100,000 rows - 5 to 1,000+
+configuration choices - Up to 3 goal metrics</p>
+<p>XXXX need to explain ABC</p>
+<p>We tested EZR 10× on each dataset. In each trial: - <em>A = 4</em>,
+<em>B = 24</em>, <em>C = 5</em> - EZR built a model from training data -
+Test data was ranked by the model - Top 5 predictions were compared to
+ground truth - We recorded the “win” of the best predicted row</p>
+<p>As a baseline, we also tested <strong>dumb guessing</strong>: picking
+5 random test rows, and scoring the best one.</p>
+<h4 id="result-percentiles-of-win-scores">Result (Percentiles of Win
+Scores)</h4>
+<p>The results were sorted and divided into percentils (top 10%, next
+10%, etc):</p>
 <table>
 <thead>
 <tr>
-<th style="text-align: right;">percentile</th>
+<th style="text-align: right;">Percentile</th>
 <th style="text-align: right;">EZR</th>
-<th style="text-align: right;">delta = EZR - dumb</th>
+<th style="text-align: left;">Bar Chart(of EZR)</th>
+<th style="text-align: right;">EZR - Dumb</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">17</td>
-<td style="text-align: right;">-12</td>
-</tr>
-<tr>
-<td style="text-align: right;">20</td>
-<td style="text-align: right;">35</td>
-<td style="text-align: right;">0</td>
-</tr>
-<tr>
-<td style="text-align: right;">30</td>
-<td style="text-align: right;">42</td>
-<td style="text-align: right;">0</td>
-</tr>
-<tr>
-<td style="text-align: right;">40</td>
-<td style="text-align: right;">59</td>
-<td style="text-align: right;">3</td>
-</tr>
-<tr>
-<td style="text-align: right;">50</td>
-<td style="text-align: right;">70</td>
-<td style="text-align: right;">8</td>
-</tr>
-<tr>
-<td style="text-align: right;">60</td>
-<td style="text-align: right;">81</td>
-<td style="text-align: right;">15</td>
-</tr>
-<tr>
-<td style="text-align: right;">70</td>
-<td style="text-align: right;">93</td>
-<td style="text-align: right;">27</td>
-</tr>
-<tr>
-<td style="text-align: right;">80</td>
-<td style="text-align: right;">99</td>
-<td style="text-align: right;">43</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: left;">*************************</td>
+<td style="text-align: right;">148</td>
 </tr>
 <tr>
 <td style="text-align: right;">90</td>
 <td style="text-align: right;">100</td>
+<td style="text-align: left;">*************************</td>
 <td style="text-align: right;">64</td>
 </tr>
 <tr>
-<td style="text-align: right;">100</td>
-<td style="text-align: right;">100</td>
-<td style="text-align: right;">148</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">99</td>
+<td style="text-align: left;">*************************</td>
+<td style="text-align: right;">43</td>
+</tr>
+<tr>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: left;">************************</td>
+<td style="text-align: right;">27</td>
+</tr>
+<tr>
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: left;">*********************</td>
+<td style="text-align: right;">15</td>
+</tr>
+<tr>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: left;">*******************</td>
+<td style="text-align: right;">8</td>
+</tr>
+<tr>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: left;">****************</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">42</td>
+<td style="text-align: left;">*************</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: left;">************</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: left;">******</td>
+<td style="text-align: right;">-12</td>
 </tr>
 </tbody>
 </table>
-<p>Here if the delta to “dumb” is zero or less, then EZR’s trees do no
-better than dumb guessing. Note that “dumb” dies surprisingly well: 30%
-of the time, just bumbling around looking at five things does as good as
-anything else. The success of “dumb” speaks volumes on the current
-obsession with big AI. Sure, sometimes we need very complex solutions.
-But in a surprisingly large number of cases, dumb old guessing does very
-well.</p>
-<p>That said, we should not use “dumb”:</p>
+<p>Note that, one time in ten, even dumb guessing gets lucky and does
+surprisingly well (the 10% case where “dumb” is 12% better than ABC).
+But we do not want to be “dumb” since dumb reasoning does not
+generalize. On the other hand, <strong>ABC’s trees provide both
+performance and understanding.</strong> To say that another way, dumb
+reasonng just says yes or now. ABC tells you how and why.</p>
+<p>ALso, while dumb guessing is simple, EZR is barely more complex—just
+a few hundred lines of code—and runs fast. The full experiment (10× on
+110 datasets) took just <strong>65 seconds</strong> on a Mac mini with
+no GPU.</p>
+<h3 id="and-what-does-all-this-tell-us">And What Does All This Tell
+Us?</h3>
+<p>That sometimes, <strong>complexity is unnecessary</strong>.</p>
+<p>With small tools, small data, and smart strategies, we can solve
+real-world optimization tasks—effectively, quickly, and
+transparently.</p>
+<p>EZR demonstrates how to teach and practice software engineering
+grounded in:</p>
 <ul>
-<li>EZR’s trees often do much better than dumb (see the large number of
-positive deltas).</li>
-<li>With the dumb method, there is no generalizing. From five randomly
-selected rows, it is hard to learn any generalization about the
-domain.</li>
-<li>On the other hand, EZR does not just make recommendations. It also
-returns a tree describing how those recommendations are generated. That
-is, EZR lets other people audit or critique (or even complain) about how
-decisions are being made.</li>
+<li><strong>Simplicity</strong></li>
+<li><strong>Critique</strong></li>
+<li><strong>Ownership</strong></li>
 </ul>
-<p>It might be argued that “dumb” is preferred to EZR since it it so
-simple. That is perhaps not the strongest argument. As shown below, EZR
-is not complex code (just a few hundred lines). Also, it runs very fast.
-The entire experiment described about (10 trials over 110 data sets)
-took just 65 seconds (on a 10 core mac mini with no GPUs and only 16GB
-of memory.).</p>
-<h3 id="and-what-does-all-this-tell-us">And what does all this tell
-us?</h3>
-<p>That, sometimes, complexity is unnecessary. With small tools, small
-data, and smart strategies, we can solve real problems efficiently.</p>
-<p><strong>EZR</strong> demonstrates how to teach and practice software
-engineering grounded in:</p>
-<ul>
-<li>Simplicity<br />
-</li>
-<li>Critique<br />
-</li>
-<li>Ownership</li>
-</ul>
-<p>all without sacrificing performance.</p>
+<p>—all without sacrificing performance.</p>
 <h1 id="easer-ai-why">Easer AI: Why?</h1>
 <p>This section offers motivation for exploring little AI tools like
 EZR.</p>
@@ -809,8 +719,8 @@ with tiny local stubs.</p>
 <p>Also, for <strong>teaching (or self-study)</strong>, it has often
 been suggested that 1,000 lines of code represents the practical limit
 in size for a program which is to be understood and maintained by a
-single individual<a href="#fn25" class="footnote-ref" id="fnref25"
-role="doc-noteref"><sup>25</sup></a>. Most AI tools either exceed this
+single individual<a href="#fn10" class="footnote-ref" id="fnref10"
+role="doc-noteref"><sup>10</sup></a>. Most AI tools either exceed this
 limit by two orders of magnitude, or else offer the user a very limited
 set of facilities, i.e. either the details of the system are
 inaccessible to all but the most determined, dedicated and
@@ -862,36 +772,36 @@ for some current data/</p>
 <h3 id="can-make-i-simpler">Can make i simpler</h3>
 <p>EZR was motivated by the current industrial obsession on Big AI that
 seems to be forgetting centuries of experience with data mining. As far
-back as 1901, Pearson<a href="#fn26" class="footnote-ref" id="fnref26"
-role="doc-noteref"><sup>26</sup></a> showed that tables of data with
+back as 1901, Pearson<a href="#fn11" class="footnote-ref" id="fnref11"
+role="doc-noteref"><sup>11</sup></a> showed that tables of data with
 <span class="math inline"><em>N</em></span> columns can be modeled with
 far fewer columns (where the latter are derived from the eigenvectors of
 a correlation information).</p>
 <p>Decades of subsequent work has shown that effective models can be
 built from data that cover tiny fractions of the possible data space<a
-href="#fn27" class="footnote-ref" id="fnref27"
-role="doc-noteref"><sup>27</sup></a>. Levnina and Biclet cwnote that</p>
+href="#fn12" class="footnote-ref" id="fnref12"
+role="doc-noteref"><sup>12</sup></a>. Levnina and Biclet cwnote that</p>
 <blockquote>
 <p>“The only reason any (learning) methods work … is that, in fact, the
 data are not truly high-dimensional. Rather, they are .. can be
 efficiently summarized in a space of a much lower dimension.</p>
 </blockquote>
 <p>(This remarks echoes an early conclusion from Johnson and
-Lindenstrauss <a href="#fn28" class="footnote-ref" id="fnref28"
-role="doc-noteref"><sup>28</sup></a>.).</p>
+Lindenstrauss <a href="#fn13" class="footnote-ref" id="fnref13"
+role="doc-noteref"><sup>13</sup></a>.).</p>
 <p>For example:</p>
 <ul>
 <li><strong>Many rows can be ignored</strong>: Data sets with thousands
-of rows can be modeled with just a few dozen samples<a href="#fn29"
-class="footnote-ref" id="fnref29" role="doc-noteref"><sup>29</sup></a>.
+of rows can be modeled with just a few dozen samples<a href="#fn14"
+class="footnote-ref" id="fnref14" role="doc-noteref"><sup>14</sup></a>.
 To explain this, suppose we only want to use models that are well
 supported by the data; i.e. supported by multiple rows in a table of
 data. This means that many rows in a table can be be replaced by a
 smaller number of exemplars.</li>
 <li><strong>Many columns can be ignored</strong>: High-dimensional
 tables (with many colummns) can be projected into lower dimensional
-tables while nearly preserving all pairwise distances<a href="#fn30"
-class="footnote-ref" id="fnref30" role="doc-noteref"><sup>30</sup></a>.
+tables while nearly preserving all pairwise distances<a href="#fn15"
+class="footnote-ref" id="fnref15" role="doc-noteref"><sup>15</sup></a>.
 This means that data sets with many columns can be modeled with
 surprisingly few columns. e.g. A table of (say) of <span
 class="math inline"><em>C</em> = 20</span> columns of binary variables
@@ -903,8 +813,8 @@ This is only possible if the signal in this data condenses to a small
 regions within the total data space.</li>
 <li>Researchers in semi-supervised learning note that high-dimensional
 data often lies on a simpler, lower-dimensional ”manifold” embedded
-within that higher space <a href="#fn31" class="footnote-ref"
-id="fnref31" role="doc-noteref"><sup>31</sup></a>.</li>
+within that higher space <a href="#fn16" class="footnote-ref"
+id="fnref16" role="doc-noteref"><sup>16</sup></a>.</li>
 </ul>
 <p>Numerous AI researchers studying NP-hard tasks report the existence
 of a small number of key variables that determine the behavior of the
@@ -915,8 +825,8 @@ controlling the keys.</p>
 names: Variable subset selection, narrows, master variables, and
 backdoors. In the 1960s, Amarel observed that search problems contain
 narrows; i.e. tiny sets of variable settings that must be used in any
-solution<a href="#fn32" class="footnote-ref" id="fnref32"
-role="doc-noteref"><sup>32</sup></a>. Amarel’s work defined macros that
+solution<a href="#fn17" class="footnote-ref" id="fnref17"
+role="doc-noteref"><sup>17</sup></a>. Amarel’s work defined macros that
 encode paths between the narrows in the search space, effectively
 permitting a search engine to leap quickly from one narrow to
 another.</p>
@@ -924,16 +834,16 @@ another.</p>
 examined what happens when a data miner deliberately ignores some of the
 variables in the training data. Kohavi and John report trials of data
 sets where up to 80% of the variables can be ignored without degrading
-classification accuracy<a href="#fn33" class="footnote-ref" id="fnref33"
-role="doc-noteref"><sup>33</sup></a>. Note the similarity with Amarel’s
+classification accuracy<a href="#fn18" class="footnote-ref" id="fnref18"
+role="doc-noteref"><sup>18</sup></a>. Note the similarity with Amarel’s
 work: it is more important to reason about a small set of important
 variables than about all the variables. At the same time, researchers in
 constraint satisfaction found “random search with retries” was a very
 effective strategy.</p>
 <p>Crawford and Baker reported that such searches took less time than a
 complete search to find more solutions using just a small number of
-retries<a href="#fn34" class="footnote-ref" id="fnref34"
-role="doc-noteref"><sup>34</sup></a>. Their ISAMP “iterative sampler”
+retries<a href="#fn19" class="footnote-ref" id="fnref19"
+role="doc-noteref"><sup>19</sup></a>. Their ISAMP “iterative sampler”
 makes random choices within a model until it gets “stuck”; i.e. until
 further choices do not satisfy expectations. When “stuck”, ISAMP does
 not waste time fiddling with current choices (as was done by older
@@ -953,8 +863,8 @@ far-flung master variables. For such models, if the reasoning gets stuck
 in one region, then the best thing to do is to leap at random to some
 distant part of the model.</p>
 <p>A similar conclusion comes from the work of Williams et al.<a
-href="#fn35" class="footnote-ref" id="fnref35"
-role="doc-noteref"><sup>35</sup></a>. They found that if a randomized
+href="#fn20" class="footnote-ref" id="fnref20"
+role="doc-noteref"><sup>20</sup></a>. They found that if a randomized
 search is repeated many times, that a small number of variable settings
 were shared by all solutions. They also found that if they set those
 variables before conducting the rest of the search, then formerly
@@ -967,20 +877,20 @@ the “key” decisions in RE models. Second, have stakeholders debate, and
 then decide, about the keys before exploring anything else. Third, to
 avoid trivially small solutions, our random search should strive to
 cover much of the model. Code:</p>
-<div class="sourceCode" id="cb6"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Data(src):</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(row):</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(interpolate(data,row,<span class="op">*</span>pole) <span class="cf">for</span> pole <span class="kw">in</span> poles)<span class="op">/</span><span class="bu">len</span>(poles)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  head, <span class="op">*</span>rows <span class="op">=</span> <span class="bu">list</span>(src)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  data  <span class="op">=</span> _data(head, rows)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  poles <span class="op">=</span> projections(data)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row <span class="kw">in</span> rows: row[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> _guess(row)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> data</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Data(src):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(row):</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(interpolate(data,row,<span class="op">*</span>pole) <span class="cf">for</span> pole <span class="kw">in</span> poles)<span class="op">/</span><span class="bu">len</span>(poles)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  head, <span class="op">*</span>rows <span class="op">=</span> <span class="bu">list</span>(src)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  data  <span class="op">=</span> _data(head, rows)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  poles <span class="op">=</span> projections(data)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row <span class="kw">in</span> rows: row[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> _guess(row)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> data</span></code></pre></div>
 <h3 id="data">Data</h3>
 <p>Shared datasets from research papers by Apel [2], Chen <a
-href="#fn36" class="footnote-ref" id="fnref36"
-role="doc-noteref"><sup>36</sup></a>, and Menzies [^nair] are often used
+href="#fn21" class="footnote-ref" id="fnref21"
+role="doc-noteref"><sup>21</sup></a>, and Menzies [^nair] are often used
 as case studies of optimization in SE research papers. Chen and Menzies
 are collaborating to curate the MOOT repository (Multi-Objective
 Optimization Testing4) which offers datasets from recent SE optimization
@@ -999,19 +909,19 @@ summary:</p>
 maximize and minimize.</li>
 </ul>
 <p>Data:</p>
-<div class="sourceCode" id="cb7"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>  x <span class="op">=</span> independent values          <span class="op">|</span> y <span class="op">=</span> dependent values</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">--------------------------------|----------------------</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  Spout_wait, Spliters, Counters, <span class="op">|</span> Throughput<span class="op">+</span>, Latency<span class="op">-</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>     <span class="dv">10</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">23075</span>,    <span class="fl">158.68</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">8</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22887</span>,    <span class="fl">172.74</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22799</span>,    <span class="fl">156.83</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">3</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22430</span>,    <span class="fl">160.14</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    ...,      ...,      ...,           ...,    ...</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">10</span>,      <span class="op">|</span>   <span class="fl">460.81</span>,    <span class="fl">8761.6</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">18</span>,      <span class="op">|</span>   <span class="fl">402.53</span>,    <span class="fl">8797.5</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">12</span>,      <span class="op">|</span>   <span class="fl">365.07</span>,    <span class="fl">9098.9</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,        <span class="dv">1</span>,      <span class="op">|</span>   <span class="fl">310.06</span>,    <span class="dv">9421</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>  x <span class="op">=</span> independent values          <span class="op">|</span> y <span class="op">=</span> dependent values</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">--------------------------------|----------------------</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  Spout_wait, Spliters, Counters, <span class="op">|</span> Throughput<span class="op">+</span>, Latency<span class="op">-</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>     <span class="dv">10</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">23075</span>,    <span class="fl">158.68</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">8</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22887</span>,    <span class="fl">172.74</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22799</span>,    <span class="fl">156.83</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">3</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22430</span>,    <span class="fl">160.14</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    ...,      ...,      ...,           ...,    ...</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">10</span>,      <span class="op">|</span>   <span class="fl">460.81</span>,    <span class="fl">8761.6</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">18</span>,      <span class="op">|</span>   <span class="fl">402.53</span>,    <span class="fl">8797.5</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">12</span>,      <span class="op">|</span>   <span class="fl">365.07</span>,    <span class="fl">9098.9</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,        <span class="dv">1</span>,      <span class="op">|</span>   <span class="fl">310.06</span>,    <span class="dv">9421</span></span></code></pre></div>
 <p>Note that our data is much larger than the Table 3 example. The 39
 data sets in Table I have up to 86,000 rows, 88 independent variables,
 and three y goals. For the purposes of illustration, the rows in Table 3
@@ -1035,156 +945,85 @@ labels).</p>
 role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1"><p>A.G. Bell 2021, The Untold Story of SQLite With Richard
-Hipp Corecursive podcast. Interview by Adam Gordon Bell. November 30,
-2020. Accessed July 19, 2025.
-https://corecursive.com/066-sqlite-with-richard-hipp/<a href="#fnref1"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>X. Hou, Y. Zhao, Y. Liu, Z. Yang, K. Wang, L. Li, X.
-Luo, D. Lo, J. Grundy, and H. Wang, “Large language models for software
-engineering: A systematic literature review,” ACM Trans. Softw. Eng.
-Methodol., vol. 33, no. 8, Dec. 2024. [Online]. Available:
-https://doi.org/10.1145/3695988<a href="#fnref2" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>X. Hou, Y. Zhao, Y. Liu, Z. Yang, K. Wang, L. Li, X.
-Luo, D. Lo, J. Grundy, and H. Wang, “Large language models for software
-engineering: A systematic literature review,” ACM Trans. Softw. Eng.
-Methodol., vol. 33, no. 8, Dec. 2024. [Online]. Available:
-https://doi.org/10.1145/3695988<a href="#fnref3" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>W. Fu and T. Menzies, “Easy over hard: a case study on
-deep learning,” in Proceedings of the 2017 11th Joint Meeting on
-Foundations of Software Engineering, ser. ESEC/FSE 2017. New York, NY,
-USA: Association for Computing Machinery, 2017, p. 49–60. [Online].
-Available: https://doi.org/10.1145/3106237. 3106256<a href="#fnref4"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>L. Grinsztajn, E. Oyallon, and G. Varoquaux, “Why do
-tree-based models still outperform deep learning on typical tabular
-data?” in NeurIPS’22, 2022.<a href="#fnref5" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>X. Ling, T. Menzies, C. Hazard, J. Shu, and J. Beel,
-“Trading off scalability, privacy, and performance in data synthesis,”
-IEEE Access, vol. 12, pp. 26 642–26 654, 2024.<a href="#fnref6"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn7"><p>S. Majumder, N. Balaji, K. Brey, W. Fu, and T. Menzies,
-“500+ times faster than deep learning,” in Proceedings of the 15th
-International Conference on Mining Software Repositories. ACM, 2018.<a
-href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn8"><p>S. Somvanshi, S. Das, S. A. Javed, G. Antariksa, and A.
-Hossain, “A survey on deep tabular learning,” arXiv preprint
-arXiv:2410.12034, 2024.<a href="#fnref8" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>V. Tawosi, R. Moussa, and F. Sarro, “Agile effort
-estimation: Have we solved the problem yet? insights from a replication
-study,” IEEE Transactions on Software Engineering, vol. 49, no. 4,
-pp. 2677– 2697, 2023.<a href="#fnref9" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p>T. Menzies, “Retrospective: Data Mining Static Code
-Attributes to Learn Defect Predictors” in IEEE Transactions on Software
-Engineering, vol. 51, no. 03, pp. 858-863, March 2025, doi:
-10.1109/TSE.2025.3537406.<a href="#fnref10" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn11"><p>Settles, Burr. “Active learning literature survey.”
-(2009).<a href="#fnref11" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn12"><p>T. Menzies and T. Chen, MOOT repository of
-Multi-objective optimization tests. 2025. <a
-href="http://github.com/timm/moot">http://github.com/timm/moot</a><a
-href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn13"><p>S. Amarel, “Program synthesis as a theory formation
+<li id="fn1"><p>S. Amarel, “Program synthesis as a theory formation
 task: problem representations and solution methods,” in Machine
 Learning: An Artificial Intelligence Approach. Morgan Kaufmann, 1986.<a
-href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn14"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Chang, C. L. (1974). Finding Prototypes for Nearest
+Neighbor Classifiers. IEEE Transactions on Computers, C-23(11),
+1179–1184.–<a href="#fnref2" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
 lipschitz mappings into a hilbert space,” Contemporary Mathematics,
-vol. 26, pp. 189–206, 1984.<a href="#fnref14" class="footnote-back"
+vol. 26, pp. 189–206, 1984.<a href="#fnref3" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn15"><p>J. M. Crawford and A. B. Baker, “Experimental results
-on the application of satisfiability algorithms to scheduling problems,”
-in Proceedings of the Twelfth National Conference on Artificial
+<li id="fn4"><p>J. M. Crawford and A. B. Baker, “Experimental results on
+the application of satisfiability algorithms to scheduling problems,” in
+Proceedings of the Twelfth National Conference on Artificial
 Intelligence (Vol. 2), Menlo Park, CA, USA, 1994, pp. 1092–1097.<a
-href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn16"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
+href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
 selection,” Artif. Intell., vol. 97, no. 1-2, pp. 273–324, Dec. 1997.<a
-href="#fnref16" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn17"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
+href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
 typical case complexity,” in Proceedings of the International Joint
-Conference on Artificial Intelligence, 2003.<a href="#fnref17"
+Conference on Artificial Intelligence, 2003.<a href="#fnref6"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn18"><p>D. Zhou et al., “Learning with Local and Global
-Consistency”, 2005.<a href="#fnref18" class="footnote-back"
+<li id="fn7"><p>D. Zhou et al., “Learning with Local and Global
+Consistency”, 2005.<a href="#fnref7" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn19"><p>T. Menzies, “The Few Key Rows”, 2008 (or your actual
-source).<a href="#fnref19" class="footnote-back"
+<li id="fn8"><p>T. Menzies, “The Few Key Rows”, 2008 (or your actual
+source).<a href="#fnref8" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn20"><p>B. Settles, “Active Learning Literature Survey”,
-2009.<a href="#fnref20" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn21"><p>Tu, Huy, Zhe Yu, and Tim Menzies. “Better data
-labelling with emblem (and how that impacts defect prediction).”
-<em>IEEE TSE</em>, 48.1 (2020): 2<a href="#fnref21"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn22"><p>Zhe Yu, Fahmid Morshed Fahid, Huy Tu, and Tim Menzies.
-Identifying self-admitted technical debts with jitterbug: A two-step
-approach. IEEE Transactions on Software Engineering, 48(5):1676–1691,
-2022.<a href="#fnref22" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn23"><p>Xiaoxue Wu, Wei Zheng, Xin Xia, and David Lo. Data
-quality matters: A case study on data label correctness for security bug
-report prediction. IEEE Transactions on Software Engineering,
-48(7):2541–2556, 2022.<a href="#fnref23" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn24"><p>Toufique Ahmed, Premkumar Devanbu, Christoph Treude,
-and Michael Pradel. Can LLMs replace manual annotation of software
-engineering artifacts? In MSR’25, 2025<a href="#fnref24"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn25"><p>Lions, John (1996). Lions’ Commentary on UNIX 6th
+<li id="fn9"><p>B. Settles, “Active Learning Literature Survey”, 2009.<a
+href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>Lions, John (1996). Lions’ Commentary on UNIX 6th
 Edition with Source Code. Peer-to-Peer Communications. ISBN
-978-1-57398-013-5.<a href="#fnref25" class="footnote-back"
+978-1-57398-013-5.<a href="#fnref10" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn26"><p>Pearson, K. (1901). “On Lines and Planes of Closest Fit
+<li id="fn11"><p>Pearson, K. (1901). “On Lines and Planes of Closest Fit
 to Systems of Points in Space”. Philosophical Magazine. 2 (11): 559–572.
-10.1080/14786440109462720.<a href="#fnref26" class="footnote-back"
+10.1080/14786440109462720.<a href="#fnref11" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn27"><p>I. Witten, E. Frank, and M. Hall. Data Mining:
+<li id="fn12"><p>I. Witten, E. Frank, and M. Hall. Data Mining:
 Practical Machine Learning Tools and Techniques Morgan Kaufmann Series
 in Data Management Systems Morgan Kaufmann, Amsterdam, 3 edition,
-(2011)<a href="#fnref27" class="footnote-back"
+(2011)<a href="#fnref12" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn28"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+<li id="fn13"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
 lipschitz mappings into a hilbert space,” Contemporary Mathematics,
-vol. 26, pp. 189–206, 1984.<a href="#fnref28" class="footnote-back"
+vol. 26, pp. 189–206, 1984.<a href="#fnref13" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn29"><p>T. Menzies, “The Few Key Rows”, 2008 (or your actual
-source).<a href="#fnref29" class="footnote-back"
+<li id="fn14"><p>T. Menzies, “The Few Key Rows”, 2008 (or your actual
+source).<a href="#fnref14" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn30"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
+<li id="fn15"><p>W. B. Johnson and J. Lindenstrauss, “Extensions of
 lipschitz mappings into a hilbert space,” Contemporary Mathematics,
-vol. 26, pp. 189–206, 1984.<a href="#fnref30" class="footnote-back"
+vol. 26, pp. 189–206, 1984.<a href="#fnref15" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn31"><p>D. Zhou et al., “Learning with Local and Global
-Consistency”, 2005.<a href="#fnref31" class="footnote-back"
+<li id="fn16"><p>D. Zhou et al., “Learning with Local and Global
+Consistency”, 2005.<a href="#fnref16" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn32"><p>S. Amarel, “Program synthesis as a theory formation
+<li id="fn17"><p>S. Amarel, “Program synthesis as a theory formation
 task: problem representations and solution methods,” in Machine
 Learning: An Artificial Intelligence Approach. Morgan Kaufmann, 1986.<a
-href="#fnref32" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn33"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
+href="#fnref17" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn18"><p>R. Kohavi and G. H. John, “Wrappers for feature subset
 selection,” Artif. Intell., vol. 97, no. 1-2, pp. 273–324, Dec. 1997.<a
-href="#fnref33" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn34"><p>J. M. Crawford and A. B. Baker, “Experimental results
+href="#fnref18" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn19"><p>J. M. Crawford and A. B. Baker, “Experimental results
 on the application of satisfiability algorithms to scheduling problems,”
 in Proceedings of the Twelfth National Conference on Artificial
 Intelligence (Vol. 2), Menlo Park, CA, USA, 1994, pp. 1092–1097.<a
-href="#fnref34" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn35"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
+href="#fnref19" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn20"><p>R. Williams, C. P. Gomes, and B. Selman, “Backdoors to
 typical case complexity,” in Proceedings of the International Joint
-Conference on Artificial Intelligence, 2003.<a href="#fnref35"
+Conference on Artificial Intelligence, 2003.<a href="#fnref20"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn36"><p>M. Li, T. Chen, and X. Yao, “How to evaluate solutions
+<li id="fn21"><p>M. Li, T. Chen, and X. Yao, “How to evaluate solutions
 in pareto-based search-based software engineering: A critical review and
 methodological guidance,” IEEE Transactions on Software Engineering,
-vol. 48, no. 5, pp. 1771–1799, 2022<a href="#fnref36"
+vol. 48, no. 5, pp. 1771–1799, 2022<a href="#fnref21"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>

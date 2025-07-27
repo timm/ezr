@@ -15,69 +15,64 @@ _"Subtract."_ --Leidy Klotz
 ------------------------------------------------------
 
 ## Introduction
-Years ago, in a graduate AI class, a student asked:
 
->  Why our models needed so much data?
+Much of today’s AI research is dominated by resource-intensive
+methods. Such “Big AI” depends on massive training datasets and prolonged
+compute time. When so much effort is concentrated in one direction,
+it becomes essential to ask: what might we be missing by not exploring
+alternatives?
 
-“Maybe they don’t,” I said. “Maybe we just haven’t learned how to
-ask the right questions.”
+That question surfaced during a graduate AI course, when a student
+asked:
 
-That turned into a dare: could we build useful models from just a
-few labeled examples? So we wrote a quick prototype. It peeked at
-a handful of data points, built two tiny models—one for “good,” one
-for “bad”—then guided learning by comparing the two. Afterwards, a
-tree learner summarized the data discovred along the way.  It was
-fast, simple, and surprisingly effective.  We were able to find
-excellent configurations—database tunings, optimization settings,
-even architectural choices—after labeling just a tiny fraction of
-the data.
+> Why do our models need so much data?
 
-This small experiment raised a powerful question:
+“Maybe they don’t,” I replied. “Maybe we just haven’t learned how
+to ask the right questions.”
 
-> Does good AI need thousands, millions, or billions of examples?
+So we tried. We built a simple prototype—ABC (version 0)—that
+randomly labeled a few examples, split them into "best" and "rest,"
+and used a basic Bayes classifier to pick what to label next
+(ABC explored
+examples likely to be most “best” and least “rest”). 
+The whole
+rig was fast (millisecond run time)
+and very small (less than 250 lines of Python that did not
+need elaborate packages like "pandas" or "scikit-learn").
+Nevertheless,
+after just 20–30
+labels, ABC could achive near-optimal
+car designs.
+Further, ABC's decision tree could
+summarized the
+labeled data, yielding clear, compact explanations. 
+ 
+This suprising success of ABC lead to another question:
 
-Perhaps the above was just a fluke? This elad to another questions:
-
-> “Did we just get lucky? Was the dataset used above unusually
+> “Was this just a fluke?  Were the datasets used above unusually
 easy?”
 
-To find out, we went looking. We pulled together case studies seen
-in dozens of state-of-the-ar search-based software engineering
-papers. Configuration optimization. Architecture tuning. Effort
-estimation. We built a library of **over 110 real-world problems**,
-drawn from recent, peer-reviewed software engineering research.
-Using that data, we we reran the experiment, this time at scale.
-And again, it worked very fast and it worked very well.
+To test whether our initial success was just luck, we went looking
+for harder problems. We gathered over 110 real-world case studies
+from recent, peer-reviewed software engineering research—covering
+configuration optimization, architecture tuning, effort estimation,
+and more. Then we reran the experiment at scale.
 
-Accordingly,  now we think that that first  result was not  magic
-or luck. Instead, it reflects something deeper: a tradition in
-software engineering and AI where **small, well-chosen examples**
-outperform brute-force data collection. Over decades, researchers
-have shown that smart sampling, contrastive modeling, and key
-variable detection can rival—or even beat—more complex strategies.
+Again, it worked—quickly and effectively.
 
-EZR builds on that legacy. It learns by comparing “better” and
-“worse,” asking what separates them, and steering future exploration
-in that direction. It skips the layers of opaque math and instead
-relies on simple, auditable, symbolic reasoning. And it's fast
-enough to run **1,000+ experiments across 100+ datasets in under
-two minutes**.
+That result shifted our thinking. This wasn’t luck—it pointed to
+something deeper: an approach to software engineering and AI where
+a few well-chosen examples outperform brute-force data collection.
+For centuries, researchers have relied on contrastive reasoning,
+key variable selection, and strategic sampling to solve complex
+problems efficiently (see Table 1).
 
-The idea that "less can be better" is not new. For literally
-centuries,
-researchers have shown that
-careful sampling, dimensionality reduction, and contrastive analysis
-can outperform brute-force techniques. The table below summarizes
-key milestones in this tradition.
+Yet despite this legacy of elegant minimalism, today’s trends often
+favor the opposite: ever-larger models, more data, and growing
+complexity. There are many reasons for this[^subtract], but a major
+one is inertia—we tend to add rather than subtract, mistaking bloat
+for progress.
 
-Despite this long history of elegant,
-minimalist solutions, the trend in AI and software engineering has
-often moved in the opposite direction—toward bigger models, more
-data, and increasing complexity. There are many reasons for this [^subtract].
-Increasing  complexity is often seen as  progress even though often
-that is just   the momentun of our ideas makes it hard to stop.
-People usually overlook subtractive change, favoring instead to add
-needless complexity.
 
 
 
