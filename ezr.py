@@ -652,6 +652,7 @@ def daBest(data,rows=None):
   return Y(sorted(rows, key=Y)[0])
 
 def eg__tree():
+  "XXX: extend using best rest to select"
   data = dataRead(the.file)
   n = len(data.rows)//2
   repeats= 10
