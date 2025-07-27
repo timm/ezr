@@ -1,5 +1,5 @@
 ---
-title: "A Little Less AI (tiny models, more power)"
+title: "The ABCs of Easier AI"
 author:  "Tim Menzies<br>timm@ieee.org"
 date: "July, 2025"
 ---
@@ -16,62 +16,78 @@ _"Subtract."_ --Leidy Klotz
 
 ## Introduction
 
-Much of today’s AI research is dominated by resource-intensive
-methods. Such “Big AI” depends on massive training datasets and prolonged
-compute time. When so much effort is concentrated in one direction,
-it becomes essential to ask: what might we be missing by not exploring
-alternatives?
+Engineers pride themselves on doing things better and cheaper. When
+any fool can do it for a dollar, engineers find a way to do it for
+a penny.
 
-That question surfaced during a graduate AI course, when a student
-asked:
+So, can  we make AI orders of magnitude easier? Maybe it is time
+to question the current obsession with complexity. Do all tasks
+need 
+millions (or even trillions) of
+variables?
+
+This question came up in a graduate AI class, when a student asked:
 
 > Why do our models need so much data?
 
-“Maybe they don’t,” I replied. “Maybe we just haven’t learned how
-to ask the right questions.”
+“Maybe they don’t,” I replied. “Maybe we just have notlearned how
+to ask the right questions yet.”
 
-So we tried. We built a simple prototype—ABC (version 0)—that
-randomly labeled a few examples, split them into "best" and "rest,"
-and used a basic Bayes classifier to pick what to label next
-(ABC explored
-examples likely to be most “best” and least “rest”). 
-The whole
-rig was fast (millisecond run time)
-and very small (less than 250 lines of Python that did not
-need elaborate packages like "pandas" or "scikit-learn").
-Nevertheless,
-after just 20–30
-labels, ABC could achive near-optimal
-car designs.
-Further, ABC's decision tree could
-summarized the
-labeled data, yielding clear, compact explanations. 
- 
+My claim led to a dare, which led to a simple prototype.  ABC
+labels a few examples (selected at random), then sorted them into
+“best” and “rest”. It then uses a simple Bayes classifier to decide
+what to label next (ABC always grabs the next example that is  most
+likely to be “best” and least likely to be “rest”). After each labeling, ABC rebuilds
+its “best” and “rest” models, and the cycle repeated.
+Afterwards, ABC  builds a  regressions tree from the labeled
+examples. This
+summarizes the reasoning into a clear and
+compact explanation.
+
+To say the least, ABC is far simpler (and orders of magnitude
+faster) than alternatives like large language models, Gaussian
+Processes, or evolutionary reinforcement learning. 
+ABC is just 300 lines of Python and does not need
+heavy
+libraries like pandas or scikit-learn. 
+In a result supporting “less is more”, the first time we tried it, ABC found near-optimal car
+designs after labeling just 20–30 examples. Its decision tree could
+explain what was happening, enabling human understanding and critique.
+Because it's so small, ABC is well-suited for teaching AI and SE
+scripting principles. And because it's so fast to run and easy to
+modify, ABC is a productive tool for state-of-the-art research 
+in search-based optimization.
+
 This suprising success of ABC lead to another question:
 
-> “Was this just a fluke?  Were the datasets used above unusually
-easy?”
+> “Was this just a fluke?  Was ABC just being tested one an  unusually
+easy problem?”
 
-To test whether our initial success was just luck, we went looking
+To test that, we went looking
 for harder problems. We gathered over 110 real-world case studies
 from recent, peer-reviewed software engineering research—covering
 configuration optimization, architecture tuning, effort estimation,
 and more. Then we reran the experiment at scale.
+The results, shown below, demonstrated that ABC
+works remarkably well (quickly and effectively) for a broad range of
+problems taken from the SE literatures. 
 
-Again, it worked—quickly and effectively.
-
-That result shifted our thinking. This wasn’t luck—it pointed to
-something deeper: an approach to software engineering and AI where
+This experience wuth ABC has  shifted our thinking. The  sucess of ABC  was not luck-
+it points to
+something deeper: an approach to software engineering and AI where,
+often,
 a few well-chosen examples outperform brute-force data collection.
-For centuries, researchers have relied on contrastive reasoning,
-key variable selection, and strategic sampling to solve complex
+For centuries, researchers have told us that 
+that
+key variable selection, and strategic sampling can solve complex
 problems efficiently (see Table 1).
 
 Yet despite this legacy of elegant minimalism, today’s trends often
 favor the opposite: ever-larger models, more data, and growing
 complexity. There are many reasons for this[^subtract], but a major
 one is inertia—we tend to add rather than subtract, mistaking bloat
-for progress.
+for progress. Complex products impress the marketplace and so can drive
+sales (even if, later,   that drives up maintainance costs).
 
 
 
@@ -79,72 +95,80 @@ for progress.
 
 | Year     | What                     | Who / System         | Notes                                                                                   |
 |----------|--------------------------|-----------------------|-----------------------------------------------------------------------------------------|
-| 1902     | PCA                      | Pearson               | Large datasets projected to a few components.                                           |
-| 1960s    | Narrows         | Amarel [^amarel]      | Chess search guided by tiny sets of key variable settings.                              |
-|1974|     | Prototypes| Chang [^chang74] | Speeding up nearest neighbor. Only use best exemplars. Discard 90% of data. |
-| 1980s    | ATMS       | de Kleer              | Diagnoses focus only on assumptions independent of others.                              |
+| 1902     | PCA                      | Pearson               | Larger matrices can be projected down to a few components.                                           |
+| 1960s    | Narrows         | Amarel [^amarel]      | Search can be guided by tiny sets of key variable settings.                              |
+| 1974     | Prototypes| Chang [^chang74] | Nearest neighbor reasoning is quicker after discarding 90% of the data and keeping  only the best exemplars.  |
+| 1980s    | ATMS       | de Kleer              | Diagnoses is quicker when it focus only on the core assumptions that do not depend on other assumptions. |
 | 1984     | Distance-Preseration | Johnson and Lindenstrauss [^john84] | High-dimensional data can be embedded in low dimensions while preserving pairwise distances. |
-| 1996     | ISAMP                    | Crawford & Baker [^crawford] | Fast random retries outperform exhaustive backtracking.                                  |
+| 1996     | ISAMP                    | Crawford & Baker [^crawford] | Best solutions lie is small parts of search space. Fast random tries and frequent retries is fast way to explore that space. |
 | 1997     | Feature Subset Selection | John & Kohavi [^kohavi97] | Up to 80% of features can be ignored without hurting accuracy.                          |
-| 2002     | Backdoors                | Williams et al. [^backdoor] | Setting a few variables reduces exponential runtimes to polynomial.                     |
+| 2002     | Backdoors                | Williams et al. [^backdoor] | Setting a few variables beforehand reduces exponential runtimes to polynomial.                     |
 | 2005     | Semi-Supervised Learning | Zhou et al. [^zh05]   | Data often lies on low-dimensional manifolds inside high-dimensional spaces.            |
 | 2008     | Exemplars                | Menzies [^me08a]      | Small samples can summarize and model large datasets.                                   |
-| 2009     | Active Learning          | Settles [^settles09]  | Selectively query the most informative examples. <br>Unlike semi-supervised methods, the learner actively shapes its training set. |
-| 2005–20  | Key Vars in SE           | Menzies et al.        | Dozens of SE models controlled by just a few parameters.                                |
+| 2009     | Active Learning          | Settles [^settles09]  | Best results come from learners reflecting on their own models to select their own training examples. |
+| 2005–20  | Key Vars in SE           | Menzies et al.        | Dozens of SE models are controlled by just a few parameters.                                |
 | 2010+    | Surrogate Models         | Various               | Optimizers can be approximated from small training sets.                                |
-| 2020s    | Model Distillation       | Various               | Large AI models reduced in size by orders of magnitude with little performance loss.    |
+| 2020s    | Model Distillation       | Various               | Large AI models can be reduced in size by orders of magnitude, with little performance loss.    |
 
 
 [^chang74]: Chang, C. L. (1974). Finding Prototypes for Nearest Neighbor Classifiers. IEEE Transactions on Computers, C-23(11), 1179–1184.--
 
 
+In an attempt to halt, or at least slow, the complexity bloat of standard AI, 
+this document is about three things:
 
-So what to do? Perhaps, what is needed is an example. Some tiny code base running over many data sets achieving good performance without needing much data.
-Enter this doc
-We need to ask:
-
-> Can we still get most of the value with much less?
-
-
-
-So this document is about:
 - an idea: **less, but better**
 - a very small code base: **that operationalizes that idea**
 - and a large test suite: **that checks if the idea generalizes across diverse domains**
 
 Using this code and data, we ask five questions:
 
-- **RQ1: Is it simple?**  
-  Is our code base  compact abd readable and suitabke for teaching and tinkering?
+- **RQ1: Is ABC simple?**  
+  Is our code base  compact and readable and suitabke for teaching and tinkering?
 
-- **RQ2: Is it fast?**  
+- **RQ2: Is ABC fast?**  
   Can our code complete tasks in milliseconds rather than hours?
 
-- **RQ3: Is it effective?**  
+- **RQ3: Is ABC effective?**  
   Can our achieve strong results after seeing only a few examples?
 
-- **RQ4: Is it insightful?**  
+- **RQ4: Is ABC insightful?**  
   Does our code support explainability, critique, and understanding?
 
-- **RQ5: Is it general?**  
-  Does our code apply across varied SE optimization tasks?
+- **RQ5: Is ABC general?**  
+  Does our code apply across various tasks?
 
+This last questions is very improtant.
+ABC is not a solution to everythng.
+Some tasks are inherently complex and need inherently compex solutions.
+or example, this document was written with
+For
+extensive editorial support by a large language model (big AI was used to sumamrize
+verbose sections into shorter and simpler segments).
+In RQ5, we descibe the "BINGO" test which is a way to peek at data in order
+to decide they you need something more than just ABC.
 
 All the code and data used here can be accessed as fllows
 
     mkdir demo; cd demo
     git clone https://github.com/timm/moot # <== data
-    git clone https://github.com/timm/ezr  # <== code
-    cd ezr
-    python3 -B ezr.py -f ../moot/optimize/config/SS-M.csv # <== test case 
+    git clone https://github.com/timm/abc  # <== code
+    cd abc
+    python3 -B abc.py -f ../moot/optimize/config/SS-M.csv # <== test case 
 
 ## A Quick Example
 
-Just to give this some context, here’s a concrete case.
+Just to give this work some context, here’s a concrete case.
 
-Say we want to configure a database to reduce energy use, runtime, and CPU load. The system exposes dozens of tuning knobs—storage, logging, locking, encryption, and more. Understanding how each setting impacts performance is daunting.
+Say we want to configure a database to reduce energy use, runtime,
+and CPU load. The system exposes dozens of tuning knobs—storage,
+logging, locking, encryption, and more. Understanding how each
+setting impacts performance is daunting.
 
-Imagine we have a log of 800+ configurations, each showing the settings and their measured effects. Some settings lead to excellent results:
+When manual reasoning fails, we can ask AI to help.
+Imagine we have a log of 800+ configurations, each showing the
+settings to dozens of control settings, and their measured effects.
+Some settings lead to excellent results:
 
 ```
 choices                     Effects
@@ -155,64 +179,144 @@ control settings →            Energy-, time-,  cpu-
 ...
 ```
 
-In theory, any number of AI tools could learn what separates “best” from “rest.” But here's the challenge: **labeling** each configuration—e.g., by running benchmarks—is expensive. So how can we learn a model with minimal effort?
+Any number of AI tools could learn what separates “best”
+from “rest.” But here's the challenge: **labeling** each
+configuration (e.g., by running all the benchmarks for all possible configurations)
+is expensive. So the ABC challenge is how to
+learn an effective model with
+minimal effort?
 
-That’s where **EZR** comes in. It uses a minimalist A–B–C strategy:
+That’s where ABC comes in. We call it that since it uses a minimalist A–B–C strategy:
 
 - **A: Ask anything**  
-  Randomly label a few examples (e.g., _A = 4_) to seed the process.
+  Randomly label a few examples (say, _A = 4_) to seed the process.
 
 - **B: Build a model**  
-  Build contrastive models for “best” and “rest,” then label up to _B = 24_ more rows that maximize the score _b/r_, where `b` and `r` are likelihoods from those two models.
+  Build contrastive models for “best” and “rest,” then label up to, say _B = 24_ more rows by picking the unlabelled row
+  that maximizes the score _b/r_ (where `b` and `r` are likelihoods that a row belongs to the "best" and "rest" models).
 
 - **C: Check the model**  
-  Apply the learned model to unlabeled data and evaluate a small set (e.g., _C = 5_) of the most promising rows.
+  Apply the learned model to unlabeled data and to select a small set (e.g., _C=5_) of the most promising rows. After labelling those rows, return the best one.
 
-In this task, after labeling just 24 out of 800 rows (∼3%), EZR constructs a readable decision tree. One high-performing path looks like this:
+In this task, after labeling just 24 out of 800 rows (∼3%), ABC constructs a bibary regression tree from those 24 examples. In that tree,
+left and right branches go best and worse examples. The left-most branch of that tree is shwin here (and to get to any line in this
+tree, all the things abve it have to be true.
 
 ```
-if crypt_blowfish == 0 and 
-   memory_tables == 1 and 
-   small_log == 0 and 
-   logging == 0 and 
-   txc_mvlocks == 0 and 
-   no_write_delay == 0
-then win ≈ 99%
+crypt_blowfish=0
+|  memory_tables=1
+|  |  detailed_logging=1
+|  |  |  no_write_delay=0
+|  |  |  |  compressed_script=0 ==> win = 99
 ```
 
-That “win” score means we’re nearly matching the globally best result—using only a fraction of the available data.
+As shown below, we score this reasoning up to a max value of 100.
+The “win=99” score (seen on the last line) means we have very nearly matching the globally best result, after looking at a tiny fraction of the available data. Note
+that this branch only mentions five options, and three of those are all about what to turn off. That is to say,
+even though this databased has dozens of configuration options,
+there are three bad things to avoid and only two most important thing to enable  (_memory\_tables_ and _detailed\_logging_).
+to a method for creating a hashed representation of a password using an algorithm based on the Blowfish cipher.
 
-In testing, EZR applied its model to all 800 configurations, selected the top _C = 5_, and found that the best of those was within 2% of the known global best.
+In our experience, if you ever show a result like this to a subject matter expert, they will  push back. For example,
+they might demand to know what happems
+when 
+`crypt_blowfish` is enabled. Blowfish in password hashing scheme.
+It makes password protection slower but it also  increases the computational effort required for attackers to  brute-force attack the database's security.
+The full tree generted by ABC shows what happens this feature is enabled. Note all the negative "wins" which is to say, if your goals are fast runtimes,
+do not `crypt_blowfish`.
 
-All of this took just a few dozen queries—and a few hundred lines of code. It’s a striking illustration of the Pareto principle: **most of the value often comes from just a small fraction of the effort**. EZR shows that with the right strategy, a handful of examples can uncover nearly all the signal.  
-**EZR is Pareto on steroids.** While Pareto said that 80% of the results come from 20% of the effort, **EZR is more like 99% of the gain from 1% of the work**.
+
+```
+|  memory_tables=1
+|  |  detailed_logging=1
+|  |  |  no_write_delay=0
+|  |  |  |  compressed_script=0; ==> win = 99
+|  |  |  |  compressed_script=1; ==> win = 96
+|  |  detailed_logging=0;        ==> win = 85
+|  memory_tables=0
+|  |  encryption=0
+|  |  |  no_write_delay=0;       ==> win = 53
+|  |  |  no_write_delay=1
+|  |  |  |  txc_mvlocks=0
+|  |  |  |  |  logging=0;        ==> win = 51
+|  |  |  |  |  logging=1;        ==> win = 49
+|  |  encryption=1
+|  |  |  txc_mvlocks=0;          ==> win = 51
+crypt_blowfish=1
+|  memory_tables=1
+|  |  logging=1;                 ==> win = -47
+|  |  logging=0;                 ==> win = =54
+|  memory_tables=0
+|  |  txc_mvlocks=0;             ==> win = -304
+```
+
+(Aside: of course if security is an important goal then (a) add a "security+" column to the training data shown above; (b)  re-un ABC; (c) check what are the mpracts
+of that additional goal.)
+
+ABC shows that with the right strategy, a handful of examples can uncover nearly all the signal.  
+All of this took just a few dozen queries—and a few hundred lines of code. It’s a striking illustration of the Pareto principle:  **most of the value often comes from just a small fraction of the effort**. 
 
 
-## Discussion: Why This Works
+## Discussion
+
+Before looking at the code, we address the questions often asked about the above exampel?
 
 ### Why not label everything?
 
-Because labeling is costly:
+The above code assumed we can only label 24 our of 800 examples. Why do that?
+
+Well, labeling is costly:
 
 - Benchmarks take time to run.
 - Some configurations require complex rebuilds.
 - Human evaluation is slow, expensive, and error-prone.
 
-Prior work has shown that even with big compute, building labeled datasets takes **months or years**. EZR sidesteps this by labeling only what matters most.
+Prior work has shown that even with big compute, building labeled datasets takes **months or years**. ABC sidesteps this by labeling only what matters most.
 
----
 
-### So how does EZR help?
+### So how does ABC help?
 
-EZR operates under a **tiny-AI assumption**: most of the signal is buried under a layer of irrelevant or redundant data. It learns by contrast—focusing on what most separates good from bad using a simple `b/r` score.
+ABC operates under a **tiny-AI assumption**: most of the signal is buried under a layer of irrelevant or redundant data. It
+was inspred byt 
+George Kelly's Personal Construct Theory (from the 1950s)
+that stressed the value of contrast set learning to  recognize what is different between concepts.  
 
-This means:
-- Fewer labeled examples  
-- Less noise  
-- Faster inference  
-- Smaller, more transparent models  
+Modern versions of contrast set learning include various rule-based learners including our own
+previous work on TAR3 and WHICH. ABC's variant on contrast set learning throws away most of that architecture and repalces it with a simple
+two-class classification approach. Tables of data describing the "best" and "rest" examples can compute the likilihoods _b,r_ of
+of an as-yet-unclassified example belonging to "best" or "rest". The next example to label is the one that maximizes some 
+_acquisiton function_
+e.g. _b/r_. 
 
----
+### What is New About ABC?
+
+This work builds upon the foundation laid by prior resarch, but it removes some key barriers  that limits the practical use of thsose methods.
+
+
+Often we are asked "if ABC 
+just' simplifies existing methods, it is worthy of publciation?". If so many past resarechers have explored simplifty (see Table 1),
+what is new and itneresting about ABC?
+
+In reply, we say offer the observation that propr simplicity results are alomst uneirsally ignored.
+Each year we interview dozens of propsectivegraduate students for our reserch labs. We also interact, extensively,
+with industrial pracitioners and 
+many other researchers at conferences.
+Nearly unviersally, when faced with any new AI problem, thei default action is to reach for some alrge language model or deep learning solution.
+
+
+
+simplification research is valid resaerch.
+A persistant human congintive basi is to under-value subtractive impormvents.
+Klotz et al. report nmueris studies where
+
+case studies where hmans are given patterns on a chess baord, then asked to change the pattern in order to make it more symmetrical.
+OVerhwlemmning, humans prefer to add new squares to the pattern, rather than take squares away. 
+
+As Klotz et al. warns:
+
+> "Defaulting to searches for additive changes may be one reason
+that people struggle to mitigate overburdened schedules, institutional red tape
+and damaging effects on the planet."
 
 ### Why use a decision tree?
 

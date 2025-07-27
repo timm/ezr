@@ -136,6 +136,88 @@ def likely1(best, rest,  nolabels):
   return good, nolabels
 
 #--------------------------------------------------------------
+treeOps = {'<=' : lambda x,y: x <= y, 
+           '==' : lambda x,y:x == y, 
+           '>'  : lambda x,y:x > y}
+
+def treeSelects(row,op,at,y): 
+  "Have we selected this row?"
+  return (x := row[at]) == "?" or treeOps[op](x, y)
+
+def Tree(data, Y=None, how=None):
+  "Create regression tree."
+  Y = Y or (lambda row: disty(data, row))
+  data.kids, data.how = [], how
+  data.ys = adds(Y(row) for row in data.rows)
+  if len(data.rows) >= the.leaf:
+    hows = [how for col in data.cols.x 
+            if (how := treeCuts(col,data.rows,Y))]
+    if hows:
+      for how1 in min(hows, key=lambda c: c.div).hows:
+        rows1 = [r for r in data.rows if treeSelects(r, *how1)]
+        if the.leaf <= len(rows1) < len(data.rows):
+          data.kids += [Tree(dataClone(data,rows1), Y, how1)]
+  return data
+
+def treeCuts(col, rows,  Y):
+  "Divide a col into ranges."
+  def _sym(sym):
+    d, n = {}, 0
+    for row in rows:
+      if (x := row[col.at]) != "?":
+        n += 1
+        d[x] = d.get(x) or Num()
+        add(d[x], Y(row))
+    return o(div = sum(c.n/n * div(c) for c in d.values()),
+             hows = [("==",col.at,x) for x in d])
+  
+  def _num(num):
+    out, b4, lhs, rhs = None, None, Num(), Num()
+    xys = [(row[col.at], add(rhs, Y(row))) # add returns the "y" value
+           for row in rows if row[col.at] != "?"]
+    for x, y in sorted(xys, key=lambda z: z[0]):
+      if x != b4 and the.leaf <= lhs.n <= len(xys) - the.leaf:
+        now = (lhs.n * lhs.sd + rhs.n * rhs.sd) / len(xys)
+        if not out or now < out.div:
+          out = o(div=now, hows=[("<=",col.at,b4), (">",col.at,b4)])
+      add(lhs, sub(rhs, y))
+      b4 = x
+    return out
+
+  return (_sym if type(col) is Sym else _num)(col)
+
+def treeNodes(data, lvl=0, key=None):
+  "iterate over all treeNodes"
+  yield lvl, data
+  for j in sorted(data.kids, key=key) if key else data.kids:
+    yield from treeNodes(j,lvl + 1, key)
+
+def treeLeaf(data, row):
+  "Select a matching leaf"
+  for j in data.kids or []:
+    if treeSelects(row, *j.how): return treeLeaf(j,row)
+  return data
+
+def treeShow(data, key=lambda d: d.ys.mu):
+  "Display tree"
+  print(f"{'d2h':>4} {'win':>4} {'n':>4}")
+  print(f"{'----':>4} {'----':>4} {'----':>4}")
+  s, ats = data.ys, {}
+  win = lambda x: int(100 * (1-(x-data.ys.lo) / 
+                             (data.ys.mu-data.ys.lo+1e-32)))
+  for lvl, d in treeNodes(data,key=key):
+    op, at, y = d.how if lvl else ('', '', '')
+    name = data.cols.names[at] if lvl else ''
+    expl = f"{name} {op} {y}" if lvl else ''
+    indent = '|  ' * (lvl - 1)
+    line = f"{d.ys.mu:4.2f} {win(d.ys.mu):4} {len(d.rows):4}    " \
+           f"{indent}{expl}{';' if not d.kids else ''}"
+    print(line)
+    if lvl: ats[at] = 1
+  used = [data.cols.names[at] for at in sorted(ats)]
+  print(len(data.cols.x), len(used), ', '.join(used))
+
+#--------------------------------------------------------------
 def coerce(s):
   for fn in [int,float]:
     try: return fn(s)

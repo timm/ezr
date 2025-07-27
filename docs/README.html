@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Tim Menzies timm@ieee.org" />
-  <title>A Little Less AI (tiny models, more power)</title>
+  <title>The ABCs of Easier AI</title>
   <style>
     html {
       color: #1a1a1a;
@@ -108,8 +108,8 @@
      overflow: visible;
     }
     hr {
-      background-color: #1a1a1a;
       border: none;
+      border-top: 1px solid #1a1a1a;
       height: 1px;
       margin: 1em 0;
     }
@@ -168,8 +168,9 @@
     }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
     /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -180,7 +181,7 @@
     }
     @media print {
     pre > code.sourceCode { white-space: pre-wrap; }
-    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
     }
     pre.numberSource code
       { counter-reset: source-line 0; }
@@ -234,7 +235,7 @@
 </head>
 <body>
 <header id="title-block-header">
-<h1 class="title">A Little Less AI (tiny models, more power)</h1>
+<h1 class="title">The ABCs of Easier AI</h1>
 <p class="author">Tim Menzies<br>timm@ieee.org</p>
 <p class="date">July, 2025</p>
 </header>
@@ -259,62 +260,67 @@
 </tbody>
 </table>
 <h2 id="introduction">Introduction</h2>
-<p>Years ago, in a graduate AI class, a student asked:</p>
+<p>Engineers pride themselves on doing things better and cheaper. When
+any fool can do it for a dollar, engineers find a way to do it for a
+penny.</p>
+<p>So, can we make AI orders of magnitude easier? Maybe it is time to
+question the current obsession with complexity. Do all tasks need
+millions (or even trillions) of variables?</p>
+<p>This question came up in a graduate AI class, when a student
+asked:</p>
 <blockquote>
-<p>Why our models needed so much data?</p>
+<p>Why do our models need so much data?</p>
 </blockquote>
-<p>“Maybe they don’t,” I said. “Maybe we just haven’t learned how to ask
-the right questions.”</p>
-<p>That turned into a dare: could we build useful models from just a few
-labeled examples? So we wrote a quick prototype. It peeked at a handful
-of data points, built two tiny models—one for “good,” one for “bad”—then
-guided learning by comparing the two. Afterwards, a tree learner
-summarized the data discovred along the way. It was fast, simple, and
-surprisingly effective. We were able to find excellent
-configurations—database tunings, optimization settings, even
-architectural choices—after labeling just a tiny fraction of the
-data.</p>
-<p>This small experiment raised a powerful question:</p>
+<p>“Maybe they don’t,” I replied. “Maybe we just have notlearned how to
+ask the right questions yet.”</p>
+<p>My claim led to a dare, which led to a simple prototype. ABC labels a
+few examples (selected at random), then sorted them into “best” and
+“rest”. It then uses a simple Bayes classifier to decide what to label
+next (the next example chosen was always the one most likely to be
+“best” and not “rest”). After each labeling, ABC rebuilt its “best” and
+“rest” models, and the cycle repeated. ABC includes a small decision
+tree learner tree learner that summarizes the labeled data into clear,
+compact explanations.</p>
+<p>To say the least, ABC is far simpler (and orders of magnitude faster)
+than alternatives like large language models, Gaussian Processes, or
+evolutionary reinforcement learning. ABC is just 300 lines of Python and
+does not need heavy libraries like pandas or scikit-learn. In a result
+supporting “less is more,” ABC found near-optimal car designs after
+labeling just 20–30 examples. Its decision tree could explain what was
+happening, enabling human understanding and critique. Because it’s so
+small, ABC is well-suited for teaching AI and SE scripting principles.
+And because it’s so fast to run and easy to modify, ABC is a productive
+tool for exploring state-of-the-art ideas in search-based
+optimization.</p>
+<p>This suprising success of ABC lead to another question:</p>
 <blockquote>
-<p>Does good AI need thousands, millions, or billions of examples?</p>
+<p>“Was this just a fluke? Was ABC just being tested one an unusually
+easy problem?”</p>
 </blockquote>
-<p>Perhaps the above was just a fluke? This elad to another
-questions:</p>
-<blockquote>
-<p>“Did we just get lucky? Was the dataset used above unusually
-easy?”</p>
-</blockquote>
-<p>To find out, we went looking. We pulled together case studies seen in
-dozens of state-of-the-ar search-based software engineering papers.
-Configuration optimization. Architecture tuning. Effort estimation. We
-built a library of <strong>over 110 real-world problems</strong>, drawn
-from recent, peer-reviewed software engineering research. Using that
-data, we we reran the experiment, this time at scale. And again, it
-worked very fast and it worked very well.</p>
-<p>Accordingly, now we think that that first result was not magic or
-luck. Instead, it reflects something deeper: a tradition in software
-engineering and AI where <strong>small, well-chosen examples</strong>
-outperform brute-force data collection. Over decades, researchers have
-shown that smart sampling, contrastive modeling, and key variable
-detection can rival—or even beat—more complex strategies.</p>
-<p>EZR builds on that legacy. It learns by comparing “better” and
-“worse,” asking what separates them, and steering future exploration in
-that direction. It skips the layers of opaque math and instead relies on
-simple, auditable, symbolic reasoning. And it’s fast enough to run
-<strong>1,000+ experiments across 100+ datasets in under two
-minutes</strong>.</p>
-<p>The idea that “less can be better” is not new. For literally
-centuries, researchers have shown that careful sampling, dimensionality
-reduction, and contrastive analysis can outperform brute-force
-techniques. The table below summarizes key milestones in this
-tradition.</p>
-<p>Despite this long history of elegant, minimalist solutions, the trend
-in AI and software engineering has often moved in the opposite
-direction—toward bigger models, more data, and increasing complexity.
-There are many reasons for this [^subtract]. Increasing complexity is
-often seen as progress even though often that is just the momentun of
-our ideas makes it hard to stop. People usually overlook subtractive
-change, favoring instead to add needless complexity.</p>
+<p>To test that, we went looking for harder problems. We gathered over
+110 real-world case studies from recent, peer-reviewed software
+engineering research—covering configuration optimization, architecture
+tuning, effort estimation, and more. Then we reran the experiment at
+scale.</p>
+<p>The results, shown below, demonstrated that ABC works remarkably well
+(quickly and effectively) for a broad range of problems (taken from the
+SE literatures).</p>
+<p>That result shifted our thinking. Certainly, some compelx problems
+need complex solutions. For example, this document was written with
+extensive help by a large language model that sumamrized version
+<em>i</em> to generate a shorter and clearer version <em>i+1</em>. But
+not everything needs such complexity. The sucess of ABC was not luck- it
+points to something deeper: an approach to software engineering and AI
+where, often, a few well-chosen examples outperform brute-force data
+collection. For centuries, researchers have told us that that key
+variable selection, and strategic sampling can solve complex problems
+efficiently (see Table 1).</p>
+<p>Yet despite this legacy of elegant minimalism, today’s trends often
+favor the opposite: ever-larger models, more data, and growing
+complexity. There are many reasons for this[^subtract], but a major one
+is inertia—we tend to add rather than subtract, mistaking bloat for
+progress. Complex products impress the marketplace and so can drive
+sales (even if, later, that drives up maintainance costs).</p>
 <table>
 <colgroup>
 <col style="width: 6%" />
@@ -335,14 +341,14 @@ change, favoring instead to add needless complexity.</p>
 <td>1902</td>
 <td>PCA</td>
 <td>Pearson</td>
-<td>Large datasets projected to a few components.</td>
+<td>Larger matrices can be projected down to a few components.</td>
 </tr>
 <tr>
 <td>1960s</td>
 <td>Narrows</td>
 <td>Amarel <a href="#fn1" class="footnote-ref" id="fnref1"
 role="doc-noteref"><sup>1</sup></a></td>
-<td>Chess search guided by tiny sets of key variable settings.</td>
+<td>Search can be guided by tiny sets of key variable settings.</td>
 </tr>
 <tr>
 <td>1974</td>
@@ -355,7 +361,8 @@ role="doc-noteref"><sup>2</sup></a></td>
 <td>1980s</td>
 <td>ATMS</td>
 <td>de Kleer</td>
-<td>Diagnoses focus only on assumptions independent of others.</td>
+<td>Diagnoses is quicker when it focus only on the core assumptions that
+do not depend on other assumptions.</td>
 </tr>
 <tr>
 <td>1984</td>
@@ -370,7 +377,8 @@ preserving pairwise distances.</td>
 <td>ISAMP</td>
 <td>Crawford &amp; Baker <a href="#fn4" class="footnote-ref" id="fnref4"
 role="doc-noteref"><sup>4</sup></a></td>
-<td>Fast random retries outperform exhaustive backtracking.</td>
+<td>Best solutions lie is small parts of search space. Fast random tries
+and frequent retries is fast way to explore that space.</td>
 </tr>
 <tr>
 <td>1997</td>
@@ -384,7 +392,7 @@ role="doc-noteref"><sup>5</sup></a></td>
 <td>Backdoors</td>
 <td>Williams et al. <a href="#fn6" class="footnote-ref" id="fnref6"
 role="doc-noteref"><sup>6</sup></a></td>
-<td>Setting a few variables reduces exponential runtimes to
+<td>Setting a few variables beforehand reduces exponential runtimes to
 polynomial.</td>
 </tr>
 <tr>
@@ -407,15 +415,14 @@ role="doc-noteref"><sup>8</sup></a></td>
 <td>Active Learning</td>
 <td>Settles <a href="#fn9" class="footnote-ref" id="fnref9"
 role="doc-noteref"><sup>9</sup></a></td>
-<td>Selectively query the most informative examples. <br>Unlike
-semi-supervised methods, the learner actively shapes its training
-set.</td>
+<td>Best results come from learners reflecting on their own models to
+select their own training examples.</td>
 </tr>
 <tr>
 <td>2005–20</td>
 <td>Key Vars in SE</td>
 <td>Menzies et al.</td>
-<td>Dozens of SE models controlled by just a few parameters.</td>
+<td>Dozens of SE models are controlled by just a few parameters.</td>
 </tr>
 <tr>
 <td>2010+</td>
@@ -427,35 +434,30 @@ set.</td>
 <td>2020s</td>
 <td>Model Distillation</td>
 <td>Various</td>
-<td>Large AI models reduced in size by orders of magnitude with little
-performance loss.</td>
+<td>Large AI models can be reduced in size by orders of magnitude, with
+little performance loss.</td>
 </tr>
 </tbody>
 </table>
-<p>So what to do? Perhaps, what is needed is an example. Some tiny code
-base running over many data sets achieving good performance without
-needing much data. Enter this doc We need to ask:</p>
-<blockquote>
-<p>Can we still get most of the value with much less?</p>
-</blockquote>
-<p>So this document is about: - an idea: <strong>less, but
+<p>In an attempt to halt, or at least s,ow, the complexity bloat of
+standard AI, this document is about: - an idea: <strong>less, but
 better</strong> - a very small code base: <strong>that operationalizes
 that idea</strong> - and a large test suite: <strong>that checks if the
 idea generalizes across diverse domains</strong></p>
 <p>Using this code and data, we ask five questions:</p>
 <ul>
-<li><p><strong>RQ1: Is it simple?</strong><br />
-Is our code base compact abd readable and suitabke for teaching and
+<li><p><strong>RQ1: Is ABC simple?</strong><br />
+Is our code base compact and readable and suitabke for teaching and
 tinkering?</p></li>
-<li><p><strong>RQ2: Is it fast?</strong><br />
+<li><p><strong>RQ2: Is ABC fast?</strong><br />
 Can our code complete tasks in milliseconds rather than hours?</p></li>
-<li><p><strong>RQ3: Is it effective?</strong><br />
+<li><p><strong>RQ3: Is ABC effective?</strong><br />
 Can our achieve strong results after seeing only a few
 examples?</p></li>
-<li><p><strong>RQ4: Is it insightful?</strong><br />
+<li><p><strong>RQ4: Is ABC insightful?</strong><br />
 Does our code support explainability, critique, and
 understanding?</p></li>
-<li><p><strong>RQ5: Is it general?</strong><br />
+<li><p><strong>RQ5: Is ABC general?</strong><br />
 Does our code apply across varied SE optimization tasks?</p></li>
 </ul>
 <p>All the code and data used here can be accessed as fllows</p>
@@ -464,16 +466,16 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a hr
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>moot <span class="co"># &lt;== data</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>ezr  <span class="co"># &lt;== code</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>cd ezr</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>python3 <span class="op">-</span>B ezr.py <span class="op">-</span>f ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>config<span class="op">/</span>SS<span class="op">-</span>M.csv <span class="co"># &lt;== test case </span></span></code></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>python3 <span class="op">-</span>B abc.py <span class="op">-</span>f ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>config<span class="op">/</span>SS<span class="op">-</span>M.csv <span class="co"># &lt;== test case </span></span></code></pre></div>
 <h2 id="a-quick-example">A Quick Example</h2>
-<p>Just to give this some context, here’s a concrete case.</p>
+<p>Just to give this work some context, here’s a concrete case.</p>
 <p>Say we want to configure a database to reduce energy use, runtime,
 and CPU load. The system exposes dozens of tuning knobs—storage,
 logging, locking, encryption, and more. Understanding how each setting
 impacts performance is daunting.</p>
 <p>Imagine we have a log of 800+ configurations, each showing the
-settings and their measured effects. Some settings lead to excellent
-results:</p>
+settings to dozens of control settings, and their measured effects. Some
+settings lead to excellent results:</p>
 <pre><code>choices                     Effects
 ----------------            -----------------------
 control settings →            Energy-, time-,  cpu-
@@ -484,24 +486,26 @@ control settings →            Energy-, time-,  cpu-
 from “rest.” But here’s the challenge: <strong>labeling</strong> each
 configuration—e.g., by running benchmarks—is expensive. So how can we
 learn a model with minimal effort?</p>
-<p>That’s where <strong>EZR</strong> comes in. It uses a minimalist
-A–B–C strategy:</p>
+<p>That’s where ABC comes in. It uses a minimalist A–B–C strategy:</p>
 <ul>
 <li><p><strong>A: Ask anything</strong><br />
-Randomly label a few examples (e.g., <em>A = 4</em>) to seed the
+Randomly label a few examples (say, <em>A = 4</em>) to seed the
 process.</p></li>
 <li><p><strong>B: Build a model</strong><br />
-Build contrastive models for “best” and “rest,” then label up to <em>B =
-24</em> more rows that maximize the score <em>b/r</em>, where
-<code>b</code> and <code>r</code> are likelihoods from those two
-models.</p></li>
+Build contrastive models for “best” and “rest,” then label up to, say
+<em>B = 24</em> more rows by picking the unlabelled row that maximizes
+the score <em>b/r</em> (where <code>b</code> and <code>r</code> are
+likelihoods that a row belongs to the “best” and “rest”
+models).</p></li>
 <li><p><strong>C: Check the model</strong><br />
-Apply the learned model to unlabeled data and evaluate a small set
-(e.g., <em>C = 5</em>) of the most promising rows.</p></li>
+Apply the learned model to unlabeled data and to select a small set
+(e.g., <em>C=5</em>) of the most promising rows. After labelling those
+rows, return the best one.</p></li>
 </ul>
-<p>In this task, after labeling just 24 out of 800 rows (∼3%), EZR
-constructs a readable decision tree. One high-performing path looks like
-this:</p>
+<p>In this task, after labeling just 24 out of 800 rows (∼3%), ABC
+constructs a bibary regression tree from those 24 examples. In that
+tree, left and right branches go best and worse examples. The left-most
+branch of that tree is:</p>
 <pre><code>if crypt_blowfish == 0 and 
    memory_tables == 1 and 
    small_log == 0 and 
@@ -509,19 +513,50 @@ this:</p>
    txc_mvlocks == 0 and 
    no_write_delay == 0
 then win ≈ 99%</code></pre>
-<p>That “win” score means we’re nearly matching the globally best
-result—using only a fraction of the available data.</p>
-<p>In testing, EZR applied its model to all 800 configurations, selected
-the top <em>C = 5</em>, and found that the best of those was within 2%
-of the known global best.</p>
+<p>This “win” score (defined below) means we have very nearly matching
+the globally best result, after looking at a tiny fraction of the
+available data. Note that this branch only mentions six options, and
+five of those are all about what to turn off. That is to say, even
+though this databased has dozens of configuration options, there are
+five bad things to avoid and one only most important thing to enable
+(<em>memory_tables</em>). is critical to fast reasoning with low
+CPU.</p>
+<p>to a method for creating a hashed representation of a password using
+an algorithm based on the Blowfish cipher.</p>
+<p>Of course, if you ever show a result like this to a subject matter
+expert, they will always push back on your conclusions and demon to know
+what happems is, say, <em>logging</em> is enabled. To answer that
+quesion, we can refer them to the entire tree:</p>
+<pre><code>crypt_blowfish == 0
+|  memory_tables == 1
+|  |  detailed_logging == 1
+|  |  |  no_write_delay == 0
+|  |  |  |  compressed_script == 0; ==&gt; win = 99
+|  |  |  |  compressed_script == 1; ==&gt; win = 96
+|  |  detailed_logging == 0;        ==&gt; win = 85
+|  memory_tables == 0
+|  |  encryption == 0
+|  |  |  no_write_delay == 0;       ==&gt; win = 53
+|  |  |  no_write_delay == 1
+|  |  |  |  txc_mvlocks == 0
+|  |  |  |  |  logging == 0;        ==&gt; win = 51
+|  |  |  |  |  logging == 1;        ==&gt; win = 49
+|  |  encryption == 1
+|  |  |  txc_mvlocks == 0;          ==&gt; win = 51
+crypt_blowfish == 1
+|  memory_tables == 1
+|  |  logging == 1;                 ==&gt; win = -47
+|  |  logging == 0;                 ==&gt; win = =54
+|  memory_tables == 0
+|  |  txc_mvlocks == 0;             ==&gt; win = -304</code></pre>
 <p>All of this took just a few dozen queries—and a few hundred lines of
 code. It’s a striking illustration of the Pareto principle: <strong>most
 of the value often comes from just a small fraction of the
-effort</strong>. EZR shows that with the right strategy, a handful of
+effort</strong>. ABC shows that with the right strategy, a handful of
 examples can uncover nearly all the signal.<br />
-<strong>EZR is Pareto on steroids.</strong> While Pareto said that 80%
-of the results come from 20% of the effort, <strong>EZR is more like 99%
-of the gain from 1% of the work</strong>.</p>
+ABC is like the Pareto-principle, on steroids. While Vifredo Pareto
+artued that 80% of the results often comes from 20% of the effort, ABC
+is more like 99% of the gain comes from 1% of the work.</p>
 <h2 id="discussion-why-this-works">Discussion: Why This Works</h2>
 <h3 id="why-not-label-everything">Why not label everything?</h3>
 <p>Because labeling is costly:</p>
@@ -561,8 +596,8 @@ improvement</strong>, grounded in real measurements.</p>
 <hr />
 <h3 id="how-is-win-defined">How is “win” defined?</h3>
 <p>We normalize utility as:</p>
-<div class="sourceCode" id="cb4"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>win <span class="op">=</span> <span class="dv">100</span> × (<span class="dv">1</span> <span class="op">-</span> (x <span class="op">-</span> best) <span class="op">/</span> (median <span class="op">-</span> best))</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>win <span class="op">=</span> <span class="dv">100</span> × (<span class="dv">1</span> <span class="op">-</span> (x <span class="op">-</span> best) <span class="op">/</span> (median <span class="op">-</span> best))</span></code></pre></div>
 <ul>
 <li>A win of <strong>100</strong> means we match the best.<br />
 </li>
@@ -877,16 +912,16 @@ the “key” decisions in RE models. Second, have stakeholders debate, and
 then decide, about the keys before exploring anything else. Third, to
 avoid trivially small solutions, our random search should strive to
 cover much of the model. Code:</p>
-<div class="sourceCode" id="cb5"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Data(src):</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(row):</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(interpolate(data,row,<span class="op">*</span>pole) <span class="cf">for</span> pole <span class="kw">in</span> poles)<span class="op">/</span><span class="bu">len</span>(poles)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>      </span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  head, <span class="op">*</span>rows <span class="op">=</span> <span class="bu">list</span>(src)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  data  <span class="op">=</span> _data(head, rows)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  poles <span class="op">=</span> projections(data)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row <span class="kw">in</span> rows: row[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> _guess(row)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> data</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Data(src):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">def</span> _guess(row):</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">sum</span>(interpolate(data,row,<span class="op">*</span>pole) <span class="cf">for</span> pole <span class="kw">in</span> poles)<span class="op">/</span><span class="bu">len</span>(poles)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  head, <span class="op">*</span>rows <span class="op">=</span> <span class="bu">list</span>(src)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  data  <span class="op">=</span> _data(head, rows)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  poles <span class="op">=</span> projections(data)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> row <span class="kw">in</span> rows: row[<span class="op">-</span><span class="dv">1</span>] <span class="op">=</span> _guess(row)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> data</span></code></pre></div>
 <h3 id="data">Data</h3>
 <p>Shared datasets from research papers by Apel [2], Chen <a
 href="#fn21" class="footnote-ref" id="fnref21"
@@ -909,19 +944,19 @@ summary:</p>
 maximize and minimize.</li>
 </ul>
 <p>Data:</p>
-<div class="sourceCode" id="cb6"><pre
-class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>  x <span class="op">=</span> independent values          <span class="op">|</span> y <span class="op">=</span> dependent values</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">--------------------------------|----------------------</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  Spout_wait, Spliters, Counters, <span class="op">|</span> Throughput<span class="op">+</span>, Latency<span class="op">-</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>     <span class="dv">10</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">23075</span>,    <span class="fl">158.68</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">8</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22887</span>,    <span class="fl">172.74</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22799</span>,    <span class="fl">156.83</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">3</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22430</span>,    <span class="fl">160.14</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    ...,      ...,      ...,           ...,    ...</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">10</span>,      <span class="op">|</span>   <span class="fl">460.81</span>,    <span class="fl">8761.6</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">18</span>,      <span class="op">|</span>   <span class="fl">402.53</span>,    <span class="fl">8797.5</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">12</span>,      <span class="op">|</span>   <span class="fl">365.07</span>,    <span class="fl">9098.9</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,        <span class="dv">1</span>,      <span class="op">|</span>   <span class="fl">310.06</span>,    <span class="dv">9421</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>  x <span class="op">=</span> independent values          <span class="op">|</span> y <span class="op">=</span> dependent values</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="op">--------------------------------|----------------------</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  Spout_wait, Spliters, Counters, <span class="op">|</span> Throughput<span class="op">+</span>, Latency<span class="op">-</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>     <span class="dv">10</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">23075</span>,    <span class="fl">158.68</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>      <span class="dv">8</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22887</span>,    <span class="fl">172.74</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">6</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22799</span>,    <span class="fl">156.83</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>      <span class="dv">9</span>,        <span class="dv">3</span>,       <span class="dv">17</span>,      <span class="op">|</span>    <span class="dv">22430</span>,    <span class="fl">160.14</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    ...,      ...,      ...,           ...,    ...</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">10</span>,      <span class="op">|</span>   <span class="fl">460.81</span>,    <span class="fl">8761.6</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">18</span>,      <span class="op">|</span>   <span class="fl">402.53</span>,    <span class="fl">8797.5</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,       <span class="dv">12</span>,      <span class="op">|</span>   <span class="fl">365.07</span>,    <span class="fl">9098.9</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10000</span>,        <span class="dv">1</span>,        <span class="dv">1</span>,      <span class="op">|</span>   <span class="fl">310.06</span>,    <span class="dv">9421</span></span></code></pre></div>
 <p>Note that our data is much larger than the Table 3 example. The 39
 data sets in Table I have up to 86,000 rows, 88 independent variables,
 and three y goals. For the purposes of illustration, the rows in Table 3

@@ -656,7 +656,8 @@ def eg__tree():
   data = dataRead(the.file)
   n = len(data.rows)//2
   repeats= 10
-  for _ in range(repeats):
+  for i in range(repeats):
+    if i==0: treeShow(Tree(dataClone(data, acquire(data,data.rows,"klass").labels)))
     random.shuffle(data.rows)
     train, test = dataClone(data, data.rows[:n]), dataClone(data, data.rows[n:])
 
