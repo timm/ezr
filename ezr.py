@@ -184,8 +184,9 @@ def distProject(data,row,east,west,c=None):
   a,b = D(row,east), D(row,west)
   return (a*a +c*c - b*b)/(2*c + 1e-32)
 
-def distFastmap(data,rows):
+def distFastmap(data,rows=None):
   "Sort rows along a line between 2 distant points."
+  rows = rows or data.rows
   X = lambda r1,r2:distx(data,r1,r2)
   anywhere, *few = random.choices(rows, k=the.Few)
   here  = max(few, key= lambda r: X(anywhere,r))
@@ -657,16 +658,20 @@ def eg__tree():
   for _ in range(repeats):
     random.shuffle(data.rows)
     train, test = dataClone(data, data.rows[:n]), dataClone(data, data.rows[n:])
-    tree= Tree(
-                dataClone(data,
-                    acquire(train,train.rows,"klass").labels))
-    base = adds(disty(test,r) for r in test.rows)
-    rx   = sorted(test.rows, key=lambda r: treeLeaf(tree,r).ys.mu)[:the.Check]
-    rx0  = random.choices(test.rows,k=the.Check)
-    win  = 100*(1 - (daBest(test,rx)  - base.lo)/(base.mu - base.lo))
-    win0 = 100*(1 - (daBest(test,rx0) - base.lo)/(base.mu - base.lo))
-    print("tree", int(win), "rand", int(win0) , "diff", int(win-win0))
 
+    rx0   = random.choices(test.rows,k=the.Check)
+    tree  = Tree(dataClone(data, acquire(train,train.rows,"klass").labels))
+    tree1 = Tree(dataClone(data, random.choices(train.rows,k=the.Build*10)))
+    rx    = sorted(test.rows, key=lambda r: treeLeaf(tree,r).ys.mu)
+    rx1   = sorted(test.rows, key=lambda r: treeLeaf(tree1,r).ys.mu)
+
+    base = adds(disty(test,r) for r in test.rows)
+    win  = (1 - (daBest(test,rx[:the.Check])  - base.lo)/(base.mu - base.lo))
+    win0 = (1 - (daBest(test,rx0[:the.Check]) - base.lo)/(base.mu - base.lo))
+    win1 = (1 - (daBest(test,rx1[:the.Check]) - base.lo)/(base.mu - base.lo))
+    diff = 0 if abs(win - win1) < .35*base.sd else (win-win1)
+    R    = lambda z:int(100*z)
+    print(R(.35*base.sd), "tree", R(win), "tree10", R(win1), "rand", R(win0) , "diff", R(diff))
 
 def eg__fmap():
   data = dataRead(the.file)

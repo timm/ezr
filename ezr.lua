@@ -1,5 +1,3 @@
-local Sym,Num,Data,Cols = {},{},{},{}
-
 local abs,adds,add, atom,big,csv,kap,log,map,max,min
 local new,o,push,s2a,s2n,sampler,shffle,sort,the
 local BIG = 1E30
@@ -16,7 +14,11 @@ the = {Acq    = "xploit",
        p      = 2, 
        seed   = 1234567891}
 
+function new(kl,t) kl.__index = kl; return setmetatable(t,kl) end
+
 ---------------------------------------------------------------------
+local Sym,Num,Data,Cols = {},{},{},{}
+
 function Data:new(src) 
   self = new(Data, {rows={}, cols=nil}) 
   if type(src)=="string" 
@@ -35,7 +37,7 @@ function Num:new(at,txt)
 function Cols:new(t,      all,x,y,klass,col)
   all, x, y = {},{},{}
   for n,s in pairs(t) do
-    col = (s:find"^[A-Z]" and Num or Sym)(n,s)
+    col = (s:find"^[A-Z]" and Num or Sym):new(n,s)
     push(all, col)
     if not s:find"X$" then
       push(s:find"[+!-]$" and y or x, col)
@@ -88,17 +90,6 @@ function subseq(t,i,j,     u)
   i = i<0 and #t + i + 1 or i
   u = {}; for k = i, j do u[#u+1] = t[k] end; return u end
 
--- function Data:acquires(rowas):
---    Y= function(r) return self:ydist(r) end
---    YR=function(r) return {-Y(r), r} end
---    rows = shuffle(rows)
---    cut  = int(the.assume ^ the.guess)
---    todo = subseq(rows, the.assume + 1)
---    done = self:clone(subseq(rows, the.assume))
---    rows = sort(done.rows, Y)
---    best = sort(map(subeq(rows,1,cut),YR),gt(1))
---    rest = subseq(rows,cut+1)
---
 ---------------------------------------------------------------------------
 big  = 1E32
 abs  = math.abs
@@ -137,14 +128,6 @@ function cli(t)
         t[k] = atom(v) end end  end 
   return t end 
 
-function klass(name)
-  local kl = {}
-  kl.__index = kl
-  kl.__name = name
-  function kl.__tostring(t) return name .. o(t) end
-  setmetatable(kl,{__call=function(_,...) return kl:new(...) end })
-  return kl end
-
 function kap(t,fn,    u) 
   u={}; for k,v in pairs(t) do u[1+#u] = fn(k,v) end; return u end  
 
@@ -155,16 +138,6 @@ lt   = function(x) return function(t,u) return t[x] < u[x] end end
 gt   = function(x) return function(t,u) return t[x] > u[x] end end
 sort = function(t,fn) table.sort(t,fn); return t end
 
-function new(kl,t) return setmetatable(t,kl) end
-
-function klass(name)
-  local kl = {}
-  kl.__index = kl
-  kl.__name = name
-  kl.__tostring = function(t) return name .. o(t) end
-  setmetatable(kl,{__call=function(_,...) return kl:new(...) end })
-  return kl end
-
 
 function o(x,     _kv,_fmt,_yes)
   _fmt= string.format
@@ -174,15 +147,6 @@ function o(x,     _kv,_fmt,_yes)
          type(x)~="table"  and tostring(x) or
          "{"..table.concat(#x>0 and map(x,o) or sort(kap(x,_kv)),", ").."}" end
 
-function sampler(t,    i,n)
-  i, n = 1, #t
-  shuffle(t)
-  return function(m,     out)
-    local out = {}
-    for _ = 1, m do
-      if i > n then shuffle(t); i = 1 end
-      out[#out+1] = t[i]; i = i + 1 end
-    return out end end
 
 function shuffle(t,   j) 
    for i=#t,2,-1 do j=math.random(i);t[i],t[j]=t[j],t[i] end
