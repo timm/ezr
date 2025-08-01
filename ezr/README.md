@@ -2,7 +2,7 @@ File imports and code size (Aug1, 2025).
 
 ```mermaid
 graph LR;
-lib(lib.py<br>misc code<br>loc=85);
+lib(lib.py<hr>misc code<br>loc=85);
 about(about.py<br>config control<br>loc=23);
 data(data.py<br>structs definition<br>loc=110)
 dist(dist.py<br>distance code<br>loc=147);
