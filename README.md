@@ -399,7 +399,7 @@ IEEE Transactions on software engineering, 39(9), 1208-1215.
 | 1994     | ISAMP                    | Crawford & Baker [^craw94] | Best solutions lie is small parts of search space. Fast random tries and frequent retries is fast way to explore that space. |
 | 1997     | Feature Subset Selection | John & Kohavi [^kohavi97] | Up to 80% of features can be ignored without hurting accuracy.                          |
 | 2002     | Backdoors                | Williams et al. [^backdoor] | Setting a few variables beforehand reduces exponential runtimes to polynomial.                     |
-| 2005     | Semi-Supervised Learning | Zhou et al. [^zh05]   | Data often lies on low-dimensional manifolds inside high-dimensional spaces.            |
+| 2005     | Semi-Supervised Learning | Zhou et al. [^zhu05]   | Data often lies on low-dimensional manifolds inside high-dimensional spaces.            |
 | 2008     | Exemplars                | Menzies [^me08a]      | Small samples can summarize and model large datasets.                                   |
 | 2009     | Active Learning          | Settles [^settles09]  | Best results come from learners reflecting on their own models to select their own training examples. |
 | 2005–20  | Key Vars in SE           | Menzies et al. [^me03a] [^me07a]  [^me21a]     | Dozens of SE models are controlled by just a few parameters.                                |
