@@ -10,7 +10,7 @@ like(like.py<br>likelihood code<br>loc=83);
 likely(likely.py<br>explore code<br>loc=93);
 rq(rq.py<br>experiments<br>loc=13);
 stats(stats.py<br>stats cide<br>loc=154);
-tree(tree.py(br>tree generatin<br>loc=95);
+tree(tree.py<br>tree generatin<br>loc=95);
 lib --> data;
 data --> dist;
 about --> lib;
