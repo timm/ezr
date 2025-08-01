@@ -480,6 +480,46 @@ Explore the space adaptively, often prioritizing regions likely to improve the â
 
 ## Algorithms,
 
+```python
+% likes is all wrong
+import math,random
+
+def disty(row): return sum(row)                   # stub
+def likes(group,row): return sum(sum(abs(x-y) for x,y in zip(g,row))
+                                 for g in group)/(len(group) or 1)
+
+def rebalance(best,rest):
+    best.sort(key=disty)
+    while len(best) > math.sqrt(len(best)+len(rest)):
+        rest.append(best.pop(-1))
+
+def bayes_score(best,rest,row,acq="xplor",build=1000,eps=1e-9):
+    b,r=math.exp(likes(best,row)),math.exp(likes(rest,row))
+    if acq=="bore": return (b*b)/(r+eps)
+    q={"xploit":0,"xplor":1}.get(acq,1-build**-1)
+    return (b+r*q)/abs(b*q-r+eps)
+
+def likely1(best,rest,rows,few):
+    for row in random.sample(rows,min(few*2,len(rows))):
+        if likes(best,row)>likes(rest,row):
+            rows.remove(row); return row
+
+def likelier(best,rest,rows,few,acq="xplor",build=1000):
+    cands=random.sample(rows,min(few*2,len(rows)))
+    row=max(cands,key=lambda r:bayes_score(best,rest,r,acq,build))
+    rows.remove(row); return row
+
+def likely(data,acq_fn,build=1000,few=10,any=32):
+    rows=random.sample(data.rows,len(data.rows))
+    xy=sorted(rows[:any],key=disty)
+    k=int(math.sqrt(any)); best,rest=xy[:k],xy[k:]
+    while len(xy)<build and rows[any:]:
+        row=acq_fn(best,rest,rows[any:],few)
+        xy.append(row); best.append(row)
+        rebalance(best,rest)
+    return sorted(xy,key=disty)
+```
+
 ## Simp
 is only true for generative AI. For predictive AI, as shown here,
 
