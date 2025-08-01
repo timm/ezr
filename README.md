@@ -85,7 +85,8 @@ For an example where this tool can dramatically simplify prior results, see the 
 [^moot]: http://github.com/timm/moot
 
 [^hou24]: Hou, X., Zhao, Y., Liu, Y., Yang, Z., Wang, K., Li, L., ... & Wang, H. (2024). Large language models for software engineering: A systematic literature review. ACM Transactions on Software Engineering and Methodology, 33(8), 1-79.
-[^john24]: Johnson, B., & Menzies, T. (2024). Ai over-hype: A dangerous threat (and how to fix it). IEEE Software, 41(6), 131-138.
+
+[^john84]: Johnson, B., & Menzies, T. (2024). Ai over-hype: A dangerous threat (and how to fix it). IEEE Software, 41(6), 131-138.
 
 [^ling24]: Ling, X., Menzies, T., Hazard, C., Shu, J., & Beel, J. (2024). Trading off scalability, privacy, and performance in data synthesis. IEEE Access, 12, 26642-26654.
 
@@ -99,6 +100,9 @@ For an example where this tool can dramatically simplify prior results, see the 
 estimation: Have we solved the problem yet? insights from a replication
 study,” IEEE Transactions on Software Engineering, vol. 49, no. 4,
 pp. 2677– 2697, 2023.
+
+[^shi22]: Jieke Shi, Zhou Yang, Bowen Xu, Hong Jin Kang, and David Lo. 2023. Compressing Pre-trained Models of Code into 3 MB. In Proceedings of the 37th IEEE/ACM International Conference on Automated Software Engineering (ASE '22). Association for Computing Machinery, New York, NY, USA, Article 24, 1–12. https://doi.org/10.1145/3551349.3556964
+
 
 ## A Quick Example
 
@@ -332,8 +336,8 @@ Such naive models can yield inconsistent ground truths especially when (as we se
 regexes are tuned without rigorous validation. Non-naive models can be constructed, but their validation requres some
 ground truth (which takes us back to needing subject matter experts or historical logs).
 To avoid that construction cost, 
-general background knowledge could be used (such as what is found in a  large language model).
-But the experience so far with LLMs [^amend25] is that can only serve as 
+general background knowledge could be used such as what is found in a  large language model.
+But the experience so far with LLMs [^Ahmed25] is that can only serve as 
 assistant, not a trusted oracle, since all their outputs still require careful checking. 
 
 
@@ -358,9 +362,9 @@ Michael Pradel, 2025, Can LLMs Replace Manual Annotation of Software
 Engineering Artifacts? MSR'25.
 https://software-lab.org/publications/msr2025_LLM-annotation.pdf
 
-Of coruse, all this is not a problem if we can label less.
+One way to mitgate the problem of labeling is to use less labels. Standard machine elarning used 1000s of examples,
+and often much more. But does learning need so much data? 
 
-One solution to the labelling problem is to label less. 
 
 [^yu20]: Yu, Z., Fahid, F. M., Tu, H., & Menzies, T. (2020).
 Identifying self-admitted technical debts with jitterbug: A two-step
@@ -381,14 +385,7 @@ Data quality: Some comments on the nasa software defect datasets.
 IEEE Transactions on software engineering, 39(9), 1208-1215.
 
 
-
->
-> **Active learning** is a strategy to save effort: first, you quickly scan many items using the cheap information (X). Then, guided by simple rules or heuristics, you only ask for the expensive checks (Y) on a few items that look the most useful for learning.
-
-I can rewrite this as a **2–3 sentence version for a report or paper intro** if you want it punchier. Do you want that?
-n
-
-> Table 2: :w
+> Table 2: On the value of less modeling.
 
 | Year     | What                     | Who / System         | Notes                                                                                   |
 |----------|--------------------------|-----------------------|-----------------------------------------------------------------------------------------|
@@ -397,9 +394,9 @@ n
 | 1902     | PCA                      | Pearson  [^pca]             | Larger matrices can be projected down to a few components.                                           |
 | 1960s    | Narrows         | Amarel [^amarel]      | Search can be guided by tiny sets of key variable settings.                              |
 | 1974     | Prototypes| Chang [^chang74] | Nearest neighbor reasoning is quicker after discarding 90% of the data and keeping  only the best exemplars.  |
-| 1980s    | ATMS       | de Kleer              | Diagnoses is quicker when it focus only on the core assumptions that do not depend on other assumptions. |
+| 1980s    | ATMS       | de Kleer [^atms]             | Diagnoses is quicker when it focus only on the core assumptions that do not depend on other assumptions. |
 | 1984     | Distance-Preservation | Johnson and Lindenstrauss [^john84] | High-dimensional data can be embedded in low dimensions while preserving pairwise distances. |
-| 1996     | ISAMP                    | Crawford & Baker [^crawford] | Best solutions lie is small parts of search space. Fast random tries and frequent retries is fast way to explore that space. |
+| 1994     | ISAMP                    | Crawford & Baker [^craw94] | Best solutions lie is small parts of search space. Fast random tries and frequent retries is fast way to explore that space. |
 | 1997     | Feature Subset Selection | John & Kohavi [^kohavi97] | Up to 80% of features can be ignored without hurting accuracy.                          |
 | 2002     | Backdoors                | Williams et al. [^backdoor] | Setting a few variables beforehand reduces exponential runtimes to polynomial.                     |
 | 2005     | Semi-Supervised Learning | Zhou et al. [^zh05]   | Data often lies on low-dimensional manifolds inside high-dimensional spaces.            |
@@ -408,6 +405,20 @@ n
 | 2005–20  | Key Vars in SE           | Menzies et al. [^me03a] [^me07a]  [^me21a]     | Dozens of SE models are controlled by just a few parameters.                                |
 | 2010+    | Surrogate Models         | Various [^zul13] [^guo13]              | Optimizers can be approximated from small training sets.                                |
 | 2020s    | Model Distillation       | Various    [^shi21] [^yang24]          | Large AI models can be reduced in size by orders of magnitude, with little performance loss.    |
+
+[^settles09]: Settles, Burr. "Active learning literature survey." (2009).
+
+[^me08a]: Menzies, T., Turhan, B., Bener, A., Gay, G., Cukic, B., & Jiang, Y. (2008, May). Implications of ceiling effects in defect predictors. In Proceedings of the 4th international workshop on Predictor models in software engineering (pp. 47-54).
+
+[^zhu05]: Zhu, Xiaojin. "Semi-supervised learning literature survey." (2005), Dept. Computer Science, Wisconson, Technical Report 1530.
+
+[^kohavi97]: Kohavi, R., & John, G. H. (1997). Wrappers for feature subset selection. Artificial intelligence, 97(1-2), 273-324.
+
+[^kohavi97]: Kohavi, R., & John, G. H. (1997). Wrappers for feature subset selection. Artificial intelligence, 97(1-2), 273-324.
+
+[^craw]: Crawford, J. M., & Baker, A. B. (1994, July). Experimental results on the application of satisfiability algorithms to scheduling problems. In AAAI (Vol. 2, pp. 1092-1097).
+
+[^atms]: De Kleer, J. (1986). An assumption-based TMS. Artificial intelligence, 28(2), 127-162.
 
 [^pca]:  Pearson, K. (1901). "On Lines and Planes of Closest Fit
 to Systems of Points in Space". Philosophical Magazine. 2 (11):
