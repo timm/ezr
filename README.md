@@ -299,7 +299,7 @@ Results from a  new
 "security-aware" run of 
 EZR could then be ready for discussion in a few seconds.
 
-## Theory
+## Background
 
 This paper is mostly about the EZR code base.
 But before looking at the code, it is be insightful to understand its
@@ -308,17 +308,31 @@ But before looking at the code, it is be insightful to understand its
 EZR arose from concerns about label quality in software engineering (SE) data.
 We can easily collect many independent variables (\$x\$) like age, size, or color, but dependent variables (\$y\$)
 (e.g. is something broken, safe, or profitable)
-require an *oracle* such as a subject matter expert, historical log, or model.
-Experts are error-prone, as witnessed by all the labeling
+require an *oracle* such as:
+
+- A _subject matter expert_:
+Expert labelling is often an error-prone process as witnessed by all the labeling
 errors seen in technical debt collection [^yu20], 
 the labelling or security bugs [^kang22], or assessments of  code quality [^shepperd13].
 Rushing experts to label large corpuses is particularly bad pracrice
 since label quality degrading as interview time shrinks [^mes].
 More considered interview methods that (e.g.) label 10 examples with 10 attributes 
 require at least an hour or two  hours [^valerdi10] [^kington09] [^lustosa24].
-Historical logs are no better: a decade of 100-item spot-checks repeatedly revealed incorrect labels, with Yu et al. \[^yu20] finding 90% of “false positive” technical debt labels were actually true, and similar issues in security bugs \[^wy21], static analysis \[^kang22], and code quality \[^shepperd13].
-Naive model-based labeling is common—e.g., defect prediction using commit keywords like “bug,” “fix,” or “error” \[^kamei12]—but often yields inconsistent ground truth when regexes are tuned without rigorous validation.
-Even automatic labeling with LLMs \[^ahmed25] is only an assistant, not a trusted oracle, since all outputs still require careful checking.
+- An _historical log_:
+Historical logs contain many labeling errors.
+When se spot-check the labels in historicak logs, we often find mistables.
+For example, Yu et al. [^yu20] found 90% of “false positive” technical debt labels were actually true.
+Similar issues are seen with  security bugs [^wy21], with static analysis [^kang22], and code quality assessment [^shepperd13].
+- A _model_, that can automatically generate labels.
+Naive model-based labeling is common—e.g., defect prediction using commit keywords like “bug,” “fix,” or “error” [^kamei12].
+Such naive models can yield inconsistent ground truths especially when (as we see in industry),
+regexes are tuned without rigorous validation. Non-naive models can be constructed, but their validation requres some
+ground truth (which takes us back to needing subject matter experts or historical logs).
+To avoid that construction cost, 
+general background knowledge could be used (such as what is found in a  large language model).
+But the experience so far with LLMs [^amend25] is that can only serve as 
+assistant, not a trusted oracle, since all their outputs still require careful checking. 
+
 
 [^mes80]: Mark Easterby-Smith. The design, analysis and interpretation of repertory grids. In-
 ternational Journal of Man-Machine Studies, 13(1):3–24, 1980
