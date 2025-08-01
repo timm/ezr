@@ -217,13 +217,14 @@ or rows are increased (see Scrum1K to Scrum10K to Scrum100K).
 > Table 2: EZR, some performance details.
 
 |file         |x  |y  |rows    | time (secs)| #vars in tree| #vars in branch|
-|-------------|---|---|--------|------------|--------------|----------------|
+|-------------|--:|---|-------:|------------|--------------|----------------|
 |SS-M         | 17| 3 |    862 |       0.15 |            6 |              4 |
 |Scrum1K      |124| 3 |  1,000 |       0.72 |            7 |              2 |
 |Scrum10K     |124| 3 | 10,000 |       1.29 |            9 |              4 | 
 |Scrum100K    |124| 3 |100,000 |       8.54 |           10 |              3 |
 
-As to explaining the inference, the last two columns  show the number of
+As to explaining the inference, EZR produces succinct, easy to read,  models.
+The last two columns  show the number of
 attributes seen in the generated model. The first row repeats what was shown above:
 the SS-M model uses less than half the control settings (6 of 17) and the branch
 to the best result only uses four settings. Much larger reductions in the space
