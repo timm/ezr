@@ -1,6 +1,6 @@
 #!/usr/bin/env python3 -B
-from data import *
-from dist import *
+from ezr.data import *
+from ezr.dist import *
 
 #--------------------------------------------------------------------
 treeOps = {'<=' : lambda x,y: x <= y, 
@@ -88,8 +88,3 @@ def eg__tree():
   data1 = Data(csv(the.file))
   data2 = clone(data1, random.choices(data1.rows, k=32))
   treeShow(Tree(data2))
-
-def eg__all()  : mainAll(globals())
-def eg__list() : mainList(globals())
-def eg_h()     : print(helpstring)
-if __name__ == "__main__": main(globals())

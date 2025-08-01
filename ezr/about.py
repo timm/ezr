@@ -15,7 +15,7 @@ lite.py, lightweight multi objective.
     -m  m=2             bayes low frequency hack  
     -p  p=2             distance co-effecient
     -s  seed=1234567891 random number seed   
-    -f  file=../../moot/optimize/misc/auto93.csv  data file 
+    -f  file=../moot/optimize/misc/auto93.csv  data file 
       
     -h                  show help   
     --all               run all examples.   

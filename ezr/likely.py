@@ -1,6 +1,6 @@
 #!/usr/bin/env python3 -B
-from like import *
-from dist import *
+from ezr.like import *
+from ezr.dist import *
 
 #--------------------------------------------------------------------
 def likely(data:Data, rows=None) -> List[Row]:
@@ -85,9 +85,3 @@ def eg__likely():
   zero=rxs["klass"]
   print(*map(win,[zero.mu] + [log.mu for s,log in rxs.items() if s != "klass"]),
         the.file)
-
-#--------------------------------------------------------------------
-def eg__all()             : mainAll(globals())
-def eg__list()            : mainList(globals())
-def eg_h()                : print(helpstring)
-if __name__ == "__main__" : main(globals())

@@ -1,6 +1,6 @@
-def main():
-    print("hello world")
+from ezr.rq import *
 
-if __name__ == "__main__":
-    from . import dist
-    main()
+def eg__all()  : mainAll(globals())
+def eg__list() : mainList(globals())
+def eg_h()     : print(helpstring)
+if __name__ == "__main__": main(globals())

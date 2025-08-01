@@ -2,15 +2,20 @@
 
 <img src="docs/ezr.png" align=right width=400>
 
-Recently, AI has gotten very complicated.  The models themselves
-are opaque and  hard to understand or audit or repair.  The CPU
-required to build and use them severely limits experimentation. It
+Recently, AI has gotten very complicated.  The models are now so
+opaque that they are   hard to understand or audit or repair.  The CPU
+required to build and use them severely limits experimentation and
+scientific reporduction. The complexity of this kind of reasoning
 also complicates industrial deployment and teaching.
 
-But are all problems inherently complex? Must generative
-AI and large language models by used for all reasoning? Perhaps not.  _Tiny AI_ performs _predictive AI
-from small models_ and handles tasks like optimization and regression.
-As shown here, tiny AI can be remarkable effective, yet simple to
+We ask, rhetorically, do all problems need this complexity? Must generative
+AI and large language models by used for all reasoning? 
+
+Perhaps not. A alternative to Big AI and generative models
+is _Tiny AI_ that uses _predictive models_ for tasks
+like optimzation, classification and regression.
+As shown here, tiny AI
+can be remarkable effective, yet simple to
 code, and need only a few dozen labeled examples for training.
 
 Tiny AI methods are routinely ignored in research and industry.  In
@@ -74,7 +79,6 @@ after sampling just a few dozen examples.
 - A useful tool for teaching AI and SE and scripting;
 - A productive tool for conducting state-of-the-art resaerch. 
 - A criticism of other work that has never checked complicated a simple idea; 
-
 
 For an example where this tool can dramatically simplify prior results, see the end of this document.
 
@@ -210,12 +214,22 @@ a  model had generated 10^3, 10^4, and 10^5 samples). In this sample,
 runtimes scales linearly when columns are increased (see SS-M vs Scrum1K)
 or rows are increased (see Scrum1K to Scrum10K to Scrum100K).
 
-|file         |x  |y  |rows    | time (secs)|
-|-------------|---|---|--------|------|
-|SS-M         | 17| 3 |    862 | 0.15 |
-|Scrum1K      |124| 3 |  1,000 | 0.72 |
-|Scrum10K|124 |124| 3 | 10,000 | 1.29 |
-|Scrum100K124 |124| 3 |100,000 | 8.54 |
+> Table 2: EZR, some performance details.
+
+|file         |x  |y  |rows    | time (secs)| #vars in tree| #vars in branch|
+|-------------|---|---|--------|------|---------|
+|SS-M         | 17| 3 |    862 | 0.15 | 6 | 4|
+|Scrum1K      |124| 3 |  1,000 | 0.72 | 7 | 2 |
+|Scrum10K |124| 3 | 10,000 | 1.29 | 9 | 4| 
+|Scrum100K |124| 3 |100,000 | 8.54 | 10 | 3|
+
+As to explaining the inference, the last two columns  show the number of
+attributes seen in the generated model. The first row repeats what was shown above:
+the SS-M model uses less than half the control settings (6 of 17) and the branch
+to the best result only uses four settings. Much larger reductions in the space
+of variables can be seen for the Scrum models. The last row
+of this table tells us that of 124 settings, only 10 are needed overall and only
+3 are found in the best recommendation.
 
 ### Threats to Validity
 

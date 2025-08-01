@@ -1,5 +1,5 @@
 #!/usr/bin/env python3 -B
-from lib import *
+from ezr.lib import *
 
 #--------------------------------------------------------------------
 def Sym(at=0, txt="") -> o: 
@@ -103,8 +103,4 @@ def eg__data():
   print(x := round(sum(y.mu for y in Data(csv(the.file)).cols.y),2))
   assert x == 3009.84
 
-#--------------------------------------------------------------------
-def eg__all()  : mainAll(globals())
-def eg__list() : mainList(globals())
-def eg_h()     : print(helpstring)
-if __name__ == "__main__": main(globals())
+

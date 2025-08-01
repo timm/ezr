@@ -6,7 +6,7 @@ import random, math, sys, re
 from typing import Any, Callable, Iterator, List
 from types import SimpleNamespace as o
 
-from about import __doc__ as helpstring
+from ezr.about import __doc__ as helpstring
 
 Atom = int|float|str|bool
 Row  = List[Atom]
@@ -77,9 +77,3 @@ def eg__the():
 def eg__csv():
   "read from csv files"
   [pout(x) for x in list(csv(the.file))[::30]]
-
-#--------------------------------------------------------------------
-def eg__all()             : mainAll(globals())
-def eg__list()            : mainList(globals())
-def eg_h()                : print(helpstring)
-if __name__ == "__main__" : main(globals())

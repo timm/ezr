@@ -1,5 +1,5 @@
 #!/usr/bin/env python3 -B 
-from data import *
+from ezr.data import *
 
 #--------------------------------------------------------------------
 def dist(src) -> float:
@@ -120,12 +120,12 @@ def eg__disty():
 
 def eg__irisKpp(): 
   "Dist: check Kmeans++ centroids on iris."
-  src = csv("../../moot/classify/iris.csv")
+  src = csv("../moot/classify/iris.csv")
   [print(r) for r in distKpp(Data(src),k=10)]
 
 def eg__irisK(): 
   "Dist: check Kmeans on iris."
-  src = csv("../../moot/classify/iris.csv")
+  src = csv("../moot/classify/iris.csv")
   for data in distKmeans(Data(src),k=10):
     print(', '.join([out(x) for x in mids(data)])) 
 
@@ -139,9 +139,3 @@ def eg__fmap():
              distFastermap(data,data.rows).labels.rows) 
                 for _ in range(20))
     print("\t",n.mu,n.sd)
-
-#--------------------------------------------------------------------
-def eg__all()             : mainAll(globals())
-def eg__list()            : mainList(globals())
-def eg_h()                : print(helpstring)
-if __name__ == "__main__" : main(globals())

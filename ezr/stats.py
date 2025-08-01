@@ -1,5 +1,5 @@
 #!/usr/bin/env python3 -B
-from lib import *
+from ezr.lib import *
 
 #--------------------------------------------------------------------
 def Confuse(): 
@@ -146,9 +146,3 @@ def eg__sk20():
       out=statsRank(rxs,eps=eps)
       print("\t",''.join(map(daRx,out.keys())))
       print("\t",''.join([str(x) for x in out.values()]))
-
-#--------------------------------------------------------------------
-def eg__all()             : mainAll(globals())
-def eg__list()            : mainList(globals())
-def eg_h()                : print(helpstring)
-if __name__ == "__main__" : main(globals())

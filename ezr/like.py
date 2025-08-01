@@ -1,6 +1,6 @@
 #!/usr/bin/env python3 -B
-from data import *
-from stats import *
+from ezr.data import *
+from ezr.stats import *
 
 #--------------------------------------------------------------------
 def like(i:o, v:Any, prior=0) -> float :
@@ -70,14 +70,8 @@ def eg__confuse():
 
 def eg__diabetes(): 
   "Naive Bayes classifier: test on diabetes."
-  [pout(x) for x in likeClassifier("../../moot/classify/diabetes.csv")]
+  [pout(x) for x in likeClassifier("../moot/classify/diabetes.csv")]
 
 def eg__soybean():  
   "Naive Bayes classifier: test on soybean."
-  [pout(x) for x in likeClassifier("../../moot/classify/soybean.csv")]
-
-#--------------------------------------------------------------------
-def eg__all()             : mainAll(globals())
-def eg__list()            : mainList(globals())
-def eg_h()                : print(helpstring)
-if __name__ == "__main__" : main(globals())
+  [pout(x) for x in likeClassifier("../moot/classify/soybean.csv")]
