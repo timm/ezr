@@ -362,9 +362,6 @@ Michael Pradel, 2025, Can LLMs Replace Manual Annotation of Software
 Engineering Artifacts? MSR'25.
 https://software-lab.org/publications/msr2025_LLM-annotation.pdf
 
-One way to mitgate the problem of labeling is to use less labels. Standard machine elarning used 1000s of examples,
-and often much more. But does learning need so much data? 
-
 
 [^yu20]: Yu, Z., Fahid, F. M., Tu, H., & Menzies, T. (2020).
 Identifying self-admitted technical debts with jitterbug: A two-step
@@ -385,7 +382,7 @@ Data quality: Some comments on the nasa software defect datasets.
 IEEE Transactions on software engineering, 39(9), 1208-1215.
 
 
-> Table 2: On the value of less modeling.
+> Table 3: On the value of less modeling.
 
 | Year     | What                     | Who / System         | Notes                                                                                   |
 |----------|--------------------------|-----------------------|-----------------------------------------------------------------------------------------|
@@ -450,6 +447,38 @@ Joint Conference on Artificial Intelligence, 2003.
 [^me07a]: Menzies, T., Owen, D., & Richardson, J. (2007). The strangest thing about software. Computer, 40(1), 54-60.
 
 [^me21a]: Menzies, T. (2021). Shockingly Simple:" Keys" for Better AI for SE. IEEE Software, 38(2), 114-118.
+
+One way to mitgate the problem of labeling is to use less labels. Standard machine elarning used 1000s of examples,
+and often much more. But does learning need so much data? As shown in Table 3, any number of research results show
+that seeminlgy complex spaces can be compressed, without loss of signal, into a smaller represetation. 
+If so, then we only need enough examples to cover the compressed space and not the whole space.
+
+EZR emplys several compression operators. For instance selection,  EZR avoids data that is noisy (i.e.
+is clearly not "best" or "rest") and  superfluous  (i.e. that is not
+relevant for "better" behavior). In this way EZR ignores most of the
+data and builds its models using just a few dozens samples. 
+For feature selection, EZR's decision trees are built only from a few dozen samples that distinguish
+best from rest. In this way, that tree only contains features that make a big difference to the outcomes. THe effects of this
+were seen in Table 2. After labeling just 24 rows, EZR's trees cotnained only a small percentage of the $x$ variables.
+
+
+## Algorithm
+
+
+Sequential Model-Based Optimization (SMBO) / Bayesian Optimization (simplified form)
+
+EZR was inspred by prior work on sequential model-based optimzation. SMBO
+algorithms
+iteratively label some candidates, building a surrogate model that predicts “good” vs. “not good.”.
+As it explores its space, 
+
+
+: It’s a one-shot, greedy SMBO / active classifier—almost Thompson sampling without probabilities, or greedy version of FOCUS/LIKE.
+
+
+Explore the space adaptively, often prioritizing regions likely to improve the “best” set.
+
+## Algorithms,
 
 ## Simp
 is only true for generative AI. For predictive AI, as shown here,
