@@ -9,7 +9,7 @@ dist(dist.py<hr>distance code<br>loc=147);
 like(like.py<hr>likelihood code<br>loc=83);
 likely(likely.py<hr>explore code<br>loc=93);
 rq(rq.py<hr>experiments<br>loc=13);
-stats(stats.py<hr>stats cide<br>loc=154);
+stats(stats.py<hr>stats code<br>loc=154);
 tree(tree.py<hr>tree generatin<br>loc=95);
 lib --> data;
 stats --> like;
