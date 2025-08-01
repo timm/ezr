@@ -306,9 +306,12 @@ But before looking at the code, it is be insightful to understand its
  empirical and theoretical background.
 
 EZR arose from concerns about label quality in software engineering (SE) data.
-We can easily collect many independent variables (\$x\$) like age, size, or color, but dependent variables (\$y\$)
-(e.g. is something broken, safe, or profitable)
-require an *oracle* such as:
+We can easily collect many independent variables (\$x\$) like age, size, or color.
+On the other hand, it is harder to
+collect
+dependent variables information (\$y\$)
+about (say) is something broken, is it safe, or is it profitable.
+Such $y$ labelling requires:
 
 - A _subject matter expert_:
 Expert labelling is often an error-prone process as witnessed by all the labeling
