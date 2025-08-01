@@ -303,23 +303,73 @@ EZR could then be ready for discussion in a few seconds.
 
 This paper is mostly about the EZR code base.
 But before looking at the code, it is be insightful to understand its
-theoretical background.
+ empirical and theoretical background.
 
-EZR was born from a concern about the quality of labels seen in software
-engineering data. SE researchers routinely share their
-data and many papers are based on the same data sets.
- As data generation gets faster, data curation gets
-harder and data quality decreases.  Over the last decade,
-when we reandomly relabelled
-100 examples (selected randomly), we kept finding incorrect labels.
+EZR arose from concerns about label quality in software engineering (SE) data.
+We can easily collect many independent variables (\$x\$) like age, size, or color, but dependent variables (\$y\$)
+(e.g. is something broken, safe, or profitable)
+require an *oracle* such as a subject matter expert, historical log, or model.
+Experts are error-prone, as witnessed by all the labeling
+errors seen in technical debt collection [^yu20], 
+the labelling or security bugs [^kang22], or assessments of  code quality [^shepperd13].
+Rushing experts to label large corpuses is particularly bad pracrice
+since label quality degrading as interview time shrinks [^mes].
+More considered interview methods that (e.g.) label 10 examples with 10 attributes 
+require at least an hour or two  hours [^valerdi10] [^kington09] [^lustosa24].
+Historical logs are no better: a decade of 100-item spot-checks repeatedly revealed incorrect labels, with Yu et al. \[^yu20] finding 90% of “false positive” technical debt labels were actually true, and similar issues in security bugs \[^wy21], static analysis \[^kang22], and code quality \[^shepperd13].
+Naive model-based labeling is common—e.g., defect prediction using commit keywords like “bug,” “fix,” or “error” \[^kamei12]—but often yields inconsistent ground truth when regexes are tuned without rigorous validation.
+Even automatic labeling with LLMs \[^ahmed25] is only an assistant, not a trusted oracle, since all outputs still require careful checking.
 
-degrades.
-Every time we manually reviewed a ra of our graduate students 
-EZR is an experiment in optimzation via contrast set learning.
-Instead of exploring all the data, EZR seeks examples that are most different in "best" and "rest".
-Once found, by giving those few examples to a  tree learner, EZR can quickly find the attribute ranges'
-that most divide "best" from "rest". 
-For literally millimnia, various writers have commented 
+[^mes80]: Mark Easterby-Smith. The design, analysis and interpretation of repertory grids. In-
+ternational Journal of Man-Machine Studies, 13(1):3–24, 1980
+
+[^valerdi10]: Ricardo Valerdi. Heuristics for systems engineering cost estimation. IEEE Systems
+Journal, 5(1):91–98, 2010.
+
+[^kington09]: Kington, Alison (2009) Defining Teachers' Classroom Relationships. In: The Social Context of Education. Valentin Bucik., Ljubljana.efining Teachers' Classroom Relationships
+
+[^lustosa24]: Andre Lustosa and Tim Menzies. Learning from very little data: On the value of land-
+scape analysis for predicting software project health. ACM Transactions on Software
+Engineering and Methodology, 33(3):1–22, 2024
+
+[^kamei12]: Yasutaka Kamei, Emad Shihab, Bram Adams, Ahmed E Hassan, Audris Mockus, Anand
+Sinha, and Naoyasu Ubayashi. A large-scale empirical study of just-in-time quality
+assurance. IEEE Transactions on Software Engineering, 39(6):757–773, 2012
+
+[^Ahmed25]: Toufique Ahmed, Premkumar Devanbu, Christoph Treude,
+Michael Pradel, 2025, Can LLMs Replace Manual Annotation of Software
+Engineering Artifacts? MSR'25.
+https://software-lab.org/publications/msr2025_LLM-annotation.pdf
+
+Of coruse, all this is not a problem if we can label less.
+
+One solution to the labelling problem is to label less. 
+
+[^yu20]: Yu, Z., Fahid, F. M., Tu, H., & Menzies, T. (2020).
+Identifying self-admitted technical debts with jitterbug: A two-step
+approach. IEEE Transactions on Software Engineering, 48(5), 1676-1691.
+
+[^wu21]: Wu, X., Zheng, W., Xia, X., & Lo, D. (2021). Data quality
+matters: A case study on data label correctness for security bug
+report prediction. IEEE Transactions on Software Engineering, 48(7),
+2541-2556.
+
+[^kang22]: Kang, H. J., Aw, K. L., & Lo, D. (2022, May). Detecting
+false alarms from automatic static analysis tools: How far are we?.
+In Proceedings of the 44th International Conference on Software
+Engineering (pp. 698-709).
+
+[^shepperd13]: Shepperd, M., Song, Q., Sun, Z., & Mair, C. (2013).
+Data quality: Some comments on the nasa software defect datasets.
+IEEE Transactions on software engineering, 39(9), 1208-1215.
+
+
+
+>
+> **Active learning** is a strategy to save effort: first, you quickly scan many items using the cheap information (X). Then, guided by simple rules or heuristics, you only ask for the expensive checks (Y) on a few items that look the most useful for learning.
+
+I can rewrite this as a **2–3 sentence version for a report or paper intro** if you want it punchier. Do you want that?
+n
 
 > Table 2: :w
 

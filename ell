@@ -56,6 +56,7 @@ alias gp='git push'
 alias gl='git log --oneline --graph --all --decorate'
 
 # Aliases: misc
+alias ezr='python3 -m ezr '
 alias h='history'
 alias vi="nvim -u '$Here/etc/init.lua'"  # Load custom Neovim config
 

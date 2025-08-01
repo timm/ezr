@@ -1,5 +1,5 @@
 """
-lite.py, lightweight multi objective.   
+ezr.py: lightweight xai for incremental multi-objective optimization   
 (col) 2025, Tim Menzies <timm@ieee.org>, MIT license   
    
     -a  acq=klass       acquisition function   
@@ -13,7 +13,7 @@ lite.py, lightweight multi objective.
     -l  leaf=3          min items in tree leaves
     -K  Ks=0.95         confidence for Kolmogorov–Smirnov test
     -m  m=2             bayes low frequency hack  
-    -p  p=2             distance co-effecient
+    -p  p=2             distance co-efficient
     -s  seed=1234567891 random number seed   
     -f  file=../moot/optimize/misc/auto93.csv  data file 
       
