@@ -1,5 +1,0 @@
-#!/usr/bin/env gawk -f
-
-BEGIN {FS=","}
-/^#/  { gsub(/:/,"|",$0);  for(i=1; i<=NF;i++) names[i]=$i; next}
-NF> 5 { for(i=1; i<=NF;i++) print "|" names[i] "\t| " $i " |"}

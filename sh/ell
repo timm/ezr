@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-## help sh/ell : : fire up a custom shell
-Here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-Here=$Here exec bash --rcfile "$Here/dotbash.rc" -i
-

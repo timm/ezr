@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-## help sh/elp : : show help
-Here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-echo -e "\n\033[36msh/elp:\033[0m"
-gawk -F: 'sub(/^## help /,""){ \
-              printf "  \033[33m%10s\033[0m %-6s : %s\n",$1,$2,$3 \
-         }' $Here/*
-
