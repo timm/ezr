@@ -18,9 +18,9 @@ def likely(data:Data, rows=None) -> List[Row]:
   adds(xy.rows[:n], best)
   adds(xy.rows[n:], rest)
   # loop
-  fn = likely1 if the.acq=="klass" else likelier
+  guess = likely1 if the.acq=="klass" else likelier
   while x.n > 2 and xy.n < the.Build:
-    add(xy, add(best, sub(x, fn(best, rest, x))))
+    add(xy, add(best, sub(x, guess(best, rest, x))))
     if best.n > (xy.n**.5):
       best.rows = distysort(xy,best.rows)
       while best.n > (xy.n**.5):

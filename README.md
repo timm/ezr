@@ -448,12 +448,14 @@ Joint Conference on Artificial Intelligence, 2003.
 
 [^me21a]: Menzies, T. (2021). Shockingly Simple:" Keys" for Better AI for SE. IEEE Software, 38(2), 114-118.
 
-One way to mitgate the problem of labeling is to use less labels. Standard machine elarning used 1000s of examples,
-and often much more. But does learning need so much data? As shown in Table 3, any number of research results show
-that seeminlgy complex spaces can be compressed, without loss of signal, into a smaller represetation. 
+One way to mitgate the problem of labeling is to use less labels. Standard machine learning builtds models using
+100s to 1000s to millions of examples,
+and sometimes much more. But does learning need so much data? As shown in Table3, for centuries,
+researchers have argued that
+seeminlgy complex spaces can be compressed, without loss of signal, into a smaller represetation. 
 If so, then we only need enough examples to cover the compressed space and not the whole space.
 
-EZR emplys several compression operators. For instance selection,  EZR avoids data that is noisy (i.e.
+EZR employs several compression operators. For instance selection,  EZR avoids data that is noisy (i.e.
 is clearly not "best" or "rest") and  superfluous  (i.e. that is not
 relevant for "better" behavior). In this way EZR ignores most of the
 data and builds its models using just a few dozens samples. 
@@ -461,16 +463,47 @@ For feature selection, EZR's decision trees are built only from a few dozen samp
 best from rest. In this way, that tree only contains features that make a big difference to the outcomes. THe effects of this
 were seen in Table 2. After labeling just 24 rows, EZR's trees cotnained only a small percentage of the $x$ variables.
 
+TO place that in context, 
+sequential model-based optimzation algorithms
+iteratively label some candidates, building a surrogate model that predicts “good” vs. “not good”. This model
+is then use to prioritize what to explore next. Standard SMBO algorithms use elabroate sampling
+and proiroization schemes via a range of estimated generated via   multiple. New data is explored in ther egion where (e.g.)
+the estiamtes are best, yet have highest variance.
+
 
 ## Algorithm
 
+The core of EZE is a five step process
+
+       seed → split → start -> explore → refine → repeat
+
+That is, we guess some initial model and use that to split a sample of the data into 
+"best" and rest". This is used to decide where to explore next. If any new data is discovered, 
+then that refines our definitions of best and rest. Thie process then repeats.
+
+We can summarize the code as follows:
+
+```python
+def y(row):
+  ensure y has a  label
+  return d2h(row)
+
+def likely(data,  any=4, build=24):
+  rows  = shuffle(data.rows)
+  start = rows[:any].sort(y)                # initial seed, sorted by y values
+  rows  = rows[any:]
+  best, rest = start[:sqrt(any)], start[sqrt(any):]
+  while rows:
+    good, *rows = rows.sort(guess)
+    best += [good]
+    if |best| > sqrt(|best| + |rest|):
+      best.sort(y)
+      rest += [ best.pop(-1) ]
+    if len(best) + len(rest) >= build: break
+  return best.sort(y)
+```
 
 Sequential Model-Based Optimization (SMBO) / Bayesian Optimization (simplified form)
-
-EZR was inspred by prior work on sequential model-based optimzation. SMBO
-algorithms
-iteratively label some candidates, building a surrogate model that predicts “good” vs. “not good.”.
-As it explores its space, 
 
 
 : It’s a one-shot, greedy SMBO / active classifier—almost Thompson sampling without probabilities, or greedy version of FOCUS/LIKE.
