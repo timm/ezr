@@ -416,7 +416,7 @@ IEEE Transactions on software engineering, 39(9), 1208-1215.
 
 [^kohavi97]: Kohavi, R., & John, G. H. (1997). Wrappers for feature subset selection. Artificial intelligence, 97(1-2), 273-324.
 
-[^craw]: Crawford, J. M., & Baker, A. B. (1994, July). Experimental results on the application of satisfiability algorithms to scheduling problems. In AAAI (Vol. 2, pp. 1092-1097).
+[^craw94]: Crawford, J. M., & Baker, A. B. (1994, July). Experimental results on the application of satisfiability algorithms to scheduling problems. In AAAI (Vol. 2, pp. 1092-1097).
 
 [^atms]: De Kleer, J. (1986). An assumption-based TMS. Artificial intelligence, 28(2), 127-162.
 
