@@ -108,8 +108,8 @@
      overflow: visible;
     }
     hr {
+      background-color: #1a1a1a;
       border: none;
-      border-top: 1px solid #1a1a1a;
       height: 1px;
       margin: 1em 0;
     }
@@ -168,9 +168,8 @@
     }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
     /* CSS for syntax highlighting */
-    html { -webkit-text-size-adjust: 100%; }
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span { line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -181,7 +180,7 @@
     }
     @media print {
     pre > code.sourceCode { white-space: pre-wrap; }
-    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
     }
     pre.numberSource code
       { counter-reset: source-line 0; }
@@ -260,9 +259,8 @@
 </tbody>
 </table>
 <h2 id="introduction">Introduction</h2>
-<p>Engineers pride themselves on doing things better and cheaper. When
-any fool can do it for a dollar, engineers find a way to do it for a
-penny.</p>
+<p>Engineers pride themselves on doing things better and cheaper. What
+any fool can do it for a dollar, engineers do for a penny.</p>
 <p>So, can we make AI orders of magnitude easier? Maybe it is time to
 question the current obsession with complexity. Do all tasks need
 millions (or even trillions) of variables?</p>
@@ -276,22 +274,22 @@ ask the right questions yet.”</p>
 <p>My claim led to a dare, which led to a simple prototype. ABC labels a
 few examples (selected at random), then sorted them into “best” and
 “rest”. It then uses a simple Bayes classifier to decide what to label
-next (the next example chosen was always the one most likely to be
-“best” and not “rest”). After each labeling, ABC rebuilt its “best” and
-“rest” models, and the cycle repeated. ABC includes a small decision
-tree learner tree learner that summarizes the labeled data into clear,
-compact explanations.</p>
+next (ABC always grabs the next example that is most likely to be “best”
+and least likely to be “rest”). After each labeling, ABC rebuilds its
+“best” and “rest” models, and the cycle repeated. Afterwards, ABC builds
+a regressions tree from the labeled examples. This summarizes the
+reasoning into a clear and compact explanation.</p>
 <p>To say the least, ABC is far simpler (and orders of magnitude faster)
 than alternatives like large language models, Gaussian Processes, or
 evolutionary reinforcement learning. ABC is just 300 lines of Python and
 does not need heavy libraries like pandas or scikit-learn. In a result
-supporting “less is more,” ABC found near-optimal car designs after
-labeling just 20–30 examples. Its decision tree could explain what was
-happening, enabling human understanding and critique. Because it’s so
-small, ABC is well-suited for teaching AI and SE scripting principles.
-And because it’s so fast to run and easy to modify, ABC is a productive
-tool for exploring state-of-the-art ideas in search-based
-optimization.</p>
+supporting “less is more”, the first time we tried it, ABC found
+near-optimal car designs after labeling just 20–30 examples. Its
+decision tree could explain what was happening, enabling human
+understanding and critique. Because it’s so small, ABC is well-suited
+for teaching AI and SE scripting principles. And because it’s so fast to
+run and easy to modify, ABC is a productive tool for state-of-the-art
+research in search-based optimization.</p>
 <p>This suprising success of ABC lead to another question:</p>
 <blockquote>
 <p>“Was this just a fluke? Was ABC just being tested one an unusually
@@ -301,20 +299,15 @@ easy problem?”</p>
 110 real-world case studies from recent, peer-reviewed software
 engineering research—covering configuration optimization, architecture
 tuning, effort estimation, and more. Then we reran the experiment at
-scale.</p>
-<p>The results, shown below, demonstrated that ABC works remarkably well
-(quickly and effectively) for a broad range of problems (taken from the
-SE literatures).</p>
-<p>That result shifted our thinking. Certainly, some compelx problems
-need complex solutions. For example, this document was written with
-extensive help by a large language model that sumamrized version
-<em>i</em> to generate a shorter and clearer version <em>i+1</em>. But
-not everything needs such complexity. The sucess of ABC was not luck- it
-points to something deeper: an approach to software engineering and AI
-where, often, a few well-chosen examples outperform brute-force data
-collection. For centuries, researchers have told us that that key
-variable selection, and strategic sampling can solve complex problems
-efficiently (see Table 1).</p>
+scale. The results, shown below, demonstrated that ABC works remarkably
+well (quickly and effectively) for a broad range of problems taken from
+the SE literatures.</p>
+<p>This experience wuth ABC has shifted our thinking. The sucess of ABC
+was not luck- it points to something deeper: an approach to software
+engineering and AI where, often, a few well-chosen examples outperform
+brute-force data collection. For centuries, researchers have told us
+that that key variable selection, and strategic sampling can solve
+complex problems efficiently (see Table 1).</p>
 <p>Yet despite this legacy of elegant minimalism, today’s trends often
 favor the opposite: ever-larger models, more data, and growing
 complexity. There are many reasons for this[^subtract], but a major one
@@ -352,10 +345,11 @@ role="doc-noteref"><sup>1</sup></a></td>
 </tr>
 <tr>
 <td>1974</td>
-<td></td>
 <td>Prototypes</td>
 <td>Chang <a href="#fn2" class="footnote-ref" id="fnref2"
 role="doc-noteref"><sup>2</sup></a></td>
+<td>Nearest neighbor reasoning is quicker after discarding 90% of the
+data and keeping only the best exemplars.</td>
 </tr>
 <tr>
 <td>1980s</td>
@@ -439,11 +433,15 @@ little performance loss.</td>
 </tr>
 </tbody>
 </table>
-<p>In an attempt to halt, or at least s,ow, the complexity bloat of
-standard AI, this document is about: - an idea: <strong>less, but
-better</strong> - a very small code base: <strong>that operationalizes
-that idea</strong> - and a large test suite: <strong>that checks if the
-idea generalizes across diverse domains</strong></p>
+<p>In an attempt to halt, or at least slow, the complexity bloat of
+standard AI, this document is about three things:</p>
+<ul>
+<li>an idea: <strong>less, but better</strong></li>
+<li>a very small code base: <strong>that operationalizes that
+idea</strong></li>
+<li>and a large test suite: <strong>that checks if the idea generalizes
+across diverse domains</strong></li>
+</ul>
 <p>Using this code and data, we ask five questions:</p>
 <ul>
 <li><p><strong>RQ1: Is ABC simple?</strong><br />
@@ -458,14 +456,21 @@ examples?</p></li>
 Does our code support explainability, critique, and
 understanding?</p></li>
 <li><p><strong>RQ5: Is ABC general?</strong><br />
-Does our code apply across varied SE optimization tasks?</p></li>
+Does our code apply across various tasks?</p></li>
 </ul>
+<p>This last questions is very improtant. ABC is not a solution to
+everythng. Some tasks are inherently complex and need inherently compex
+solutions. or example, this document was written with For extensive
+editorial support by a large language model (big AI was used to
+sumamrize verbose sections into shorter and simpler segments). In RQ5,
+we descibe the “BINGO” test which is a way to peek at data in order to
+decide they you need something more than just ABC.</p>
 <p>All the code and data used here can be accessed as fllows</p>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>mkdir demo<span class="op">;</span> cd demo</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>moot <span class="co"># &lt;== data</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>ezr  <span class="co"># &lt;== code</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>cd ezr</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>git clone https:<span class="op">//</span>github.com<span class="op">/</span>timm<span class="op">/</span>abc  <span class="co"># &lt;== code</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>cd abc</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>python3 <span class="op">-</span>B abc.py <span class="op">-</span>f ..<span class="op">/</span>moot<span class="op">/</span>optimize<span class="op">/</span>config<span class="op">/</span>SS<span class="op">-</span>M.csv <span class="co"># &lt;== test case </span></span></code></pre></div>
 <h2 id="a-quick-example">A Quick Example</h2>
 <p>Just to give this work some context, here’s a concrete case.</p>
@@ -473,20 +478,23 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a hr
 and CPU load. The system exposes dozens of tuning knobs—storage,
 logging, locking, encryption, and more. Understanding how each setting
 impacts performance is daunting.</p>
-<p>Imagine we have a log of 800+ configurations, each showing the
-settings to dozens of control settings, and their measured effects. Some
-settings lead to excellent results:</p>
+<p>When manual reasoning fails, we can ask AI to help. Imagine we have a
+log of 800+ configurations, each showing the settings to dozens of
+control settings, and their measured effects. Some settings lead to
+excellent results:</p>
 <pre><code>choices                     Effects
 ----------------            -----------------------
 control settings →            Energy-, time-,  cpu-
 0,0,0,0,1,0,...               6.6,    248.4,   2.1   ← best
 1,1,0,1,1,1,...              16.8,    518.6,  14.1   ← rest
 ...</code></pre>
-<p>In theory, any number of AI tools could learn what separates “best”
-from “rest.” But here’s the challenge: <strong>labeling</strong> each
-configuration—e.g., by running benchmarks—is expensive. So how can we
-learn a model with minimal effort?</p>
-<p>That’s where ABC comes in. It uses a minimalist A–B–C strategy:</p>
+<p>Any number of AI tools could learn what separates “best” from “rest.”
+But here’s the challenge: <strong>labeling</strong> each configuration
+(e.g., by running all the benchmarks for all possible configurations) is
+expensive. So the ABC challenge is how to learn an effective model with
+minimal effort?</p>
+<p>That’s where ABC comes in. We call it that since it uses a minimalist
+A–B–C strategy:</p>
 <ul>
 <li><p><strong>A: Ask anything</strong><br />
 Randomly label a few examples (say, <em>A = 4</em>) to seed the
@@ -505,80 +513,118 @@ rows, return the best one.</p></li>
 <p>In this task, after labeling just 24 out of 800 rows (∼3%), ABC
 constructs a bibary regression tree from those 24 examples. In that
 tree, left and right branches go best and worse examples. The left-most
-branch of that tree is:</p>
-<pre><code>if crypt_blowfish == 0 and 
-   memory_tables == 1 and 
-   small_log == 0 and 
-   logging == 0 and 
-   txc_mvlocks == 0 and 
-   no_write_delay == 0
-then win ≈ 99%</code></pre>
-<p>This “win” score (defined below) means we have very nearly matching
-the globally best result, after looking at a tiny fraction of the
-available data. Note that this branch only mentions six options, and
-five of those are all about what to turn off. That is to say, even
+branch of that tree is shwin here (and to get to any line in this tree,
+all the things abve it have to be true.</p>
+<pre><code>crypt_blowfish=0
+|  memory_tables=1
+|  |  detailed_logging=1
+|  |  |  no_write_delay=0
+|  |  |  |  compressed_script=0 ==&gt; win = 99</code></pre>
+<p>As shown below, we score this reasoning up to a max value of 100. The
+“win=99” score (seen on the last line) means we have very nearly
+matching the globally best result, after looking at a tiny fraction of
+the available data. Note that this branch only mentions five options,
+and three of those are all about what to turn off. That is to say, even
 though this databased has dozens of configuration options, there are
-five bad things to avoid and one only most important thing to enable
-(<em>memory_tables</em>). is critical to fast reasoning with low
-CPU.</p>
-<p>to a method for creating a hashed representation of a password using
-an algorithm based on the Blowfish cipher.</p>
-<p>Of course, if you ever show a result like this to a subject matter
-expert, they will always push back on your conclusions and demon to know
-what happems is, say, <em>logging</em> is enabled. To answer that
-quesion, we can refer them to the entire tree:</p>
-<pre><code>crypt_blowfish == 0
-|  memory_tables == 1
-|  |  detailed_logging == 1
-|  |  |  no_write_delay == 0
-|  |  |  |  compressed_script == 0; ==&gt; win = 99
-|  |  |  |  compressed_script == 1; ==&gt; win = 96
-|  |  detailed_logging == 0;        ==&gt; win = 85
-|  memory_tables == 0
-|  |  encryption == 0
-|  |  |  no_write_delay == 0;       ==&gt; win = 53
-|  |  |  no_write_delay == 1
-|  |  |  |  txc_mvlocks == 0
-|  |  |  |  |  logging == 0;        ==&gt; win = 51
-|  |  |  |  |  logging == 1;        ==&gt; win = 49
-|  |  encryption == 1
-|  |  |  txc_mvlocks == 0;          ==&gt; win = 51
-crypt_blowfish == 1
-|  memory_tables == 1
-|  |  logging == 1;                 ==&gt; win = -47
-|  |  logging == 0;                 ==&gt; win = =54
-|  memory_tables == 0
-|  |  txc_mvlocks == 0;             ==&gt; win = -304</code></pre>
-<p>All of this took just a few dozen queries—and a few hundred lines of
+three bad things to avoid and only two most important thing to enable
+(<em>memory_tables</em> and <em>detailed_logging</em>). to a method for
+creating a hashed representation of a password using an algorithm based
+on the Blowfish cipher.</p>
+<p>In our experience, if you ever show a result like this to a subject
+matter expert, they will push back. For example, they might demand to
+know what happems when <code>crypt_blowfish</code> is enabled. Blowfish
+in password hashing scheme. It makes password protection slower but it
+also increases the computational effort required for attackers to
+brute-force attack the database’s security. The full tree generted by
+ABC shows what happens this feature is enabled. Note all the negative
+“wins” which is to say, if your goals are fast runtimes, do not
+<code>crypt_blowfish</code>.</p>
+<pre><code>|  memory_tables=1
+|  |  detailed_logging=1
+|  |  |  no_write_delay=0
+|  |  |  |  compressed_script=0; ==&gt; win = 99
+|  |  |  |  compressed_script=1; ==&gt; win = 96
+|  |  detailed_logging=0;        ==&gt; win = 85
+|  memory_tables=0
+|  |  encryption=0
+|  |  |  no_write_delay=0;       ==&gt; win = 53
+|  |  |  no_write_delay=1
+|  |  |  |  txc_mvlocks=0
+|  |  |  |  |  logging=0;        ==&gt; win = 51
+|  |  |  |  |  logging=1;        ==&gt; win = 49
+|  |  encryption=1
+|  |  |  txc_mvlocks=0;          ==&gt; win = 51
+crypt_blowfish=1
+|  memory_tables=1
+|  |  logging=1;                 ==&gt; win = -47
+|  |  logging=0;                 ==&gt; win = =54
+|  memory_tables=0
+|  |  txc_mvlocks=0;             ==&gt; win = -304</code></pre>
+<p>(Aside: of course if security is an important goal then (a) add a
+“security+” column to the training data shown above; (b) re-un ABC; (c)
+check what are the mpracts of that additional goal.)</p>
+<p>ABC shows that with the right strategy, a handful of examples can
+uncover nearly all the signal.<br />
+All of this took just a few dozen queries—and a few hundred lines of
 code. It’s a striking illustration of the Pareto principle: <strong>most
 of the value often comes from just a small fraction of the
-effort</strong>. ABC shows that with the right strategy, a handful of
-examples can uncover nearly all the signal.<br />
-ABC is like the Pareto-principle, on steroids. While Vifredo Pareto
-artued that 80% of the results often comes from 20% of the effort, ABC
-is more like 99% of the gain comes from 1% of the work.</p>
-<h2 id="discussion-why-this-works">Discussion: Why This Works</h2>
+effort</strong>.</p>
+<h2 id="discussion">Discussion</h2>
+<p>Before looking at the code, we address the questions often asked
+about the above exampel?</p>
 <h3 id="why-not-label-everything">Why not label everything?</h3>
-<p>Because labeling is costly:</p>
+<p>The above code assumed we can only label 24 our of 800 examples. Why
+do that?</p>
+<p>Well, labeling is costly:</p>
 <ul>
 <li>Benchmarks take time to run.</li>
 <li>Some configurations require complex rebuilds.</li>
 <li>Human evaluation is slow, expensive, and error-prone.</li>
 </ul>
 <p>Prior work has shown that even with big compute, building labeled
-datasets takes <strong>months or years</strong>. EZR sidesteps this by
+datasets takes <strong>months or years</strong>. ABC sidesteps this by
 labeling only what matters most.</p>
-<hr />
-<h3 id="so-how-does-ezr-help">So how does EZR help?</h3>
-<p>EZR operates under a <strong>tiny-AI assumption</strong>: most of the
-signal is buried under a layer of irrelevant or redundant data. It
-learns by contrast—focusing on what most separates good from bad using a
-simple <code>b/r</code> score.</p>
-<p>This means: - Fewer labeled examples<br />
-- Less noise<br />
-- Faster inference<br />
-- Smaller, more transparent models</p>
-<hr />
+<h3 id="so-how-does-abc-help">So how does ABC help?</h3>
+<p>ABC operates under a <strong>tiny-AI assumption</strong>: most of the
+signal is buried under a layer of irrelevant or redundant data. It was
+inspred byt George Kelly’s Personal Construct Theory (from the 1950s)
+that stressed the value of contrast set learning to recognize what is
+different between concepts.</p>
+<p>Modern versions of contrast set learning include various rule-based
+learners including our own previous work on TAR3 and WHICH. ABC’s
+variant on contrast set learning throws away most of that architecture
+and repalces it with a simple two-class classification approach. Tables
+of data describing the “best” and “rest” examples can compute the
+likilihoods <em>b,r</em> of of an as-yet-unclassified example belonging
+to “best” or “rest”. The next example to label is the one that maximizes
+some <em>acquisiton function</em> e.g. <em>b/r</em>.</p>
+<h3 id="what-is-new-about-abc">What is New About ABC?</h3>
+<p>This work builds upon the foundation laid by prior resarch, but it
+removes some key barriers that limits the practical use of thsose
+methods.</p>
+<p>Often we are asked “if ABC just’ simplifies existing methods, it is
+worthy of publciation?”. If so many past resarechers have explored
+simplifty (see Table 1), what is new and itneresting about ABC?</p>
+<p>In reply, we say offer the observation that propr simplicity results
+are alomst uneirsally ignored. Each year we interview dozens of
+propsectivegraduate students for our reserch labs. We also interact,
+extensively, with industrial pracitioners and many other researchers at
+conferences. Nearly unviersally, when faced with any new AI problem,
+thei default action is to reach for some alrge language model or deep
+learning solution.</p>
+<p>simplification research is valid resaerch. A persistant human
+congintive basi is to under-value subtractive impormvents. Klotz et
+al. report nmueris studies where</p>
+<p>case studies where hmans are given patterns on a chess baord, then
+asked to change the pattern in order to make it more symmetrical.
+OVerhwlemmning, humans prefer to add new squares to the pattern, rather
+than take squares away.</p>
+<p>As Klotz et al. warns:</p>
+<blockquote>
+<p>“Defaulting to searches for additive changes may be one reason that
+people struggle to mitigate overburdened schedules, institutional red
+tape and damaging effects on the planet.”</p>
+</blockquote>
 <h3 id="why-use-a-decision-tree">Why use a decision tree?</h3>
 <p>Decision trees are:</p>
 <ul>
@@ -595,6 +641,11 @@ good.”</p>
 improvement</strong>, grounded in real measurements.</p>
 <hr />
 <h3 id="how-is-win-defined">How is “win” defined?</h3>
+<p>Each row has <em>n</em> goals we are trying to minimize or maximize
+and each goal column has, in the labelled data, a min and max value seen
+so far. After normalizng each goal value 0..1 (for min..max), we can say
+that minimizing goals have a best value of “0” and maximizing goals have
+a best value of “1”/</p>
 <p>We normalize utility as:</p>
 <div class="sourceCode" id="cb5"><pre
 class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>win <span class="op">=</span> <span class="dv">100</span> × (<span class="dv">1</span> <span class="op">-</span> (x <span class="op">-</span> best) <span class="op">/</span> (median <span class="op">-</span> best))</span></code></pre></div>

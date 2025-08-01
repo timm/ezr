@@ -23,7 +23,7 @@ def Sym(at=0,txt=""):
 def Num(at=0,txt=" "): 
   return o(it="Num", at=at, txt=txt, 
            lo=1e32, mu=0, m2=0, sd=0, n=0, hi=-1e32, 
-           more = str(txt)[-1] !="-")
+           most = str(txt)[-1] !="-")
 
 def Cols(names):
   all,x,y,klass = [],[],[],None
@@ -76,7 +76,7 @@ def dist(src):
   return (d/n) ** (1/the.p)
 
 def disty(data, row):
-  return dist(abs(norm(c, row[c.at]) - c.more) for c in data.cols.y)
+  return dist(abs(norm(c, row[c.at]) - c.most) for c in data.cols.y)
 
 def distysort(data, rows=None):
   return sorted(rows or data.rows, key=lambda r: disty(data,r))

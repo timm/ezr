@@ -16,82 +16,68 @@ _"Subtract."_ --Leidy Klotz
 
 ## Introduction
 
-Engineers pride themselves on doing things better and cheaper. When
-any fool can do it for a dollar, engineers find a way to do it for
-a penny.
+Engineers do it faster, better, and cheaper. If anyone else needs
+a dollar, engineers do it for a penny.
 
-So, can  we make AI orders of magnitude easier? Maybe it is time
-to question the current obsession with complexity. Do all tasks
-need 
-millions (or even trillions) of
-variables?
+So why not expect the same from AI? Maybe it’s time to question the
+complexity arms race. Must every task require models with millions, or
+trillions, of variables?
 
 This question came up in a graduate AI class, when a student asked:
 
 > Why do our models need so much data?
 
-“Maybe they don’t,” I replied. “Maybe we just have notlearned how
+“Maybe they don’t,” I replied. “Maybe we just have not learned how
 to ask the right questions yet.”
 
-My claim led to a dare, which led to a simple prototype.  ABC
-labels a few examples (selected at random), then sorted them into
-“best” and “rest”. It then uses a simple Bayes classifier to decide
-what to label next (ABC always grabs the next example that is  most
-likely to be “best” and least likely to be “rest”). After each labeling, ABC rebuilds
-its “best” and “rest” models, and the cycle repeated.
-Afterwards, ABC  builds a  regressions tree from the labeled
-examples. This
-summarizes the reasoning into a clear and
+My claim led to a dare, which led to a simple prototype.  ABC labels
+a few examples (selected at random), then sorted them into “best”
+and “rest”. It then uses a simple Bayes classifier to decide what
+to label next (ABC always grabs the next example that is  most
+likely to be “best” and least likely to be “rest”). After each
+labeling, ABC rebuilds its “best” and “rest” models, and the cycle
+repeated.  Afterwards, ABC  builds a  regressions tree from the
+labeled examples. This summarizes the reasoning into a clear and
 compact explanation.
 
-To say the least, ABC is far simpler (and orders of magnitude
-faster) than alternatives like large language models, Gaussian
-Processes, or evolutionary reinforcement learning. 
-ABC is just 300 lines of Python and does not need
-heavy
-libraries like pandas or scikit-learn. 
-In a result supporting “less is more”, the first time we tried it, ABC found near-optimal car
-designs after labeling just 20–30 examples. Its decision tree could
-explain what was happening, enabling human understanding and critique.
-Because it's so small, ABC is well-suited for teaching AI and SE
-scripting principles. And because it's so fast to run and easy to
-modify, ABC is a productive tool for state-of-the-art research 
-in search-based optimization.
+To say the least, ABC is far simpler (and orders of magnitude faster)
+than alternatives like large language models, Gaussian Processes,
+or evolutionary reinforcement learning.  ABC is just 300 lines of
+Python and does not need heavy libraries like pandas or scikit-learn.
+In a result supporting “less is more”, the first time we tried it,
+ABC found near-optimal car designs after labeling just 20–30 examples.
+Its decision tree could explain what was happening, enabling human
+understanding and critique.  Because it's so small, ABC is well-suited
+for teaching AI and SE scripting principles. And because it's so
+fast to run and easy to modify, ABC is a productive tool for
+state-of-the-art research in search-based optimization.
 
 This suprising success of ABC lead to another question:
 
 > “Was this just a fluke?  Was ABC just being tested one an  unusually
 easy problem?”
 
-To test that, we went looking
-for harder problems. We gathered over 110 real-world case studies
-from recent, peer-reviewed software engineering research—covering
-configuration optimization, architecture tuning, effort estimation,
-and more. Then we reran the experiment at scale.
-The results, shown below, demonstrated that ABC
-works remarkably well (quickly and effectively) for a broad range of
-problems taken from the SE literatures. 
+To test that, we went looking for harder problems. We gathered over
+110 real-world case studies from recent, peer-reviewed software
+engineering research—covering configuration optimization, architecture
+tuning, effort estimation, and more. Then we reran the experiment
+at scale.  The results, shown below, demonstrated that ABC works
+remarkably well (quickly and effectively) for a broad range of
+problems taken from the SE literatures.
 
-This experience wuth ABC has  shifted our thinking. The  sucess of ABC  was not luck-
-it points to
-something deeper: an approach to software engineering and AI where,
-often,
-a few well-chosen examples outperform brute-force data collection.
-For centuries, researchers have told us that 
-that
-key variable selection, and strategic sampling can solve complex
-problems efficiently (see Table 1).
+This experience wuth ABC has  shifted our thinking. The  sucess of
+ABC  was not luck- it points to something deeper: an approach to
+software engineering and AI where, often, a few well-chosen examples
+outperform brute-force data collection.  For centuries, researchers
+have told us that that key variable selection, and strategic sampling
+can solve complex problems efficiently (see Table 1).
 
 Yet despite this legacy of elegant minimalism, today’s trends often
 favor the opposite: ever-larger models, more data, and growing
 complexity. There are many reasons for this[^subtract], but a major
 one is inertia—we tend to add rather than subtract, mistaking bloat
-for progress. Complex products impress the marketplace and so can drive
-sales (even if, later,   that drives up maintainance costs).
-
-
-
-
+for progress. Complex products impress the marketplace and so can
+drive sales (even if, later,   that drives up maintainance costs).
 
 | Year     | What                     | Who / System         | Notes                                                                                   |
 |----------|--------------------------|-----------------------|-----------------------------------------------------------------------------------------|
@@ -138,15 +124,13 @@ Using this code and data, we ask five questions:
 - **RQ5: Is ABC general?**  
   Does our code apply across various tasks?
 
-This last questions is very improtant.
-ABC is not a solution to everythng.
-Some tasks are inherently complex and need inherently compex solutions.
-or example, this document was written with
-For
-extensive editorial support by a large language model (big AI was used to sumamrize
-verbose sections into shorter and simpler segments).
-In RQ5, we descibe the "BINGO" test which is a way to peek at data in order
-to decide they you need something more than just ABC.
+This last question deserves extra attention.  ABC is not a solution
+to everythng.  Some tasks are inherently complex and need inherently
+compex solutions.  or example, this document was written with 
+extensive editorial support by a large language model (big AI was
+used to sumamrize verbose sections into shorter and simpler segments).
+In RQ5, we describe the "BINGO" test which is a way to peek at data
+in order to decide they you need something more than just ABC.
 
 All the code and data used here can be accessed as fllows
 
@@ -188,19 +172,25 @@ minimal effort?
 
 That’s where ABC comes in. We call it that since it uses a minimalist A–B–C strategy:
 
-- **A: Ask anything**  
+- **A: Ask anything**
   Randomly label a few examples (say, _A = 4_) to seed the process.
 
-- **B: Build a model**  
-  Build contrastive models for “best” and “rest,” then label up to, say _B = 24_ more rows by picking the unlabelled row
-  that maximizes the score _b/r_ (where `b` and `r` are likelihoods that a row belongs to the "best" and "rest" models).
+- **B: Build a model**
+  Build contrastive models for “best” and “rest,” then label up to,
+  say _B = 24_ more rows by picking the unlabelled row that maximizes
+  the score _b/r_ (where `b` and `r` are likelihoods that a row
+  belongs to the "best" and "rest" models).
 
-- **C: Check the model**  
-  Apply the learned model to unlabeled data and to select a small set (e.g., _C=5_) of the most promising rows. After labelling those rows, return the best one.
+- **C: Check the model**
+  Apply the learned model to unlabeled data and to select a small
+  set (e.g., _C=5_) of the most promising rows. After labelling
+  those rows, return the best one.
 
-In this task, after labeling just 24 out of 800 rows (∼3%), ABC constructs a bibary regression tree from those 24 examples. In that tree,
-left and right branches go best and worse examples. The left-most branch of that tree is shwin here (and to get to any line in this
-tree, all the things abve it have to be true.
+In this task, after labeling just 24 out of 800 rows (∼3%), ABC
+constructs a bibary regression tree from those 24 examples. In that
+tree, left and right branches go best and worse examples. The
+left-most branch of that tree is shwin here (and to get to any line
+in this tree, all the things abve it have to be true.
 
 ```
 crypt_blowfish=0
@@ -210,20 +200,27 @@ crypt_blowfish=0
 |  |  |  |  compressed_script=0 ==> win = 99
 ```
 
-As shown below, we score this reasoning up to a max value of 100.
-The “win=99” score (seen on the last line) means we have very nearly matching the globally best result, after looking at a tiny fraction of the available data. Note
-that this branch only mentions five options, and three of those are all about what to turn off. That is to say,
-even though this databased has dozens of configuration options,
-there are three bad things to avoid and only two most important thing to enable  (_memory\_tables_ and _detailed\_logging_).
-to a method for creating a hashed representation of a password using an algorithm based on the Blowfish cipher.
+As shown below, we score this reasoning with a number that goes
+up to 100.
+The “win=99” score (seen on the last line) means we have very nearly
+matching the globally best result, after looking at a tiny fraction
+of the available data. Note that this branch only mentions five
+options, and three of those are all about what to turn off. That
+is to say, even though this databased has dozens of configuration
+options, there are three bad things to avoid and only two most
+important thing to enable  (_memory\_tables_ and _detailed\_logging_).
+to a method for creating a hashed representation of a password using
+an algorithm based on the Blowfish cipher.
 
-In our experience, if you ever show a result like this to a subject matter expert, they will  push back. For example,
-they might demand to know what happems
-when 
-`crypt_blowfish` is enabled. Blowfish in password hashing scheme.
-It makes password protection slower but it also  increases the computational effort required for attackers to  brute-force attack the database's security.
-The full tree generted by ABC shows what happens this feature is enabled. Note all the negative "wins" which is to say, if your goals are fast runtimes,
-do not `crypt_blowfish`.
+In our experience, if you ever show a result like this to a subject
+matter expert, they will  push back. For example, they might demand
+to know what happems when `crypt_blowfish` is enabled. Blowfish in
+password hashing scheme.  It makes password protection slower but
+it also  increases the computational effort required for attackers
+to  brute-force attack the database's security.  The full tree
+generted by ABC shows what happens this feature is enabled. Note
+all the negative "wins" which is to say, if your goals are fast
+runtimes, do not `crypt_blowfish`.
 
 
 ```
@@ -250,11 +247,15 @@ crypt_blowfish=1
 |  |  txc_mvlocks=0;             ==> win = -304
 ```
 
-(Aside: of course if security is an important goal then (a) add a "security+" column to the training data shown above; (b)  re-un ABC; (c) check what are the mpracts
-of that additional goal.)
+(Aside: of course if security is an important goal then (a) add a
+"security+" column to the training data shown above; (b)  re-un
+ABC; (c) check what are the mpracts of that additional goal.)
 
-ABC shows that with the right strategy, a handful of examples can uncover nearly all the signal.  
-All of this took just a few dozen queries—and a few hundred lines of code. It’s a striking illustration of the Pareto principle:  **most of the value often comes from just a small fraction of the effort**. 
+ABC shows that with the right strategy, a handful of examples can
+uncover nearly all the signal.  All of this took just a few dozen
+queries—and a few hundred lines of code. It’s a striking illustration
+of the Pareto principle:  **most of the value often comes from just
+a small fraction of the effort**.
 
 
 ## Discussion
@@ -271,39 +272,45 @@ Well, labeling is costly:
 - Some configurations require complex rebuilds.
 - Human evaluation is slow, expensive, and error-prone.
 
-Prior work has shown that even with big compute, building labeled datasets takes **months or years**. ABC sidesteps this by labeling only what matters most.
+Prior work has shown that even with big compute, building labeled
+datasets takes **months or years**. ABC sidesteps this by labeling
+only what matters most.
 
 
 ### So how does ABC help?
 
-ABC operates under a **tiny-AI assumption**: most of the signal is buried under a layer of irrelevant or redundant data. It
-was inspred byt 
-George Kelly's Personal Construct Theory (from the 1950s)
-that stressed the value of contrast set learning to  recognize what is different between concepts.  
+ABC operates under a **tiny-AI assumption**: most of the signal is
+buried under a layer of irrelevant or redundant data. It was inspred
+byt George Kelly's Personal Construct Theory (from the 1950s) that
+stressed the value of contrast set learning to  recognize what is
+different between concepts.
 
-Modern versions of contrast set learning include various rule-based learners including our own
-previous work on TAR3 and WHICH. ABC's variant on contrast set learning throws away most of that architecture and repalces it with a simple
-two-class classification approach. Tables of data describing the "best" and "rest" examples can compute the likilihoods _b,r_ of
-of an as-yet-unclassified example belonging to "best" or "rest". The next example to label is the one that maximizes some 
-_acquisiton function_
-e.g. _b/r_. 
+Modern versions of contrast set learning include various rule-based
+learners including our own previous work on TAR3 and WHICH. ABC's
+variant on contrast set learning throws away most of that architecture
+and repalces it with a simple two-class classification approach.
+Tables of data describing the "best" and "rest" examples can compute
+the likilihoods _b,r_ of of an as-yet-unclassified example belonging
+to "best" or "rest". The next example to label is the one that
+maximizes some _acquisiton function_ e.g. _b/r_.
 
 ### What is New About ABC?
 
-This work builds upon the foundation laid by prior resarch, but it removes some key barriers  that limits the practical use of thsose methods.
+This work builds upon the foundation laid by prior resarch, but it
+removes some key barriers  that limits the practical use of thsose
+methods.
 
+Often we are asked "if ABC just' simplifies existing methods, it
+is worthy of publciation?". If so many past resarechers have explored
+simplifty (see Table 1), what is new and itneresting about ABC?
 
-Often we are asked "if ABC 
-just' simplifies existing methods, it is worthy of publciation?". If so many past resarechers have explored simplifty (see Table 1),
-what is new and itneresting about ABC?
-
-In reply, we say offer the observation that propr simplicity results are alomst uneirsally ignored.
-Each year we interview dozens of propsectivegraduate students for our reserch labs. We also interact, extensively,
-with industrial pracitioners and 
-many other researchers at conferences.
-Nearly unviersally, when faced with any new AI problem, thei default action is to reach for some alrge language model or deep learning solution.
-
-
+In reply, we say offer the observation that propr simplicity results
+are alomst uneirsally ignored.  Each year we interview dozens of
+propsectivegraduate students for our reserch labs. We also interact,
+extensively, with industrial pracitioners and many other researchers
+at conferences.  Nearly unviersally, when faced with any new AI
+problem, thei default action is to reach for some alrge language
+model or deep learning solution.
 
 simplification research is valid resaerch.
 A persistant human congintive basi is to under-value subtractive impormvents.
@@ -331,17 +338,24 @@ As physicist Ernest Rutherford famously quipped:
 
 Each path in the tree offers a **human-readable recipe for improvement**, grounded in real measurements.
 
----
 
 ### How is “win” defined?
 
-Each row has _n_ goals we are trying to minimize or maximize and each goal column has, in the labelled data, a min and max value seen so far.
-After normalizng each goal value 0..1 (for min..max), we can say that minimizing goals have a best value of "0" and maximizing goals have a best value of "1"/
+Each row has _n_ goals that  we are trying to minimize or maximize. In
+the labelled data, each
+goal column has a min and max value
+seen so far.  After normalizng each goal has the value 0..1 (for min..max),
+we can say that minimizing goals have a best value of "0" and
+maximizing goals have a best value of "1".
+
+```
+y(row) = sqrt(sum(abs(norm(goal) - goal.most)^2 for goal in cols.y))
+```
 
 We normalize utility as:
 
 ```python
-win = 100 × (1 - (x - best) / (median - best))
+win = 100 × (1 - (mean(y) - best) / (median - best))
 ```
 
 - A win of **100** means we match the best.  
