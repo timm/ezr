@@ -2,14 +2,15 @@ File imports and code size (Aug1, 2025).
 
 ```mermaid
 graph LR;
-lib(lib.py<br>misc code, loc=85);
-about(config control, loc=23);
-dist(distance code, loc=147);
-like(likelihood code, loc=83);
-likely(explore code, loc=93);
-rq(experimentss, loc=13);
-stats(stats cide, loc=154);
-tree(tree generation, loc=95);
+lib(lib.py<br>misc code<br>loc=85);
+about(about.py<br>config control<br>loc=23);
+data(data.py<br>structs definition<br>loc=110)
+dist(dist.py<br>distance code<br>loc=147);
+like(like.py<br>likelihood code<br>loc=83);
+likely(likely.py<br>explore code<br>loc=93);
+rq(rq.py<br>experiments<br>loc=13);
+stats(stats.py<br>stats cide<br>loc=154);
+tree(tree.py(br>tree generatin<br>loc=95);
 lib --> data;
 data --> dist;
 about --> lib;
