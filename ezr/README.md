@@ -12,6 +12,8 @@ rq(rq.py<hr>experiments<br>loc=13);
 stats(stats.py<hr>stats cide<br>loc=154);
 tree(tree.py<hr>tree generatin<br>loc=95);
 lib --> data;
+stats --> like;
+stats --> rq;
 data --> dist;
 about --> lib;
 data --> like;
