@@ -2,7 +2,7 @@ File imports and code size (Aug1, 2025).
 
 ```mermaid
 graph LR;
-lib(lib.py\nmisc code, loc=85);
+lib(lib.py<br>misc code, loc=85);
 about(config control, loc=23);
 dist(distance code, loc=147);
 like(likelihood code, loc=83);
