@@ -489,20 +489,20 @@ def y(row):
   return d2h(row)
 
 def likely(data,  any=4, build=24):
-  rows  = shuffle(data.rows)
   start = rows[:any].sort(y)                # initial seed, sorted by y values
   rows  = rows[any:]
   best, rest = start[:sqrt(any)], start[sqrt(any):]
   while rows:
-    good, *rows = rows.sort(guess)
-    best += [good]
+    maybe, *rows = rows.sort(guess)
+    best += [maybe]
     if |best| > sqrt(|best| + |rest|):
       best.sort(y)
       rest += [ best.pop(-1) ]
-    if len(best) + len(rest) >= build: break
+    if |best| + |rest| >= build: break
   return best.sort(y)
 ```
 
+- gotta shffle
 Sequential Model-Based Optimization (SMBO) / Bayesian Optimization (simplified form)
 
 
