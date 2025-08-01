@@ -404,7 +404,7 @@ IEEE Transactions on software engineering, 39(9), 1208-1215.
 | 2009     | Active Learning          | Settles [^settles09]  | Best results come from learners reflecting on their own models to select their own training examples. |
 | 2005–20  | Key Vars in SE           | Menzies et al. [^me03a] [^me07a]  [^me21a]     | Dozens of SE models are controlled by just a few parameters.                                |
 | 2010+    | Surrogate Models         | Various [^zul13] [^guo13]              | Optimizers can be approximated from small training sets.                                |
-| 2020s    | Model Distillation       | Various    [^shi21] [^yang24]          | Large AI models can be reduced in size by orders of magnitude, with little performance loss.    |
+| 2020s    | Model Distillation       | Various    [^shi22] [^yang24]          | Large AI models can be reduced in size by orders of magnitude, with little performance loss.    |
 
 [^settles09]: Settles, Burr. "Active learning literature survey." (2009).
 
