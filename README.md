@@ -35,7 +35,7 @@ faster (See Table 1)
 
 Perhaps the reason Tiny AI is ignored is that there is no simple
 reference package, nor documentation of its effectiveness.  To
-remedy that, we offer a free open source Tiny AI  python package, accessible via
+remedy that, we offer a free open source Tiny AI  Python package, accessible via
 
      pip install ezr
 
@@ -48,9 +48,10 @@ cycle repeats.  At runtime, EZR avoids data that is noisy (i.e.
 is clearly not "best" or "rest") and  superfluous  (i.e. that is not
 relevant for "better" behavior). In this way EZR ignores most of the
 data and builds its models using just a few dozens samples. Hence,
-a regression tree learned from these examples offers a tiny and simple explanation
+a decision tree learned from these examples offers a tiny and simple explanation
 of how to achieve good results (and  also what to do to improve
 those results).
+
 
 EZR is very short (a few hundred lines of Python; no use of complex
 packages like pandas or scikit-learn). 
@@ -170,7 +171,7 @@ To handle that challenge,  EZR uses a minimalist A–B–C strategy:
   those rows, return the best one.
 
 In this task, after labeling just 24 out of 800 rows (∼3%), EZR
-constructs a binary regression tree from those 24 examples. In that
+constructs a binary decision tree from those 24 examples. In that
 tree, left and right branches go best and worse examples. The
 left-most branch of that tree is shown here (and to get to any line
 in this tree, all the things above it have to be true).
@@ -185,7 +186,7 @@ These four conditions select rows that are very close
 
 Note that this branch only mentions four
 options, and two of those are all about what to turn off. That
-is to say, even though this databased has dozens of configuration
+is to say, even though this databased has dozens of configuration:q
 options, there are two bad things to avoid and only two most
 important thing to enable  (_memory\_tables_ and _detailed\_logging_).
 
@@ -196,11 +197,25 @@ queries—and a few hundred lines of code. It’s a striking illustration
 of the Pareto principle:  **most of the value often comes from just
 a small fraction of the effort**.
 
-Another thing to note here is the runtime speed. This data set 
-(SS-M from moot/optimize/config) has 862 rows,  3 goals and 17 control settings.
-The tree containing the branch shown above took .02 seconds to generate. By way of
-reference, just loading the python code and the data (with no subsequent inference)
-takes 0.01 seconds. XXXX
+Another thing to note here is how fast EZR operates.
+The table below shows how long it takes to find a few dozen sueful examples,
+then convert theem into a tree.
+The above tree came for
+SS-M  (see http://github/timm/moot/optimize/config) and
+has 862 rows,  3 goals and 17 control settings.
+For reference, that table includes results from another problem
+with many more colums and rows (in this example, called Scrum,
+a  model had generated 10^3, 10^4, and 10^5 samples). In this sample,
+ EZR's
+runtimes scales linearly when columns are increased (see SS-M vs Scrum1K)
+or rows are increased (see Scrum1K to Scrum10K to Scrum100K).
+
+|file         |x  |y  |rows    | time (secs)|
+|-------------|---|---|--------|------|
+|SS-M         | 17| 3 |    862 | 0.15 |
+|Scrum1K      |124| 3 |  1,000 | 0.72 |
+|Scrum10K|124 |124| 3 | 10,000 | 1.29 |
+|Scrum100K124 |124| 3 |100,000 | 8.54 |
 
 ### Threats to Validity
 
@@ -275,17 +290,33 @@ This paper is mostly about the EZR code base.
 But before looking at the code, it is be insightful to understand its
 theoretical background.
 
+EZR was born from a concern about the quality of labels seen in software
+engineering data. SE researchers routinely share their
+data and many papers are based on the same data sets.
+ As data generation gets faster, data curation gets
+harder and data quality decreases.  Over the last decade,
+when we reandomly relabelled
+100 examples (selected randomly), we kept finding incorrect labels.
+
+degrades.
+Every time we manually reviewed a ra of our graduate students 
+EZR is an experiment in optimzation via contrast set learning.
+Instead of exploring all the data, EZR seeks examples that are most different in "best" and "rest".
+Once found, by giving those few examples to a  tree learner, EZR can quickly find the attribute ranges'
+that most divide "best" from "rest". 
+For literally millimnia, various writers have commented 
+
+> Table 2: :w
 
 | Year     | What                     | Who / System         | Notes                                                                                   |
 |----------|--------------------------|-----------------------|-----------------------------------------------------------------------------------------|
-
 | 130  |                         | Ptolemy (100-170)  | "We consider it a good principle to explain the phenomena by the simplest hypothesis possible."|
 | 1300 | Occam's Razor            | William of Occam (1287-1347) | "Entities must not be multiplied beyond necessity." |
 | 1902     | PCA                      | Pearson  [^pca]             | Larger matrices can be projected down to a few components.                                           |
 | 1960s    | Narrows         | Amarel [^amarel]      | Search can be guided by tiny sets of key variable settings.                              |
 | 1974     | Prototypes| Chang [^chang74] | Nearest neighbor reasoning is quicker after discarding 90% of the data and keeping  only the best exemplars.  |
 | 1980s    | ATMS       | de Kleer              | Diagnoses is quicker when it focus only on the core assumptions that do not depend on other assumptions. |
-| 1984     | Distance-Preseration | Johnson and Lindenstrauss [^john84] | High-dimensional data can be embedded in low dimensions while preserving pairwise distances. |
+| 1984     | Distance-Preservation | Johnson and Lindenstrauss [^john84] | High-dimensional data can be embedded in low dimensions while preserving pairwise distances. |
 | 1996     | ISAMP                    | Crawford & Baker [^crawford] | Best solutions lie is small parts of search space. Fast random tries and frequent retries is fast way to explore that space. |
 | 1997     | Feature Subset Selection | John & Kohavi [^kohavi97] | Up to 80% of features can be ignored without hurting accuracy.                          |
 | 2002     | Backdoors                | Williams et al. [^backdoor] | Setting a few variables beforehand reduces exponential runtimes to polynomial.                     |

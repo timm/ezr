@@ -57,12 +57,14 @@ alias gl='git log --oneline --graph --all --decorate'
 
 # Aliases: misc
 alias h='history'
-alias vi="nvim -u '$Here/init.lua'"  # Load custom Neovim config
+alias vi="nvim -u '$Here/etc/init.lua'"  # Load custom Neovim config
 
 # ⌨️ QoL: quick edit and reload
 alias reload="source '$Here/ell' && echo ✅ ell reloaded"
 
 # Only show banner in interactive shells
+# For other ascii graphcs, see https://www.asciiart.eu/
+# or search at https://emojicombos.com/panda
 if [[ $- == *i* ]]; then
   clear
   bold=$(tput bold)
