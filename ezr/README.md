@@ -7,10 +7,10 @@ about(about.py<hr>config control<br>loc=23);
 data(data.py<hr>structs definition<br>loc=110)
 dist(dist.py<hr>distance code<br>loc=147);
 like(like.py<hr>likelihood code<br>loc=83);
-likely(likely.py<hr>explore code<br>loc=93);
+likely(likely.py<hr>incremental learning<br>loc=93);
 rq(rq.py<hr>experiments<br>loc=13);
 stats(stats.py<hr>stats code<br>loc=154);
-tree(tree.py<hr>tree generatin<br>loc=95);
+tree(tree.py<hr>tree generation<br>loc=95);
 lib --> data;
 stats --> like;
 stats --> rq;
