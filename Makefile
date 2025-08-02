@@ -50,20 +50,16 @@ docs/%.html : %.py
 
 #------------------------------
 
-lite20:
-	mkdir -p ~/tmp
-	time ls -r $(Top)/../moot/optimize/*/*.csv \
-	  | xargs -P 32 -n 1 -I{} sh -c 'python3 -B ezr.py -f "{}" --likely' \
-	  | tee ~/tmp/$@.log
-	@echo "now call make lite20report"
+~/tmp/likelyAll.log: 
+	$(MAKE) files="$(Top)/../moot/optimize/*/*.csv" likely | tee $@; \
+	gawk -f $(Top)/etc/likely.awk $@ 
 
-lite20z:
-	cat ~/tmp/lite20.log  \
-		| awk '{print $$1, $$1-$$2, $$1-$$3, $$1-$$4}' \
-		| sort -n \
-		| awk 'BEGIN {print "klass diff_xplore diff_xploit diff_adapt"} \
-		             {print} \
-		             {x+=$$2; X+=$$3; a+=$$4} \
-					 END   {print x/NR,X/NR,a/NR> "/dev/stderr"}' \
-		| python3 $(Top)/etc/lite20z.py
+~/tmp/likelySome.log: 
+	$(MAKE) files="$(Top)/../moot/optimize/config/SS-[A-J]*.csv" likely | tee $@ ; \
+	gawk -f $(Top)/etc/likely.awk $@ 
+
+likely:
+	@mkdir -p ~/tmp
+	time ls -r $(files) \
+	  | xargs -P 32 -n 1 -I{} sh -c 'python3 -B -m ezr -f "{}" --likely'
 

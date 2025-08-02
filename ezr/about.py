@@ -4,7 +4,7 @@ ezr.py: lightweight xai for incremental multi-objective optimization
    
     -a  acq=klass       acquisition function   
     -A  Any=4           on init, how many initial guesses?   
-    -B  Build=24        when growing theory, how many labels?   
+    -B  Build=30        when growing theory, how many labels?   
     -C  Check=5         when testing, how many checks?   
     -D  Delta=smed      required effect size test for cliff's delta
     -F  Few=128         sample size of data random sampling  

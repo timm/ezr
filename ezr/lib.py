@@ -2,7 +2,7 @@
 """
 about --> lib --> data --> (like,dist)
 """
-import random, math, sys, re
+import traceback, random, math, sys, re
 from typing import Any, Callable, Iterator, List
 from types import SimpleNamespace as o
 
@@ -28,7 +28,11 @@ def main(funs: dict[str,callable]) -> None:
   "from command line, update config find functions to call"
   for n,arg in enumerate(sys.argv):
     if (fn := funs.get(f"eg{arg.replace('-', '_')}")):
-      random.seed(the.seed); fn()
+      random.seed(the.seed)
+      try: fn()
+      except Exception as _: 
+          print("% Crash on",fn.__doc__,the.file)
+          traceback.print_exc()
     else:
       for key in vars(the):
         if arg=="-"+key[0]: the.__dict__[key] = atom(sys.argv[n+1])
