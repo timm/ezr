@@ -9,8 +9,6 @@ the=o(acq="klass",
       Check=5,  
       Few=128,
       bins=7,  
-      k=1,
-      m=2,
       p=2,
       seed=1234567891,
       file="../../moot/optimize/misc/auto93.csv")
@@ -18,12 +16,16 @@ the=o(acq="klass",
 #--------------------------------------------------------------------
 big = 1e32
 
-def Sym(at=0, txt="") -> o: 
-  return o(it=Sym, at=at,txt=txt,has={})
+def Num(i) return o(it=Num, i=i, n=0, hi=-big, lo=big)
+def Sym(i) return o(it=Sym, i=i, n=0, has={})
 
-def Num(at=0, txt=" ") -> o: 
-  return o(it=Num, at=at, txt=txt, lo=1e32, mu=0, m2=0, sd=0, n=0,
-           hi=-1e32, more = 0 if txt[-1] == "-" else 1)
+def Cols(names) -> o:
+  all, x, y, klass = [],[],[],None
+  for c,s in enumerate(names):
+    all += [(Num if s[0].isupper() else Sym)(c)]
+    if s[-1] == "X": continue
+    (y if s[-1] in "!-+" else x).append(all[-1])
+  return o(it=Cols, names=names, all=all, x=x, y=y)
 
 def Data(src) -> o:
   src = iter(src)
@@ -59,12 +61,10 @@ def add(x: o, v:Any, inc=1, zap=False) -> Any:
     x.n += inc
     x.lo, x.hi = min(v, x.lo), max(v, x.hi)
     if inc < 0 and x.n < 2:
-      x.sd = x.m2 = x.mu = x.n = 0
+      x.mu = x.n = 0
     else:
       d     = v - x.mu
       x.mu += inc * (d / x.n)
-      x.m2 += inc * (d * (v - x.mu))
-      x.sd  = 0 if x.n < 2 else (max(0,x.m2)/(x.n-1))**.5
   elif x.it is Data:
     x.n += inc
     if inc > 0: x.rows += [v]
@@ -81,6 +81,21 @@ def mids(data):
 
 def mid(col):
   return max(col.has, key=col.has.get) if col.it is Sym else col.mu
+
+#--------------------------------------------------------------------
+def atom(s):
+  for fn in [int,float]:
+    try: return fn(s)
+    except Exception as _: pass
+  s = s.strip()
+  return {'True':True,'False':False}.get(s,s)
+
+def csv(file):
+  with open(file,encoding="utf-8") as f:
+    for line in f:
+      if (line := line.split("%")[0]):
+        yield [atom(s.strip()) for s in line.split(",")]
+
 
 #--------------------------------------------------------------------
 def dist(src) -> float:
@@ -108,20 +123,6 @@ def distx(data, row1, row2):
     return abs(a - b)
   return dist(_aha(col, row1[col.at], row2[col.at])  
               for col in data.cols.x)
-
-#--------------------------------------------------------------------
-def atom(s):
-  for fn in [int,float]:
-    try: return fn(s)
-    except Exception as _: pass
-  s = s.strip()
-  return {'True':True,'False':False}.get(s,s)
-
-def csv(file):
-  with open(file,encoding="utf-8") as f:
-    for line in f:
-      if (line := line.split("%")[0]):
-        yield [atom(s.strip()) for s in line.split(",")]
 
 #--------------------------------------------------------------------
 print(Data(csv(the.file)))
