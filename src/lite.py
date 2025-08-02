@@ -1,8 +1,7 @@
 #!/usr/bin/env python3 -B 
 from types import SimpleNamespace as o
-import random, bisect, math, sys, re
-
-pos = bisect.bisect_left
+from typing import Any,List
+import random,  math, sys, re
 
 the=o(acq="klass", 
       Any=4,      
@@ -14,42 +13,101 @@ the=o(acq="klass",
       m=2,
       p=2,
       seed=1234567891,
-      file="../moot/optimize/misc/auto93.csv")
+      file="../../moot/optimize/misc/auto93.csv")
 
 #--------------------------------------------------------------------
-def adds(it,src): [add(it,x) for x in src]; return it
-big=1e31
+big = 1e32
 
-def Data(src):
-  src  = iter(src)
-  return adds(o(cols=Cols(next(src),rows=[]), src))
+def Sym(at=0, txt="") -> o: 
+  return o(it=Sym, at=at,txt=txt,has={})
 
-def Cols(names)
-  y,all = {},{} 
+def Num(at=0, txt=" ") -> o: 
+  return o(it=Num, at=at, txt=txt, lo=1e32, mu=0, m2=0, sd=0, n=0,
+           hi=-1e32, more = 0 if txt[-1] == "-" else 1)
+
+def Data(src) -> o:
+  src = iter(src)
+  return adds(src, o(it=Data, n=0, mid=None, 
+             rows=[], cols= Cols(next(src))))
+
+def Cols(names: List[str]) -> o:
+  all, x, y, klass = [],[],[],None
   for c,s in enumerate(names):
-    all[c] = []
-    if s[0].isupper(): nums[c] = (big,-big)
-    if   s[-1]=="X": continue
-    if   s[-1] in "-" y[c] = 0
-    elif s[-1] in "+" y[c] = 1
-  data = o(y=y, names=names,  nums=nuns, rows=rows)
+    all += [(Num if s[0].isupper() else Sym)(c,s)]
+    if s[-1] == "X": continue
+    if s[-1] == "!": klass = all[-1]
+    (y if s[-1] in "!-+" else x).append(all[-1])
+  return o(it=Cols, names=names, all=all, x=x, y=y, klass=klass)
 
-def clone(data, rows=None):
-  return adds(Data([data.cols.names]), rows or [])
+def clone(data:Data, rows=None) -> o:
+  return adds(rows or [], Data([data.cols.names]))
 
-def add(data, row):
-  data.rows += [row]
-  for c,v in enumerate(row):
-    if v != "?" and c in data.cols.nums:
-      lo,hi = data.cols.nums[v] 
-      data.cols.nums[v] = (min(v,lo), max(v,hi))
-  return row
+#--------------------------------------------------------------------
+def adds(src, it=None) -> o:
+  for x in src:
+     it = it or (Num if isinstance(x,(int,float)) else Sym)()
+     add(it, x)
+  return it
 
-def norm(x,lo,hi): return (x - lo) / (hi - lo + 1e-32)
+def sub(x:o, v:Any, zap=False) -> Any: 
+  return add(x,v,-1,zap)
 
-def disty(data,row):
-  fn=lambda c: abs(norm(row[c],**data.cols.nums[c])-data.cols.y[c])**2
-  return (sum(fn(c) for c in data.cols.y) / len(data.cols.y))**.5
+def add(x: o, v:Any, inc=1, zap=False) -> Any:
+  if v == "?": return v
+  if x.it is Sym: x.has[v] = inc + x.has.get(v,0)
+  elif x.it is Num:
+    x.n += inc
+    x.lo, x.hi = min(v, x.lo), max(v, x.hi)
+    if inc < 0 and x.n < 2:
+      x.sd = x.m2 = x.mu = x.n = 0
+    else:
+      d     = v - x.mu
+      x.mu += inc * (d / x.n)
+      x.m2 += inc * (d * (v - x.mu))
+      x.sd  = 0 if x.n < 2 else (max(0,x.m2)/(x.n-1))**.5
+  elif x.it is Data:
+    x.n += inc
+    if inc > 0: x.rows += [v]
+    elif zap: x.rows.remove(v) # slow for long rows
+    [add(col, v[col.at],inc) for col in x.cols.all]
+  return v
+
+#--------------------------------------------------------------------
+def norm(num:Num, v:float) -> float:  # 0..1
+  return  (v - num.lo) / (num.hi - num.lo + 1E-32)
+
+def mids(data):
+  return [mid(col) for col in data.cols.all]
+
+def mid(col):
+  return max(col.has, key=col.has.get) if col.it is Sym else col.mu
+
+#--------------------------------------------------------------------
+def dist(src) -> float:
+  "general distance function"
+  d,n = 0,0
+  for v in src: n,d = n+1, d + v**the.p;
+  return (d/n) ** (1/the.p)
+
+def disty(data:Data, row:Row) -> float:
+  "distance of row to best goal values"
+  return dist(abs(norm(c, row[c.at]) - c.more) for c in data.cols.y)
+
+def distysort(data:Data,rows=None) -> List[Row]:
+  "sort rows by distance to best goal values"
+  return sorted(rows or data.rows, key=lambda r: disty(data,r))
+
+def distx(data, row1, row2):
+  "Distance between independent values of two rows."
+  def _aha(col, a,b):
+    if a==b=="?": return 1
+    if col.it is Sym: return a != b
+    a,b = norm(col,a), norm(col,b)
+    a = a if a != "?" else (0 if b>0.5 else 1)
+    b = b if b != "?" else (0 if a>0.5 else 1)
+    return abs(a - b)
+  return dist(_aha(col, row1[col.at], row2[col.at])  
+              for col in data.cols.x)
 
 #--------------------------------------------------------------------
 def atom(s):
@@ -66,38 +124,12 @@ def csv(file):
         yield [atom(s.strip()) for s in line.split(",")]
 
 #--------------------------------------------------------------------
-def eg__data(): 
-  print(ok(Data(csv(the.file))).cols[3])
-
-def eg__per():
-  data = Data(csv(the.file))
-  print(per(data,3,82))
-  print(bin(data,3,82))
-  print(norm(data,3,82))
-
-def eg__inc():
-  d1 = Data(csv(the.file))
-  d2 = clone(d1)
-  x  = d2.cols[1]
-  print(1)
-  for row in d1.rows:
-    add(d2,row)
-    if len(d2.rows)==100:  
-      mid1 = x[len(x)//2]; print("asIs",mid1)
-  for row in d1.rows[::-1]:
-    if len(d2.rows)==100: 
-      mid2 = x[len(x)//2]; print("asIs",mid2)
-      #assert abs(mu2 - mu1) < 1.01 and abs(sd2 - sd1) < 1.01
-    sub(d2,row,zap=True)
-
-#--------------------------------------------------------------------
-def main(funs):
-  for n,arg in enumerate(sys.argv):
-    if (fn := funs.get(f"eg{arg.replace('-', '_')}")):
-      random.seed(the.seed); fn()
-    else:
-      for key in vars(the):
-        if arg=="-"+key[0]: the.__dict__[key]=atom(sys.argv[n+1])
-
-#--------------------------------------------------------------------
-if __name__ == "__main__": main(globals())
+print(Data(csv(the.file)))
+def likely(data):
+  rows = rows or data.rows
+  x = clone(data, shuffle(rows[:]))
+  xy,best,rest = clone(data), clone(data), clone(data)
+  for _ in range(the.Any): add(xy, sub(x, x.rows.pop()))
+  xy.dist = distysort(xy)
+  n = round(the.Any**.5)
+  adds
