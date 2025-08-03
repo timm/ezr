@@ -1,6 +1,6 @@
 #!/usr/bin/env python3 -B 
 from types import SimpleNamespace as o
-from typing import Any,List
+from typing import Any,List,Iterator
 import random, math, sys, re
 
 the=o(Any=4, Build=24, 
@@ -21,7 +21,7 @@ def Num(i=0,s=" "):
 def Sym(i=0,s=" "): 
   return o(it=Sym, i=i, txt=s, n=0, has={})
 
-def Cols(names) -> o:
+def Cols(names : List[str]) -> o:
   all=[(Num if s[0].isupper() else Sym)(c,s) for c,s in enumerate(names)]
   return o(it=Cols, names = names, all = all,
            x   = [col for col in all if col.txt[-1] not in "X-+"],
@@ -40,7 +40,8 @@ def adds(src, it=None) -> o:
   [add(it,x) for x in src]
   return it
 
-def sub(x:o, v:Any, zap=False) -> Any: return add(x,v,-1,zap)
+def sub(x:o, v:Any, zap=False) -> Any: 
+  return add(x,v,-1,zap)
 
 def add(x: o, v:Any, inc=1, zap=False) -> Any:
   if v == "?": return v
@@ -59,13 +60,13 @@ def add(x: o, v:Any, inc=1, zap=False) -> Any:
 
 #--------------------------------------------------------------------
 def norm(num:Num, v:float) -> float:  
-  return  (v - num.lo) / (num.hi - num.lo + 1E-32)
+  return  v if v=="?" else (v - num.lo) / (num.hi - num.lo + 1E-32)
 
-def mids(data):
+def mids(data: Data) -> Row:
   data.mid = data.mid or [mid(col) for col in data.cols.all]
   return data.mid
 
-def mid(col):
+def mid(col: o) -> Atom:
   return max(col.has, key=col.has.get) if col.it is Sym else col.mu
 
 #--------------------------------------------------------------------
@@ -80,7 +81,7 @@ def disty(data:Data, row:Row) -> float:
 def distysort(data:Data,rows=None) -> List[Row]:
   return sorted(rows or data.rows, key=lambda r: disty(data,r))
 
-def distx(data, row1, row2):
+def distx(data:Data, row1:Row, row2:Row) -> float:
   def _aha(col, a,b):
     if a==b=="?": return 1
     if col.it is Sym: return a != b
@@ -122,20 +123,20 @@ def near(xy, best:Data, rest:Data, x:Data) -> Row:
   return x.rows.pop(j)
 
 #--------------------------------------------------------------------
-def atom(s):
+def atom(s:str) -> o:
   for fn in [int,float]:
     try: return fn(s)
     except Exception as _: pass
   s = s.strip()
   return {'True':True,'False':False}.get(s,s)
 
-def csv(file):
+def csv(file: str ) -> Iterator[Row]:
   with open(file,encoding="utf-8") as f:
     for line in f:
       if (line := line.split("%")[0]):
         yield [atom(s.strip()) for s in line.split(",")]
 
-def shuffle(lst):
+def shuffle(lst:List):
   random.shuffle(lst)
   return lst
 
@@ -153,7 +154,14 @@ def eg__near():
   data = Data(csv(the.file))
   b4   = adds(disty(data,r) for r in data.rows)
   win  = lambda n: int(100*(1 - (n - b4.lo) / (b4.mu - b4.lo)))
-  out  = adds([ disty(data, likely(data)[0]) for _ in range(20)])
-  print(win(out.mu))
+  nears  = adds([ disty(data, likely(data)[0]) for _ in range(20)])
+  rands  = adds([ disty(data, 
+                        distysort(data, shuffle(data.rows)[:the.Build])[0])
+                        for _ in range(20)])
+  print("nears",win(nears.mu),"delta",win(nears.mu) - win(rands.mu), "|",
+        len(data.rows),
+        len(data.cols.x),
+        len(data.cols.y),
+        re.sub(".*/","",the.file))
 
 if __name__ == "__main__": main(globals())
