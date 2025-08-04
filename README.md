@@ -31,7 +31,7 @@ labels “for free,” but they frequently contain mistakes. Spot-checking
 historical labels often uncovers significant errors: for instance,
 Yu et al. [^yu20] found that 90% of technical debt entries marked
 as “false positive” were actually correct. Similar mislabeling
-issues have been reported in security datasets [^wy21], static
+issues have been reported in security datasets [^wu21], static
 analysis outputs [^kang22], and software quality corpora [^shepperd13].
 - Ask a _model_ to automatic labeling some $x$ values.  Naive
 model-based labelling can lead to inconsistent or misleading ground
