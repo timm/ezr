@@ -68,7 +68,7 @@ principle: greedily search toward best.)
 [^berg12]: Bergstra, James, and Yoshua Bengio. "Random search for hyper-parameter optimization." The journal of machine learning research 13.1 (2012): 281-305.
 
 EZR has been extensively tested on over a 100 problems taken from recent
-SE and AI publications. This data is accessible via
+SE and AI publications. This test data is accessible via
 
    git cline http://github.com/timm/moot
 
@@ -79,12 +79,14 @@ Each problem contains
 - 1 to 8 dependent $y$ goals (median=3)
 - 3 to 1000 independent $x$ variables (median=10)
 
-EZR's task is to do the most, using the least amount of data;
-i.e. to find the $x$ values than select for optimal $y$ values, without having
-to sample all the data. 
+Using MOOT, we can test just how little data we need for effective modeling.
+To that end, we use EZR
+to 
+find the $x$ values than select for optimal $y$ values, while sampling
+the least number or rows.
 EZR's recommended $x$ values 
 are scored by a _win_ statistic (defined later) where a win on zero means "EZR failed"
-and a win of 100% means "EZR found the optimal". EZR is controlled by a labeling
+and a win of 100% means "EZR found the optimal row". EZR is controlled by a labeling
 budget and the larger that budget, the more it wins:
 
 |budget|  median wins<br>seen in 20 trails |
@@ -96,10 +98,10 @@ budget and the larger that budget, the more it wins:
 | 80| 88|
 
 Note that EZR's labeling of 10 examples
-gets us get  over half way to optimum (to 58%). And after 30 labels,
+gets us get  over half way to optimum (to 58%). Also, after 30 labels,
 we can get over three-quarters to optimum (to 77%) which for
 many applications, may suffice. 
-If better results are
+Further, if better results are
 needed, EZR can label more examples. That said,
 there seems to be diminishing returns.
 Looking at the 10,20,40,80 results, each  doubling of the budget
@@ -122,25 +124,6 @@ test cases).
 - A useful tool for teaching AI and SE and scripting;
 - A productive tool for conducting state-of-the-art research; 
 - A criticism of other work that has never checks  complicated approaches against simple methods. 
-
-The key to EZR's simplication is its test case linrary.
-
-EZR is very short (a few hundred lines of Python; no use of complex
-packages like pandas or scikit-learn). 
-EZR has been tested on over  100 example problems from the
-recent search-based SE literature [^moot].  Those problems are as varied
-as minimizing cost, defects, and development time while maximizing
-functionality; tuning data‑miner settings like the number of trees
-in a random forest; predicting open‑source project health; and
-optimizing software projects or cloud configurations. Beyond software
-engineering, these problems also including selecting football teams, retraining
-employees, reducing school dropouts, approving loans, predicting life
-expectancy or disease spread, designing cars, choosing wines, and even
-planning winning ad campaigns. 
-
-Across all the problems, EZR usually performs
-very well at finding good solutions
-after sampling just a few dozen examples.
 
 For an example where this tool can dramatically simplify prior results, see the end of this document.
 
