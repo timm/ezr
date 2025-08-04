@@ -142,7 +142,7 @@ It performs incremental multi-objective optimization via a greedy elite sampler
 
 Whenever an unlabeled example seems better, EZR grabs and labels it.
 
-```
+```python
 def guess(best, rest, todo):
   for i,eg in enumerate(todo):
     if likelihood(best,eg) > likelihood(rest,eg): return i
@@ -161,14 +161,14 @@ EZR maintains three lists:
 
 At initialization it labels and sorts  a tiny sample
 of rows,  picked at random. 
-```
+```python
 todo = shuffle(unlabeled)
 init = sort(map(label,todo[:4]), key=y))
 best, rest = init[:2], init[2:4]
 todo = todo[4:]
 ```
 Its then labels incrementally, under a small budget:
-```
+```python
 budget = 24 - len(int) # already labeled some items
 while todo and budget > 0:
   budget -= 1
