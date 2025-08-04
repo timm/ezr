@@ -198,7 +198,7 @@ EZR is not working and a _win_ of 100 means "EZR finds the optimal".
 Looking at the solutions found by EZR,
 across the 118 examples currently in MOOT, then larger the sampling budget, the more we win: 
 
-|budget|  win<br>median <br> (50th percentile) | win<br> variance <br> (70th-30th percentile)|
+|BUDGET|  win<br>median <br> (50th percentile) | win<br> variance <br> (70th-30th percentile)|
 |-----|:-----:|:------------:|
 | 10 | 58|  18 |
 | 20|  70|  20| 
@@ -206,78 +206,22 @@ across the 118 examples currently in MOOT, then larger the sampling budget, the 
 | 40| 80| 15|
 | 80| 88|  15|
 
+Recall that the BUDGET values in column one control how many items
+are labeled by EZR.
 Two things to note here are:
-
 
 - _How much we can do with so very little:_ Labeling 10 examples
 gets us get  over half way to optimum (to 58%). And after 30 labels,
 we can get over three-quarters to optimum (to 77%) which for
-engineering purposes might be sufficnet.
-- _A ceiling effect on excessinve labeling:_ If better results are
+engineering purposes might be sufficient.
+- _A ceiling effect on excessive labeling:_ If better results are
 needed, we can label more but there seems to be diminishing returns.
 Looking at the 10,20,40,80 results, each  doubling of the budget
-wins another 10%.  By 80 samples we  have a median and variance of
+only wins another 10%.  By 80 samples we  have a median and variance of
 88% and 15%, which means the case for further labeling is not strong
-(since those results might be statistically indistinguisahable from
-optimial).
+(since those results might be statistically indistinguishable from
+optimal).
 
-
-EZR keeps track of a large list of unlabeled examples plus two
-smaller labeled lists called "best" and "rest".  Best and rest are
-initialized by sorting four examples,s elcted at random:
-
-    todo = shuffle(unlabeled)
-    init = todo[:4].sort(y)
-    best = init[:2]
-    rest = init[2:4]
-    todo = todo[4:]
-
-When "best" is sorted on the $y$ values (the consequences), then ``best[-1]` is the worst of the best examples
-labeled so far. "Rest" are all the labeled examples that are not "best". 
-
-    budget = 24
-    while todo and budget-- :
-      best.add(  
-        label( 
-          todo.pop( 
-            guess(best, rest, todo))))
-      if |best| > sqrt(|best| + |rest|):
-        rest.add( best.sort(y).pop(-1))
-    return best.sort(y)
-    
-THis is only a scjket'
-
-(b) a very small list of sorted "best" examples labeled so far; plus (b) a slightly
-longer list of "rest" labeled examples.  Using just the $x$ choice values, EZR 
-
-Also, we offer 110 case studies from the MOOT repository
-have been written, refactored, and shortenned many times. 
-
-As an agent walks around the world, it can quickly
-find  many
-choices. But often, it is much harder to calculate the conseuence of
-those choides. For example, in a used car lot,
-we can glance over hundreds of cars to learn what choices are available
-for manufactor,  car color, engine size, number of doors, etc.
-But it can take hours of driving to calculate miles per gallon per car.
-Similarly, the captain of a boat can glance at a map to see
-everywhere they can sail.
-But to calcualte where the fish are, they must spend hours casting their
-nets at specific
-spots. Furhter, the manager of a software project has access to many tools.
-But to calcuate which perform best for the kinds of applciations seen
-at their company, they have to speend weeks to months build applciations
-with this tool or that tool.
-
-ny fisher
-A smart agent therefore reflects over many choices before calculating
-the consequences of a handful of car design choices.
-
-
-of how choices lead to o
-
-For many reasons, we need tools that build models using very
-few labels.  Label collection can ne slow and error prone.
 
 Recently, AI has gotten very complicated.  The models are now so
 opaque that they are   hard to understand or audit or repair.  The CPU
