@@ -15,13 +15,13 @@ testing to know which works best for
 
 Formally, this is the _labeling_ problem.  Suppose our goal is to
 learn how choices $x$ effect conquences $y$. To learn the   function
-$y=f(x)$, we need some examples of ($x,y$) pairs.  There are several
-ways to find $y$"
+$y=f(x)$, we need some examples of ($x,y$) pairs.  There are many
+ways to find $y$, each of which has problems:
 
 - Ask  _subject matter expert_ what $y$ values are seen when $x$ happens.
 Manual labeling by experts is
 widely used but often error-prone.  One problem is that label quality
-tends to degrade when experts are rushed to process large corpora [^mes].
+tends to degrade when experts are rushed to process large corpora [^mes80].
 More careful elicitation methods; such as structured interviews can
 require up to one to two hours of dedicated effort per
 session [^valerdi10] [^kington09] [^lustosa24] to label just ten
