@@ -126,7 +126,7 @@ freely accessible via:
 
     git clone http://github.com/timm/moot
 
-("MOOT" is short for "multi-objective optimization tests".)
+("MOOT" is short for "multi-objective optimization tests".
 
 Also, we present here a new Python package called EZR
 that can be quickly installed via:
@@ -140,7 +140,7 @@ It performs incremental multi-objective optimization via a greedy elite sampler
 
 ## An Overview of EZR
 
-Whenever an unlabeled example seems better, EZR grabs and labels it.
+Whenever an unlabeled example seems promising, EZR grabs and labels it.
 
 ```python
 def guess(best, rest, todo):
@@ -164,8 +164,8 @@ EZR maintains three lists:
 At initialization. EZR labels and sorts  a tiny sample
 of rows,  picked at random. 
 ```python
-ANY=4
-cut=sqrt(4)
+ANY  = 4
+cut  = sqrt(4)
 todo = shuffle(unlabeled)
 init = sort(map(label,todo[:ANY]), key=y))
 best, rest = init[:cut], init[cut:ANY]
@@ -176,7 +176,7 @@ Its then labels incrementally, under a small budget:
 BUDGET = 24 - ANY # already labeled some items
 while todo and BUDGET > 0:
   BUDGET -= 1
-  best.add( label( todo.pop( guess(best,rest,todo))))
+  best.add( label( todo.pop( guess(best,rest,todo)))) # guess is defined above
   if len(best) > sqrt(len(best)+len(rest)):
     rest.add( best.sort(key=y).pop(-1))
 return sort(best, key=y)[0] # return best of the best.
