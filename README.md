@@ -96,9 +96,9 @@ of that solution).
 This has lead to some surprising results:
 
 - For data mining, we kept find that models learned from $n \ll N$
-carefull selected examples perform just as well as learning from
+carefully selected examples perform just as well as learning from
 $N$ examples.
-- For evolutinary algorithms, we previously reprted that if we
+- For evolutionary algorithms, we previously reputed that if we
 over-generated generation zero, then only search in that space,
 then that works as well or better than multiple generations of
 mutation, selection and cross-over.
@@ -106,27 +106,27 @@ mutation, selection and cross-over.
 uncertainty) versus exploration (or zones of certainty) does no better than a
   greedy search.
 - For active learners, intricate (and slow) uncertainty measurement
-algoriths (like Gaussian Process Models)
+algorithms (like Gaussian Process Models)
   do not better than simple elite sampling.
 - For many applications, simple elite-guided stochastic sampling
 does as well as state-of-the-art
-  complex softare optimzation packages usch as NSGA-II or Hyperopt
+  complex software optimization packages such as NSGA-II, Hyperopt,
   or (most recently) DEHB.
 
 This paper is about the software used to reach  a new landmark in
 our search for simplicity.  All the above ablation
 results
-come from isolated studies using hastily written research prototpes
+come from isolated studies using hastily written research prototypes
 applied to a limited number of data sets. In order for our ablation results
-to be believeable, they need to be reproduced on more data sets and
-be reproducable by others.  Accordingly, from the recent
+to be believable, they need to be reproduced on more data sets and
+be reproducible by others.  Accordingly, from the recent
 SE literature (and some other sources), we have found 110 search-based problems.
 There are 
 freely accessible via:
 
     git clone http://github.com/timm/moot
 
-("MOOT" is short for "multi-objective optimzation tests".)
+("MOOT" is short for "multi-objective optimization tests".)
 
 Also, we present here a new Python package called EZR
 that can be quickly installed via:
