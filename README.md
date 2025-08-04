@@ -43,22 +43,38 @@ remedy that, we offer a free open source Tiny AI  Python package, accessible via
 
      pip install ezr
 
-EZR is greedy elite search algorithm. Given a small number of labeled examples,
+EZR is greedy elite-search algorithm. Given a small number of labeled examples,
 EZR sorts and divides a small number of labeled examples into _best_ and _rest_.
-Using the cheap-to-collect attributes, it then  guesses
+Using cheap-to-collect attributes, EZR then  guesses
 what unlabeled example 
 is most likely to be _best_.  That example is then labeled and the algorithm loops.
 During all this, EZR avoids data that is noisy (i.e.
 is clearly not "best" or "rest") and  superfluous  (i.e. that is not
-relevant for "better" behavior). Hence it ignores
+relevant for "better" behavior). Hence it 
 ignores most of that 
-data and builds its models using just a few dozens samples.
-A decision tree learned from these examples can then offer
+data and builds its models using just a few dozens samples. For example,
+the following table what happens when EZR is limited to just 10,20,30,40, or 80 labels.
+These results come from a study from
+110+ problems for the recent AI and SE literature. Each of these problems is a table of data with up
+to
+
+XXX stats tabe here
+
+
+
+MOOT can find nearly optimal solutions. EZR's soltuins
+are scored by a _win_ statistic (defined later) where a win on zero means "EZR failed"
+and a win of 100% means "EZR found the optimal solution". EZR is controlled by a labeling
+budget When applied to 110+ problems we have extracted from the recent SE and AI literature,  the following
+
+EZR is also an XAI tool (explanatory artifical intelligence).
+After it labels a few dozen examples, EZR  generates a
+tiny decision tree that offers
 succinct and simple explanation
 of how to achieve good results (and  also what to do to improve
-those results).
+those results).  
 
-For the reader familiar with the AI ligature, EZR sounds like an
+For the reader familiar with the AI literature, EZR sounds like an
 active learner or a reinforce learning algorithm. Certainly, that was where the algorithm began.
 But after many several refactoring rounds where we said "can we ignore/simplify this part?",
 we arrived at something much simpler. We found we could replace (e.g.) Parzen windows with a simple
