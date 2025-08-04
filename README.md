@@ -149,9 +149,10 @@ def guess(best, rest, todo):
   return 0 # default
 ```
 The key point here, is that `likelihood` reflects only on the $x$ choices;
-i.e. we do not need $y$ labels to guess if a row looks promising. EZR currently
-implements six different `likelihood` functions such as the distance
-to the geometric center of a set rows.
+i.e. it does not need $y$ labels to guess if a row looks promising. EZR currently
+implements six different `likelihood` functions such as the distance of a example's
+$x$ variables
+to the geometric center of a set of rows.
 
 
 EZR maintains three lists:
