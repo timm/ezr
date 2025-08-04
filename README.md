@@ -173,7 +173,7 @@ todo = todo[ANY:]
 ```
 Its then labels incrementally, under a small budget:
 ```python
-budget = 24 - ANY # already labeled some items
+BUDGET = 24 - ANY # already labeled some items
 while todo and BUDGET > 0:
   BUDGET -= 1
   best.add( label( todo.pop( guess(best,rest,todo))))
@@ -186,13 +186,16 @@ EZR steadily grows _best_ by guessin likely  improvements, adding them to _best_
 then demoting its worst elites to _rest_.
 
 If we sort rows in a MOOT data set (on their y-values), then we can find the rows
-with the mean $y_\mu$ and most desirable  $y_0$ values. The outpput of EZR can then be scored
-by the _win_; i.e. how far it falls between the mean and most desirable values. 
-We define  _win_ such that a _win_ of zero
-means
-EZR is not working and a _win_ of 100 means "EZR finds the optimal":
+with the mean $y_\mu$ and most desirable  $y_0$ values. For that data set,
+the output of EZR can then be scored
+by how far it falls between the mean and most desirable values:
 
 $$ win = 100*\left(1- \frac{y-y_0}{y_\mu - y_0}\right)$$
+
+This expression defines  _win_ such that a _win_ of zero
+means
+EZR is not working and a _win_ of 100 means "EZR finds the optimal".
+
 
 Looking at the solutions found by EZR,
 across the 118 examples currently in MOOT, then larger the sampling budget, the more we win: 
