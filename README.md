@@ -1,21 +1,20 @@
 # A Tiny AI Minifesto
 
-<img src="docs/ezr.png" align=right width=400>
-Recently, AI has gotten very complicated.  The models are now so
-opaque that they are   hard to understand or audit or repair.  The CPU
-required to build and use them severely limits experimentation and
-scientific reporduction. The complexity of this kind of reasoning
-also complicates industrial deployment and teaching.
+<img src="docs/ezr.png" align=right width=400> Recently, AI has
+gotten very complicated.  The models are now so opaque that they
+are   hard to understand or audit or repair.  The CPU required to
+build and use them severely limits experimentation and scientific
+reporduction. The complexity of this kind of reasoning also complicates
+industrial deployment and teaching.
 
-We ask, rhetorically, do all problems need this complexity? Must generative
-AI and large language models by used for all reasoning? 
+We ask, rhetorically, do all problems need this complexity? Must
+generative AI and large language models by used for all reasoning?
 
-Perhaps not. A alternative to Big AI and generative models
-is _Tiny AI_ that uses _predictive models_ for tasks
-like optimzation, classification and regression.
-As shown here, tiny AI
-can be remarkable effective, yet simple to
-code, and need only a few dozen labeled examples for training.
+Perhaps not. A alternative to Big AI and generative models is _Tiny
+AI_ that uses _predictive models_ for tasks like optimzation,
+classification and regression.  As shown here, tiny AI can be
+remarkable effective, yet simple to code, and need only a few dozen
+labeled examples for training.
 
 Tiny AI methods are routinely ignored in research and industry.  In
 a recent systematic review [^hou24] of 229 SE papers using large
@@ -36,6 +35,9 @@ faster (See Table 1)
 |2022 [^taw23] | Predictive AI did better for management for agile software development. |
 |2024 [^ling24] | Predictive AI did better for data synthesis. |
 | 2024 [^john24] | Long list of errors seen in generative AI for software engineering. |
+
+XXX:not knowing how simple are things.
+
 
 Perhaps the reason Tiny AI is ignored is that there is no simple
 reference package, nor documentation of its effectiveness.  To

@@ -49,7 +49,15 @@ lint: ## lint all python in this directory
 	-o - $^ | ps2pdf - $@
 	open $@
 
-#------------------------------
+#--------------------------------------------------------------------------------
+stats:
+	gawk -F, '\
+	 FNR==1  { x=y=0; for(i=1;i<=NF;i++) $$i ~ /[+!\-]$$/ ? y++ : x++ } \
+ 	 ENDFILE { print(FNR, x, y, gensub(".*/", "", "g", FILENAME) ) }'    \
+	 $(Top)/../moot/optimize/*/*.csv                                      \
+	 | sort -t, -k1,1n -k2,2n -k3,3n | column -t
+
+# 5000 +- 4000;  6 += 10; 3 += 1; n=118 lines
 
 ~/tmp/xploit.log: 
 	$(MAKE) todo=xploit files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
