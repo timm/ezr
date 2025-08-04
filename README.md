@@ -157,8 +157,9 @@ to the geometric center of a set of rows.
 
 EZR maintains three lists:
 - _todo_: unlabeled examples
-- _best_: promising labeled examples
-- _rest_: labeled but not _best_
+- $N$ labeled examples divide into:
+  - _best_: $\sqrt{N}$ promising labeled examples
+  - _rest_: the $N - \sqrt{N}$ labeled examples that are not _best_
 
 At initialization it labels and sorts  a tiny sample
 of rows,  picked at random. 
@@ -170,7 +171,7 @@ todo = todo[4:]
 ```
 Its then labels incrementally, under a small budget:
 ```python
-budget = 24 - len(int) # already labeled some items
+budget = 24 - len(init) # already labeled some items
 while todo and budget > 0:
   budget -= 1
   best.add( label( todo.pop( guess(best,rest,todo))))
