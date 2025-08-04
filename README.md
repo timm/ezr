@@ -70,7 +70,7 @@ principle: greedily search toward best.)
 EZR has been extensively tested on over a 100 problems taken from recent
 SE and AI publications. This test data is accessible via
 
-   git cline http://github.com/timm/moot
+     git clone http://github.com/timm/moot
 
 MOOT, short for "multi-objective optimization tests", contains 118 problems.
 Each problem contains 
@@ -79,15 +79,13 @@ Each problem contains
 - 1 to 8 dependent $y$ goals (median=3)
 - 3 to 1000 independent $x$ variables (median=10)
 
-Using MOOT, we can test just how little data we need for effective modeling.
-To that end, we use EZR
-to 
-find the $x$ values than select for optimal $y$ values, while sampling
-the least number or rows.
-EZR's recommended $x$ values 
-are scored by a _win_ statistic (defined later) where a win on zero means "EZR failed"
-and a win of 100% means "EZR found the optimal row". EZR is controlled by a labeling
-budget and the larger that budget, the more it wins:
+Using MOOT, we can test just how little data we need for effective
+modeling.  To that end, we use EZR to find the $x$ values than
+select for optimal $y$ values, while sampling the least number or
+rows.  EZR's recommended $x$ values are scored by a _win_ statistic
+(defined later) where a win on zero means "EZR failed" and a win
+of 100% means "EZR found the optimal row". EZR is controlled by a
+labeling budget and the larger that budget, the more it wins:
 
 |budget|  median wins<br>seen in 20 trails |
 |-----|:-----:|
