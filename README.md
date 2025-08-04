@@ -1,6 +1,99 @@
 # A Tiny AI Minifesto
 
 <img src="docs/ezr.png" align=right width=400>
+Recently, AI has gotten very complicated.  The models are now so
+opaque that they are   hard to understand or audit or repair.  The CPU
+required to build and use them severely limits experimentation and
+scientific reporduction. The complexity of this kind of reasoning
+also complicates industrial deployment and teaching.
+
+We ask, rhetorically, do all problems need this complexity? Must generative
+AI and large language models by used for all reasoning? 
+
+Perhaps not. A alternative to Big AI and generative models
+is _Tiny AI_ that uses _predictive models_ for tasks
+like optimzation, classification and regression.
+As shown here, tiny AI
+can be remarkable effective, yet simple to
+code, and need only a few dozen labeled examples for training.
+
+Tiny AI methods are routinely ignored in research and industry.  In
+a recent systematic review [^hou24] of 229 SE papers using large
+language models (LLMs), only 13/229 (about 5%) of those papers
+compared LLMs to other approaches. This is a methodological error
+since other methods can produce results that are better and/or
+faster (See Table 1)
+
+
+> Table1: Predictive AI can sometimes produce better results, faster.
+
+
+|When          | What|
+|--------------|-----|
+|2018 [^maju18] | Simple clustering plus predictive AI did better for text mining. | 
+|2022 [^grin22] | Large language models may not be the best choice for tabular data. |
+|2024 [^somv24] | Ditto |
+|2022 [^taw23] | Predictive AI did better for management for agile software development. |
+|2024 [^ling24] | Predictive AI did better for data synthesis. |
+| 2024 [^john24] | Long list of errors seen in generative AI for software engineering. |
+
+Perhaps the reason Tiny AI is ignored is that there is no simple
+reference package, nor documentation of its effectiveness.  To
+remedy that, we offer a free open source Tiny AI  Python package, accessible via
+
+     pip install ezr
+
+EZR is greedy elite search algorithm. Given a small number of labeled examples,
+EZR sorts and divides a small number of labeled examples into _best_ and _rest_.
+Using the cheap-to-collect attributes, it then  guesses
+what unlabeled example 
+is most likely to be _best_.  That example is then labeled and the algorithm loops.
+During all this, EZR avoids data that is noisy (i.e.
+is clearly not "best" or "rest") and  superfluous  (i.e. that is not
+relevant for "better" behavior). Hence it ignores
+ignores most of that 
+data and builds its models using just a few dozens samples.
+A decision tree learned from these examples can then offer
+succinct and simple explanation
+of how to achieve good results (and  also what to do to improve
+those results).
+
+For the reader familiar with the AI ligature, EZR sounds like an
+active learner or a reinforce learning algorithm. Certainly, that was where the algorithm began.
+But after many several refactoring rounds where we said "can we ignore/simplify this part?",
+we arrived at something much simpler. We found we could replace (e.g.) Parzen windows with a simple
+nearest neighbor scheme that looked up the distance to the centre of the _best_ and _rest_ clusters.
+Also, after months of writing seemingly clever explore/exploit operators, now EZR
+just does a greedy search towards _best_. The entire code based is under 500 lines of code (with 250 lines oft
+test cases).
+ As such it can serve three purposes:
+
+- A useful tool for teaching AI and SE and scripting;
+- A productive tool for conducting state-of-the-art research; 
+- A criticism of other work that has never checks  complicated approaches against simple methods. 
+
+The key to EZR's simplication is its test case linrary.
+
+EZR is very short (a few hundred lines of Python; no use of complex
+packages like pandas or scikit-learn). 
+EZR has been tested on over  100 example problems from the
+recent search-based SE literature [^moot].  Those problems are as varied
+as minimizing cost, defects, and development time while maximizing
+functionality; tuning data‑miner settings like the number of trees
+in a random forest; predicting open‑source project health; and
+optimizing software projects or cloud configurations. Beyond software
+engineering, these problems also including selecting football teams, retraining
+employees, reducing school dropouts, approving loans, predicting life
+expectancy or disease spread, designing cars, choosing wines, and even
+planning winning ad campaigns. 
+
+Across all the problems, EZR usually performs
+very well at finding good solutions
+after sampling just a few dozen examples.
+
+For an example where this tool can dramatically simplify prior results, see the end of this document.
+
+
 
 As agents explore the world, choices are easy to spot, but consequences
 are slow to measure.
@@ -86,35 +179,54 @@ Engineering (pp. 698-709).
 Data quality: Some comments on the nasa software defect datasets.
 IEEE Transactions on software engineering, 39(9), 1208-1215.
 
-This combination of high labeling costs, frequent errors, and reliance on imperfect sources motivates the search for more efficient, semi-automated approaches to labeling.
-This paper reports an on-going experiment with methods that can build
-models using very few labels.
-For some decades now,
-whenever we found something worked, we always applied ablation
-(.e.g throwing some part
-of that solution).
-This has lead to some surprising results:
+When labeling is so problematic, one solution might be:
 
-- For data mining, we kept find that models learned from $n \ll N$
-carefully selected examples perform just as well as learning from
-$N$ examples.
-- For evolutionary algorithms, we previously reputed that if we
-over-generated generation zero, then only search in that space,
-then that works as well or better than multiple generations of
-mutation, selection and cross-over.
-- For reinforcement learning, balancing exploration (of  zones of
-uncertainty) versus exploration (or zones of certainty) does no better than a
-  greedy search.
-- For active learners, intricate (and slow) uncertainty measurement
-algorithms (like Gaussian Process Models)
-  do not better than simple elite sampling.
-- For many applications, simple elite-guided stochastic sampling
-does as well as state-of-the-art
-  complex software optimization packages such as NSGA-II, Hyperopt,
-  or (most recently) DEHB.
+> Label less.
 
-This paper is about the software used to reach  a new landmark in
-our search for simplicity.  All the above ablation
+For some decades now, we have been exploring methods
+for building better models from less data.
+This paper is about the software and test data used to reach  a new landmark in
+our search for simplicity.   
+
+- MOOT (short for "Multi-objective optimzation tests") All the above ablation
+
+If we sort rows in a MOOT data set (on their y-values), then we can find the rows
+with the mean $y_\mu$ and most desirable  $y_0$ values. For that data set,
+the output of EZR can then be scored
+by how far it falls between the mean and most desirable values:
+
+$$ win = 100*\left(1- \frac{y-y_0}{y_\mu - y_0}\right)$$
+
+This expression is defined  such that a _win_ of zero
+means
+EZR is not working and a _win_ of 100 means "EZR finds the optimal".
+Looking at the solutions found by EZR,
+across the 118 examples currently in MOOT, then larger the sampling budget, the more we win: 
+
+|BUDGET|  win<br>median <br> (50th percentile) | win<br> variance <br> (70th-30th percentile)|
+|-----|:-----:|:------------:|
+| 10 | 58|  18 |
+| 20|  70|  20| 
+| 30 | 77 | 19|
+| 40| 80| 15|
+| 80| 88|  15|
+
+Recall that the BUDGET values in column one control how many items
+are labeled by EZR.
+Two things to note here are:
+
+- _How much we can do with so very little:_ Labeling 10 examples
+gets us get  over half way to optimum (to 58%). And after 30 labels,
+we can get over three-quarters to optimum (to 77%) which for
+engineering purposes might be sufficient.
+- _A ceiling effect on excessive labeling:_ If better results are
+needed, we can label more but there seems to be diminishing returns.
+Looking at the 10,20,40,80 results, each  doubling of the budget
+only wins another 10%.  By 80 samples we  have a median and variance of
+88% and 15%, which means the case for further labeling is not strong
+(since those results might be statistically indistinguishable from
+optimal).
+
 results
 come from isolated studies using hastily written research prototypes
 applied to a limited number of data sets. In order for our ablation results
@@ -135,11 +247,6 @@ that can be quickly installed via:
 
 EZR is _minimal_: a few hundred lines with no pandas or scikit-learn.
 It performs incremental multi-objective optimization via a greedy elite sampler
-(see next section)
-
-
-## An Overview of EZR
-
 Whenever an unlabeled example seems promising, EZR grabs and labels it.
 
 ```python
@@ -185,123 +292,13 @@ Note that
 EZR steadily grows _best_ by guessin likely  improvements, adding them to _best_,
 then demoting its worst elites to _rest_.
 
-If we sort rows in a MOOT data set (on their y-values), then we can find the rows
-with the mean $y_\mu$ and most desirable  $y_0$ values. For that data set,
-the output of EZR can then be scored
-by how far it falls between the mean and most desirable values:
 
-$$ win = 100*\left(1- \frac{y-y_0}{y_\mu - y_0}\right)$$
-
-This expression defines  _win_ such that a _win_ of zero
-means
-EZR is not working and a _win_ of 100 means "EZR finds the optimal".
-Looking at the solutions found by EZR,
-across the 118 examples currently in MOOT, then larger the sampling budget, the more we win: 
-
-|BUDGET|  win<br>median <br> (50th percentile) | win<br> variance <br> (70th-30th percentile)|
-|-----|:-----:|:------------:|
-| 10 | 58|  18 |
-| 20|  70|  20| 
-| 30 | 77 | 19|
-| 40| 80| 15|
-| 80| 88|  15|
-
-Recall that the BUDGET values in column one control how many items
-are labeled by EZR.
-Two things to note here are:
-
-- _How much we can do with so very little:_ Labeling 10 examples
-gets us get  over half way to optimum (to 58%). And after 30 labels,
-we can get over three-quarters to optimum (to 77%) which for
-engineering purposes might be sufficient.
-- _A ceiling effect on excessive labeling:_ If better results are
-needed, we can label more but there seems to be diminishing returns.
-Looking at the 10,20,40,80 results, each  doubling of the budget
-only wins another 10%.  By 80 samples we  have a median and variance of
-88% and 15%, which means the case for further labeling is not strong
-(since those results might be statistically indistinguishable from
-optimal).
+END2
 
 
-Recently, AI has gotten very complicated.  The models are now so
-opaque that they are   hard to understand or audit or repair.  The CPU
-required to build and use them severely limits experimentation and
-scientific reporduction. The complexity of this kind of reasoning
-also complicates industrial deployment and teaching.
+BEGIN2
 
-We ask, rhetorically, do all problems need this complexity? Must generative
-AI and large language models by used for all reasoning? 
-
-Perhaps not. A alternative to Big AI and generative models
-is _Tiny AI_ that uses _predictive models_ for tasks
-like optimzation, classification and regression.
-As shown here, tiny AI
-can be remarkable effective, yet simple to
-code, and need only a few dozen labeled examples for training.
-
-Tiny AI methods are routinely ignored in research and industry.  In
-a recent systematic review [^hou24] of 229 SE papers using large
-language models (LLMs), only 13/229 (about 5%) of those papers
-compared LLMs to other approaches. This is a methodological error
-since other methods can produce results that are better and/or
-faster (See Table 1)
-
-
-> Table1: Predictive AI can sometimes produce better results, faster.
-
-
-|When          | What|
-|--------------|-----|
-|2018 [^maju18] | Simple clustering plus predictive AI did better for text mining. | 
-|2022 [^grin22] | Large language models may not be the best choice for tabular data. |
-|2024 [^somv24] | Ditto |
-|2022 [^taw23] | Predictive AI did better for management for agile software development. |
-|2024 [^ling24] | Predictive AI did better for data synthesis. |
-| 2024 [^john24] | Long list of errors seen in generative AI for software engineering. |
-
-Perhaps the reason Tiny AI is ignored is that there is no simple
-reference package, nor documentation of its effectiveness.  To
-remedy that, we offer a free open source Tiny AI  Python package, accessible via
-
-     pip install ezr
-
-EZR is an explanation system for incremental multi-objective
-optimization.  This tool sorts and splits the examples seen so far
-into two lists: a small "best" list and the remaining "rest".  New
-examples are explored if they are more likely to be "best" than "rest".
-The most preferred example then updates "best" and "rest" and the
-cycle repeats.  At runtime, EZR avoids data that is noisy (i.e.
-is clearly not "best" or "rest") and  superfluous  (i.e. that is not
-relevant for "better" behavior). In this way EZR ignores most of the
-data and builds its models using just a few dozens samples. Hence,
-a decision tree learned from these examples offers a tiny and simple explanation
-of how to achieve good results (and  also what to do to improve
-those results).
-
-
-EZR is very short (a few hundred lines of Python; no use of complex
-packages like pandas or scikit-learn). 
-EZR has been tested on over  100 example problems from the
-recent search-based SE literature [^moot].  Those problems are as varied
-as minimizing cost, defects, and development time while maximizing
-functionality; tuning data‑miner settings like the number of trees
-in a random forest; predicting open‑source project health; and
-optimizing software projects or cloud configurations. Beyond software
-engineering, these problems also including selecting football teams, retraining
-employees, reducing school dropouts, approving loans, predicting life
-expectancy or disease spread, designing cars, choosing wines, and even
-planning winning ad campaigns. 
-
-Across all the problems, EZR usually performs
-very well at finding good solutions
-after sampling just a few dozen examples.
- We offer it here as
-
-- A useful tool for teaching AI and SE and scripting;
-- A productive tool for conducting state-of-the-art resaerch. 
-- A criticism of other work that has never checked complicated a simple idea; 
-
-For an example where this tool can dramatically simplify prior results, see the end of this document.
+END2
 
 [^moot]: http://github.com/timm/moot
 
@@ -624,6 +621,27 @@ iteratively label some candidates, building a surrogate model that predicts “g
 is then use to prioritize what to explore next. Standard SMBO algorithms use elabroate sampling
 and proiroization schemes via a range of estimated generated via   multiple. New data is explored in ther egion where (e.g.)
 the estiamtes are best, yet have highest variance.
+
+This has lead to some surprising results:
+
+- For data mining, we kept find that models learned from $n \ll N$
+carefully selected examples perform just as well as learning from
+$N$ examples.
+- For evolutionary algorithms, we previously reputed that if we
+over-generated generation zero, then only search in that space,
+then that works as well or better than multiple generations of
+mutation, selection and cross-over.
+- For reinforcement learning, balancing exploration (of  zones of
+uncertainty) versus exploration (or zones of certainty) does no better than a
+  greedy search.
+- For active learners, intricate (and slow) uncertainty measurement
+algorithms (like Gaussian Process Models)
+  do not better than simple elite sampling.
+- For many applications, simple elite-guided stochastic sampling
+does as well as state-of-the-art
+  complex software optimization packages such as NSGA-II, Hyperopt,
+  or (most recently) DEHB.
+
 
 
 ## Algorithm
