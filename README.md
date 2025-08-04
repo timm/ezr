@@ -1,31 +1,29 @@
 # A Tiny AI Minifesto
 
-<img src="docs/ezr.png" align=right width=400> Recently, AI has
-gotten very complicated.  The models are now so opaque that they
-are   hard to understand or audit or repair.  The CPU required to
-build and use them severely limits experimentation and scientific
-reporduction. The complexity of this kind of reasoning also complicates
-industrial deployment and teaching.
+<img src="docs/ezr.png" align=right width=400>
 
-We ask, rhetorically, do all problems need this complexity? Must
-generative AI and large language models by used for all reasoning?
+Recently, AI has gotten
+very complicated.  The models are now so opaque that they are   hard
+to understand or audit or repair.  The CPU required to build and
+use them severely limits experimentation and scientific reproduction.
+The complexity of this kind of reasoning also complicates industrial
+deployment and teaching.
 
-Perhaps not. A alternative to Big AI and generative models is _Tiny
-AI_ that uses _predictive models_ for tasks like optimzation,
-classification and regression.  As shown here, tiny AI can be
-remarkable effective, yet simple to code, and need only a few dozen
-labeled examples for training.
+We ask, rhetorically, do all problems need data and CPU intensive
+BIG AI methods? Must generative AI and large language models be
+used for all reasoning?A alternative to Big AI and generative models
+is _Tiny AI_ that uses _predictive models_ for tasks like optimization,
+classification and regression.  
 
-Tiny AI methods are routinely ignored in research and industry.  In
-a recent systematic review [^hou24] of 229 SE papers using large
-language models (LLMs), only 13/229 (about 5%) of those papers
-compared LLMs to other approaches. This is a methodological error
-since other methods can produce results that are better and/or
-faster (See Table 1)
+Lamentably, Tiny AI methods are
+routinely ignored in research and industry.  In a recent systematic
+review [^hou24] of 229 SE papers using large language models (LLMs),
+only 13/229 (about 5%) of those papers compared LLMs to other
+approaches. This is a methodological error since other methods can
+produce results that are better and/or faster (See Table 1)
 
 
 > Table1: Predictive AI can sometimes produce better results, faster.
-
 
 |When          | What|
 |--------------|-----|
@@ -36,19 +34,26 @@ faster (See Table 1)
 |2024 [^ling24] | Predictive AI did better for data synthesis. |
 | 2024 [^john24] | Long list of errors seen in generative AI for software engineering. |
 
-XXX:not knowing how simple are things.
 
 
 Why is  Tiny AI ignored? Perhaps it is not widely appreciated
 the effectiveness of very  simple AI (just as long as we avoid CPU and data intensive
-generative modeling). To fix that, this paper defines
-and tests
+generative modeling). To fix that, this paper offers
+EZR, a tiny baseline system
+that implements explanations for incremental multi-objective
+optimization.  The entire code based is under 500 lines of code
+(with 250 lines of test cases). Considering the simplicity and
+effectiveness of EZR , we propose this approach as a baseline method
+for decision making, especially for models that are very slow to
+execute.
+
+EZR is available as
 a
 free open source Tiny AI  Python package, accessible via
 
      pip install ezr
 
-EZR is a greedy elite-search algorithm that builds effective models
+Internally, the code is a greedy elite-search algorithm that builds effective models
 from minimal data. EZR sorts a  few labeled examples
 into a  _best_ and _rest_ set.  Using cheap-to-collect attributes,
 EZR guesses which unlabeled example is most likely _best_, labels it,
@@ -72,57 +77,90 @@ SE and AI publications. This test data is accessible via
 
      git clone http://github.com/timm/moot
 
-MOOT, short for "multi-objective optimization tests", contains 118 problems.
-Each problem contains 
+MOOT, short for "multi-objective optimization tests", contains 118 
+test cases with:
 
 - 100 to 100,000 rows (median=1,000)
-- 1 to 8 dependent $y$ goals (median=3)
 - 3 to 1000 independent $x$ variables (median=10)
+- 1 to 8 dependent $y$ goals (median=3)
 
-Using MOOT, we can test just how little data we need for effective
-modeling.  To that end, we use EZR to find the $x$ values than
-select for optimal $y$ values, while sampling the least number or
-rows.  EZR's recommended $x$ values are scored by a _win_ statistic
-(defined later) where a win on zero means "EZR failed" and a win
-of 100% means "EZR found the optimal row". EZR is controlled by a
-labeling budget and the larger that budget, the more it wins:
+Using MOOT, we can measure how little data is needed for effective
+modeling.  EZR selects the $x$ values most likely to yield optimal
+$y$ values (while labeling as few rows as possible).  Its performance
+is scored using a _win_ statistic (defined later), where a win of 0%
+means EZR failed and 100% means it found the optimal row.  A labeling
+budget controls how many examples EZR may label. Larger budgets
+yield higher wins:
 
-|budget|  median wins<br>seen in 20 trails |
-|-----|:-----:|
+|budget|  median wins <br> for 118 test cases<br>(seen in 20 trails)|
+|:-----:|:-----:|
 | 10 | 58| 
 | 20|  70|
 | 30 | 77 |
 | 40| 80|
 | 80| 88|
 
-Note that EZR's labeling of 10 examples
-gets us get  over half way to optimum (to 58%). Also, after 30 labels,
-we can get over three-quarters to optimum (to 77%) which for
-many applications, may suffice. 
-Further, if better results are
-needed, EZR can label more examples. That said,
-there seems to be diminishing returns.
-Looking at the 10,20,40,80 results, each  doubling of the budget
-only wins another 10%.  By 80 samples we  have a median and variance of
-88% and 15%, which means the case for further labeling is not strong
-(since those results might be statistically indistinguishable from
-optimal).
+With just 10 labeled examples, EZR reaches 58% of the optimum.
+By 30 labels, it achieves 77% which is often good enough for many applications.
+If better results are required (e.g. for safety critical applications), 
+increasing the budget helps, but with diminishing returns:
+doubling the budget from 10 to 20 to 40 to 80
+ yields only about 10% improvement each time.
 
-EZR is also an XAI tool (explanatory artificial intelligence).
-After it labels a few dozen examples, EZR  generates a
+Since it labels so few examples,
+EZR can also be an XAI tool (explanatory artificial intelligence).
+For those labeled examples,
+EZR  generates a
 tiny decision tree that offers
 succinct and simple explanation
 of how to achieve good results (and  also what to do to improve
 those results).  
 
-The entire code based is under 500 lines of code (with 250 lines oft
-test cases).
- As such it can serve three purposes:
 
-- A useful tool for teaching AI and SE and scripting;
-- A productive tool for conducting state-of-the-art research; 
-- A criticism of other work that has never checks  complicated approaches against simple methods. 
 
+
+[^cohen95]: Cohen, Paul R. Empirical methods for artificial intelligence. Vol. 139. Cambridge, MA: MIT press, 1995.
+
+[^holte93]: Holte, Robert C. "Very simple classification rules perform well on most commonly used datasets." Machine learning 11.1 (1993): 63-90.
+
+[^whigham15]: Whigham, Peter A., Caitlin A. Owen, and Stephen G. Macdonell. "A baseline model for software effort estimation." ACM Transactions on Software Engineering and Methodology (TOSEM) 24.3 (2015): 1-11.
+
+[^mittas12]: Mittas, Nikolaos, and Lefteris Angelis. "Ranking and clustering software cost estimation models through a multiple comparisons algorithm." IEEE Transactions on software engineering 39.4 (2012): 537-551.
+
+[^shepped12]: Shepperd, Martin, and Steve MacDonell. "Evaluating prediction systems in software project estimation." Information and Software Technology 54.8 (2012): 820-827.
+
+[^kitch07]: Kitchenham, Barbara A., Emilia Mendes, and Guilherme H. Travassos. "Cross versus within-company cost estimation studies: A systematic review." IEEE Transactions on Software Engineering 33.5 (2007): 316-329.
+
+
+This paper presents the software behind EZR. As shown below,
+that code is very simple (and runs so fast).
+  iConsidering the simplicity and effectiveness of SWAY , we,
+therefore, propose this approach as a baseline method for search-based software engineering models, especially for models that are very slow to executea
+i
+
+[^wolp]: Wolpert, David H., and William G. Macready. "No free lunch theorems for optimization." IEEE transactions on evolutionary computation 1.1 (2002): 67-82.
+
+When conducting such commissioning experiments, it is very
+useful to have a baseline optimizer; i.e., an algorithm which can
+generate floor performance values. Such baselines let a developer
+quickly rule out any optimization option that falls “below the
+floor”. In this way, researchers and industrial practitioners can
+achieve fast early results, while also gaining some guidance in
+all their subsequent experimentation (specifically: “try to beat the
+baseline”).
+
+The conclusion of this paper is not that SWAY is always the
+best choice optimizing SBSE models. Rather, since SWAY is so
+simple and so fast, it is a reasonable first choice for benchmarking
+other approache
+
+
+that, for predictive problems,
+it should be standard practice to try Tiny AI before Big Ai.
+be useful
+in applying The specific point of this paper
+is that Tiny AI software is so simple that it should be routinely applied
+all new can be extremely simple. So 
 For an example where this tool can dramatically simplify prior results, see the end of this document.
 
 
@@ -302,6 +340,23 @@ then demoting its worst elites to _rest_.
 
 
 END2
+
+Perhaps before resorting to Big AI, we should first try something else.
+In his textbook on Empirical Methods for AI, Cohen
+[^cohen95] strongly advocates comparing supposedly sophisticated
+systems against simpler alternatives. In the machine learning
+community, Hotle [^holte93] uses the OneR baseline algorithm as a
+scout that runs ahead of a more complicated learner as a way to
+judge the complexity of up-coming tasks. Shepperd and Macdonnel
+[^shepperd12] argue convincingly that measurements are best viewed
+as ratios compared to measurements taken from some minimal baseline
+system. Wolpert & Macready [^wolp] warn that no single algorithm can ever be best
+for all problems. They caution that for every class of
+problem where algorithm A performs best, there is some other
+class of problems where A will perform poorly. Hence, when
+commissioning a new domain, there is always the need for some
+experimentation to match the particulars of the local model to
+particular algorithms.
 
 
 BEGIN2
