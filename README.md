@@ -195,12 +195,10 @@ $$ win = 100*\left(1- \frac{y-y_0}{y_\mu - y_0}\right)$$
 This expression defines  _win_ such that a _win_ of zero
 means
 EZR is not working and a _win_ of 100 means "EZR finds the optimal".
-
-
 Looking at the solutions found by EZR,
 across the 118 examples currently in MOOT, then larger the sampling budget, the more we win: 
 
-|budget|  win<br>median <br> (50th) | win<br> variance <br> (70th-30th)|
+|budget|  win<br>median <br> (50th percentile) | win<br> variance <br> (70th-30th percentile)|
 |-----|:-----:|:------------:|
 | 10 | 58|  18 |
 | 20|  70|  20| 
