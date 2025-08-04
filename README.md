@@ -42,12 +42,8 @@ generative modeling). To fix that, this paper offers
 EZR, a tiny baseline system
 that implements explanations for incremental multi-objective
 optimization.  The entire code based is under 500 lines of code
-(with 250 lines of test cases). Considering the simplicity and
-effectiveness of EZR , we propose this approach as a baseline method
-for decision making, especially for models that are very slow to
-execute.
-
-EZR is available as
+(with 250 lines of test cases). 
+It is available as
 a
 free open source Tiny AI  Python package, accessible via
 
@@ -89,8 +85,10 @@ modeling.  EZR selects the $x$ values most likely to yield optimal
 $y$ values (while labeling as few rows as possible).  Its performance
 is scored using a _win_ statistic (defined later), where a win of 0%
 means EZR failed and 100% means it found the optimal row.  A labeling
-budget controls how many examples EZR may label. Larger budgets
-yield higher wins:
+budget controls how many examples EZR may label. As might be
+expected, larger budgets
+yield higher wins. That said, it is remarkably how little data
+is needed for very big wins:
 
 |budget|  median wins <br> for 118 test cases<br>(seen in 20 trails)|
 |:-----:|:-----:|
@@ -101,11 +99,11 @@ yield higher wins:
 | 80| 88|
 
 With just 10 labeled examples, EZR reaches 58% of the optimum.
-By 30 labels, it achieves 77% which is often good enough for many applications.
+By 30 labels, it achieves 77%, which is often good enough for many applications.
 If better results are required (e.g. for safety critical applications), 
 increasing the budget helps, but with diminishing returns:
 doubling the budget from 10 to 20 to 40 to 80
- yields only about 10% improvement each time.
+ yields only about 10% improvement each time. 
 
 Since it labels so few examples,
 EZR can also be an XAI tool (explanatory artificial intelligence).
@@ -132,11 +130,12 @@ those results).
 [^kitch07]: Kitchenham, Barbara A., Emilia Mendes, and Guilherme H. Travassos. "Cross versus within-company cost estimation studies: A systematic review." IEEE Transactions on Software Engineering 33.5 (2007): 316-329.
 
 
-This paper presents the software behind EZR. As shown below,
-that code is very simple (and runs so fast).
-  iConsidering the simplicity and effectiveness of SWAY , we,
-therefore, propose this approach as a baseline method for search-based software engineering models, especially for models that are very slow to executea
-i
+This paper presents the software behind EZR. As shown below, that
+code is very simple (and runs so fast).  Considering the simplicity
+and effectiveness of SWAY , we, therefore, propose this approach
+as a baseline method for search-based software engineering models,
+especially for models that are very slow to execute
+
 
 [^wolp]: Wolpert, David H., and William G. Macready. "No free lunch theorems for optimization." IEEE transactions on evolutionary computation 1.1 (2002): 67-82.
 
