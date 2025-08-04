@@ -56,6 +56,17 @@ then loops.  It skips noisy data (not clearly best or rest) and
 superfluous data (irrelevant to improvement), allowing EZR to model
 effectively with only a few dozen samples.
 
+(Aside: For readers familiar with AI, EZR sounds like an active learner or
+reinforcement learner. While that is where this work
+started, repeated simplifications revealed that much of that
+complex machinery was unnecessary. For
+example: (a) Parzen windows [^berg12] gave way to a
+simple nearest-neighbor check against the centers of best and rest;
+(b) months of designing explore–exploit heuristics [^settles09] ended in a single
+principle: greedily search toward best.)
+
+[^berg12]: Bergstra, James, and Yoshua Bengio. "Random search for hyper-parameter optimization." The journal of machine learning research 13.1 (2012): 281-305.
+
 EZR has been extensively tested on over a 100 problems taken from recent
 SE and AI publications. This data is accessible via
 
@@ -87,8 +98,7 @@ budget and the larger that budget, the more it wins:
 Note that EZR's labeling of 10 examples
 gets us get  over half way to optimum (to 58%). And after 30 labels,
 we can get over three-quarters to optimum (to 77%) which for
-many applications, may suffice.
-
+many applications, may suffice. 
 If better results are
 needed, EZR can label more examples. That said,
 there seems to be diminishing returns.
@@ -98,21 +108,14 @@ only wins another 10%.  By 80 samples we  have a median and variance of
 (since those results might be statistically indistinguishable from
 optimal).
 
-
-EZR is also an XAI tool (explanatory artifical intelligence).
+EZR is also an XAI tool (explanatory artificial intelligence).
 After it labels a few dozen examples, EZR  generates a
 tiny decision tree that offers
 succinct and simple explanation
 of how to achieve good results (and  also what to do to improve
 those results).  
 
-For the reader familiar with the AI literature, EZR sounds like an
-active learner or a reinforce learning algorithm. Certainly, that was where the algorithm began.
-But after many several refactoring rounds where we said "can we ignore/simplify this part?",
-we arrived at something much simpler. We found we could replace (e.g.) Parzen windows with a simple
-nearest neighbor scheme that looked up the distance to the centre of the _best_ and _rest_ clusters.
-Also, after months of writing seemingly clever explore/exploit operators, now EZR
-just does a greedy search towards _best_. The entire code based is under 500 lines of code (with 250 lines oft
+The entire code based is under 500 lines of code (with 250 lines oft
 test cases).
  As such it can serve three purposes:
 
