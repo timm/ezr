@@ -161,19 +161,21 @@ EZR maintains three lists:
   - _best_: $\sqrt{N}$ promising labeled examples
   - _rest_: the $N - \sqrt{N}$ labeled examples that are not _best_
 
-At initialization it labels and sorts  a tiny sample
+At initialization. EZR labels and sorts  a tiny sample
 of rows,  picked at random. 
 ```python
+ANY=4
+cut=sqrt(4)
 todo = shuffle(unlabeled)
-init = sort(map(label,todo[:4]), key=y))
-best, rest = init[:2], init[2:4]
-todo = todo[4:]
+init = sort(map(label,todo[:ANY]), key=y))
+best, rest = init[:cut], init[cut:ANY]
+todo = todo[ANY:]
 ```
 Its then labels incrementally, under a small budget:
 ```python
-budget = 24 - len(init) # already labeled some items
-while todo and budget > 0:
-  budget -= 1
+budget = 24 - ANY # already labeled some items
+while todo and BUDGET > 0:
+  BUDGET -= 1
   best.add( label( todo.pop( guess(best,rest,todo))))
   if len(best) > sqrt(len(best)+len(rest)):
     rest.add( best.sort(key=y).pop(-1))
