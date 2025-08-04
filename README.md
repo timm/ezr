@@ -39,35 +39,65 @@ faster (See Table 1)
 XXX:not knowing how simple are things.
 
 
-Perhaps the reason Tiny AI is ignored is that there is no simple
-reference package, nor documentation of its effectiveness.  To
-remedy that, we offer a free open source Tiny AI  Python package, accessible via
+Why is  Tiny AI ignored? Perhaps it is not widely appreciated
+the effectiveness of very  simple AI (just as long as we avoid CPU and data intensive
+generative modeling). To fix that, this paper defines
+and tests
+a
+free open source Tiny AI  Python package, accessible via
 
      pip install ezr
 
-EZR is greedy elite-search algorithm. Given a small number of labeled examples,
-EZR sorts and divides a small number of labeled examples into _best_ and _rest_.
-Using cheap-to-collect attributes, EZR then  guesses
-what unlabeled example 
-is most likely to be _best_.  That example is then labeled and the algorithm loops.
-During all this, EZR avoids data that is noisy (i.e.
-is clearly not "best" or "rest") and  superfluous  (i.e. that is not
-relevant for "better" behavior). Hence it 
-ignores most of that 
-data and builds its models using just a few dozens samples. For example,
-the following table what happens when EZR is limited to just 10,20,30,40, or 80 labels.
-These results come from a study from
-110+ problems for the recent AI and SE literature. Each of these problems is a table of data with up
-to
+EZR is a greedy elite-search algorithm that builds effective models
+from minimal data. EZR sorts a  few labeled examples
+into a  _best_ and _rest_ set.  Using cheap-to-collect attributes,
+EZR guesses which unlabeled example is most likely _best_, labels it,
+then loops.  It skips noisy data (not clearly best or rest) and
+superfluous data (irrelevant to improvement), allowing EZR to model
+effectively with only a few dozen samples.
 
-XXX stats tabe here
+EZR has been extensively tested on over a 100 problems taken from recent
+SE and AI publications. This data is accessible via
 
+   git cline http://github.com/timm/moot
 
+MOOT, short for "multi-objective optimization tests", contains 118 problems.
+Each problem contains 
 
-MOOT can find nearly optimal solutions. EZR's soltuins
+- 100 to 100,000 rows (median=1,000)
+- 1 to 8 dependent $y$ goals (median=3)
+- 3 to 1000 independent $x$ variables (median=10)
+
+EZR's task is to do the most, using the least amount of data;
+i.e. to find the $x$ values than select for optimal $y$ values, without having
+to sample all the data. 
+EZR's recommended $x$ values 
 are scored by a _win_ statistic (defined later) where a win on zero means "EZR failed"
-and a win of 100% means "EZR found the optimal solution". EZR is controlled by a labeling
-budget When applied to 110+ problems we have extracted from the recent SE and AI literature,  the following
+and a win of 100% means "EZR found the optimal". EZR is controlled by a labeling
+budget and the larger that budget, the more it wins:
+
+|budget|  median wins<br>seen in 20 trails |
+|-----|:-----:|
+| 10 | 58| 
+| 20|  70|
+| 30 | 77 |
+| 40| 80|
+| 80| 88|
+
+Note that EZR's labeling of 10 examples
+gets us get  over half way to optimum (to 58%). And after 30 labels,
+we can get over three-quarters to optimum (to 77%) which for
+many applications, may suffice.
+
+If better results are
+needed, EZR can label more examples. That said,
+there seems to be diminishing returns.
+Looking at the 10,20,40,80 results, each  doubling of the budget
+only wins another 10%.  By 80 samples we  have a median and variance of
+88% and 15%, which means the case for further labeling is not strong
+(since those results might be statistically indistinguishable from
+optimal).
+
 
 EZR is also an XAI tool (explanatory artifical intelligence).
 After it labels a few dozen examples, EZR  generates a
@@ -220,30 +250,6 @@ means
 EZR is not working and a _win_ of 100 means "EZR finds the optimal".
 Looking at the solutions found by EZR,
 across the 118 examples currently in MOOT, then larger the sampling budget, the more we win: 
-
-|BUDGET|  win<br>median <br> (50th percentile) | win<br> variance <br> (70th-30th percentile)|
-|-----|:-----:|:------------:|
-| 10 | 58|  18 |
-| 20|  70|  20| 
-| 30 | 77 | 19|
-| 40| 80| 15|
-| 80| 88|  15|
-
-Recall that the BUDGET values in column one control how many items
-are labeled by EZR.
-Two things to note here are:
-
-- _How much we can do with so very little:_ Labeling 10 examples
-gets us get  over half way to optimum (to 58%). And after 30 labels,
-we can get over three-quarters to optimum (to 77%) which for
-engineering purposes might be sufficient.
-- _A ceiling effect on excessive labeling:_ If better results are
-needed, we can label more but there seems to be diminishing returns.
-Looking at the 10,20,40,80 results, each  doubling of the budget
-only wins another 10%.  By 80 samples we  have a median and variance of
-88% and 15%, which means the case for further labeling is not strong
-(since those results might be statistically indistinguishable from
-optimal).
 
 results
 come from isolated studies using hastily written research prototypes
