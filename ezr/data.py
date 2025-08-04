@@ -64,9 +64,10 @@ def add(x: o, v:Any, inc=1, zap=False) -> Any:
   return v
 
 #--------------------------------------------------------------------
-def norm(num:Num, v:float) -> float:  # 0..1
+def norm(col, v:float) -> float:  # 0..1
   "map 'v' to range 0..1"
-  return  v if v =="?" else (v - num.lo) / (num.hi - num.lo + 1E-32)
+  return  v if v =="?" or col.it is Sym else (
+          (v - col.lo) / (col.hi - col.lo + 1E-32))
 
 def mids(data):
   "Return the central tendency for each column."

@@ -2,6 +2,278 @@
 
 <img src="docs/ezr.png" align=right width=400>
 
+As agents explore the world, choices are easy to spot, but consequences
+are slow to measure.
+
+- A shopper can scan hundreds of used cars in minutes but needs
+hours of driving to gauge fuel economy.
+- A captain can see all possible routes on a map but must spend
+hours trawling to find fish.
+- A project manager can survey many tools but must spend weeks
+testing to know which works best for
+  their kinds of programmers working at their specific company.
+
+Formally, this is the _labeling_ problem.  Suppose our goal is to
+learn how choices $x$ effect conquences $y$. To learn the   function
+$y=f(x)$, we need some examples of ($x,y$) pairs.  There are several
+ways to find $y$"
+
+- Ask  _subject matter expert_ what $y$ values are seen when $x$ happens.
+Manual labeling by experts is
+widely used but often error-prone.  One problem is that label quality
+tends to degrade when experts are rushed to process large corpora [^mes].
+More careful elicitation methods; such as structured interviews can
+require up to one to two hours of dedicated effort per
+session [^valerdi10] [^kington09] [^lustosa24] to label just ten
+examples with ten attributes.
+- Consult an _historical log_ of $(x,y)$ pairs: Logs of past project activity provide
+labels “for free,” but they frequently contain mistakes. Spot-checking
+historical labels often uncovers significant errors: for instance,
+Yu et al. [^yu20] found that 90% of technical debt entries marked
+as “false positive” were actually correct. Similar mislabeling
+issues have been reported in security datasets [^wy21], static
+analysis outputs [^kang22], and software quality corpora [^shepperd13].
+- Ask a _model_ to automatic labeling some $x$ values.  Naive
+model-based labelling can lead to inconsistent or misleading ground
+truths (e.g.  when defect prediction labels are genereated by
+simplistic matches to keywords like “bug,” “fix,” or “error” [^kamei12]).
+More sophisticated models can be constructed, but validating them
+requires some reliable ground truth which, once again, creates a
+dependency on either expert input or verified historical logs. Large
+language models (LLMs) offer a potential shortcut by supplying
+general background knowledge, but recent studies [^Ahmed25] warn
+that LLM outputs remain assistive rather than authoritative, and
+their predictions still require careful human validation.
+
+
+[^mes80]: Mark Easterby-Smith. The design, analysis and interpretation of repertory grids. In-
+ternational Journal of Man-Machine Studies, 13(1):3–24, 1980
+
+[^valerdi10]: Ricardo Valerdi. Heuristics for systems engineering cost estimation. IEEE Systems
+Journal, 5(1):91–98, 2010.
+
+[^kington09]: Kington, Alison (2009) Defining Teachers' Classroom Relationships. In: The Social Context of Education. Valentin Bucik., Ljubljana.efining Teachers' Classroom Relationships
+
+[^lustosa24]: Andre Lustosa and Tim Menzies. Learning from very little data: On the value of land-
+scape analysis for predicting software project health. ACM Transactions on Software
+Engineering and Methodology, 33(3):1–22, 2024
+
+[^kamei12]: Yasutaka Kamei, Emad Shihab, Bram Adams, Ahmed E Hassan, Audris Mockus, Anand
+Sinha, and Naoyasu Ubayashi. A large-scale empirical study of just-in-time quality
+assurance. IEEE Transactions on Software Engineering, 39(6):757–773, 2012
+
+[^Ahmed25]: Toufique Ahmed, Premkumar Devanbu, Christoph Treude,
+Michael Pradel, 2025, Can LLMs Replace Manual Annotation of Software
+Engineering Artifacts? MSR'25.
+https://software-lab.org/publications/msr2025_LLM-annotation.pdf
+
+
+[^yu20]: Yu, Z., Fahid, F. M., Tu, H., & Menzies, T. (2020).
+Identifying self-admitted technical debts with jitterbug: A two-step
+approach. IEEE Transactions on Software Engineering, 48(5), 1676-1691.
+
+[^wu21]: Wu, X., Zheng, W., Xia, X., & Lo, D. (2021). Data quality
+matters: A case study on data label correctness for security bug
+report prediction. IEEE Transactions on Software Engineering, 48(7),
+2541-2556.
+
+[^kang22]: Kang, H. J., Aw, K. L., & Lo, D. (2022, May). Detecting
+false alarms from automatic static analysis tools: How far are we?.
+In Proceedings of the 44th International Conference on Software
+Engineering (pp. 698-709).
+
+[^shepperd13]: Shepperd, M., Song, Q., Sun, Z., & Mair, C. (2013).
+Data quality: Some comments on the nasa software defect datasets.
+IEEE Transactions on software engineering, 39(9), 1208-1215.
+
+This combination of high labeling costs, frequent errors, and reliance on imperfect sources motivates the search for more efficient, semi-automated approaches to labeling.
+This paper reports an on-going experiment with methods that can build
+models using very few labels.
+For some decades now,
+whenever we found something worked, we always applied ablation
+(.e.g throwing some part
+of that solution).
+This has lead to some surprising results:
+
+- For data mining, we kept find that models learned from $n \ll N$
+carefull selected examples perform just as well as learning from
+$N$ examples.
+- For evolutinary algorithms, we previously reprted that if we
+over-generated generation zero, then only search in that space,
+then that works as well or better than multiple generations of
+mutation, selection and cross-over.
+- For reinforcement learning, balancing exploration (of  zones of
+uncertainty) versus exploration (or zones of certainty) does no better than a
+  greedy search.
+- For active learners, intricate (and slow) uncertainty measurement
+algoriths (like Gaussian Process Models)
+  do not better than simple elite sampling.
+- For many applications, simple elite-guided stochastic sampling
+does as well as state-of-the-art
+  complex softare optimzation packages usch as NSGA-II or Hyperopt
+  or (most recently) DEHB.
+
+This paper is about the software used to reach  a new landmark in
+our search for simplicity.  All the above ablation
+results
+come from isolated studies using hastily written research prototpes
+applied to a limited number of data sets. In order for our ablation results
+to be believeable, they need to be reproduced on more data sets and
+be reproducable by others.  Accordingly, from the recent
+SE literature (and some other sources), we have found 110 search-based problems.
+There are 
+freely accessible via:
+
+    git clone http://github.com/timm/moot
+
+("MOOT" is short for "multi-objective optimzation tests".)
+
+Also, we present here a new Python package called EZR
+that can be quickly installed via:
+
+     pip install ezr
+
+EZR is _minimal_: a few hundred lines with no pandas or scikit-learn.
+It performs incremental multi-objective optimization via a greedy elite sampler
+(see next section)
+
+
+## An Overview of EZR
+
+Whenever an unlabeled example seems better, EZR grabs and labels it.
+
+```
+def guess(best, rest, todo):
+  for i,eg in enumerate(todo):
+    if likelihood(best,eg) > likelihood(rest,eg): return i
+  return 0 # default
+```
+The key point here, is that `likelihood` reflects only on the $x$ choices;
+i.e. we do not need $y$ labels to guess if a row looks promising. EZR currently
+implements six different `likelihood` functions such as the distance
+to the geometric center of a set rows.
+
+
+EZR maintains three lists:
+- _todo_: unlabeled examples
+- _best_: promising labeled examples
+- _rest_: labeled but not _best_
+
+At initialization it labels and sorts  a tiny sample
+of rows,  picked at random. 
+```
+todo = shuffle(unlabeled)
+init = sort(map(label,todo[:4]), key=y))
+best, rest = init[:2], init[2:4]
+todo = todo[4:]
+```
+Its then labels incrementally, under a small budget:
+```
+budget = 24 - len(int) # already labeled some items
+while todo and budget > 0:
+  budget -= 1
+  best.add( label( todo.pop( guess(best,rest,todo))))
+  if len(best) > sqrt(len(best)+len(rest)):
+    rest.add( best.sort(key=y).pop(-1))
+return sort(best, key=y)[0] # return best of the best.
+```
+Note that
+EZR steadily grows _best_ by guessin likely  improvements, adding them to _best_,
+then demoting its worst elites to _rest_.
+
+If we sort rows in a MOOT data set (on their y-values), then we can find the rows
+with the mean $y_\mu$ and most desirable  $y_0$ values. The outpput of EZR can then be scored
+by the _win_; i.e. how far it falls between the mean and most desirable values. 
+We define  _win_ such that a _win_ of zero
+means
+EZR is not working and a _win_ of 100 means "EZR finds the optimal":
+
+$$ win = 100*\left(1- \frac{y-y_0}{y_\mu - y_0}\right)$$
+
+Looking at the solutions found by EZR,
+across the 118 examples currently in MOOT, then larger the sampling budget, the more we win: 
+
+|budget|  win<br>median <br> (50th) | win<br> variance <br> (70th-30th)|
+|-----|:-----:|:------------:|
+| 10 | 58|  18 |
+| 20|  70|  20| 
+| 30 | 77 | 19|
+| 40| 80| 15|
+| 80| 88|  15|
+
+Two things to note here are:
+
+
+- _How much we can do with so very little:_ Labeling 10 examples
+gets us get  over half way to optimum (to 58%). And after 30 labels,
+we can get over three-quarters to optimum (to 77%) which for
+engineering purposes might be sufficnet.
+- _A ceiling effect on excessinve labeling:_ If better results are
+needed, we can label more but there seems to be diminishing returns.
+Looking at the 10,20,40,80 results, each  doubling of the budget
+wins another 10%.  By 80 samples we  have a median and variance of
+88% and 15%, which means the case for further labeling is not strong
+(since those results might be statistically indistinguisahable from
+optimial).
+
+
+EZR keeps track of a large list of unlabeled examples plus two
+smaller labeled lists called "best" and "rest".  Best and rest are
+initialized by sorting four examples,s elcted at random:
+
+    todo = shuffle(unlabeled)
+    init = todo[:4].sort(y)
+    best = init[:2]
+    rest = init[2:4]
+    todo = todo[4:]
+
+When "best" is sorted on the $y$ values (the consequences), then ``best[-1]` is the worst of the best examples
+labeled so far. "Rest" are all the labeled examples that are not "best". 
+
+    budget = 24
+    while todo and budget-- :
+      best.add(  
+        label( 
+          todo.pop( 
+            guess(best, rest, todo))))
+      if |best| > sqrt(|best| + |rest|):
+        rest.add( best.sort(y).pop(-1))
+    return best.sort(y)
+    
+THis is only a scjket'
+
+(b) a very small list of sorted "best" examples labeled so far; plus (b) a slightly
+longer list of "rest" labeled examples.  Using just the $x$ choice values, EZR 
+
+Also, we offer 110 case studies from the MOOT repository
+have been written, refactored, and shortenned many times. 
+
+As an agent walks around the world, it can quickly
+find  many
+choices. But often, it is much harder to calculate the conseuence of
+those choides. For example, in a used car lot,
+we can glance over hundreds of cars to learn what choices are available
+for manufactor,  car color, engine size, number of doors, etc.
+But it can take hours of driving to calculate miles per gallon per car.
+Similarly, the captain of a boat can glance at a map to see
+everywhere they can sail.
+But to calcualte where the fish are, they must spend hours casting their
+nets at specific
+spots. Furhter, the manager of a software project has access to many tools.
+But to calcuate which perform best for the kinds of applciations seen
+at their company, they have to speend weeks to months build applciations
+with this tool or that tool.
+
+ny fisher
+A smart agent therefore reflects over many choices before calculating
+the consequences of a handful of car design choices.
+
+
+of how choices lead to o
+
+For many reasons, we need tools that build models using very
+few labels.  Label collection can ne slow and error prone.
+
 Recently, AI has gotten very complicated.  The models are now so
 opaque that they are   hard to understand or audit or repair.  The CPU
 required to build and use them severely limits experimentation and
@@ -315,72 +587,6 @@ On the other hand, it is harder to
 collect
 dependent variables information (\$y\$)
 about (say) is something broken, is it safe, or is it profitable.
-Such $y$ labelling requires:
-
-- A _subject matter expert_:
-Expert labelling is often an error-prone process as witnessed by all the labeling
-errors seen in technical debt collection [^yu20], 
-the labelling or security bugs [^kang22], or assessments of  code quality [^shepperd13].
-Rushing experts to label large corpuses is particularly bad pracrice
-since label quality degrading as interview time shrinks [^mes].
-More considered interview methods that (e.g.) label 10 examples with 10 attributes 
-require at least an hour or two  hours [^valerdi10] [^kington09] [^lustosa24].
-- An _historical log_:
-Historical logs contain many labeling errors.
-When se spot-check the labels in historicak logs, we often find mistables.
-For example, Yu et al. [^yu20] found 90% of “false positive” technical debt labels were actually true.
-Similar issues are seen with  security bugs [^wy21], with static analysis [^kang22], and code quality assessment [^shepperd13].
-- A _model_, that can automatically generate labels.
-Naive model-based labeling is common—e.g., defect prediction using commit keywords like “bug,” “fix,” or “error” [^kamei12].
-Such naive models can yield inconsistent ground truths especially when (as we see in industry),
-regexes are tuned without rigorous validation. Non-naive models can be constructed, but their validation requres some
-ground truth (which takes us back to needing subject matter experts or historical logs).
-To avoid that construction cost, 
-general background knowledge could be used such as what is found in a  large language model.
-But the experience so far with LLMs [^Ahmed25] is that can only serve as 
-assistant, not a trusted oracle, since all their outputs still require careful checking. 
-
-
-[^mes80]: Mark Easterby-Smith. The design, analysis and interpretation of repertory grids. In-
-ternational Journal of Man-Machine Studies, 13(1):3–24, 1980
-
-[^valerdi10]: Ricardo Valerdi. Heuristics for systems engineering cost estimation. IEEE Systems
-Journal, 5(1):91–98, 2010.
-
-[^kington09]: Kington, Alison (2009) Defining Teachers' Classroom Relationships. In: The Social Context of Education. Valentin Bucik., Ljubljana.efining Teachers' Classroom Relationships
-
-[^lustosa24]: Andre Lustosa and Tim Menzies. Learning from very little data: On the value of land-
-scape analysis for predicting software project health. ACM Transactions on Software
-Engineering and Methodology, 33(3):1–22, 2024
-
-[^kamei12]: Yasutaka Kamei, Emad Shihab, Bram Adams, Ahmed E Hassan, Audris Mockus, Anand
-Sinha, and Naoyasu Ubayashi. A large-scale empirical study of just-in-time quality
-assurance. IEEE Transactions on Software Engineering, 39(6):757–773, 2012
-
-[^Ahmed25]: Toufique Ahmed, Premkumar Devanbu, Christoph Treude,
-Michael Pradel, 2025, Can LLMs Replace Manual Annotation of Software
-Engineering Artifacts? MSR'25.
-https://software-lab.org/publications/msr2025_LLM-annotation.pdf
-
-
-[^yu20]: Yu, Z., Fahid, F. M., Tu, H., & Menzies, T. (2020).
-Identifying self-admitted technical debts with jitterbug: A two-step
-approach. IEEE Transactions on Software Engineering, 48(5), 1676-1691.
-
-[^wu21]: Wu, X., Zheng, W., Xia, X., & Lo, D. (2021). Data quality
-matters: A case study on data label correctness for security bug
-report prediction. IEEE Transactions on Software Engineering, 48(7),
-2541-2556.
-
-[^kang22]: Kang, H. J., Aw, K. L., & Lo, D. (2022, May). Detecting
-false alarms from automatic static analysis tools: How far are we?.
-In Proceedings of the 44th International Conference on Software
-Engineering (pp. 698-709).
-
-[^shepperd13]: Shepperd, M., Song, Q., Sun, Z., & Mair, C. (2013).
-Data quality: Some comments on the nasa software defect datasets.
-IEEE Transactions on software engineering, 39(9), 1208-1215.
-
 
 > Table 3: On the value of less modeling.
 

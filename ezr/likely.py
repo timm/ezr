@@ -82,6 +82,25 @@ def eg__inc():
       assert abs(mu2 - mu1) < 1.01 and abs(sd2 - sd1) < 1.01
     sub(d2,row,zap=True)
 
+def eg__xploit():
+  "like: trquicy different acqusition functions"
+  the.acq="xploit"
+  repeats = 20
+  data = Data(csv(the.file))
+  b4   = adds(disty(data,r) for r in data.rows)
+  win  = lambda n: int(100*((1 - (n - b4.lo) / (b4.mu - b4.lo))))
+  rxs  = {10:Num(), 20:Num(), 30:Num(), 40:Num(), 80:Num()}
+  for build,log in rxs.items():
+    log.txt = str(build)
+    the.Build = build
+    adds((disty(data, likely(data)[0]) for _ in range(repeats)), log)
+  print(' '.join([f'{log.txt} {win(log.mu)}' 
+                  for log in rxs.values()]), 
+        "|", len(data.rows),
+        len(data.cols.x),
+        len(data.cols.y),
+        re.sub(".*/","",the.file))
+
 def eg__likely():
   "like: try different acqusition functions"
   repeats = 20

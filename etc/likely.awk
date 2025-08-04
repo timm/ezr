@@ -1,6 +1,6 @@
-BEGIN { W=33 }
-      { for(i=2;i<=14;i+=2) if($i!="?") { name[i]=$(i-1); a[i][NR]=$i+0} }
-END   { for(i=2;i<=14;i+=2) {
+BEGIN { W=33; Max=14 }
+      { for(i=2;i<=Max;i+=2) if($i!="?") { name[i]=$(i-1); a[i][NR]=$i+0} }
+END   { for(i=2;i<=Max;i+=2) {
           n=asort(a[i],b); t=int(n/10)
           b10=b[t]; b30=b[3*t]; b50=b[5*t]; b70=b[7*t]; b90=b[9*t]
     

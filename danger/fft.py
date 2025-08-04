@@ -26,27 +26,35 @@ the= o(**{k:coerce(v) for k,v in re.findall(r"(\w+)=(\S+)", __doc__)})
 
 #---------------------------------------------------------------------
 BIG = 1E30
-def Data(): return o(rows=[], cols=[])
-def Sym(at=0,txt=""): return o(at=at,txt=txt,has={},w=1)
-def Num(at=0,txt=" "): return o(at=at,txt=txt,lo=BIG,hi=-BIG,
-                                mu=0,n=0,goal=0 if txt[0]=="-" else 1)
+def Data(): return o(it=Data,rows=[], cols=[])
+def Sym(i=0,txt=""): return o(it=Sym,i=i,txt=txt,has={},w=1)
+def Num(i=0,txt=" "): return o(it=Num, i=i,txt=txt,lo=BIG,hi=-BIG,
+                                mu=0,n=0,m2=0,sd=0,
+                                goal=0 if txt[0]=="-" else 1)
 
-def isNum(col) : return hasattr(col, "mu") 
-def isSym(col) : return hasattr(col, "has")
-def isData(col): return hasattr(col, "rows")
+def sub(x:o, v:Any, zap=False) -> Any: 
+  "subtraction is just adding -1"
+  return add(x,v,-1,zap)
 
-def add(it, v):
-  if v=="?": return v
-  if isSym(it): it.has[v] = 1 + it.has.get(v, 0)
-  elif isData(it):
-    if it.cols: it.rows.append([add(c,v[c.at]) for c in it.cols.all])
-    else: it.cols = dataHeader(v)
-  else:
-    it.n  += 1
-    delta   = v - it.mu
-    it.mu += delta / it.n
-    it.lo  = min(it.lo, v)
-    it.hi  = max(it.hi, v)
+def add(x: o, v:Any, inc=1, zap=False) -> Any:
+  "incrementally update Syms,Nums or Datas"
+  if v == "?": return v
+  if x.it is Sym: x.has[v] = inc + x.has.get(v,0)
+  elif x.it is Num:
+    x.n += inc
+    x.lo, x.hi = min(v, x.lo), max(v, x.hi)
+    if inc < 0 and x.n < 2:
+      x.sd = x.m2 = x.mu = x.n = 0
+    else:
+      d     = v - x.mu
+      x.mu += inc * (d / x.n)
+      x.m2 += inc * (d * (v - x.mu))
+      x.sd  = 0 if x.n < 2 else (max(0,x.m2)/(x.n-1))**.5
+  elif x.it is Data:
+    x.n += inc
+    if inc > 0: x.rows += [v]
+    elif zap: x.rows.remove(v) # slow for long rows
+    [add(col, v[col.i],inc) for col in x.cols.all]
   return v
 
 def adds(src,it=None):
@@ -55,7 +63,7 @@ def adds(src,it=None):
   return it 
 
 def norm(col, v): 
-  return v if v=="?" or type(col) is Sym else (
+  return v if v=="?" or col.it is Sym else (
          (v-col.lo)/(col.hi-col.lo + 1/BIG))
  
 #---------------------------------------------------------------------
@@ -91,13 +99,13 @@ def distPoles(data):
   return out
 
 def disty(data,row):
-  d = sum(abs(norm(c,row[c.at]) - c.goal)**the.p for c in data.cols.y)
+  d = sum(abs(norm(c,row[c.i]) - c.goal)**the.p for c in data.cols.y)
   return (d / len(data.cols.y))**(1/the.p)
 
 def distx(data,r1,r2):
   def _dist(col):
-    a = r1[col.at]
-    b = r2[col.at]
+    a = r1[col.i]
+    b = r2[col.i]
     if a==b=="?": return 1
     if isSym(col): return a != b
     a,b = norm(col,a), norm(col,b)
@@ -119,37 +127,73 @@ def distGuessY(data,row,poles):
   return sum(distInterpolate(data,row,*p) for p in poles) / len(poles)
 
 #---------------------------------------------------------------------
+def treeCuts(rows, col, klass):
+  return (treeCutsSym if isSym(col) else treeCutsNum)(rows, col, klass)
+
+def treeCutsSym(rows, col, klass):
+  buckets = {}
+  for r in rows:
+    x = r[col.i]
+    if x != "?":
+      buckets.setdefault(x, []).append(r)
+  for sym, bucket in buckets.items():
+    mid = distGuessY(bucket)
+    yield (mid, col.i, (sym, sym), o(mid=mid, n=len(bucket)))
+
+def treeCutsNum(rows, col, klass, BIG=1e32):
+  xrows = sorted((x, r) for r in rows if (x := r[col.i]) != "?")
+  n = len(xrows)
+  if n < 2:
+    return
+  xr, xl = Num(), Num()
+  for x, _ in xrows: xr.add(x)
+  eps, cohen = math.sqrt(n), xr.sd * 0.34
+  best = (BIG, None)
+  for i, (x, r) in enumerate(xrows[:-1]):
+    xr.sub(x); xl.add(x)
+    if xl.n > eps and xr.n > eps and abs(xl.mu - xr.mu) >= cohen:
+      score = (xl.n * div(xl) + xr.n * div(xr)) / n
+      if score < best[0]:
+        best = (score, (i, x))
+  if best[1]:
+    i, x = best[1]
+    y1 = distGuessY([r for _, r in xrows[:i]])
+    y2 = distGuessY([r for _, r in xrows[i:]])
+    yield (y1, col.i, (-BIG, x), o(mid=y1, n=i))
+    yield (y2, col.i, (x, BIG), o(mid=y2, n=n - i))
+
+
 def Tree(data, Guess, depth=the.depth):
-  def _go(data1, d):  
+  def _go(data1, d):
     sub = False
     if d <= depth:
-      if cuts := [cut for col in data1.cols.x 
-                  for cut in treeCuts(data1, col, data1.rows, Guess)]:
+      cuts = [cut for col in data1.cols.x
+                   for cut in treeCuts(data1.rows, col, data1.cols.klass)]
+      if cuts:
         best, *_, worst = sorted(cuts)
-        for how, (_, c, (xlo, xhi), leaf) in enumerate([worst, best]):
-          yes, no = treeKids(data1.rows, c, xlo, xhi)
-          if len(yes) > len(data.rows)**.33:
+        for how, (_, c, (lo, hi), leaf) in enumerate([worst, best]):
+          yes, no = treeKids(data1.rows, c, lo, hi)
+          if len(yes) > len(data.rows) ** .33:
             for subtree in _go(dataClone(data1, no), d + 1):
               sub = True
-              yield o(c=c, lo=xlo, hi=xhi, left=leaf, 
-                           bias=how, right=subtree)
+              yield o(c=c, lo=lo, hi=hi,
+                      left=leaf, bias=how, right=subtree)
     if not sub:
-      yield adds([Guess(row) for row in data1.rows])
+      mid = distGuessY(data1.rows)
+      yield o(mid=mid, n=len(data1.rows))
   yield from _go(data, 1)
 
-def treeCuts(data, col, rows, Guess):
-  ys = {}
-  for row in rows:
-    x, y = row[col.at], Guess(row)
-    if x == "?": continue
-    k = x if isSym(col) else x <= col.mu  
-    if k not in ys: ys[k] = Num()
-    add(ys[k], y)
-  return [
-    (ys[k].mu, 
-     col.at,
-     (k,k) if isSym(col) else ((-BIG,col.mu) if k else (col.mu,BIG)),
-     ys[k]) for k in ys]
+def treeShow(data, t, last=1):
+  if not hasattr(t, "c"):
+    print(f"{1-last} : {t.n:>4} : {t.mid:.2f}")
+  else:
+    name = data.cols.all[t.c].txt
+    if t.lo == t.hi: txt = f"{name} == {t.hi}"
+    elif abs(t.hi) == BIG: txt = f"{name} >= {t.lo:.3f}"
+    else: txt = f"{name} <= {t.hi:.3f}"
+    print(f"{t.bias} : {t.left.n:>4} : if {txt} then {t.left.mid:.3f} else")
+    treeShow(data, t.right, t.bias)
+
 
 def treeKids(rows, c, xlo, xhi):
   yes, no, maybe = [], [], []
@@ -158,18 +202,6 @@ def treeKids(rows, c, xlo, xhi):
     (maybe if v == "?" else yes if xlo <= v <= xhi else no).append(row)
   (yes if len(yes) > len(no) else no).extend(maybe)
   return yes, no
-
-def treeShow(data, t, last=1):
-  if not hasattr(t, "c"): print(f"{1-last} : {t.n:>4} : {t.mu:.2f}")
-  else:
-    name = data.cols.all[t.c].txt
-    if   t.lo == t.hi:      txt = f"{name} == {t.hi}"
-    elif abs(t.hi) == BIG:  txt = f"{name} >= {t.lo:.3f}"
-    else:                   txt = f"{name} <= {t.hi:.3f}"
-    print(f"{t.bias} : {t.left.n:>4} : ", end="")
-    print(f"if {txt} then {t.left.mu:.3f} else")
-    treeShow(data, t.right, t.bias)
-
 def treePredict(t, row):
   while hasattr(t, "c"):
     t = t.left if row[t.c]=="?" or t.lo<=row[t.c]<=t.hi else t.right
@@ -180,66 +212,6 @@ def treeTune(trees, rows, Guess):
     return sum(abs(Guess(r)-treePredict(t,r)) for r in rows)/len(rows)
   return min(trees, key=_score)
 
-# def Tree(data, depth=the.depth):
-#   def _go(data1, d):  
-#     sub=False
-#     if d <= the.depth :
-#       if cuts := [cut for col in data1.cols.x
-#                       for cut in treeCuts(data1, col, data1.rows)]:
-#         best, *_, worst = sorted(cuts)
-#         for how,(_, c, (xlo, xhi), leaf) in enumerate([worst,best]):
-#           yes, no = treeKids(data1.rows, c, xlo, xhi)
-#           if len(yes) > len(data.rows)**.33:
-#             for subtree in _go(dataClone(data1, no), d + 1):
-#               sub=True
-#               yield o(c=c, lo=xlo, hi=xhi, left=leaf,
-#                       bias=how,right=subtree)
-#     if not sub:
-#       yield adds([row[data.cols.klass.at] for row in data1.rows])
-#   yield from _go(data, 1)
-#
-# def treeCuts(data, col, rows):
-#   ys = {}
-#   for row in rows:
-#     x, y = row[col.at], row[data.cols.klass.at]
-#     if x == "?": continue
-#     k = x if isSym(col) else x <= col.mu  
-#     if k not in ys: ys[k] = Num()
-#     add(ys[k], y)
-#   return [
-#    (ys[k].mu, # what to sort on
-#     col.at,        
-#     (k,k) if isSym(col) else ((-BIG,col.mu) if k else (col.mu,BIG)),
-#     ys[k]) for k in ys]
-#
-# def treeKids(rows, c, xlo, xhi):
-#   yes, no, maybe = [], [], []
-#   for row in rows:
-#     v=row[c]
-#     (maybe if v=="?" else yes if xlo <= v <=xhi else no).append(row)
-#   (yes if len(yes) > len(no) else no).extend(maybe)
-#   return yes, no
-#
-# def treeShow(data, t,last=1):
-#   if not hasattr(t, "c"): print(f"{1-last} : {t.n:>4} : {t.mu:.2f}")
-#   else:
-#     name = data.cols.all[t.c].txt
-#     if   t.lo == t.hi:      txt= f"{name} == {t.hi}"
-#     elif abs(t.hi) == BIG : txt= f"{name} >= {t.lo:.3f}"
-#     else:                   txt= f"{name} <= {t.hi:.3f}"
-#     print(f"{t.bias} : {t.left.n:>4} : if {txt} then {t.left.mu:.3f} else")
-#     treeShow(data,t.right,t.bias) 
-#
-# def treePredict(t, row):
-#   while hasattr(t, "c"):
-#     t = t.left if row[t.c]=="?" or t.lo<=row[t.c]<=t.hi else t.right
-#   return t.mu
-#
-# def treeTune(trees, rows):
-#   def _score(t):
-#     return sum(abs(row[-1]-treePredict(t,row)) for row in rows) / len(rows)
-#   return min(trees, key=_score)
-#
 #---------------------------------------------------------------------
 def eg_h(): print(__doc__)
 

@@ -51,8 +51,19 @@ lint: ## lint all python in this directory
 
 #------------------------------
 
+~/tmp/xploit.log: 
+	$(MAKE) todo=xploit files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
+	gawk -f $(Top)/etc/likely.awk Max=10 $@ 
+
+# gawk -f etc/likely.awk Max=8 ~/tmp/xploit.log
+# 25 47 58 65 88        --------|  * ---------     10
+# 33 57 70 77 96          ---------    * -------   20
+# 36 66 80 87 98           -----------    * -----  40
+# 44 79 88 94 98              -------------  * --  80
+#
+
 ~/tmp/likelyAll.log: 
-	$(MAKE) files="$(Top)/../moot/optimize/*/*.csv" likely | tee $@; \
+	$(MAKE) todo=likely files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
 	gawk -f $(Top)/etc/likely.awk $@ 
 
 # 33 61 70 80 98          -----------  *  -------  xplor
@@ -64,13 +75,13 @@ lint: ## lint all python in this directory
 # 37 63 78 83 98            ---------    * ------  xploit
 
 ~/tmp/likelySome.log: 
-	$(MAKE) files="$(Top)/../moot/optimize/config/SS-[A-J]*.csv" likely | tee $@ ; \
+	$(MAKE) todo=likely files="$(Top)/../moot/optimize/config/SS-[A-J]*.csv" worker | tee $@ ; \
 	gawk -f $(Top)/etc/likely.awk $@ 
 
-likely:
+worker:
 	@mkdir -p ~/tmp
 	time ls -r $(files) \
-	  | xargs -P 32 -n 1 -I{} sh -c 'python3 -B -m ezr -f "{}" --likely'
+	  | xargs -P 32 -n 1 -I{} sh -c 'python3 -B -m ezr -f "{}" --$(todo)'
 
 # cat ~/tmp/likelyAll.log
 # 1    near  22   klass  13   bore  8    xploit  18   xplor  21   adapt  30   rands  14   |  10000   5     3  Health-ClosedIssues0007.csv
