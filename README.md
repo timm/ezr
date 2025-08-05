@@ -286,8 +286,7 @@ important thing to enable  (_memory\_tables_ and _detailed\_logging_).
 EZR shows that with the right strategy, a handful of examples 
 (in this case, 24) can
 uncover nearly all the signal.  All of this took just a few dozen
-queries—and a few hundred lines of code. It’s a striking illustration
-of the Pareto principle:  **most of the value often comes from just
+queries—and a few hundred lines of code. It’s a striking illustraionof the Pareto principle:  **most of the value often comes from just
 a small fraction of the effort**.
 
 Another thing to note here is how fast EZR operates.
@@ -443,22 +442,43 @@ EZR maintains three lists:
 At initialization. EZR labels and sorts  a tiny sample
 of rows,  picked at random. 
 ```python
-ANY  = 4
-cut  = sqrt(4)
-todo = shuffle(unlabeled)
-init = sort(map(label,todo[:ANY]), key=y))
-best, rest = init[:cut], init[cut:ANY]
-todo = todo[ANY:]
+ANY    = 4   # how many initial guesses
+BUDGET = 24  # how many labels to collect
+CHECK  = 5   # how often to apply model
+
+shuffle(rows)
+n = len(rows)
+train, test = rows[:n], rows[n:] # for validation
+
+labeled        = []
+unlabeled      = shuffle(train)
+init,unlabeled = unlabeled[:ANY], unlabeled[ANY:]
+init           = sort(init, key=y))
+cut            = int(sqrt(ANY))
+best, rest     = init[:cut], init[cut:]
 ```
-Its then labels incrementally, under a small budget:
-```python
-BUDGET = 24 - ANY # already labeled some items
-while todo and BUDGET > 0:
-  BUDGET -= 1
-  best.add( label( todo.pop( guess(best,rest,todo)))) # guess is defined above
-  if len(best) > sqrt(len(best)+len(rest)):
-    rest.add( best.sort(key=y).pop(-1))
-return sort(best, key=y)[0] # return best of the best.
+```
+Y(row) -> 
+  ensureLabeled(row)
+  dist2most(row)
+```
+
+```
+while len(labeled) <= BUDGET and unlabeled:
+  if len(labeled) > ANY:
+    best.add( todo.pop( guess(best,rest,unlabeled))) 
+    if len(best) > sqrt(len(best)+len(rest)):
+      add(all, add(best, row))
+      if len(best) > sqrt(len(labeled)):
+        add(rest, sub(best, best.sort(y).pop(-1)))
+```
+
+
+tree = Tree(labeled)
+maybe = test.sort( row -> predict(tree,row))[:CHECK]
+return maybe.sort(Y)[0]
+
+      
 ```
 Note that
 EZR steadily grows _best_ by guessin likely  improvements, adding them to _best_,
@@ -486,7 +506,7 @@ END2
 
 [^maju18]: Majumder, S., Balaji, N., Brey, K., Fu, W., & Menzies, T. (2018, May). 500+ times faster than deep learning: A case study exploring faster methods for text mining stackoverflow. In Proceedings of the 15th International Conference on Mining Software Repositories (pp. 554-563).
 
-[^taw23]: V. Tawosi, R. Moussa, and F. Sarro, “Agile effort
+[^taw23]: V. Tawosi,l R. Moussa, and F. Sarro, “Agile effort
 estimation: Have we solved the problem yet? insights from a replication
 study,” IEEE Transactions on Software Engineering, vol. 49, no. 4,
 pp. 2677– 2697, 2023.
