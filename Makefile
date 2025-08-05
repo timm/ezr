@@ -59,6 +59,23 @@ stats:
 
 # 5000 +- 4000;  6 += 10; 3 += 1; n=118 lines
 
+~/tmp/treeSelect.log: 
+	$(MAKE) todo=treeSelect files="$(Top)/../moot/optimize/config/*.csv" worker | tee $@; \
+	gawk -f $(Top)/etc/likely.awk Max=24 $@ 
+
+# 46 56 63 76 88               ---- *    -----     build10
+# 34 47 64 76 86           -----|    *   ----      check10
+# 43 63 75 85 95              -------   *   ----   check20
+# 49 74 77 88 95                ---------*   ---   build20
+# 44 70 83 91 95              ----------   *  --   check30
+# 63 77 85 90 96                |   ------  *---   build30
+# 53 76 86 92 96                |---------  * --   check40
+# 60 83 87 93 97                |  ---------* ---  build40
+# 54 89 92 95 98                |-------------*--  check80
+# 55 85 93 96 98                | ----------- *--  check120
+# 66 91 93 96 98                |    ---------*--  build80
+# 68 92 96 97 98                |     ---------*-  build120
+#
 ~/tmp/xploit.log: 
 	$(MAKE) todo=xploit files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
 	gawk -f $(Top)/etc/likely.awk Max=10 $@ 
