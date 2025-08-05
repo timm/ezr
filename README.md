@@ -23,7 +23,7 @@ approaches. This is a methodological error since other methods can
 produce results that are better and/or faster (See Table 1)
 
 
-> Table1: Predictive AI can sometimes produce better results, faster.
+> Table1: Tiny AI versus Big AI
 
 |When          | What|
 |--------------|-----|
@@ -134,213 +134,16 @@ This paper presents the software behind EZR. As shown below, that
 code is very simple (and runs so fast).  Considering the simplicity
 and effectiveness of SWAY , we, therefore, propose this approach
 as a baseline method for search-based software engineering models,
-especially for models that are very slow to execute
+especially for models that are very slow to execute.
 
-
-[^wolp]: Wolpert, David H., and William G. Macready. "No free lunch theorems for optimization." IEEE transactions on evolutionary computation 1.1 (2002): 67-82.
-
-When conducting such commissioning experiments, it is very
-useful to have a baseline optimizer; i.e., an algorithm which can
+It is very
+useful to have a baseline system; i.e., an algorithm which can
 generate floor performance values. Such baselines let a developer
 quickly rule out any optimization option that falls “below the
 floor”. In this way, researchers and industrial practitioners can
 achieve fast early results, while also gaining some guidance in
 all their subsequent experimentation (specifically: “try to beat the
 baseline”).
-
-The conclusion of this paper is not that SWAY is always the
-best choice optimizing SBSE models. Rather, since SWAY is so
-simple and so fast, it is a reasonable first choice for benchmarking
-other approache
-
-
-that, for predictive problems,
-it should be standard practice to try Tiny AI before Big Ai.
-be useful
-in applying The specific point of this paper
-is that Tiny AI software is so simple that it should be routinely applied
-all new can be extremely simple. So 
-For an example where this tool can dramatically simplify prior results, see the end of this document.
-
-
-
-As agents explore the world, choices are easy to spot, but consequences
-are slow to measure.
-
-- A shopper can scan hundreds of used cars in minutes but needs
-hours of driving to gauge fuel economy.
-- A captain can see all possible routes on a map but must spend
-hours trawling to find fish.
-- A project manager can survey many tools but must spend weeks
-testing to know which works best for
-  their kinds of programmers working at their specific company.
-
-Formally, this is the _labeling_ problem.  Suppose our goal is to
-learn how choices $x$ effect conquences $y$. To learn the   function
-$y=f(x)$, we need some examples of ($x,y$) pairs.  There are many
-ways to find $y$, each of which has problems:
-
-- Ask  _subject matter expert_ what $y$ values are seen when $x$ happens.
-Manual labeling by experts is
-widely used but often error-prone.  One problem is that label quality
-tends to degrade when experts are rushed to process large corpora [^mes80].
-More careful elicitation methods; such as structured interviews can
-require up to one to two hours of dedicated effort per
-session [^valerdi10] [^kington09] [^lustosa24] to label just ten
-examples with ten attributes.
-- Consult an _historical log_ of $(x,y)$ pairs: Logs of past project activity provide
-labels “for free,” but they frequently contain mistakes. Spot-checking
-historical labels often uncovers significant errors: for instance,
-Yu et al. [^yu20] found that 90% of technical debt entries marked
-as “false positive” were actually correct. Similar mislabeling
-issues have been reported in security datasets [^wu21], static
-analysis outputs [^kang22], and software quality corpora [^shepperd13].
-- Ask a _model_ to automatic labeling some $x$ values.  Naive
-model-based labelling can lead to inconsistent or misleading ground
-truths (e.g.  when defect prediction labels are genereated by
-simplistic matches to keywords like “bug,” “fix,” or “error” [^kamei12]).
-More sophisticated models can be constructed, but validating them
-requires some reliable ground truth which, once again, creates a
-dependency on either expert input or verified historical logs. Large
-language models (LLMs) offer a potential shortcut by supplying
-general background knowledge, but recent studies [^Ahmed25] warn
-that LLM outputs remain assistive rather than authoritative, and
-their predictions still require careful human validation.
-
-
-[^mes80]: Mark Easterby-Smith. The design, analysis and interpretation of repertory grids. In-
-ternational Journal of Man-Machine Studies, 13(1):3–24, 1980
-
-[^valerdi10]: Ricardo Valerdi. Heuristics for systems engineering cost estimation. IEEE Systems
-Journal, 5(1):91–98, 2010.
-
-[^kington09]: Kington, Alison (2009) Defining Teachers' Classroom Relationships. In: The Social Context of Education. Valentin Bucik., Ljubljana.efining Teachers' Classroom Relationships
-
-[^lustosa24]: Andre Lustosa and Tim Menzies. Learning from very little data: On the value of land-
-scape analysis for predicting software project health. ACM Transactions on Software
-Engineering and Methodology, 33(3):1–22, 2024
-
-[^kamei12]: Yasutaka Kamei, Emad Shihab, Bram Adams, Ahmed E Hassan, Audris Mockus, Anand
-Sinha, and Naoyasu Ubayashi. A large-scale empirical study of just-in-time quality
-assurance. IEEE Transactions on Software Engineering, 39(6):757–773, 2012
-
-[^Ahmed25]: Toufique Ahmed, Premkumar Devanbu, Christoph Treude,
-Michael Pradel, 2025, Can LLMs Replace Manual Annotation of Software
-Engineering Artifacts? MSR'25.
-https://software-lab.org/publications/msr2025_LLM-annotation.pdf
-
-
-[^yu20]: Yu, Z., Fahid, F. M., Tu, H., & Menzies, T. (2020).
-Identifying self-admitted technical debts with jitterbug: A two-step
-approach. IEEE Transactions on Software Engineering, 48(5), 1676-1691.
-
-[^wu21]: Wu, X., Zheng, W., Xia, X., & Lo, D. (2021). Data quality
-matters: A case study on data label correctness for security bug
-report prediction. IEEE Transactions on Software Engineering, 48(7),
-2541-2556.
-
-[^kang22]: Kang, H. J., Aw, K. L., & Lo, D. (2022, May). Detecting
-false alarms from automatic static analysis tools: How far are we?.
-In Proceedings of the 44th International Conference on Software
-Engineering (pp. 698-709).
-
-[^shepperd13]: Shepperd, M., Song, Q., Sun, Z., & Mair, C. (2013).
-Data quality: Some comments on the nasa software defect datasets.
-IEEE Transactions on software engineering, 39(9), 1208-1215.
-
-When labeling is so problematic, one solution might be:
-
-> Label less.
-
-For some decades now, we have been exploring methods
-for building better models from less data.
-This paper is about the software and test data used to reach  a new landmark in
-our search for simplicity.   
-
-- MOOT (short for "Multi-objective optimzation tests") All the above ablation
-
-If we sort rows in a MOOT data set (on their y-values), then we can find the rows
-with the mean $y_\mu$ and most desirable  $y_0$ values. For that data set,
-the output of EZR can then be scored
-by how far it falls between the mean and most desirable values:
-
-$$ win = 100*\left(1- \frac{y-y_0}{y_\mu - y_0}\right)$$
-
-This expression is defined  such that a _win_ of zero
-means
-EZR is not working and a _win_ of 100 means "EZR finds the optimal".
-Looking at the solutions found by EZR,
-across the 118 examples currently in MOOT, then larger the sampling budget, the more we win: 
-
-results
-come from isolated studies using hastily written research prototypes
-applied to a limited number of data sets. In order for our ablation results
-to be believable, they need to be reproduced on more data sets and
-be reproducible by others.  Accordingly, from the recent
-SE literature (and some other sources), we have found 110 search-based problems.
-There are 
-freely accessible via:
-
-    git clone http://github.com/timm/moot
-
-("MOOT" is short for "multi-objective optimization tests".
-
-Also, we present here a new Python package called EZR
-that can be quickly installed via:
-
-     pip install ezr
-
-EZR is _minimal_: a few hundred lines with no pandas or scikit-learn.
-It performs incremental multi-objective optimization via a greedy elite sampler
-Whenever an unlabeled example seems promising, EZR grabs and labels it.
-
-```python
-def guess(best, rest, todo):
-  for i,eg in enumerate(todo):
-    if likelihood(best,eg) > likelihood(rest,eg): return i
-  return 0 # default
-```
-The key point here, is that `likelihood` reflects only on the $x$ choices;
-i.e. it does not need $y$ labels to guess if a row looks promising. EZR currently
-implements six different `likelihood` functions such as the distance of a example's
-$x$ variables
-to the geometric center of a set of rows.
-
-
-EZR maintains three lists:
-- _todo_: unlabeled examples
-- $N$ labeled examples divide into:
-  - _best_: $\sqrt{N}$ promising labeled examples
-  - _rest_: the $N - \sqrt{N}$ labeled examples that are not _best_
-
-At initialization. EZR labels and sorts  a tiny sample
-of rows,  picked at random. 
-```python
-ANY  = 4
-cut  = sqrt(4)
-todo = shuffle(unlabeled)
-init = sort(map(label,todo[:ANY]), key=y))
-best, rest = init[:cut], init[cut:ANY]
-todo = todo[ANY:]
-```
-Its then labels incrementally, under a small budget:
-```python
-BUDGET = 24 - ANY # already labeled some items
-while todo and BUDGET > 0:
-  BUDGET -= 1
-  best.add( label( todo.pop( guess(best,rest,todo)))) # guess is defined above
-  if len(best) > sqrt(len(best)+len(rest)):
-    rest.add( best.sort(key=y).pop(-1))
-return sort(best, key=y)[0] # return best of the best.
-```
-Note that
-EZR steadily grows _best_ by guessin likely  improvements, adding them to _best_,
-then demoting its worst elites to _rest_.
-
-
-END2
-
-Perhaps before resorting to Big AI, we should first try something else.
 In his textbook on Empirical Methods for AI, Cohen
 [^cohen95] strongly advocates comparing supposedly sophisticated
 systems against simpler alternatives. In the machine learning
@@ -358,31 +161,33 @@ experimentation to match the particulars of the local model to
 particular algorithms.
 
 
-BEGIN2
 
-END2
 
-[^moot]: http://github.com/timm/moot
+[^wolp]: Wolpert, David H., and William G. Macready. "No free lunch theorems for optimization." IEEE transactions on evolutionary computation 1.1 (2002): 67-82.
 
-[^hou24]: Hou, X., Zhao, Y., Liu, Y., Yang, Z., Wang, K., Li, L., ... & Wang, H. (2024). Large language models for software engineering: A systematic literature review. ACM Transactions on Software Engineering and Methodology, 33(8), 1-79.
+Just to be clear, the claim here is that EZR is always the best approach.
+Indeed for generative tasks, we (as yet) need to use large langauge models
+and Big AI. But not all tasks are generative. Some are predictive,
+such as the decision making tasks explored here. 
+Large language models train from data available “in the commons”; i.e. all the data generated by (say) programmers
+who store their code in Github. In the commons, there may exist many acceptable solutions for (e.g.) how to build a
+website in Python. Given a plethora of such solutions, LLMs can offer a useful response to a specific prompt.
+However, there are problems that humans rarely address or, if they do, they rarely produce solution that a broad
+community would find acceptable. For such “uncommon” tasks, LLMs may lack sufficient training data. Many of the
+optimization tasks in MOOT are “uncommon”. For example, our XOMO* data sets come from books discussing process
+options for software projects. These data sets list 24 parameters, usually discretized into five ranges (very low, low,
+nominal, high, very high). While many publications mention these choices, we know of none that conclude that one
+of these 524 ≈ 1016 choices is undeniably better than the rest. Also, several of our models refer to the configuration
+of cloud-based software systems. We would also call this an “uncommon” problem since there are some few publicly
+available examples of well-configured cloud environment
 
-[^john84]: Johnson, B., & Menzies, T. (2024). Ai over-hype: A dangerous threat (and how to fix it). IEEE Software, 41(6), 131-138.
+Also, not all domains support the data needed by big AI.
 
-[^ling24]: Ling, X., Menzies, T., Hazard, C., Shu, J., & Beel, J. (2024). Trading off scalability, privacy, and performance in data synthesis. IEEE Access, 12, 26642-26654.
-
-[^grin22]: Grinsztajn, Léo, Edouard Oyallon, and Gaël Varoquaux. "Why do tree-based models still outperform deep learning on typical tabular data?." Advances in neural information processing systems 35 (2022): 507-520
-
-[^somv24]: Somvanshi, S., Das, S., Javed, S. A., Antariksa, G., & Hossain, A. (2024). A survey on deep tabular learning. arXiv preprint arXiv:2410.12034.
-
-[^maju18]: Majumder, S., Balaji, N., Brey, K., Fu, W., & Menzies, T. (2018, May). 500+ times faster than deep learning: A case study exploring faster methods for text mining stackoverflow. In Proceedings of the 15th International Conference on Mining Software Repositories (pp. 554-563).
-
-[^taw23]: V. Tawosi, R. Moussa, and F. Sarro, “Agile effort
-estimation: Have we solved the problem yet? insights from a replication
-study,” IEEE Transactions on Software Engineering, vol. 49, no. 4,
-pp. 2677– 2697, 2023.
-
-[^shi22]: Jieke Shi, Zhou Yang, Bowen Xu, Hong Jin Kang, and David Lo. 2023. Compressing Pre-trained Models of Code into 3 MB. In Proceedings of the 37th IEEE/ACM International Conference on Automated Software Engineering (ASE '22). Association for Computing Machinery, New York, NY, USA, Article 24, 1–12. https://doi.org/10.1145/3551349.3556964
-
+iJUstThe claim of this paper is not that EZR is always the
+best choice exploring options and making decisions.
+Rather, since EZR is so
+simple and so fast, it is a reasonable first choice for benchmarking
+other approaches.
 
 ## A Quick Example
 
@@ -515,6 +320,179 @@ to the best result only uses four settings. Much larger reductions in the space
 of variables can be seen for the Scrum models. The last row
 of this table tells us that of 124 settings, only 10 are needed overall and only
 3 are found in the best recommendation.
+
+
+
+As agents explore the world, choices are easy to spot, but consequences
+are slow to measure.
+
+- A shopper can scan hundreds of used cars in minutes but needs
+hours of driving to gauge fuel economy.
+- A captain can see all possible routes on a map but must spend
+hours trawling to find fish.
+- A project manager can survey many tools but must spend weeks
+testing to know which works best for
+  their kinds of programmers working at their specific company.
+
+Formally, this is the _labeling_ problem.  Suppose our goal is to
+learn how choices $x$ effect conquences $y$. To learn the   function
+$y=f(x)$, we need some examples of ($x,y$) pairs.  There are many
+ways to find $y$, each of which has problems:
+
+- Ask  _subject matter expert_ what $y$ values are seen when $x$ happens.
+Manual labeling by experts is
+widely used but often error-prone.  One problem is that label quality
+tends to degrade when experts are rushed to process large corpora [^mes80].
+More careful elicitation methods; such as structured interviews can
+require up to one to two hours of dedicated effort per
+session [^valerdi10] [^kington09] [^lustosa24] to label just ten
+examples with ten attributes.
+- Consult an _historical log_ of $(x,y)$ pairs: Logs of past project activity provide
+labels “for free,” but they frequently contain mistakes. Spot-checking
+historical labels often uncovers significant errors: for instance,
+Yu et al. [^yu20] found that 90% of technical debt entries marked
+as “false positive” were actually correct. Similar mislabeling
+issues have been reported in security datasets [^wu21], static
+analysis outputs [^kang22], and software quality corpora [^shepperd13].
+- Ask a _model_ to automatic labeling some $x$ values.  Naive
+model-based labelling can lead to inconsistent or misleading ground
+truths (e.g.  when defect prediction labels are gene1zreated by
+simplistic matches to keywords like “bug,” “fix,” or “error” [^kamei12]).
+More sophisticated models can be constructed, but validating them
+requires some reliable ground truth which, once again, creates a
+dependency on either expert input or verified historical logs. Large
+language models (LLMs) offer a potential shortcut by supplying
+general background knowledge, but recent studies [^Ahmed25] warn
+that LLM outputs remain assistive rather than authoritative, and
+their predictions still require careful human validation.
+
+
+[^mes80]: Mark Easterby-Smith. The design, analysis and interpretation of repertory grids. In-
+ternational Journal of Man-Machine Studies, 13(1):3–24, 1980
+
+[^valerdi10]: Ricardo Valerdi. Heuristics for systems engineering cost estimation. IEEE Systems
+Journal, 5(1):91–98, 2010.
+
+[^kington09]: Kington, Alison (2009) Defining Teachers' Classroom Relationships. In: The Social Context of Education. Valentin Bucik., Ljubljana.efining Teachers' Classroom Relationships
+
+[^lustosa24]: Andre Lustosa and Tim Menzies. Learning from very little data: On the value of land-
+scape analysis for predicting software project health. ACM Transactions on Software
+Engineering and Methodology, 33(3):1–22, 2024
+
+[^kamei12]: Yasutaka Kamei, Emad Shihab, Bram Adams, Ahmed E Hassan, Audris Mockus, Anand
+Sinha, and Naoyasu Ubayashi. A large-scale empirical study of just-in-time quality
+assurance. IEEE Transactions on Software Engineering, 39(6):757–773, 2012
+
+[^Ahmed25]: Toufique Ahmed, Premkumar Devanbu, Christoph Treude,
+Michael Pradel, 2025, Can LLMs Replace Manual Annotation of Software
+Engineering Artifacts? MSR'25.
+https://software-lab.org/publications/msr2025_LLM-annotation.pdf
+
+
+[^yu20]: Yu, Z., Fahid, F. M., Tu, H., & Menzies, T. (2020).
+Identifying self-admitted technical debts with jitterbug: A two-step
+approach. IEEE Transactions on Software Engineering, 48(5), 1676-1691.
+
+[^wu21]: Wu, X., Zheng, W., Xia, X., & Lo, D. (2021). Data quality
+matters: A case study on data label correctness for security bug
+report prediction. IEEE Transactions on Software Engineering, 48(7),
+2541-2556.
+
+[^kang22]: Kang, H. J., Aw, K. L., & Lo, D. (2022, May). Detecting
+false alarms from automatic static analysis tools: How far are we?.
+In Proceedings of the 44th International Conference on Software
+Engineering (pp. 698-709).
+
+[^shepperd13]: Shepperd, M., Song, Q., Sun, Z., & Mair, C. (2013).
+Data quality: Some comments on the nasa software defect datasets.
+IEEE Transactions on software engineering, 39(9), 1208-1215.
+
+f we sort rows in a MOOT data set (on their y-values), then we can find the rows
+with the mean $y_\mu$ and most desirable  $y_0$ values. For that data set,
+the output of EZR can then be scored
+by how far it falls between the mean and most desirable values:
+
+$$ win = 100*\left(1- \frac{y-y_0}{y_\mu - y_0}\right)$$
+
+EZR is _minimal_: a few hundred lines with no pandas or scikit-learn.
+It performs incremental multi-objective optimization via a greedy elite sampler
+
+## Inser EZR ext
+
+Whenever an unlabeled example seems promising, EZR grabs and labels it.
+
+```python
+def guess(best, rest, todo):
+  for i,eg in enumerate(todo):
+    if likelihood(best,eg) > likelihood(rest,eg): return i
+  return 0 # default
+```
+The key point here, is that `likelihood` reflects only on the $x$ choices;
+i.e. it does not need $y$ labels to guess if a row looks promising. EZR currently
+implements six different `likelihood` functions such as the distance of a example's
+$x$ variables
+to the geometric center of a set of rows.
+
+
+EZR maintains three lists:
+- _todo_: unlabeled examples
+- $N$ labeled examples divide into:
+  - _best_: $\sqrt{N}$ promising labeled examples
+  - _rest_: the $N - \sqrt{N}$ labeled examples that are not _best_
+
+At initialization. EZR labels and sorts  a tiny sample
+of rows,  picked at random. 
+```python
+ANY  = 4
+cut  = sqrt(4)
+todo = shuffle(unlabeled)
+init = sort(map(label,todo[:ANY]), key=y))
+best, rest = init[:cut], init[cut:ANY]
+todo = todo[ANY:]
+```
+Its then labels incrementally, under a small budget:
+```python
+BUDGET = 24 - ANY # already labeled some items
+while todo and BUDGET > 0:
+  BUDGET -= 1
+  best.add( label( todo.pop( guess(best,rest,todo)))) # guess is defined above
+  if len(best) > sqrt(len(best)+len(rest)):
+    rest.add( best.sort(key=y).pop(-1))
+return sort(best, key=y)[0] # return best of the best.
+```
+Note that
+EZR steadily grows _best_ by guessin likely  improvements, adding them to _best_,
+then demoting its worst elites to _rest_.
+
+
+END2
+
+
+BEGIN2
+
+END2
+
+[^moot]: http://github.com/timm/moot
+
+[^hou24]: Hou, X., Zhao, Y., Liu, Y., Yang, Z., Wang, K., Li, L., ... & Wang, H. (2024). Large language models for software engineering: A systematic literature review. ACM Transactions on Software Engineering and Methodology, 33(8), 1-79.
+
+[^john84]: Johnson, B., & Menzies, T. (2024). Ai over-hype: A dangerous threat (and how to fix it). IEEE Software, 41(6), 131-138.
+
+[^ling24]: Ling, X., Menzies, T., Hazard, C., Shu, J., & Beel, J. (2024). Trading off scalability, privacy, and performance in data synthesis. IEEE Access, 12, 26642-26654.
+
+[^grin22]: Grinsztajn, Léo, Edouard Oyallon, and Gaël Varoquaux. "Why do tree-based models still outperform deep learning on typical tabular data?." Advances in neural information processing systems 35 (2022): 507-520
+
+[^somv24]: Somvanshi, S., Das, S., Javed, S. A., Antariksa, G., & Hossain, A. (2024). A survey on deep tabular learning. arXiv preprint arXiv:2410.12034.
+
+[^maju18]: Majumder, S., Balaji, N., Brey, K., Fu, W., & Menzies, T. (2018, May). 500+ times faster than deep learning: A case study exploring faster methods for text mining stackoverflow. In Proceedings of the 15th International Conference on Mining Software Repositories (pp. 554-563).
+
+[^taw23]: V. Tawosi, R. Moussa, and F. Sarro, “Agile effort
+estimation: Have we solved the problem yet? insights from a replication
+study,” IEEE Transactions on Software Engineering, vol. 49, no. 4,
+pp. 2677– 2697, 2023.
+
+[^shi22]: Jieke Shi, Zhou Yang, Bowen Xu, Hong Jin Kang, and David Lo. 2023. Compressing Pre-trained Models of Code into 3 MB. In Proceedings of the 37th IEEE/ACM International Conference on Automated Software Engineering (ASE '22). Association for Computing Machinery, New York, NY, USA, Article 24, 1–12. https://doi.org/10.1145/3551349.3556964
+
 
 ### Threats to Validity
 
