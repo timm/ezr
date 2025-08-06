@@ -1,4 +1,5 @@
 from ezr.rq import *
+from ezr.tm import *
 
 def eg__all()  : mainAll(globals())
 def eg__list() : mainList(globals())
