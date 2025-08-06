@@ -4,21 +4,23 @@ from ezr.stats import *
 
 #--------------------------------------------------------------------
 def like(i:o, v:Any, prior=0) -> float :
-  "probability of 'v' belong to the distribution in 'i'"
+  "log probability of 'v' belong to the distribution in 'i'"
   if i.it is Sym:
     tmp = ((i.has.get(v,0) + the.m*prior) 
            /(sum(i.has.values())+the.m+1e-32))
+    return math.log(max(tmp, 1e-32))
   else:
-    var = 2 * i.sd * i.sd + 1E-32
-    z  = (v - i.mu) ** 2 / var
-    tmp =  math.exp(-z) / (2 * math.pi * var) ** 0.5
-  return min(1, max(0, tmp))
+    var = i.sd * i.sd + 1E-32
+    log_nom = -1 * (v - i.mu) ** 2 / (2 * var)
+    log_denom = 0.5 * math.log(2 * math.pi * var)
+    return log_nom - log_denom
 
 def likes(data:Data, row:Row, nall=100, nh=2) -> float:
   "How much does this DATA like row?"
-  prior= (data.n + the.k) / (nall + the.k*nh)
-  tmp= [like(c,v,prior) for c in data.cols.x if (v:=row[c.at]) != "?"]
-  return sum(math.log(n) for n in tmp + [prior] if n>0)    
+  prior = data.n / (nall + 1e-32)
+  log_prior = math.log(max(prior, 1e-32))
+  tmp = [like(c, row[c.at]) for c in data.cols.x if row[c.at] != "?"]
+  return log_prior + sum(tmp)    
 
 def likeBest(datas,row, nall=None):
   "Which data likes this row the most?"
