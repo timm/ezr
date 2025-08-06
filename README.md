@@ -442,13 +442,24 @@ EZR maintains three lists:
 At initialization. EZR labels and sorts  a tiny sample
 of rows,  picked at random. 
 ```python
+#--- Control
+
 ANY    = 4   # how many initial guesses
 BUDGET = 24  # how many labels to collect
 CHECK  = 5   # how often to apply model
+```
+Create _train,test_ data:
+
+```python
+#--- Create train,test data.
 
 shuffle(rows)
 n = len(rows)
 train, test = rows[:n], rows[n:] # for validation
+```
+
+```Python
+#--- Initialize a small best,rest set.
 
 labeled        = []
 unlabeled      = shuffle(train)
@@ -457,27 +468,45 @@ init           = sort(init, key=y))
 cut            = int(sqrt(ANY))
 best, rest     = init[:cut], init[cut:]
 ```
+
+
+
 ```python
+#--- Ensure we can evaluate labeled items.
+
 Y(row) -> 
   ensureLabeled(row)
   dist2most(row)
 ```
 
+
+
 ```python
+#--- If we find anything _good_, then refine our _best_ knowledge.
+
 while len(labeled) <= BUDGET and unlabeled:
   if len(labeled) > ANY:
-    best.add( todo.pop( guess(best,rest,unlabeled))) 
-    if len(best) > sqrt(len(best)+len(rest)):
-      add(all, add(best, row))
+    best.add(
+      todo.pop(
+        guess(best,rest,unlabeled))) 
+    if len(best) > sqrt(len(best) + len(rest)):
+      add(all,
+        add(best, row))
       if len(best) > sqrt(len(labeled)):
-        add(rest, sub(best, best.sort(y).pop(-1)))
+        add(rest,
+          sub(best,
+            best.sort(y).pop(-1)))
 ```
 
+Test the generated knowledge.
+
+```python
+#--- Test the generated knowledge.
 
 tree = Tree(labeled)
 maybe = test.sort( row -> predict(tree,row))[:CHECK]
 return maybe.sort(Y)[0]
-
+```
       
 ```
 Note that
