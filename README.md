@@ -457,13 +457,13 @@ init           = sort(init, key=y))
 cut            = int(sqrt(ANY))
 best, rest     = init[:cut], init[cut:]
 ```
-```
+```python
 Y(row) -> 
   ensureLabeled(row)
   dist2most(row)
 ```
 
-```
+```python
 while len(labeled) <= BUDGET and unlabeled:
   if len(labeled) > ANY:
     best.add( todo.pop( guess(best,rest,unlabeled))) 
