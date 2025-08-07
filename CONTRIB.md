@@ -45,7 +45,7 @@ python3 -B -m yourmainmodule -h
 gawk 'BEGIN {RS="\ndef"; FS="\n"} {print NF}' *.py | sort -n | fmt
 ```
 
-<img width="1979" height="980" alt="image" src="https://github.com/user-attachments/assets/6de1c388-03ea-4eb3-b782-72d6c13dc68c" />
+<img width="500"  alt="image" src="https://github.com/user-attachments/assets/6de1c388-03ea-4eb3-b782-72d6c13dc68c" />
 
 
 ### 3. Tests
