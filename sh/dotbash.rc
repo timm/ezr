@@ -1,12 +1,3 @@
-#!/bin/sh
-# If executed as "sh ell", relaunch as bash with this file as init
-case "$0" in
-  *ell) exec bash --init-file "$0" -i ;;
-esac
-
-# ================== START OF BASH INIT ==================
-
-# Absolute path to this script (e.g., x/sh/ell)
 Here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 Xdir="$(basename "$(dirname "$Here")")"  # bold "x" marker from enclosing folder
 
@@ -58,7 +49,7 @@ alias gl='git log --oneline --graph --all --decorate'
 # Aliases: misc
 alias ezr='python3 -m ezr '
 alias h='history'
-alias vi="nvim -u '$Here/etc/init.lua'"  # Load custom Neovim config
+alias vi="nvim -u '$Here/sh/init.lua'"  # Load custom Neovim config
 
 # ⌨️ QoL: quick edit and reload
 alias reload="source '$Here/ell' && echo ✅ ell reloaded"

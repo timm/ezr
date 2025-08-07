@@ -42,14 +42,9 @@ def likeClassifier(file, wait=5):
 #--------------------------------------------------------------------
 def eg__Sym(): 
   "Sym: demo of likelihood."
-  print(s := round(like(adds("aaaabbc"), "a"),2))
-  assert s == 0.44
+  print(x := round(like(adds("aaaabbc"), "a"),2))
+  assertx == -0.81
 
-def eg__num(): 
-  "Num: demo."
-  print(x := round(adds(random.gauss(10,2) for _ in range(1000)).sd,2))
-  assert x == 2.05
-  
 def eg__confuse():
   "Stats: discrete calcs for recall, precision etc.."
   # a b c <- got

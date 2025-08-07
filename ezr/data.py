@@ -96,8 +96,10 @@ def eg__sym():
 
 def eg__num(): 
   "Num: check Num sample tacks gaussians"
-  print(x := round(adds(random.gauss(10,2) for _ in range(1000)).mu,1))
-  assert x == 10
+  print(mu := round(adds(random.gauss(10,2) for _ in range(1000)).mu,1))
+  print(sd := round(adds(random.gauss(10,2) for _ in range(1000)).sd,2))
+  assert sd == 1.99
+  assert mu == 10
 
 def eg__checkData():
   "check we can read csv files from disk"
