@@ -38,66 +38,38 @@ def load_dataset(dataset_file, text_col="Abstract", class_col="label"):
   compute(prep)
   return prep
 
-#------------------------------------------------------------------------------------------------
-def get_metrics(results):
-  """Extract metrics from evaluation results."""
+def evaluate_model(train_data, test_data, positive_class="yes"):
+  """Evaluate a model trained on train_data against test_data and return key metrics.
+  
+  Returns:
+    tuple: (precision, recall, false_alarm_rate, accuracy) for the positive class
+  """
   try:
-    if "_OVERALL" in results:
-      overall = results["_OVERALL"]
-      return (overall['precision']/100, overall['recall']/100, 
-              overall['false_alarm'], overall['accuracy']/100)
-  except:
-    pass
-  return (0, 0, 0, 0)
-
-def evaluate_model(train_data, test_data, wait=5):
-  """Evaluate a model trained on train_data against test_data."""
-  cf = Confuse()
-  d, key = {}, train_data.cols.klass.at
-  
-  # Build class models from training data
-  for row in train_data.rows:
-    want = row[key]
-    d[want] = d.get(want) or clone(train_data)
-    add(d[want], row)
-  
-  # Make predictions on test data
-  for n, row in enumerate(test_data.rows):
-    if n > wait: 
+    cf = Confuse()
+    d, key = {}, train_data.cols.klass.at
+    
+    # Build class models from training data
+    for row in train_data.rows:
+      want = row[key]
+      d[want] = d.get(want) or clone(train_data)
+      add(d[want], row)
+    
+    # Make predictions on test data
+    for row in test_data.rows:
       confuse(cf, row[key], likeBest(d, row, len(train_data.rows)))
+    
+    # Get confusion matrix results
+    results = confused(cf)
+    
+    # Extract metrics for the positive class
+    positive_result = next((r for r in results if r.label == positive_class), None)
+    if positive_result:
+      return (positive_result.prec/100, positive_result.pd/100, positive_result.pf/100, positive_result.acc/100)
+    
+  except Exception as e:
+    pout(f"Error in evaluation: {e}")
   
-  # Get results and calculate overall metrics
-  results = confused(cf)
-  metrics = {}
-  
-  for result in results:
-    if result.label != "_OVERALL":
-      metrics[result.label] = {
-        'recall': result.pd, 'false_alarm': result.pf, 'precision': result.prec,
-        'accuracy': result.acc, 'tp': result.tp, 'fp': result.fp, 'tn': result.tn, 'fn': result.fn
-      }
-  
-  # Calculate overall metrics for binary classification
-  if "yes" in metrics:
-    m = metrics["yes"]
-    tp, fp, tn, fn = m['tp'], m['fp'], m['tn'], m['fn']
-    total = tp + fp + fn + tn
-    metrics['_OVERALL'] = {
-      'precision': (tp / (tp + fp) * 100) if (tp + fp) > 0 else 0,
-      'recall': (tp / (tp + fn) * 100) if (tp + fn) > 0 else 0,
-      'false_alarm': (fp / (fp + tn) * 100) if (fp + tn) > 0 else 0,
-      'accuracy': (tp + tn) / total * 100 if total > 0 else 0,
-      'tp': tp, 'fp': fp, 'tn': tn, 'fn': fn
-    }
-  else:
-    overall = next((r for r in results if r.label == "_OVERALL"), None)
-    if overall:
-      metrics['_OVERALL'] = {
-        'precision': overall.prec, 'recall': overall.pd, 'false_alarm': overall.pf,
-        'accuracy': overall.acc, 'tp': overall.tp, 'fp': overall.fp, 'tn': overall.tn, 'fn': overall.fn
-      }
-  
-  return metrics
+  return (0, 0, 0, 0)
 
 def create_training_subset(full_data, labeled_docs, all_docs):
   """Create training data subset by selecting rows from the full preprocessed data."""
@@ -115,7 +87,11 @@ def active_learning_loop(prep, n_pos=8, repeats=5, batch_size=1000):
   pos_docs = [doc for doc in prep.docs if doc.klass == "yes"]
   neg_docs = [doc for doc in prep.docs if doc.klass == "no"]
   
+  pout(f"Found {len(pos_docs)} positive documents and {len(neg_docs)} negative documents")
+  pout(f"Need at least {n_pos} positive and {n_pos * 4} negative documents")
+  
   if len(pos_docs) < n_pos or len(neg_docs) < n_pos * 4:
+    pout("Insufficient documents for active learning")
     return []
   
   full_data = features(prep)
@@ -129,8 +105,8 @@ def active_learning_loop(prep, n_pos=8, repeats=5, batch_size=1000):
     step_metrics = []
     train_data = create_training_subset(full_data, labeled_docs, prep.docs)
     
-    # Initial evaluation
-    step_metrics.append(get_metrics(evaluate_model(train_data, full_data)))
+    # Initial evaluation on full dataset
+    step_metrics.append(evaluate_model(train_data, full_data))
     
     # Active learning loop
     acq = 0
@@ -143,25 +119,30 @@ def active_learning_loop(prep, n_pos=8, repeats=5, batch_size=1000):
       train_data = create_training_subset(full_data, labeled_docs, prep.docs)
       acq += batch_to_acquire
       
-      # Evaluate after each batch
+      # Evaluate after each batch on full dataset
       if acq % batch_size == 0 and acq > 0:
-        step_metrics.append(get_metrics(evaluate_model(train_data, full_data)))
+        step_metrics.append(evaluate_model(train_data, full_data))
       elif acq > 0:
         step_metrics.append((0, 0, 0, 0))
     
-    # Final evaluation
-    step_metrics.append(get_metrics(evaluate_model(train_data, full_data)))
+    # Final evaluation on full dataset
+    step_metrics.append(evaluate_model(train_data, full_data))
     results.append(step_metrics)
   
   return results
 
 def active_learning_text_mining(dataset_file, text_col="Abstract", class_col="label", n_pos=8, repeats=10, batch_size=1000):
   """Run uncertainty-based active learning on a dataset."""
+  pout(f"Loading dataset: {dataset_file}")
   prep = load_dataset(dataset_file, text_col, class_col)
   if prep is None:
+    pout("Failed to load dataset")
     return
+  pout(f"Loaded {len(prep.docs)} documents")
   
+  pout("Starting active learning loop...")
   results = active_learning_loop(prep, n_pos=n_pos, repeats=repeats, batch_size=batch_size)
+  pout(f"Active learning completed with {len(results)} results")
   
   if results:
     all_steps = set()
@@ -203,7 +184,7 @@ def eg__al_uncertainty_hall():
 
 def eg__al_uncertainty_kit():
   "run uncertainty-based active learning on Kitchenham dataset"
-  active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=8, repeats=10, batch_size=1000)
+  active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=8, repeats=10, batch_size=100)
 
 def eg__al_uncertainty_rad():
   "run uncertainty-based active learning on Radjenovic dataset"
