@@ -1,5 +1,7 @@
 # 🤝 Contributing to This Project
 
+> work in progress. not releases yet 
+
 Thanks for your interest in contributing! This project is a minimalist, modular system for interpretable active learning and optimization. We aim for clarity, conciseness, and low dependency code.
 
 ## 🧭 Project Principles
