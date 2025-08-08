@@ -42,7 +42,7 @@ def likeClassifier(file: str, wait=5) -> Confuse:
 #--------------------------------------------------------------------
 def eg__Sym(): 
   "Sym: demo of likelihood."
-  print(x := round(like(adds("aaaabbc"), "a"),2))
+  print(x := round(like(adds("aaaabbc", Sym()), "a"),2))
   assert x == -0.81
 
 def eg__confuse():
