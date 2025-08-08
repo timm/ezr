@@ -22,12 +22,12 @@ def likes(data:Data, row:Row, nall=100, nh=2) -> float:
   tmp = [like(c, row[c.at]) for c in data.cols.x if row[c.at] != "?"]
   return log_prior + sum(tmp)    
 
-def likeBest(datas,row, nall=None):
+def likeBest(datas: list[Data],row:Row, nall=None) -> Data:
   "Which data likes this row the most?"
   nall = nall or sum(len(data.row) for data in datas.values())
   return max(datas, key=lambda k: likes(datas[k],row,nall,len(datas)))
 
-def likeClassifier(file, wait=5):
+def likeClassifier(file: str, wait=5) -> Confuse:
   "Classify rows by how much each class likes a row."
   cf = Confuse()
   data = Data(csv(file))
@@ -43,7 +43,7 @@ def likeClassifier(file, wait=5):
 def eg__Sym(): 
   "Sym: demo of likelihood."
   print(x := round(like(adds("aaaabbc"), "a"),2))
-  assertx == -0.81
+  assert x == -0.81
 
 def eg__confuse():
   "Stats: discrete calcs for recall, precision etc.."

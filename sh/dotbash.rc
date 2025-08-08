@@ -49,7 +49,7 @@ alias gl='git log --oneline --graph --all --decorate'
 # Aliases: misc
 alias ezr='python3 -m ezr '
 alias h='history'
-alias vi="nvim -u '$Here/sh/init.lua'"  # Load custom Neovim config
+alias vi="nvim -u '$Here/init.lua'"  # Load custom Neovim config
 
 # ⌨️ QoL: quick edit and reload
 alias reload="source '$Here/ell' && echo ✅ ell reloaded"

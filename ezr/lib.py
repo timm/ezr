@@ -5,8 +5,9 @@ from types import SimpleNamespace as o
 
 from ezr.about import __doc__ as helpstring
 
-Atom = int|float|str|bool
-Row  = List[Atom]
+Number = int|float
+Atom   = Number|str|bool
+Row    = List[Atom]
 
 #--------------------------------------------------------------------
 def atom(s:str) -> Atom:
@@ -41,7 +42,7 @@ def mainAll(funs: dict[str,callable]) -> None:
      if not s.startswith("eg__al_uncertainty"):
         print(f"\n--| {s} |-------------"); random.seed(the.seed); fn()
 
-def mainList(funs):
+def mainList(funs: dict[str,callable]) -> None:
   "list all examples"
   print("\npython3 ezr.py [OPTIONS]\n")
   for s, fn in funs.items():

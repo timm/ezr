@@ -69,19 +69,19 @@ def norm(col, v:float) -> float:  # 0..1
   return  v if v =="?" or col.it is Sym else (
           (v - col.lo) / (col.hi - col.lo + 1E-32))
 
-def mids(data):
+def mids(data: Data) -> Row:
   "Return the central tendency for each column."
   return [mid(col) for col in data.cols.all]
 
-def mid(col):
+def mid(col:o) -> Atom: 
   "Return the central tendnacy for one column."
   return max(col.has, key=col.has.get) if col.it is Sym else col.mu
 
-def divs(data):
+def divs(data:Data) -> float:
   "Return the central tendency for each column."
   return [div(col) for col in data.cols.all]
 
-def div(col):
+def div(col:o) -> float:
   "Return the central tendnacy for one column."
   if col.it is Num: return col.sd
   vs = col.has.values()
