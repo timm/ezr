@@ -66,31 +66,46 @@ def statsSame(x:list[Number], y:list[Number],
   cliffs= {'small':0.11,'smed':0.195,'medium':0.28,'large':0.43}[cliffs]
   return _cliffs() <= cliffs and _ks() <= ks * ((n + m)/(n * m))**0.5
 
+def statsTop(rxs, reverse=False, same=statsSame, eps=0.01):
+  items = sorted(((sum(v)/len(v), k, v) for k,v in rxs.items() if v), 
+                 reverse=reverse)
+  m, k, vs = items[0]
+  out = {k}
+  for m1, k1, vs1 in items[1:]:
+    if not same(vs, vs1) or abs(m1 - m) > eps: break
+    n, n1 = len(vs), len(vs1)
+    m = (m*n + m1*n1)/(n + n1)
+    vs += vs1
+    out.add(k1)
+  return out
+
 def statsRank(rxs:dict[str,list[Number]], 
               reverse=False,same=statsSame, eps=0.01) -> dict[str,str]:
   "Sort rxs, recursively split them, stopping when two splits are same."
-  items = [(sum(vs), k, vs, len(vs)) for k, vs in rxs.items()]
-  return _statsDiv(sorted(items,reverse=reverse),same,{},eps,rank=1)[1]
+  # keep per-group mean m and size n; no need to store sum(vs)
+  items = [(sum(vs)/len(vs), k, vs, len(vs)) for k, vs in rxs.items() if vs]
+  return _statsDiv(sorted(items, reverse=reverse), same, {}, eps, rank=1)[1]
 
 def _statsDiv(groups, same, out, eps, rank=1):
-  "Cut and recurse (if we find a cut). Else, use rank=rank, then inc rank." 
-  def flat(lst): return [x for _, _, xs, _ in lst for x in xs]
+  "Cut and recurse (if we find a cut). Else, use rank=rank, then inc rank."
+  def flat(lst): return [x for _, _, xs, _ in lst for x in xs]  # xs is at index 2 now
   cut = _statsCut(groups, eps)
   if cut and not same(flat(groups[:cut]), flat(groups[cut:])):
     return _statsDiv(groups[cut:], same, out, eps,
-                    rank=_statsDiv(groups[:cut], same, out, eps, rank)[0])
-  for _, k, _, _ in groups:  out[k] = rank
+                     rank=_statsDiv(groups[:cut], same, out, eps, rank)[0])
+  for _, k, _, _ in groups: out[k] = rank
   return rank + 1, out
 
 def _statsCut(groups, eps):
-  "Cut to maximize difference in means (if cuts differ bu more than eps)."
-  sum1 = sum(s for s, _, _, _ in groups)
+  "Cut to maximize difference in means (if cuts differ by more than eps)."
+  # totals via m*n (no stored sums needed)
+  sum1 = sum(m * n for m, _, _, n in groups)
   n1   = sum(n for _, _, _, n in groups)
   mu   = sum1 / n1
   best = sum0 = n0 = score = 0
-  for j, (s, _, _, n) in enumerate(groups[:-1]):
-    sum0 += s; n0 += n
-    sum1 -= s; n1 -= n
+  for j, (m, _, _, n) in enumerate(groups[:-1]):
+    sum0 += m * n; n0 += n
+    sum1 -= m * n; n1 -= n
     mu0, mu1 = sum0 / n0, sum1 / n1
     now = n0 * (mu0 - mu)**2 + n1 * (mu1 - mu)**2
     if abs(mu0 - mu1) > eps and now > score:
@@ -146,6 +161,8 @@ def eg__sk20():
         elif i <=12 : rxs[chr(97+i)] = G(12)
         elif i <=16 : rxs[chr(97+i)] = G(12)
         else        : rxs[chr(97+i)] = G(14)
-      out=statsRank(rxs,eps=eps)
+      out = statsRank(rxs,eps=eps)
+      top = ''.join(list(statsTop(rxs,eps=sd*0.35)))
+      print("\t",top)
       print("\t",''.join(map(daRx,out.keys())))
       print("\t",''.join([str(x) for x in out.values()]))
