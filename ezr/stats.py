@@ -66,7 +66,9 @@ def statsSame(x:list[Number], y:list[Number],
   cliffs= {'small':0.11,'smed':0.195,'medium':0.28,'large':0.43}[cliffs]
   return _cliffs() <= cliffs and _ks() <= ks * ((n + m)/(n * m))**0.5
 
-def statsTop(rxs, reverse=False, same=statsSame, eps=0.01):
+def statsTop(rxs:dict[str,list[Number]], 
+                       reverse=False, same=statsSame, eps=0.01) -> set:
+  "return the keys of the top-ranked treatments"
   items = sorted(((sum(v)/len(v), k, v) for k,v in rxs.items() if v), 
                  reverse=reverse)
   m, k, vs = items[0]
