@@ -1,15 +1,13 @@
 #!/usr/bin/env python3 -B
-"""
-about --> lib --> data --> (like,dist)
-"""
 import traceback, random, math, sys, re
 from typing import Any, Callable, Iterator, List
 from types import SimpleNamespace as o
 
 from ezr.about import __doc__ as helpstring
 
-Atom = int|float|str|bool
-Row  = List[Atom]
+Number = int|float
+Atom   = Number|str|bool
+Row    = List[Atom]
 
 #--------------------------------------------------------------------
 def atom(s:str) -> Atom:
@@ -37,18 +35,19 @@ def main(funs: dict[str,callable]) -> None:
       for key in vars(the):
         if arg=="-"+key[0]: the.__dict__[key] = atom(sys.argv[n+1])
 
-def mainAll(funs): 
+def mainAll(funs: dict[str,callable]) -> None: 
  "run all examples"
  for s,fn in funs.items():
    if s != "eg__all" and s.startswith("eg_") and not ((fn.__doc__ or "").strip().startswith("SLOW")):
      print(f"\n--| {s} |-------------"); random.seed(the.seed); fn()
 
-def mainList(funs):
+def mainList(funs: dict[str,callable]) -> None:
   "list all examples"
   print("\npython3 ezr.py [OPTIONS]\n")
   for s, fn in funs.items():
     if s.startswith("eg_") and fn.__doc__: 
-      print(f"\t{s[2:].replace('_','-'):10} {fn.__doc__}")
+      if not s.startswith("eg__al_uncertainty"):
+         print(f"\t{s[2:].replace('_','-'):10} {fn.__doc__}")
 
 #--------------------------------------------------------------------
 def csv(file:str) -> List[Row]:
