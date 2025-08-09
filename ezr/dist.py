@@ -115,8 +115,8 @@ def eg__disty():
   data.rows.sort(key=lambda row: disty(data,row))
   assert all(0 <= disty(data,r) <= 1 for r in data.rows)
   print(', '.join(data.cols.names))
-  print("top4:");   [print("\t",row) for row in data.rows[:4]]
-  print("worst4:"); [print("\t",row) for row in data.rows[-4:]]
+  print("top4:");   [print("\t",row) for row in data.rows[:10]]
+  print("worst4:"); [print("\t",row) for row in data.rows[-10:]]
 
 def eg__irisKpp(): 
   "Dist: check Kmeans++ centroids on iris."
