@@ -43,7 +43,7 @@ def likeClassifier(file, wait=5):
 def eg__Sym(): 
   "Sym: demo of likelihood."
   print(s := round(like(adds("aaaabbc"), "a"),2))
-  assert s == 0.44
+  assert s == -0.81
 
 def eg__num(): 
   "Num: demo."
