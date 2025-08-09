@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+## help sh/ow : x : make pretty doc from code file x
+Here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+pdf="$HOME/tmp/$(basename "${1%.*}").pdf"
+
+echo "pdf-ing $pdf ... "
+a2ps                        \
+  --file-align=virtual       \
+	--line-numbers=1            \
+	--pro=color                  \
+	--pretty=python               \
+	--chars-per-line=70            \
+	--left-title=""                 \
+	--borders=no                     \
+  --right-footer="page %s. of %s#"  \
+	--portrait                         \
+	--columns 2                         \
+	-M letter                            \
+	-o - $1 | ps2pdf - $pdf
+
+open $pdf

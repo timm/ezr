@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+## help sh/ake : x.py : lint python file
+# see https://github.com/sprytnyk/pylint-errors for a
+# curated list of pylint errors with explanation and examples
+
+#export PYTHONPATH="..:$$PYTHONPATH"; \
+pylint \
+  --disable=C0114,C0115,C0116,C0111,C0123,C0301,C0303 \
+  --disable=C0321,C0410,C0415,C0103,C3001 \
+  --disable=W0102,W0106,W0108,W0201,W0311,W0511 \
+  --disable=W0613,W0621,W0640,W0718 \
+  --disable=R0801,R0903,R0911 \
+  --disable=E1101 \
+  "$1"
+

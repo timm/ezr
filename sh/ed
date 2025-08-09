@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+## help sh/ed : file : edit file
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+nvim --clean --cmd "set rtp+=${dir}" -u "${dir}/init.lua" "$@"
+
