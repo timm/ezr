@@ -38,9 +38,8 @@ def main(funs: dict[str,callable]) -> None:
 def mainAll(funs: dict[str,callable]) -> None: 
  "run all examples"
  for s,fn in funs.items():
-   if s != "eg__all" and s.startswith("eg_"): 
-     if not s.startswith("eg__al_uncertainty"):
-        print(f"\n--| {s} |-------------"); random.seed(the.seed); fn()
+   if s != "eg__all" and s.startswith("eg_") and not ((fn.__doc__ or "").strip().startswith("SLOW")):
+     print(f"\n--| {s} |-------------"); random.seed(the.seed); fn()
 
 def mainList(funs: dict[str,callable]) -> None:
   "list all examples"
