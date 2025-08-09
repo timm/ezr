@@ -40,7 +40,7 @@ def main(funs: dict[str,callable]) -> None:
 def mainAll(funs): 
  "run all examples"
  for s,fn in funs.items():
-   if s != "eg__all" and s.startswith("eg_"): 
+   if s != "eg__all" and s.startswith("eg_") and not ((fn.__doc__ or "").strip().startswith("SLOW")):
      print(f"\n--| {s} |-------------"); random.seed(the.seed); fn()
 
 def mainList(funs):
