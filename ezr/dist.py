@@ -87,7 +87,7 @@ def distFastermap(data,rows, sway1=False):
   nolabel = rows[the.Any:]
   labels = clone(data, rows[:the.Any])
   Y  = lambda r: disty(labels,r)
-  while len(labels.rows) < the.Build and len(nolabel) >= 2: 
+  while len(labels.rows) < the.Budget and len(nolabel) >= 2: 
     east, *rest, west = distFastmap(data,nolabel)
     add(labels, east)
     add(labels, west)

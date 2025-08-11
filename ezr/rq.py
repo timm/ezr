@@ -20,7 +20,7 @@ def eg__treeSelect():
            check10=Num(), check20=Num(), check30=Num(), check40=Num(), check80=Num(), check120=Num())
 
   for budget in [10,20,30,40,80,120]:
-    the.Build = budget
+    the.Budget = budget
     for _ in range(repeats):
       rows =shuffle(data.rows)
       m = len(rows)//2

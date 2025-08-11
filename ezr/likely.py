@@ -20,7 +20,7 @@ def likely(data:Data, rows=None) -> List[Row]:
   # loop, guessing
   guess = likelyKlass if the.acq=="klass" else (
           likelyNear  if the.acq=="near"  else likelier)
-  while x.n > 2 and xy.n < the.Build:
+  while x.n > 2 and xy.n < the.Budget:
     add(xy, add(best, sub(x, guess(best, rest, x, xy))))
     if best.n > (xy.n**.5):
       best.rows = distysort(xy,best.rows)
@@ -49,7 +49,7 @@ def likelyKlass(best:Data, rest:Data, x:Data, _) -> Row:
 def likelier(best:Data, rest:Data, x:Data, _) -> Row:
   "Sort 'x by the.acq, remove first from 'x'. Return first."
   e, nall = math.e, best.n + rest.n
-  p = nall/the.Build
+  p = nall/the.Budget
   q = {'xploit':0, 'xplor':1}.get(the.acq, 1-p)
   def _fn(row):
     b,r = e**likes(best,row,nall,2), e**likes(rest,row,nall,2)
@@ -90,9 +90,9 @@ def eg__xploit():
   b4   = adds(disty(data,r) for r in data.rows)
   win  = lambda n: int(100*((1 - (n - b4.lo) / (b4.mu - b4.lo))))
   rxs  = {10:Num(), 20:Num(), 30:Num(), 40:Num(), 80:Num()}
-  for build,log in rxs.items():
-    log.txt = str(build)
-    the.Build = build
+  for budget,log in rxs.items():
+    log.txt = str(budget)
+    the.Budget = budget
     adds((disty(data, likely(data)[0]) for _ in range(repeats)), log)
   print(' '.join([f'{log.txt} {win(log.mu)}' 
                   for log in rxs.values()]), 
@@ -117,7 +117,7 @@ def eg__likely():
   rxs["rands"].txt = "rands"
   for _ in range(repeats):
     add(rxs["rands"], 
-        disty(data, distysort(data, shuffle(data.rows)[:the.Build])[0]))
+        disty(data, distysort(data, shuffle(data.rows)[:the.Budget])[0]))
   print(' '.join([f'{log.txt} {win(log.mu)}' 
                   for log in rxs.values()]), 
         "|", len(data.rows),
