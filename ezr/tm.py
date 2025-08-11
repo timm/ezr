@@ -36,8 +36,8 @@ def create_training_subset(full_data, labeled_docs, all_docs):
   return t
 
 def active_learning_loop(prep, n_pos=8, repeats=5, batch_size=1000):
-  pos = [d for d in prep.docs if d.klass == "yes"]
-  neg = [d for d in prep.docs if d.klass == "no"]
+  pos, neg = [], []
+  [(pos if d.klass == "yes" else neg).append(d) for d in prep.docs]
   if len(pos) < n_pos or len(neg) < n_pos * 4: return []
   full = features(prep); R = []
   for _ in range(repeats):
