@@ -6,7 +6,7 @@ def Confuse():
   "Create a confusion stats for classification matrix."
   return o(klasses={}, total=0)
 
-def confuse(cf, want, got):
+def confuse(cf:Confuse, want:str, got:str) -> str:
   "Update the confusion matrix."
   for x in (want, got):
     if x not in cf.klasses: 
@@ -17,7 +17,7 @@ def confuse(cf, want, got):
   cf.total += 1
   return got
 
-def confused(cf, summary=False):
+def confused(cf:Confuse, summary=False) -> List[Confuse]:
   "Report confusion metric statistics."
   p = lambda y, z: round(100 * y / (z or 1e-32), 0)  # one decimal
   def finalize(c):
@@ -42,7 +42,9 @@ def confused(cf, summary=False):
 #--------------------------------------------------------------------
 # While ks_code is elegant (IMHO), its slow for large samples. That
 # said, it is nearly instantaneous  for the typical 20*20 cases.
-def statsSame(x, y, ks=the.Ks, cliffs=the.Delta):
+
+def statsSame(x:list[Number], y:list[Number], 
+              ks=the.Ks, cliffs=the.Delta) -> bool:
   "True if x,y indistinguishable and differ by just a small effect."
   x, y = sorted(x), sorted(y)
   n, m = len(x), len(y)
@@ -64,22 +66,23 @@ def statsSame(x, y, ks=the.Ks, cliffs=the.Delta):
   cliffs= {'small':0.11,'smed':0.195,'medium':0.28,'large':0.43}[cliffs]
   return _cliffs() <= cliffs and _ks() <= ks * ((n + m)/(n * m))**0.5
 
-def statsRank(rxs, reverse=False,same=statsSame, eps=0.01):
+def statsRank(rxs:dict[str,list[Number]], 
+              reverse=False,same=statsSame, eps=0.01) -> dict[str,str]:
   "Sort rxs, recursively split them, stopping when two splits are same."
   items = [(sum(vs), k, vs, len(vs)) for k, vs in rxs.items()]
-  return statsDiv(sorted(items,reverse=reverse),same,{},eps,rank=1)[1]
+  return _statsDiv(sorted(items,reverse=reverse),same,{},eps,rank=1)[1]
 
-def statsDiv(groups, same, out, eps, rank=1):
+def _statsDiv(groups, same, out, eps, rank=1):
   "Cut and recurse (if we find a cut). Else, use rank=rank, then inc rank." 
   def flat(lst): return [x for _, _, xs, _ in lst for x in xs]
-  cut = statsCut(groups, eps)
+  cut = _statsCut(groups, eps)
   if cut and not same(flat(groups[:cut]), flat(groups[cut:])):
-    return statsDiv(groups[cut:], same, out, eps,
-                    rank=statsDiv(groups[:cut], same, out, eps, rank)[0])
+    return _statsDiv(groups[cut:], same, out, eps,
+                    rank=_statsDiv(groups[:cut], same, out, eps, rank)[0])
   for _, k, _, _ in groups:  out[k] = rank
   return rank + 1, out
 
-def statsCut(groups, eps):
+def _statsCut(groups, eps):
   "Cut to maximize difference in means (if cuts differ bu more than eps)."
   sum1 = sum(s for s, _, _, _ in groups)
   n1   = sum(n for _, _, _, n in groups)

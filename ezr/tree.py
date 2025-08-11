@@ -7,11 +7,11 @@ treeOps = {'<=' : lambda x,y: x <= y,
            '==' : lambda x,y:x == y, 
            '>'  : lambda x,y:x > y}
 
-def treeSelects(row,op,at,y): 
+def treeSelects(row:Row, op:str, at:int, y:Atom) -> bool: 
   "Have we selected this row?"
   return (x := row[at]) == "?" or treeOps[op](x, y)
 
-def Tree(data, Klass=Num, Y=None, how=None):
+def Tree(data:Data, Klass=Num, Y=None, how=None) -> Data:
   "Create regression tree."
   Y = Y or (lambda row: disty(data, row))
   data.kids, data.how = [], how
@@ -26,7 +26,7 @@ def Tree(data, Klass=Num, Y=None, how=None):
           data.kids += [Tree(clone(data,rows1), Klass, Y, how1)]
   return data
 
-def treeCuts(col, rows, Y, Klass):
+def treeCuts(col:o, rows:list[Row], Y:callable, Klass:callable) -> o:
   "Divide a col into ranges."
   def _sym(sym):
     d, n = {}, 0
@@ -52,19 +52,19 @@ def treeCuts(col, rows, Y, Klass):
   return (_sym if col.it is Sym else _num)(col)
 
 #--------------------------------------------------------------------
-def treeNodes(data, lvl=0, key=None):
+def treeNodes(data:Data, lvl=0, key=None) -> Data:
   "iterate over all treeNodes"
   yield lvl, data
   for j in sorted(data.kids, key=key) if key else data.kids:
     yield from treeNodes(j,lvl + 1, key)
 
-def treeLeaf(data, row):
+def treeLeaf(data:Data, row:Row) -> Data:
   "Select a matching leaf"
   for j in data.kids or []:
     if treeSelects(row, *j.how): return treeLeaf(j,row)
   return data
 
-def treeShow(data, key=lambda d: d.ys.mu):
+def treeShow(data:Data, key=lambda d: d.ys.mu) -> None:
   "Display tree with #rows and win% columns"
   ats = {}
   print(f"{'#rows':>6} {'win':>4}")

@@ -9,7 +9,7 @@ SOFT = \033[0m#
 Top=$(shell git rev-parse --show-toplevel)
 
 help:  ## show help
-	gawk -f $(Top)/etc/help.awk $(MAKEFILE_LIST) 
+	gawk -f $(Top)/sh/help.awk $(MAKEFILE_LIST) 
 
 pull: ## update from main
 	git pull
@@ -61,7 +61,7 @@ stats:
 
 ~/tmp/treeSelect.log: 
 	$(MAKE) todo=treeSelect files="$(Top)/../moot/optimize/config/*.csv" worker | tee $@; \
-	gawk -f $(Top)/etc/likely.awk Max=24 $@ 
+	gawk -f $(Top)/sh/likely.awk Max=24 $@ 
 
 # 46 56 63 76 88               ---- *    -----     build10
 # 34 47 64 76 86           -----|    *   ----      check10
@@ -78,7 +78,7 @@ stats:
 #
 ~/tmp/xploit.log: 
 	$(MAKE) todo=xploit files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
-	gawk -f $(Top)/etc/likely.awk Max=10 $@ 
+	gawk -f $(Top)/sh/likely.awk Max=10 $@ 
 
 # gawk -f etc/likely.awk Max=8 ~/tmp/xploit.log
 # 25 47 58 65 88        --------|  * ---------     10
@@ -89,7 +89,7 @@ stats:
 
 ~/tmp/likelyAll.log: 
 	$(MAKE) todo=likely files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
-	gawk -f $(Top)/etc/likely.awk $@ 
+	gawk -f $(Top)/sh/likely.awk $@ 
 
 # 33 61 70 80 98          -----------  *  -------  xplor
 # 33 61 71 82 97          -----------  *   ------  adapt
@@ -101,7 +101,7 @@ stats:
 
 ~/tmp/likelySome.log: 
 	$(MAKE) todo=likely files="$(Top)/../moot/optimize/config/SS-[A-J]*.csv" worker | tee $@ ; \
-	gawk -f $(Top)/etc/likely.awk $@ 
+	gawk -f $(Top)/sh/likely.awk $@ 
 
 worker:
 	@mkdir -p ~/tmp
