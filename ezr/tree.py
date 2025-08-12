@@ -49,6 +49,7 @@ def treeCuts(col:o, rows:list[Row], Y:callable, Klass:callable) -> o:
       add(lhs, sub(rhs, y))
       b4 = x
     return out
+
   return (_sym if col.it is Sym else _num)(col)
 
 #--------------------------------------------------------------------

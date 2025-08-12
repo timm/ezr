@@ -36,36 +36,44 @@ def eg__treeSelect():
 def eg__overall():
   "run"
   data = Data(csv(the.file))
-  overall(data, [(b,acq,fn)
+  rxRanks(data, [(b,acq,fn)
                  for acq in ["xploit","xplore","adapt"]
-                 for b in [20,30,40,50,80,120]
+                 for b in [50]
                  for fn in  [likely]])
 
-def overall (data, rxs, repeats=20):
-  b4  = adds(disty(data,row) for row in data.rows)
-  win = lambda x: int(100*(1- (x - b4.lo)/(b4.mu - b4.lo)))
-  results = {}
-  all=Num()
-  for budget,acq,fn in rxs:
-    the.acq = acq
-    the.Budget = budget
-    rows = shuffle(data.rows)
-    m = len(rows)//2
-    train, holdout = clone(data,rows[:m]), rows[m:]
-    tmp = []
-    for _ in range(repeats):
-      tree  = Tree(clone(train,fn(train)))
-      check = sorted(holdout, key=lambda r: treeLeaf(tree,r).ys.mu)[:the.Check]
-      tmp1  = disty(data, distysort(data,check)[0])
-      add(all, tmp1)
-      tmp += [tmp1]
-    results[(budget,acq,fn)] = tmp
-  ranks = statsRank(results,eps=.35*all.sd)
-  print("win",', '.join([f"{fn.__name__}.{acq}.{budget}" 
-                         for (budget,acq,fn) in rxs]),sep=",")
-  print( win(adds(x for k,lst in results.items() 
-                  for x in lst if ranks[k] == 1).mu),"|",
-        ', '.join([f"{"!" if ranks[k]==1 else ""} {win(adds(results[k]).mu)}" 
-                   for k in rxs]),
-        "|",len(data.rows),len(data.cols.x), len(data.cols.y),
-        re.sub(".*/","",the.file),sep=",")
+def rxRanks(data, rxs, repeats=20):                    
+  b4 = adds(disty(data, r) for r in data.rows)       
+  win  = lambda x: int(100*(1 - (x  -b4.lo)           #\one#
+                           /(b4.mu - b4.lo)))        
+  results, allnums = {}, Num()                        
+  for budget, acq, fn in rxs:                         
+    the.acq, the.Budget = acq, budget                 
+    train, holdout = rxTrainAndHoldOut(data, data.rows) #\two#
+    scores = [rxScore(data, train, holdout, fn)       #\three#
+              for _ in range(repeats)]                
+    for s in scores: add(allnums, s)                  
+    results[(budget,acq,fn)] = scores                 
+  ranks = statsRank(results, eps=.35*allnums.sd)      #\four#
+  rxPrintResults(data, rxs, ranks, results, win)      #\five#
+
+def rxTrainAndHoldOut(data, rows):                #\one#
+  rows = shuffle(rows); m = len(rows)//2          
+  return clone(data, rows[:m]), rows[m:]          
+
+def rxScore(data, train, holdout, fn):            #\two#
+  tree  = Tree(clone(train, fn(train)))           
+  check = sorted(holdout, key=lambda r:           #\three#
+          treeLeaf(tree, r).ys.mu)[:the.Check]    #\four#
+  return disty(data, distysort(data, check)[0])   
+
+def rxPrintResults(data, rxs, ranks, results, win): #\five#
+  label = lambda k: f"{k[2].__name__}.{k[1]}.{k[0]}"
+  winners = [label(k) for k in rxs]
+  print("#win", ", , " + ", ".join(winners), "rows","y","x", sep=",")
+  best_mu = adds(x for k,xs in results.items() if ranks[k]==1 for x in xs).mu
+  cells = [("!" if ranks[k]==1 else "") + f" {win(adds(results[k]).mu)}" for k in rxs]
+  print(win(best_mu) ,"|", ", ".join(cells),"|" ,
+        len(data.rows), len(data.cols.x), len(data.cols.y),
+        re.sub(".*/","", the.file), sep=",")
+
+

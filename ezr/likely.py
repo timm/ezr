@@ -1,6 +1,7 @@
 #!/usr/bin/env python3 -B
 from ezr.like import *
 from ezr.dist import *
+from ezr.label import label
 
 #--------------------------------------------------------------------
 def likely(data:Data, rows=None) -> List[Row]:
@@ -11,7 +12,7 @@ def likely(data:Data, rows=None) -> List[Row]:
   xy, best, rest = clone(data), clone(data), clone(data)
 
   # initialize model: label anything
-  for _ in range(the.Any): add(xy, sub(x, x.rows.pop()))
+  for _ in range(the.Any): add(xy, sub(x, label(x.rows.pop())))
 
   # divide lablled items into best and rest
   xy.rows = distysort(xy); n = round(the.Any**.5)
@@ -21,7 +22,7 @@ def likely(data:Data, rows=None) -> List[Row]:
   guess = likelyKlass if the.acq=="klass" else (
           likelyNear  if the.acq=="near"  else likelier)
   while x.n > 2 and xy.n < the.Budget:
-    add(xy, add(best, sub(x, guess(best, rest, x, xy))))
+    add(xy, add(best, sub(x, label(guess(best, rest, x, xy)))))
     if best.n > (xy.n**.5):
       best.rows = distysort(xy,best.rows)
       while best.n > (xy.n**.5):
