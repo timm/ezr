@@ -4,7 +4,8 @@ from ezr.data import *
 #--------------------------------------------------------------------
 def dist(src) -> float:
   "general distance function"
-  d,n = 0,0; for v in src: n,d = n+1, d + v**the.p;
+  d,n = 0,0
+  for v in src: n,d = n+1, d + v**the.p;
   return (d/n) ** (1/the.p)
 
 def disty(data:Data, row:Row) -> float:
