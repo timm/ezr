@@ -38,42 +38,45 @@ def eg__overall():
   data = Data(csv(the.file))
   rxRanks(data, [(b,acq,fn)
                  for acq in ["xploit","xplore","adapt"]
-                 for b in [50]
+                 for b in [20,40,60,80]
                  for fn in  [likely]])
 
 def rxRanks(data, rxs, repeats=20):                    
+  "rank different treatments"
   b4 = adds(disty(data, r) for r in data.rows)       
-  win  = lambda x: int(100*(1 - (x  -b4.lo)           #\one#
-                           /(b4.mu - b4.lo)))        
+  win  = lambda x: int(100*(1 - (x  -b4.lo) / (b4.mu - b4.lo)))        
   results, allnums = {}, Num()                        
   for budget, acq, fn in rxs:                         
     the.acq, the.Budget = acq, budget                 
-    train, holdout = rxTrainAndHoldOut(data, data.rows) #\two#
-    scores = [rxScore(data, train, holdout, fn)       #\three#
+    train, holdout = rxTrainAndHoldOut(data, data.rows) 
+    scores = [rxScore(data, train, holdout, fn)       
               for _ in range(repeats)]                
     for s in scores: add(allnums, s)                  
     results[(budget,acq,fn)] = scores                 
-  ranks = statsRank(results, eps=.35*allnums.sd)      #\four#
-  rxPrintResults(data, rxs, ranks, results, win)      #\five#
+  ranks = statsRank(results, eps=.35*allnums.sd)      
+  rxPrintResults(data, rxs, ranks, results, win)      
 
-def rxTrainAndHoldOut(data, rows):                #\one#
+def rxTrainAndHoldOut(data, rows):                
+  "generate a train and a hold-out set"
   rows = shuffle(rows); m = len(rows)//2          
   return clone(data, rows[:m]), rows[m:]          
 
-def rxScore(data, train, holdout, fn):            #\two#
+def rxScore(data, train, holdout, fn):            
+  "check hold-outs for 'good' rows (as guessed by model from training)"
   tree  = Tree(clone(train, fn(train)))           
-  check = sorted(holdout, key=lambda r:           #\three#
-          treeLeaf(tree, r).ys.mu)[:the.Check]    #\four#
+  check = sorted(holdout, 
+                 key=lambda r:treeLeaf(tree,r).ys.mu)[:the.Check]    
   return disty(data, distysort(data, check)[0])   
 
-def rxPrintResults(data, rxs, ranks, results, win): #\five#
+def rxPrintResults(data, rxs, ranks, results, win): 
+  "print results"
   label = lambda k: f"{k[2].__name__}.{k[1]}.{k[0]}"
   winners = [label(k) for k in rxs]
-  print("#win", ", , " + ", ".join(winners), "rows","y","x", sep=",")
-  best_mu = adds(x for k,xs in results.items() if ranks[k]==1 for x in xs).mu
-  cells = [("!" if ranks[k]==1 else "") + f" {win(adds(results[k]).mu)}" for k in rxs]
-  print(win(best_mu) ,"|", ", ".join(cells),"|" ,
-        len(data.rows), len(data.cols.x), len(data.cols.y),
+  best_mu = adds(x for k,xs in results.items() if ranks[k]==1 
+                 for x in xs).mu
+  cells = [f'{label(k)}, {"!" if ranks[k]==1 else ""} {win(adds(results[k]).mu)}'
+           for k in rxs]
+  print(", ".join(cells),"|" ,
+        len(data.rows), len(data.cols.x), len(data.cols.y), 
+        win(best_mu),
         re.sub(".*/","", the.file), sep=",")
-
-
