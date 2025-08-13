@@ -66,21 +66,49 @@ def statsSame(x:list[Number], y:list[Number],
   cliffs= {'small':0.11,'smed':0.195,'medium':0.28,'large':0.43}[cliffs]
   return _cliffs() <= cliffs and _ks() <= ks * ((n + m)/(n * m))**0.5
 
-def statsTop(rxs:dict[str,list[Number]], 
-                       reverse=False, same=statsSame, eps=0.01) -> set:
-  "return the keys of the top-ranked treatments"
-  items = sorted(((sum(v)/len(v), k, v) for k,v in rxs.items() if v), 
-                 reverse=reverse)
-  m, k, vs = items[0]
-  out = {k}
-  for m1, k1, vs1 in items[1:]:
-    if not same(vs, vs1) or abs(m1 - m) > eps: break
-    n, n1 = len(vs), len(vs1)
-    m = (m*n + m1*n1)/(n + n1)
-    vs += vs1
-    out.add(k1)
-  return out
+def statsTopp(rxs:dict[str,list[Number]], 
+             reverse=False, same=statsSame, eps=0.01) -> set:
+  its = sorted([(sum(v)/len(v), len(v),k,v) for k,v in rxs.items() if v], 
+               reverse=reverse)
+  while len(its) > 1:
+    vals = [v for _, _, _, v in its]
+    mu = sum(l12 := sum(vals, [])) / len(l12)
+    cut, sc, left, right = 0, 0, [], []
+    for i in range(1, len(its)):
+      l1, l2 = sum(vals[:i], []), sum(vals[i:], [])
+      m1, m2 = sum(l1)/len(l1), sum(l2)/len(l2)
+      s = (len(l1)*(m1-mu)**2 + len(l2)*(m2-mu)**2) / len(l12)
+      if sc < s and abs(m1 - m2) > eps:
+        sc, cut, left, right = s, i, l1, l2
+    if not (cut > 0 and not same(left, right)): break
+    its = its[:cut]
+  return {k for _, _, k, _ in its}
 
+# def statsRanl(rxs:dict[str,list[Number]], 
+#              reverse=False, same=statsSame, eps=0.01) -> dict[str,int]:
+#   "Find where mu most changes. recurse left right if not same"
+#   def recurse(its, rank):
+#     if len(its) > 1:
+#       vals = [v for _, _, _, v in its]
+#       mu = sum(l12 := sum(vals, [])) / len(l12)
+#       cut, sc, left, right = 0, 0, [], []
+#       for i in range(1, len(its)):
+#         l1, l2 = sum(vals[:i], []), sum(vals[i:], [])
+#         m1, m2 = sum(l1)/len(l1), sum(l2)/len(l2)
+#         s = (len(l1)*(m1-mu)**2 + len(l2)*(m2-mu)**2) / len(l12)
+#         if sc < s and abs(m1 - m2) > eps:
+#           sc, cut, left, right = s, i, l1, l2
+#       if cut > 0 and not same(left, right):
+#         return recurse(its[cut:], 1 + recurse(its[:cut], rank))
+#     # when no cut found,  all keyes have the same rank
+#     out.update({k: rank for _, _, k, _ in its})
+#     return rank
+#   # sort treatments before recursion
+#   out = {}
+#   its = [(sum(v)/len(v), len(v), k, v) for k,v in rxs.items() if v] 
+#   recurse(sorted(its, reverse=reverse), 1)
+#   return out
+#
 def statsRank(rxs:dict[str,list[Number]], 
               reverse=False,same=statsSame, eps=0.01) -> dict[str,str]:
   "Sort rxs, recursively split them, stopping when two splits are same."
@@ -153,8 +181,7 @@ def eg__sk20():
     return ':'.join(str(x) for x in t)
   n=20
   for sd in [0.1,1,10]:
-    for eps in [1E-32,0.05,0.1,0.15,0.2]:
-      print("\neps=",eps, "sd=",sd)
+      print("\nsd=",sd)
       rxs={}
       G=lambda m:[random.gauss(m,sd) for _ in range(n)]
       for i in range(20): 
@@ -163,8 +190,10 @@ def eg__sk20():
         elif i <=12 : rxs[chr(97+i)] = G(12)
         elif i <=16 : rxs[chr(97+i)] = G(12)
         else        : rxs[chr(97+i)] = G(14)
+      all= sorted(sum(rxs.values(),[]))
+      eps = 0.35 * (all[9*len(all)//10] - all[len(all)//10])/2.56
       out = statsRank(rxs,eps=eps)
-      top = ''.join(list(statsTop(rxs,eps=sd*0.35)))
+      top = ''.join(list(statsTopp(rxs,eps=eps))) #sd*0.35)))
       print("\t",top)
       print("\t",''.join(map(daRx,out.keys())))
       print("\t",''.join([str(x) for x in out.values()]))
