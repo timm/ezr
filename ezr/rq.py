@@ -38,15 +38,16 @@ def eg__overall():
   data = Data(csv(the.file))
   rxRanks(data, [(b,acq,fn)
                  for acq in ["xploit","xplore","adapt"]
-                 for b in [20,40,60,80]
+                 for b in   [20,40,60,80]
                  for fn in  [likely]])
 
 def rxRanks(data, rxs, repeats=20):                    
   "rank different treatments"
-  b4 = adds(disty(data, r) for r in data.rows)       
-  win  = lambda x: int(100*(1 - (x  -b4.lo) / (b4.mu - b4.lo)))        
+  b4  = adds(disty(data, r) for r in data.rows)       
+  win = lambda x: int(100*(1 - (x  -b4.lo) / (b4.mu - b4.lo)))        
   results, allnums = {}, Num()                        
   for budget, acq, fn in rxs:                         
+    print(".", end="", flush=True, file=sys.stderr)
     the.acq, the.Budget = acq, budget                 
     train, holdout = rxTrainAndHoldOut(data, data.rows) 
     scores = [rxScore(data, train, holdout, fn)       

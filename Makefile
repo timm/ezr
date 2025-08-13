@@ -27,7 +27,7 @@ stats:
 	 | sort -t, -k1,1n -k2,2n -k3,3n | column -t
 
 ~/tmp/overall.log: 
-	$(MAKE) todo=overall files="$(Top)/../moot/optimize/config/*.csv" worker | tee $@; \
+	$(MAKE) todo=overall files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
 	gawk -f $(Top)/sh/bang.awk $@ 
 
 # 5000 +- 4000;  6 += 10; 3 += 1; n=118 lines
