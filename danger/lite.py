@@ -101,27 +101,30 @@ def likely(data:Data, rows=None) -> List[Row]:
   rows = rows or data.rows
   x   = clone(data, shuffle(rows[:]))
   xy, best, rest = clone(data), clone(data), clone(data)
+
   # label anything
   for _ in range(the.Any): add(xy, label(sub(x, x.rows.pop())))
+
   # divide lablled items into best and rest
   xy.rows = distysort(xy); n = round(the.Any**.5)
   adds(xy.rows[:n], best); adds(xy.rows[n:], rest)
-  # loop
+
+  # loop, labelling the best guess
   while x.n > 2 and xy.n < the.Build:
-    add(xy, add(best, sub(x, label(near(xy, best, rest, x)))))
+    add(xy, add(best, sub(x, label(guess(xy, best, rest, x)))))
     if best.n > (xy.n**.5):
       best.rows = distysort(xy,best.rows)
       while best.n > (xy.n**.5):
         add(rest, sub(best, best.rows.pop(-1)))
   return distysort(xy)
 
-def near(xy, best:Data, rest:Data, x:Data) -> Row:
+def guess(xy, best:Data, rest:Data, x:Data) -> Row:
   "Remove from `x' any 1 thing more best-ish than rest-ish."
-  j = 0
-  for i,row in enumerate(x.rows[:the.Few]):
+  for _ in range(the.Few):
+    row = x.rows[ i := random.randrange(x.n) ]
     if distx(xy, mids(best), row) < distx(xy, mids(rest), row):
-      j = i; break
-  return x.rows.pop(j)
+      return x.rows.pop(i)
+  return x.rows.pop()
 
 #--------------------------------------------------------------------
 def atom(s:str) -> o:
