@@ -14,6 +14,8 @@ Row  = List[Atom]
 big  = 1e32
 
 #--------------------------------------------------------------------
+def label(row): return row
+#--------------------------------------------------------------------
 def Num(i=0,s=" "): 
   return o(it=Num, i=i, txt=s, n=0, mu=0, hi=-big, lo=big,
            more = 0 if s[-1] == "-" else 1)
@@ -24,8 +26,8 @@ def Sym(i=0,s=" "):
 def Cols(names : List[str]) -> o:
   all=[(Num if s[0].isupper() else Sym)(c,s) for c,s in enumerate(names)]
   return o(it=Cols, names = names, all = all,
-           x   = [col for col in all if col.txt[-1] not in "X-+"],
-           y   = [col for col in all if col.txt[-1] in "-+"])
+           x = [col for col in all if col.txt[-1] not in "X-+"],
+           y = [col for col in all if col.txt[-1] in "-+"])
 
 def Data(src) -> o:
   src = iter(src)
@@ -100,13 +102,13 @@ def likely(data:Data, rows=None) -> List[Row]:
   x   = clone(data, shuffle(rows[:]))
   xy, best, rest = clone(data), clone(data), clone(data)
   # label anything
-  for _ in range(the.Any): add(xy, sub(x, x.rows.pop()))
+  for _ in range(the.Any): add(xy, label(sub(x, x.rows.pop())))
   # divide lablled items into best and rest
   xy.rows = distysort(xy); n = round(the.Any**.5)
   adds(xy.rows[:n], best); adds(xy.rows[n:], rest)
   # loop
   while x.n > 2 and xy.n < the.Build:
-    add(xy, add(best, sub(x, near(xy, best, rest, x))))
+    add(xy, add(best, sub(x, label(near(xy, best, rest, x)))))
     if best.n > (xy.n**.5):
       best.rows = distysort(xy,best.rows)
       while best.n > (xy.n**.5):
@@ -115,7 +117,6 @@ def likely(data:Data, rows=None) -> List[Row]:
 
 def near(xy, best:Data, rest:Data, x:Data) -> Row:
   "Remove from `x' any 1 thing more best-ish than rest-ish."
-  shuffle(x.rows)
   j = 0
   for i,row in enumerate(x.rows[:the.Few]):
     if distx(xy, mids(best), row) < distx(xy, mids(rest), row):
@@ -151,14 +152,15 @@ def main(funs: dict[str,callable]) -> None:
 
 #--------------------------------------------------------------------
 def eg__near():
-  data = Data(csv(the.file))
-  b4   = adds(disty(data,r) for r in data.rows)
-  win  = lambda n: int(100*(1 - (n - b4.lo) / (b4.mu - b4.lo)))
-  nears  = adds([ disty(data, likely(data)[0]) for _ in range(20)])
-  rands  = adds([ disty(data, 
+  data   = Data(csv(the.file))
+  b4     = adds(disty(data,r) for r in data.rows)
+  regret = lambda n: int(100*((n - b4.lo) / (b4.mu - b4.lo)))
+  for _ in range(20):
+    nears  = adds([ disty(data, likely(data)[0]) for _ in range(20)])
+    rands  = adds([ disty(data, 
                         distysort(data, shuffle(data.rows)[:the.Build])[0])
                         for _ in range(20)])
-  print("nears",win(nears.mu),"delta",win(nears.mu) - win(rands.mu), "|",
+    print("nears",regret(nears.mu),"delta",regret(rands.mu) - regret(nears.mu), "|",
         len(data.rows),
         len(data.cols.x),
         len(data.cols.y),
