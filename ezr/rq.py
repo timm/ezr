@@ -36,24 +36,23 @@ def eg__treeSelect():
 def eg__overall():
   "run"
   data = Data(csv(the.file))
-  rxRanks(data, [(b,acq,fn)
-                 for acq in ["xploit","xplore","adapt"]
+  rxRanks(data, [(fn,b,acq) for fn in  [likely]
                  for b in   [20,30,40,50]
-                 for fn in  [likely]])
+                 for acq in ["xploit","xplore","adapt"]])
 
 def rxRanks(data, rxs, repeats=20):                    
   "rank different treatments"
   b4  = adds(disty(data, r) for r in data.rows)       
   regret = lambda x: int(100*((x  -b4.lo) / (b4.mu - b4.lo)))        
   results, allnums = {}, Num()                        
-  for budget, acq, fn in rxs:                         
+  for fn,budget,acq in rxs:                         
     print(".", end="", flush=True, file=sys.stderr)
     the.acq, the.Budget = acq, budget                 
     train, holdout = rxTrainAndHoldOut(data, data.rows) 
     scores = [rxScore(data, train, holdout, fn)       
               for _ in range(repeats)]                
     for s in scores: add(allnums, s)                  
-    results[(budget,acq,fn)] = scores                 
+    results[(fn,budget,acq)] = scores                 
   ranks = statsRank(results, eps=.35*allnums.sd)      
   rxPrintResults(data, rxs, ranks, results, regret)      
 
@@ -72,7 +71,7 @@ def rxScore(data, train, holdout, fn):
 def rxPrintResults(data, rxs, ranks, results, regret): 
   "print results"
   show    = lambda x: x.__name__ if type(x) is type(rxScore) else str(x)
-  label   = lambda k: f"{k[2].__name__}.{k[1]}.{k[0]}"
+  label   = lambda k: f"{k[0].__name__}.{k[1]}.{k[0]}"
   winners = [label(k) for k in rxs]
   best_mu = adds(x for k,xs in results.items() if ranks[k]==1 for x in xs).mu
   top     = list(results.keys())
