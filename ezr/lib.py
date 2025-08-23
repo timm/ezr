@@ -29,7 +29,7 @@ def main(funs: dict[str,callable]) -> None:
       random.seed(the.seed)
       try: fn()
       except Exception as _: 
-          print("% Crash on",fn.__doc__,the.file)
+          print("% Crash on",fn.__doc__,the.file, file=sys.stderr)
           traceback.print_exc()
     else:
       for key in vars(the):
