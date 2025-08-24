@@ -79,16 +79,16 @@ def eg__rqall():
 # rand
 # dist
 #   raw
-#     near **
+#     near R
 #     kpp
 #   pca
 #     sway
-#     sway2 *
+#     sway2 P
 # bayes
-#   klass *
+#   klass B
 #   bore
 # rl
-#   xploit *
+#   xploit L
 #   xplore
 #   adapt
 
