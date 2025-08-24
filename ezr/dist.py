@@ -42,7 +42,7 @@ def distKpp(data, rows=None, k=20, few=None):
   random.shuffle(rows)
   out = [rows[0]]
   while len(out) < k:
-    tmp = random.sample(rows, few)
+    tmp = random.sample(rows, min(few,len(data.rows)))
     ws  = [min(distx(data, r, c)**2 for c in out) for r in tmp]
     p   = sum(ws) * random.random()
     for j, w in enumerate(ws):

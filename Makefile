@@ -38,6 +38,18 @@ stats:
 	$(MAKE) todo=rqpca files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
 	gawk -f $(Top)/sh/bang.awk $@ | column -s \& -t
 
+~/tmp/rqraw.log: 
+	$(MAKE) todo=rqraw files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
+	gawk -f $(Top)/sh/bang.awk $@ | column -s \& -t
+
+~/tmp/rqdist.log: 
+	$(MAKE) todo=rqdist files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
+	gawk -f $(Top)/sh/bang.awk $@ | column -s \& -t
+
+~/tmp/rqall.log: 
+	$(MAKE) todo=rqall files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
+	gawk -f $(Top)/sh/bang.awk $@ | column -s \& -t
+
 # 5000 +- 4000;  6 += 10; 3 += 1; n=118 lines
 
 ~/tmp/treeSelect.log: 

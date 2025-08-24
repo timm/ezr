@@ -57,23 +57,38 @@ def eg__rqpca():
 def eg__rqraw():
   "run"
   data = Data(csv(the.file))
-  rxRanks(data, [(fn,b,acq) for fn in  [rxrx]
+  rxRanks(data, [(fn,b,acq) for fn in  [likely]
                  for b in   [20,30,40,50]
                  for acq in ["near","kpp"]]) #klass, near bore
+
+def eg__rqdist():
+  "run"
+  data = Data(csv(the.file))
+  rxRanks(data, [(fn,b,acq) for fn in  [likely]
+                 for b in   [20,30,40,50]
+                 for acq in ["near","sway2"]]) #klass, near bore
+
+def eg__rqall():
+  "run"
+  data = Data(csv(the.file))
+  rxRanks(data, [(fn,b,acq) for fn in  [likely]
+                 for b in   [20,30,40,50]
+                 for acq in ["near","klass","xploit"]]) #klass, near bore
+
 
 # rand
 # dist
 #   raw
-#     near
+#     near **
 #     kpp
 #   pca
 #     sway
-#     sway2
+#     sway2 *
 # bayes
-#   klass
+#   klass *
 #   bore
 # rl
-#   xploit
+#   xploit *
 #   xplore
 #   adapt
 
