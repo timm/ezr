@@ -81,8 +81,9 @@ def distFastmap(data,rows=None):
   c     = X(here,there)
   return sorted(rows, key=lambda r: distProject(data,r,here,there,c))
 
-def distFastermap(data,rows, sway1=False):
+def distFastermap(data,rows=None, sway1=False):
   "Prune half the rows furthest from best distant pair."
+  rows = rows or data.rows
   random.shuffle(rows)
   nolabel = rows[the.Any:]
   labels = clone(data, rows[:the.Any])
@@ -97,8 +98,8 @@ def distFastermap(data,rows, sway1=False):
       nolabel= [r for r in rows if r not in labels.rows]
       random.shuffle(nolabel)
   labels.rows.sort(key=Y)
-  return o(labels= labels,
-           nolabels= [r for r in rows if r not in labels.rows])
+  return labels.rows # o(labels= labels,
+                     # nolabels= [r for r in rows if r not in labels.rows])
 
 #-------------------------------------------------------------------
 def eg__distx():

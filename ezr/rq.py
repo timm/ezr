@@ -33,12 +33,49 @@ def eg__treeSelect():
       add(rxs[key2], regret(distysort(data,test)[0]))
   print(' '.join(f"{key} {int(log.mu)}" for key,log in rxs.items()))
 
-def eg__overall():
+def eg__rqrl():
   "run"
   data = Data(csv(the.file))
   rxRanks(data, [(fn,b,acq) for fn in  [likely]
                  for b in   [20,30,40,50]
-                 for acq in ["xploit","xplore","adapt"]])
+                 for acq in ["xploit","xplore","adapt"]]) #klass, near bore
+
+def eg__rqbayes():
+  "run"
+  data = Data(csv(the.file))
+  rxRanks(data, [(fn,b,acq) for fn in  [likely]
+                 for b in   [20,30,40,50]
+                 for acq in ["klass","bore"]]) #klass, near bore
+
+def eg__rqpca():
+  "run"
+  data = Data(csv(the.file))
+  rxRanks(data, [(fn,b,acq) for fn in  [rxrx]
+                 for b in   [20,30,40,50]
+                 for acq in ["sway","sway2"]]) #klass, near bore
+
+def eg__rqraw():
+  "run"
+  data = Data(csv(the.file))
+  rxRanks(data, [(fn,b,acq) for fn in  [rxrx]
+                 for b in   [20,30,40,50]
+                 for acq in ["near","kpp"]]) #klass, near bore
+
+# rand
+# dist
+#   raw
+#     near
+#     kpp
+#   pca
+#     sway
+#     sway2
+# bayes
+#   klass
+#   bore
+# rl
+#   xploit
+#   xplore
+#   adapt
 
 def rxRanks(data, rxs, repeats=20):                    
   "rank different treatments"
@@ -61,11 +98,22 @@ def rxTrainAndHoldOut(data, rows):
   rows = shuffle(rows); m = len(rows)//2          
   return clone(data, rows[:m]), rows[m:]          
 
+def rxrx(*l): return l
+
 def rxScore(data, train, holdout, fn):            
   "check hold-outs for 'good' rows (as guessed by model from training)"
-  tree  = Tree(clone(train, fn(train)))           
-  check = sorted(holdout, 
-                 key=lambda r:treeLeaf(tree,r).ys.mu)[:the.Check]    
+  if the.acq == "rand":
+    rows = random.choices(train,k=the.Budget)
+  elif the.acq == "kpp":
+    rows = distKpp( train, k=the.Budget) 
+  elif the.acq == "sway":
+    rows = distFastermap(train, sway1=True)
+  elif the.acq == "sway2":
+    rows = distFastermap(train, sway1=False)
+  else: #xploit,xplore,adapt,klass,near,bore
+    rows = fn(train)
+  tree  = Tree(clone(train, rows))
+  check = sorted(holdout, key=lambda r:treeLeaf(tree,r).ys.mu)[:the.Check]    
   return disty(data, distysort(data, check)[0])   
 
 def rxPrintResults(data, rxs, ranks, results, regret): 
