@@ -15,9 +15,9 @@ def eg__treeSelect():
   b4 = adds(disty(data,r) for r in data.rows)
   regret = lambda x: int(100*((disty(data,x) - b4.lo)/(b4.mu - b4.lo)))
   trains,tests=Num(),Num()
-  the.acq="klass"
   rxs=dict(build10=Num(), build20=Num(), build30=Num(), build40=Num(), build80=Num(), build120=Num(),
            check10=Num(), check20=Num(), check30=Num(), check40=Num(), check80=Num(), check120=Num())
+  print(the.acq)
   for budget in [10,20,30,40,80,120]:
     the.Budget = budget
     for _ in range(repeats):
@@ -75,11 +75,32 @@ def eg__rqall():
                  for b in   [20,30,40,50]
                  for acq in ["near","klass","xploit"]]) #klass, near bore
 
+def eg__rqrand():
+  "run"
+  data = Data(csv(the.file))
+  rxRanks(data, [(fn,b,acq) for fn in  [likely]
+                 for b in   [20,30,40,50]
+                 for acq in ["near","klass","xploit"]]) #klass, near bore
+
+def eg__rqprudence():
+  "run"
+  data = Data(csv(the.file))
+  rxRanks(data, [(fn,b,acq) for fn in  [likely]
+                 for b in   [20,30,40,50]
+                 for acq in ["near","rand"]]) #klass, near bore
+
+def eg__rqgrow():
+  "run"
+  data = Data(csv(the.file))
+  rxRanks(data, [(fn,b,acq) for fn in  [likely]
+                 for b in   [50,60,70,80,90,100,110,120]
+                 for acq in ["near"]]) #klass, near bore
+
 
 # rand
 # dist
 #   raw
-#     near R
+#     near RDA
 #     kpp
 #   pca
 #     sway
@@ -118,7 +139,7 @@ def rxrx(*l): return l
 def rxScore(data, train, holdout, fn):            
   "check hold-outs for 'good' rows (as guessed by model from training)"
   if the.acq == "rand":
-    rows = random.choices(train,k=the.Budget)
+    rows = random.choices(train.rows,k=the.Budget)
   elif the.acq == "kpp":
     rows = distKpp( train, k=the.Budget) 
   elif the.acq == "sway":

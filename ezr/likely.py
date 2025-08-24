@@ -42,7 +42,7 @@ def likelyKlass(best:Data, rest:Data, x:Data, _) -> Row:
   "Remove from `x' any 1 thing more best-ish than rest-ish."
   shuffle(x.rows)
   j, nall = 0, best.n + rest.n
-  for i,row in enumerate(x.rows[:the.Few*2]):
+  for i,row in enumerate(x.rows[:the.Few]):
     if likes(best,row,nall,2) > likes(rest,row,nall,2):
       j = i; break
   return x.rows.pop(j)

@@ -1,0 +1,460 @@
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+18, 30,  44, ! 20,  44, ! 17,  52, ! 17,  28,|,398,4,3,auto93.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+43,! 44,  61, ! 40, ! 45,  70,  55, ! 41,  60,|,93,22,3,nasa93dem.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+33,! 33,  81,  74,  67,  72,  66,  75,  83,|,247,22,2,wallpaper.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+71, 78,  80, ! 69,  77,  80, ! 73,  76,  80,|,317,7,4,A2C_CartPole.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+99, 99, ! 99,  99,  99,  99, ! 99,  99,  99,|,913,20,2,dress-up.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+97, 98,  98, ! 97,  98,  98,  99, ! 96, ! 97,|,1121,14,2,accessories.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+38,! 39,  54, ! 40,  50, ! 37,  48, ! 37,  54,|,223,10,3,A2C_Acrobot.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+31,! 35,  48,  37,  42,  39,  43, ! 28,  38,|,500,9,3,pom3d.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+48, 58, ! 53, ! 51,  63, ! 46,  62, ! 44,  66,|,1599,10,2,Wine_quality.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+0, 14,  23,  8,  29, ! 0,  17,  23,  10,|,350,20,1,socks.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+52,! 54,  67,  61, ! 56, ! 48, ! 50,  63,  65,|,1000,20,5,coc1000.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+20,! 25, ! 19, ! 25, ! 25, ! 12,  44, ! 19, ! 15,|,5160,9,1,dataset120.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+3, 26, ! 6,  32,  23,  19,  19, ! 0,  29,|,5160,9,1,dataset600.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+67, 77,  86,  75,  75,  89,  83,  87, ! 67,|,205,38,5,Car_price_cleaned.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+28, 36,  42,  40,  32,  34, ! 28,  32,  32,|,10000,5,3,Health-Commits0009.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+67,! 74, ! 71, ! 67, ! 68, ! 63, ! 67, ! 62, ! 62,|,10000,5,3,Health-Commits0008.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+49, 65,  74,  68,  70, ! 53, ! 51, ! 42, ! 49,|,10000,5,3,Health-Commits0003.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+0,! 0, ! 0, ! 0, ! 0, ! 0, ! 0, ! 0, ! 0,|,10000,5,3,Health-Commits0011.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+66,! 65, ! 64, ! 65, ! 69, ! 64, ! 68, ! 65, ! 69,|,10000,5,3,Health-Commits0002.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+40,! 34,  86, ! 41, ! 47,  61, ! 40, ! 45, ! 30,|,10000,5,3,Health-Commits0007.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+73,! 73,  73,  73,  73, ! 72, ! 73, ! 73, ! 73,|,10000,5,3,Health-Commits0004.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+45, 55, ! 45,  51,  52,  52,  56,  55,  49,|,10000,5,3,Health-Commits0006.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+25,! 29,  76, ! 27,  38, ! 21,  43,  44, ! 22,|,10000,5,3,Health-Commits0005.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+34,! 33,  42,  40, ! 35,  37,  43,  41,  39,|,10000,5,3,Health-Commits0010.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+3,! 3, ! 3, ! 3, ! 3, ! 3, ! 3, ! 3, ! 3,|,10000,5,3,Health-Commits0001.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+0,! 0, ! 0, ! 0, ! 0, ! 0, ! 0, ! 0, ! 0,|,10000,5,3,Health-ClosedPRs0011.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+22, 29,  29,  31,  33,  27,  31, ! 22,  31,|,10000,5,3,Health-Commits0000.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+62, 81,  86,  79,  81,  75,  69, ! 63, ! 60,|,10000,5,3,Health-ClosedPRs0010.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+67, 81,  87,  81, ! 66,  83,  76,  81, ! 67,|,10000,5,3,Health-ClosedPRs0009.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+26, 51,  61,  49,  63, ! 26,  49,  43,  43,|,10000,5,3,Health-ClosedPRs0008.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+43, 86,  65,  60,  65,  58, ! 44, ! 50, ! 35,|,10000,5,3,Health-ClosedPRs0006.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+5,! 21, ! 0, ! 11, ! 0, ! 0, ! 5, ! 0, ! 5,|,10000,5,3,Health-ClosedPRs0007.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+0,! 0, ! 0, ! 0, ! 0, ! 0, ! 0, ! 0, ! 0,|,10000,5,3,Health-ClosedPRs0005.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+15,! 20,  66, ! 8, ! 24, ! 12, ! 16, ! 12, ! 16,|,10000,5,3,Health-ClosedPRs0004.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+1,! 1,  4, ! 0,  3, ! 1, ! 1, ! 1,  4,|,196,3,1,wc+wc-3d-c4-obj1.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+1, 5,  6, ! 1, ! 2, ! 0, ! 2, ! 0, ! 1,|,1152,16,1,X264_AllMeasurements.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+1, 6, ! 1, ! 1,  6, ! 0,  5, ! 0, ! 0,|,196,3,1,wc+sol-3d-c4-obj1.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+0,! 0, ! 0, ! 0, ! 0, ! 0, ! 0, ! 0, ! 0,|,10000,5,2,Health-ClosedPRs0000.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+1,! 1, ! 1, ! 1, ! 1, ! 1, ! 1, ! 1, ! 1,|,10000,5,3,Health-ClosedPRs0003.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+1, 2, ! 1, ! 1, ! 1, ! 0, ! 1, ! 0,  4,|,196,3,1,wc+rs-3d-c4-obj1.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+41, 53,  59, ! 45, ! 40,  60,  56, ! 39,  58,|,2205,31,8,Marketing_Analytics.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+0,! 0, ! 0, ! 0, ! 7, ! 0, ! 0, ! 0, ! 0,|,10000,5,3,Health-ClosedPRs0002.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+0,! 0, ! 0, ! 0, ! 0, ! 0, ! 0, ! 0, ! 0,|,10000,5,3,Health-ClosedIssues0011.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+85,! 84, ! 86, ! 85,  88, ! 86, ! 85,  88, ! 84,|,10000,5,3,Health-ClosedIssues0010.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+21, 32,  27,  29,  38,  29,  27, ! 21,  33,|,10000,5,3,Health-ClosedIssues0006.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+36, 39,  40,  40,  39, ! 36,  40,  39,  40,|,10000,5,3,Health-ClosedIssues0005.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+76, 94,  94,  94,  94,  94, ! 76, ! 76, ! 76,|,10000,5,3,Health-ClosedIssues0007.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+71, 80,  77, ! 71, ! 72,  78,  77, ! 69,  81,|,10000,5,3,Health-ClosedIssues0004.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+73,! 71, ! 76, ! 70, ! 75, ! 72, ! 76, ! 68, ! 74,|,10000,5,3,Health-ClosedIssues0009.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+29,! 25,  58,  46,  42, ! 31, ! 31, ! 28,  37,|,10000,5,3,Health-ClosedIssues0008.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+21,! 21, ! 21, ! 21, ! 21, ! 19, ! 24, ! 21, ! 21,|,10000,5,3,Health-ClosedIssues0002.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+59, 63,  61, ! 59, ! 60,  62, ! 57, ! 59, ! 59,|,10000,5,3,Health-ClosedIssues0001.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+39,! 43,  78,  54,  73,  54,  63, ! 34,  56,|,10000,5,3,Health-ClosedIssues0003.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+18, 23, ! 19,  25,  32,  22,  30, ! 18,  24,|,10000,5,3,Health-ClosedIssues0000.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+5, 20,  16, ! 5, ! 7, ! 4, ! 8, ! 2, ! 5,|,1023,11,2,SS-P.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+27, 72,  59,  59,  51,  49,  45,  51, ! 27,|,2938,20,2,Life_Expectancy_Data.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+1, 7,  7, ! 1, ! 2, ! 1, ! 3, ! 1, ! 0,|,2880,6,1,wc-6d-c1-obj1.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+4, 20,  20,  36, ! 4,  26,  25,  92,  25,|,7043,19,2,WA_Fn-UseC_-Telco-Customer-Churn.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+18, 25,  32,  24,  33, ! 15,  22, ! 19, ! 18,|,972,11,2,SS-O.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+15, 62,  63, ! 19,  64, ! 15,  43, ! 12,  60,|,1080,5,2,SS-I.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+0, 5,  3, ! 2, ! 0, ! 0, ! 0, ! 0, ! 0,|,864,17,3,SS-M.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+1,! 1,  22, ! 0,  25, ! 0,  6, ! 3,  15,|,259,4,2,SS-H.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+16, 47,  43,  30,  41,  34,  47, ! 16,  43,|,196,3,2,SS-G.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+12, 41,  35,  27,  35,  26,  38, ! 12,  42,|,196,3,2,SS-F.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+48, 58, ! 50, ! 48,  62, ! 47, ! 45, ! 46, ! 50,|,196,3,2,SS-D.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+0,! 0,  26, ! 0,  15,  15, ! 1, ! 0,  10,|,206,3,2,SS-B.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+21, 43,  36,  31,  46,  38, ! 24, ! 18,  34,|,756,3,2,SS-E.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+19, 24,  24, ! 18,  26,  23,  22, ! 20,  24,|,1512,3,2,SS-C.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+7, 23,  26, ! 7,  27,  14,  23, ! 7,  19,|,1343,3,2,SS-A.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+7, 26,  19, ! 5, ! 9, ! 4, ! 10, ! 6, ! 7,|,1023,11,2,SS-L.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+0, 6,  9,  5,  5, ! 0, ! 0, ! 0,  5,|,192,9,1,Apache_AllMeasurements.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+30,! 30,  55,  45,  40,  43, ! 30, ! 32, ! 28,|,2880,6,2,SS-K.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+6,! 7,  12, ! 4, ! 6, ! 7, ! 5, ! 7, ! 6,|,3840,6,2,SS-S.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+22, 30,  27, ! 23,  27, ! 22, ! 21, ! 22, ! 20,|,3008,14,2,SS-R.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+3, 4,  5, ! 2,  6, ! 3,  4, ! 3, ! 3,|,2736,13,3,SS-Q.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+8, 15, ! 10, ! 9,  14, ! 9, ! 7, ! 5, ! 8,|,3840,6,2,SS-J.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+5, 13,  23,  11, ! 5, ! 7, ! 5,  16, ! 5,|,5184,12,2,SS-T.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+5, 8, ! 6, ! 4,  6, ! 4,  8, ! 5, ! 5,|,4608,21,2,SS-U.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+9, 37, ! 10,  26, ! 10,  23,  19,  21, ! 6,|,6840,16,2,SS-V.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+6, 7,  7, ! 6, ! 6, ! 5, ! 6, ! 5,  6,|,2866,6,1,sol-6d-c2-obj1.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+0,! 0,  0, ! 0,  0, ! 0,  0, ! 0, ! 0,|,3840,6,1,rs-6d-c3_obj2.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+50,! 52,  61, ! 51, ! 53, ! 44, ! 47, ! 50, ! 53,|,20000,9,3,pom3a.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+43, 63,  70,  61,  56, ! 44, ! 45,  59, ! 41,|,20000,9,3,pom3c.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+0, 2,  2,  1,  2, ! 0, ! 0,  2, ! 0,|,3840,6,1,rs-6d-c3_obj1.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+46,! 46,  59, ! 46, ! 48, ! 49, ! 45, ! 43, ! 41,|,20000,9,3,pom3b.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+1, 8,  9,  4,  6,  4,  4, ! 1,  4,|,3456,14,1,HSMGP_num.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+44, 90,  71,  91,  103, ! 44,  95,  94,  90,|,1460,77,4,home_data_for_ml_course.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+23,! 21,  42,  33,  38, ! 25, ! 25, ! 25, ! 19,|,81,26,1,player_statistics_cleaned_final.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+3,! 0, ! 0, ! 23, ! 0, ! 0, ! 0, ! 0, ! 5,|,649,33,1,student_dropout.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+40,! 42,  54,  51,  55, ! 39, ! 38,  54, ! 40,|,4653,38,1,SQL_AllMeasurements.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+28,! 31,  53,  44,  41, ! 26,  44, ! 28,  47,|,10000,25,4,xomo_ground.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+28, 35,  44,  34,  56, ! 28,  35, ! 28, ! 28,|,10000,25,4,xomo_osp.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+19, 31,  26,  25,  49, ! 20,  29, ! 20, ! 19,|,10000,25,4,xomo_flight.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+42, 53,  53, ! 44,  55, ! 43, ! 46, ! 36, ! 40,|,10127,19,4,BankChurners.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+32, 55,  54, ! 34,  45,  48,  45, ! 29,  62,|,10000,25,4,xomo_osp2.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+22, 31,  37,  29,  41,  32, ! 22,  28,  43,|,1470,32,3,WA_Fn-UseC_-HR-Employee-Attrition.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+26, 35,  44, ! 26,  42, ! 21,  34, ! 27, ! 28,|,1000,124,3,Scrum1k.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+30, 42,  43,  41,  43,  39,  38, ! 32, ! 27,|,10000,88,3,billing10k.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+58, 66,  68,  63, ! 61,  65, ! 56, ! 57, ! 56,|,65536,16,2,SS-W.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+44, 62,  51, ! 42,  49, ! 46,  50, ! 43, ! 45,|,86058,11,2,SS-X.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+33,! 31,  46,  56, ! 36, ! 31,  44, ! 36,  41,|,10000,124,3,Scrum10k.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+24, 83,  60,  37,  88,  71,  49,  47, ! 24,|,20000,31,5,Loan.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+42, 104,  103, ! 42,  81,  86,  56,  90,  55,|,21759,35,3,Data_COVID19_Indonesia.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+5,! 0, ! 0, ! 32, ! 0, ! 0, ! 10, ! 0, ! 0,|,25000,64,1,Medical_Data_and_Hospital_Readmissions.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+29,! 24,  43, ! 28, ! 30, ! 29,  46, ! 27, ! 34,|,10000,128,3,FFM-125-25-0.50-SAT-1.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+25, 73,  45,  62,  90,  52,  63,  73, ! 25,|,17737,55,2,all_players.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+52, 69,  64,  63, ! 51,  62,  61, ! 53, ! 51,|,53662,17,2,SS-N.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+18, 46,  41,  36, ! 20,  33,  28, ! 17,  29,|,10000,256,3,FFM-250-50-0.50-SAT-1.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+29, 36,  48,  39,  47, ! 30,  38, ! 27,  37,|,10000,510,3,FFM-500-100-0.50-SAT-1.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+21, 47,  36, ! 22,  36,  38,  41, ! 20,  31,|,10000,511,3,FM-500-100-0.75-SAT-1.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+22, 31,  41, ! 23,  30, ! 23,  42, ! 19, ! 24,|,10000,511,3,FM-500-100-1.00-SAT-1.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+31, 38,  58,  42,  41, ! 31,  45, ! 31,  41,|,10000,517,3,FM-500-100-0.25-SAT-1.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+32,! 36,  46, ! 29,  43, ! 29,  41,  38, ! 32,|,10000,513,3,FM-500-100-0.50-SAT-1.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+40, 56,  61, ! 38,  57,  45,  55, ! 42,  49,|,100000,124,3,Scrum100k.csv
+# likely, likely, likely, likely, likely, likely, likely, likely
+# 20, 20, 30, 30, 40, 40, 50, 50
+# near, sway2, near, sway2, near, sway2, near, sway2
+28, 36,  35,  33,  39, ! 30,  35,  33, ! 27,|,10000,1044,3,FFM-1000-200-0.50-SAT-1.csv
