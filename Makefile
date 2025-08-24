@@ -58,6 +58,10 @@ stats:
 	$(MAKE) todo=rqgrow files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
 	gawk -f $(Top)/sh/bang.awk $@ | column -s \& -t
 
+~/tmp/rqtens120.log: 
+	$(MAKE) todo=rqtens120 files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
+	gawk -f $(Top)/sh/bang.awk $@ | column -s \& -t
+
 
 # 5000 +- 4000;  6 += 10; 3 += 1; n=118 lines
 

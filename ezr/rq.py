@@ -96,6 +96,15 @@ def eg__rqgrow():
                  for b in   [50,60,70,80,90,100,110,120]
                  for acq in ["near"]]) #klass, near bore
 
+def eg__rqtens120():
+  "run"
+  data = Data(csv(the.file))
+  rxRanks(data, [(fn,b,acq) for fn in  [likely]
+                 for b in   [120]
+                 for acq in ["near"]]) #klass, near bore
+
+
+
 
 # rand
 # dist
