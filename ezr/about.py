@@ -2,7 +2,7 @@
 ezr.py: lightweight xai for incremental multi-objective optimization   
 (col) 2025, Tim Menzies <timm@ieee.org>, MIT license   
    
-    -a  acq=klass       acquisition function   
+    -a  acq=near        acquisition function   
     -A  Any=4           on init, how many initial guesses?   
     -B  Budget=30       when growing theory, how many labels?   
     -C  Check=5         when testing, how many checks?   

@@ -2,6 +2,7 @@ SHELL     := bash
 MAKEFLAGS += --warn-undefined-variables
 .SILENT:
 
+
 LOUD = \033[1;34m#
 HIGH = \033[1;33m#
 SOFT = \033[0m#
@@ -58,10 +59,37 @@ stats:
 	$(MAKE) todo=rqgrow files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
 	gawk -f $(Top)/sh/bang.awk $@ | column -s \& -t
 
-~/tmp/rqtens120.log: 
-	$(MAKE) todo=rqtens120 files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
+~/tmp/rqtens40.log: 
+	$(MAKE) todo=rqtens40 files="$(Top)/../moot/optimize/*/*.csv" worker | tee $@; \
 	gawk -f $(Top)/sh/bang.awk $@ | column -s \& -t
 
+~/tmp/train10.log:
+	N=12;for i in ../moot/optimize/*/*.csv; do (python3 -m ezr -B $$N -f $$i -a near --rq0 &); done | tee ~/tmp/train$$N.log;   wait; \
+	N=25;for i in ../moot/optimize/*/*.csv; do (python3 -m ezr -B $$N -f $$i -a near --rq0 &); done | tee ~/tmp/train$$N.log;   wait; \
+	#N=10;for i in ../moot/optimize/*/*.csv; do (python3 -m ezr -B $$N -f $$i -a near --rq0 &); done | tee ~/tmp/train$$N.log;   wait; \
+	#N=20;for i in ../moot/optimize/*/*.csv; do (python3 -m ezr -B $$N -f $$i -a near --rq0 &); done | tee ~/tmp/train$$N.log;   wait; \
+	#N=30;for i in ../moot/optimize/*/*.csv; do (python3 -m ezr -B $$N -f $$i -a near --rq0 &); done | tee ~/tmp/train$$N.log;   wait; \
+	#N=40;for i in ../moot/optimize/*/*.csv; do (python3 -m ezr -B $$N -f $$i -a near --rq0 &); done | tee ~/tmp/train$$N.log;   wait; \
+	#N=50;for i in ../moot/optimize/*/*.csv; do (python3 -m ezr -B $$N -f $$i -a near --rq0 &); done | tee ~/tmp/train$$N.log;   wait; \
+	#N=60;for i in ../moot/optimize/*/*.csv; do (python3 -m ezr -B $$N -f $$i -a near --rq0 &); done | tee ~/tmp/train$$N.log;   wait; \
+	#N=70;for i in ../moot/optimize/*/*.csv; do (python3 -m ezr -B $$N -f $$i -a near --rq0 &); done | tee ~/tmp/train$$N.log;   wait; \
+	#N=80;for i in ../moot/optimize/*/*.csv; do (python3 -m ezr -B $$N -f $$i -a near --rq0 &); done | tee ~/tmp/train$$N.log;   wait; \
+	#N=90;for i in ../moot/optimize/*/*.csv; do (python3 -m ezr -B $$N -f $$i -a near --rq0 &); done | tee ~/tmp/train$$N.log;   wait; \
+	#N=100;for i in ../moot/optimize/*/*.csv; do (python3 -m ezr -B $$N -f $$i -a near --rq0 &); done | tee ~/tmp/train$$N.log;   wait; \
+
+trainReport:
+	cat ~/tmp/train10.log | sort -n | gawk '{a[NR]=$$1} END{n=asort(a); t=int(length(a)/10); print(10,a[t],a[3*t],a[5*t],a[7*t],a[9*t])}'
+	cat ~/tmp/train12.log | sort -n | gawk '{a[NR]=$$1} END{n=asort(a); t=int(length(a)/10); print(12,a[t],a[3*t],a[5*t],a[7*t],a[9*t])}'
+	cat ~/tmp/train20.log | sort -n | gawk '{a[NR]=$$1} END{n=asort(a); t=int(length(a)/10); print(20,a[t],a[3*t],a[5*t],a[7*t],a[9*t])}'
+	cat ~/tmp/train25.log | sort -n | gawk '{a[NR]=$$1} END{n=asort(a); t=int(length(a)/10); print(25,a[t],a[3*t],a[5*t],a[7*t],a[9*t])}'
+	cat ~/tmp/train30.log | sort -n | gawk '{a[NR]=$$1} END{n=asort(a); t=int(length(a)/10); print(30,a[t],a[3*t],a[5*t],a[7*t],a[9*t])}'
+	cat ~/tmp/train40.log | sort -n | gawk '{a[NR]=$$1} END{n=asort(a); t=int(length(a)/10); print(40,a[t],a[3*t],a[5*t],a[7*t],a[9*t])}'
+	cat ~/tmp/train50.log | sort -n | gawk '{a[NR]=$$1} END{n=asort(a); t=int(length(a)/10); print(50,a[t],a[3*t],a[5*t],a[7*t],a[9*t])}'
+	cat ~/tmp/train60.log | sort -n | gawk '{a[NR]=$$1} END{n=asort(a); t=int(length(a)/10); print(60,a[t],a[3*t],a[5*t],a[7*t],a[9*t])}'
+	cat ~/tmp/train70.log | sort -n | gawk '{a[NR]=$$1} END{n=asort(a); t=int(length(a)/10); print(70,a[t],a[3*t],a[5*t],a[7*t],a[9*t])}'
+	cat ~/tmp/train80.log | sort -n | gawk '{a[NR]=$$1} END{n=asort(a); t=int(length(a)/10); print(80,a[t],a[3*t],a[5*t],a[7*t],a[9*t])}'
+	cat ~/tmp/train90.log | sort -n | gawk '{a[NR]=$$1} END{n=asort(a); t=int(length(a)/10); print(90,a[t],a[3*t],a[5*t],a[7*t],a[9*t])}'
+	cat ~/tmp/train100.log | sort -n | gawk '{a[NR]=$$1} END{n=asort(a); t=int(length(a)/10); print(100,a[t],a[3*t],a[5*t],a[7*t],a[9*t])}'
 
 # 5000 +- 4000;  6 += 10; 3 += 1; n=118 lines
 

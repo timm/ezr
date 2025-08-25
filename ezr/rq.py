@@ -3,6 +3,14 @@ from ezr.tree import *
 from ezr.stats import *
 from ezr.likely import *
 
+def eg__rq0():
+  repeats = 20
+  data =Data(csv(the.file))
+  b4 = adds(disty(data,r) for r in data.rows)
+  win = lambda x: 100-int(100*((disty(data,x) - b4.lo)/(b4.mu - b4.lo)))
+  nums=sorted([win(likely(data)[0]) for _ in range(20)])
+  print(nums[10], nums[15]-nums[5],re.sub(".*/","",the.file))
+
 def eg__rq1():
   "run"
   data =Data(csv(the.file))
@@ -96,11 +104,11 @@ def eg__rqgrow():
                  for b in   [50,60,70,80,90,100,110,120]
                  for acq in ["near"]]) #klass, near bore
 
-def eg__rqtens120():
+def eg__rqtens40():
   "run"
   data = Data(csv(the.file))
   rxRanks(data, [(fn,b,acq) for fn in  [likely]
-                 for b in   [120]
+                 for b in   [40]
                  for acq in ["near"]]) #klass, near bore
 
 
