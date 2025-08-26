@@ -249,11 +249,12 @@ def worker(budgets, repeats=20):
                kpp  = lambda: distKpp(data,            k=b),
                near = lambda: likely(data))
     for k,fun in rxs.items():
-      out[f"{k}{b}"] = [win(distysort(data,fun())[0]) for _ in range(repeats)]
+        #out[f"{k}{b}"] = [win(distysort(data,fun())[0]) for _ in range(repeats)]
+      out[(b,k)] = [win(distysort(data,fun())[0]) for _ in range(repeats)]
   eps  = adds(x for k in out for x in out[k]).sd * 0.35
-  best = list(statsTop(out, reverse=True, eps = eps))
+  best = sorted(statsTop(out, reverse=True, eps = eps))
   mu   = adds(x for k in best for x in out[k]).mu
-  print(int(mu), re.sub(".*/","",the.file), *best, sep=", ")
+  print(int(mu), re.sub(".*/","",the.file), *[f"{b}.{k}" for b,k in best], sep=", ")
     
 #--------------------------------------------------------------------
 for k,v in the.__dict__.items(): the.__dict__[k] = atom(v)
