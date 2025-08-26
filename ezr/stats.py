@@ -43,8 +43,7 @@ def confused(cf:Confuse, summary=False) -> List[Confuse]:
 # While ks_code is elegant (IMHO), its slow for large samples. That
 # said, it is nearly instantaneous  for the typical 20*20 cases.
 
-def statsSame(x:list[Number], y:list[Number], 
-              ks=the.Ks, cliffs=the.Delta) -> bool:
+def statsSame(x:list[Number], y:list[Number]) --> bool:
   "True if x,y indistinguishable and differ by just a small effect."
   x, y = sorted(x), sorted(y)
   n, m = len(x), len(y)
@@ -62,8 +61,8 @@ def statsSame(x:list[Number], y:list[Number],
     fy = [sum(a <= v for a in y)/m for v in xs]
     return max(abs(v1 - v2) for v1, v2 in zip(fx, fy))
 
-  ks    = {0.1:1.22, 0.05:1.36, 0.01:1.63}[round(1 - ks,2)]
-  cliffs= {'small':0.11,'smed':0.195,'medium':0.28,'large':0.43}[cliffs]
+  ks    = {0.1:1.22, 0.05:1.36, 0.01:1.63}[round(1 - the.Ks,2)]
+  cliffs= {'small':0.11,'smed':0.195,'medium':0.28,'large':0.43}[the.cliffs]
   return _cliffs() <= cliffs and _ks() <= ks * ((n + m)/(n * m))**0.5
 
 def statsTopp(rxs:dict[str,list[Number]], 

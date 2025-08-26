@@ -137,6 +137,14 @@ trainReport:
 	$(MAKE) todo=likely files="$(Top)/../moot/optimize/config/SS-[A-J]*.csv" worker | tee $@ ; \
 	gawk -f $(Top)/sh/likely.awk $@ 
 
+~/tmp/lite40.log:
+	$(MAKE) todo=40 files="$(Top)/../moot/optimize/*/*.csv" liteworker | tee $@ 
+
+liteworker:
+	@mkdir -p ~/tmp
+	time ls -r $(files) \
+	  | xargs -P 32 -n 1 -I{} sh -c 'cd danger; python3 -B lite.py -f "{}" --$(todo)'
+
 worker:
 	@mkdir -p ~/tmp
 	time ls -r $(files) \
