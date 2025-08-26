@@ -240,21 +240,20 @@ def eg__80(): worker(range(10,81,10))
 def worker(budgets, repeats=20):
   data = Data(csv(the.file))
   b4   = adds(disty(data,r) for r in data.rows)
-  win  = lambda r: int(100*(1 - (disty(data,r) - b4.lo)/(b4.mu - b4.lo)))
-  out  = {}
+  best = lambda rows: disty(data, distysort(data,rows_)[0]))
+  win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
   for b in budgets:
     fyi(".")
     the.Budget = b
-    rxs = dict(rand = lambda: random.sample(data.rows, k=b),
-               kpp  = lambda: distKpp(data,            k=b),
-               near = lambda: likely(data))
-    for k,fun in rxs.items():
-        #out[f"{k}{b}"] = [win(distysort(data,fun())[0]) for _ in range(repeats)]
-      out[(b,k)] = [win(distysort(data,fun())[0]) for _ in range(repeats)]
-  eps  = adds(x for k in out for x in out[k]).sd * 0.35
-  best = sorted(statsTop(out, reverse=True, eps = eps))
-  mu   = adds(x for k in best for x in out[k]).mu
-  print(int(mu), re.sub(".*/","",the.file), *[f"{b}.{k}" for b,k in best], sep=", ")
+    for k,fn in dict(rand = lambda: random.sample(data.rows, k=b),
+                     kpp  = lambda: distKpp(data,            k=b),
+                     near = lambda: likely(data)).items():
+      out[(b,k)] = [best(fn()) for _ in range(repeats)] 
+  eps = adds(x for k in out for x in out[k]).sd * 0.35
+  top = sorted(statsTop(out, reverse=True, eps = eps))
+  mu  = adds(x for k in top for x in out[k]).mu
+  print(win(mu), re.sub(".*/","",the.file), b4.mu, b4.lo, mu,
+        *[f"{b}.{k}" for b,k in top], sep=", ")
     
 #--------------------------------------------------------------------
 for k,v in the.__dict__.items(): the.__dict__[k] = atom(v)
