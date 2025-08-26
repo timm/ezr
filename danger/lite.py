@@ -240,8 +240,9 @@ def eg__80(): worker(range(10,81,10))
 def worker(budgets, repeats=20):
   data = Data(csv(the.file))
   b4   = adds(disty(data,r) for r in data.rows)
-  best = lambda rows: disty(data, distysort(data,rows_)[0]))
+  best = lambda rows: disty(data, distysort(data,rows)[0])
   win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
+  out  = {}
   for b in budgets:
     fyi(".")
     the.Budget = b
@@ -250,9 +251,10 @@ def worker(budgets, repeats=20):
                      near = lambda: likely(data)).items():
       out[(b,k)] = [best(fn()) for _ in range(repeats)] 
   eps = adds(x for k in out for x in out[k]).sd * 0.35
-  top = sorted(statsTop(out, reverse=True, eps = eps))
+  top = sorted(statsTop(out,  eps = eps))
   mu  = adds(x for k in top for x in out[k]).mu
-  print(win(mu), re.sub(".*/","",the.file), b4.mu, b4.lo, mu,
+  print(win(mu), re.sub(".*/","",the.file), 
+       int(100*b4.mu), int(100*b4.lo), int(100*mu),
         *[f"{b}.{k}" for b,k in top], sep=", ")
     
 #--------------------------------------------------------------------
