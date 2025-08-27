@@ -229,7 +229,7 @@ worker:
 # 118  near  100  klass  94   bore  94   xploit  100  xplor  100  adapt  94   rands  100  |  10000   5     3  Health-ClosedPRs0007.csv
 
 
-PYTHON_VERSION=3.10
+PYTHON_VERSION=3.11
 
 hall1:
 	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_hall_1
