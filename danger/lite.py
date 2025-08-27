@@ -15,7 +15,7 @@ ezr0.py: lightweight incremental multi-objective optimization
 """
 from types import SimpleNamespace as o
 from typing import Any,List,Iterator
-import random, math, sys, re
+import random, time, math, sys, re
 
 the = o(**{k:v for k,v in re.findall(r"(\w+)=(\S+)",__doc__)})
 
@@ -243,19 +243,25 @@ def worker(budgets, repeats=20):
   best = lambda rows: disty(data, distysort(data,rows)[0])
   win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
   out  = {}
+  t1 = time.time_ns()
   for b in budgets:
-    fyi(".")
+    fyi(b)
     the.Budget = b
     for k,fn in dict(rand = lambda: random.sample(data.rows, k=b),
                      kpp  = lambda: distKpp(data,            k=b),
                      near = lambda: likely(data)).items():
+      fyi(".")
       out[(b,k)] = [best(fn()) for _ in range(repeats)] 
+  t2  = time.time_ns()
   eps = adds(x for k in out for x in out[k]).sd * 0.35
   top = sorted(statsTop(out,  eps = eps))
   mu  = adds(x for k in top for x in out[k]).mu
-  print(win(mu), re.sub(".*/","",the.file), 
-       int(100*b4.mu), int(100*b4.lo), int(100*mu),
-        *[f"{b}.{k}" for b,k in top], sep=", ")
+  print(win(mu), 
+        re.sub(".*/","", the.file), 
+        int((t2 - t1) / (repeats * 1_000_000)),
+        *[int(100*x) for x   in [eps, b4.mu, b4.lo, mu]], 
+        *[f"{b}_{k}" for b,k in top],
+        sep=", ")
     
 #--------------------------------------------------------------------
 for k,v in the.__dict__.items(): the.__dict__[k] = atom(v)
