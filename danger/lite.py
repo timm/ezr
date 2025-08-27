@@ -252,16 +252,15 @@ def worker(budgets, repeats=20):
                      near = lambda: likely(data)).items():
       fyi(".")
       out[(b,k)] = [best(fn()) for _ in range(repeats)] 
-  t2  = time.time_ns()
   eps = adds(x for k in out for x in out[k]).sd * 0.35
   top = sorted(statsTop(out,  eps = eps))
   mu  = adds(x for k in top for x in out[k]).mu
   print(win(mu), 
         re.sub(".*/","", the.file), 
-        int((t2 - t1) / (repeats * 1_000_000)),
+        int((time.time_ns() - t1) / (repeats * 1_000_000)),
         *[int(100*x) for x   in [eps, b4.mu, b4.lo, mu]], 
         *[f"{b}_{k}" for b,k in top],
-        sep=", ")
+        sep=", " )
     
 #--------------------------------------------------------------------
 for k,v in the.__dict__.items(): the.__dict__[k] = atom(v)
