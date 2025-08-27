@@ -4,7 +4,7 @@ from ezr.stats import *
 from ezr.lib import *
 import math
 import random
-import pandas as pd
+# import pandas as pd
 from collections import defaultdict
 from typing import Any, Dict, List
 from sklearn.naive_bayes import ComplementNB
