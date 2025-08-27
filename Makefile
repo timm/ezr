@@ -227,3 +227,54 @@ worker:
 # 116  near  100  klass  100  bore  92   xploit  100  xplor  100  adapt  100  rands  100  |  10000   5     3  Health-Commits0011.csv
 # 117  near  100  klass  100  bore  93   xploit  100  xplor  100  adapt  100  rands  100  |  10000   5     3  Health-ClosedIssues0011.csv
 # 118  near  100  klass  94   bore  94   xploit  100  xplor  100  adapt  94   rands  100  |  10000   5     3  Health-ClosedPRs0007.csv
+
+
+PYTHON_VERSION=3.10
+
+hall1:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_hall_1
+
+hall2:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_hall_2
+
+hall3:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_hall_3
+
+hall4:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_hall_4
+
+kit1:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_kit_1
+
+kit2:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_kit_2
+
+kit3:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_kit_3
+
+kit4:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_kit_4
+
+rad1:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_rad_1
+
+rad2:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_rad_2
+
+rad3:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_rad_3
+
+rad4:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_rad_4
+
+wah1:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_wah_1
+
+wah2:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_wah_2
+
+wah3:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_wah_3
+
+wah4:
+	python$(PYTHON_VERSION) -m ezr.tm --al_uncertainty_wah_4

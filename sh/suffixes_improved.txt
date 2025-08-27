@@ -1,3 +1,4 @@
+# Longest suffixes first for efficient matching
 ization
 ational
 fulness
@@ -29,8 +30,6 @@ ship
 able
 ible
 less
-ness
-ment
 ance
 ence
 hood
@@ -64,9 +63,7 @@ er
 or
 al
 ic
-iz
 ous
 en
 y
 s
-e
