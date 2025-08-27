@@ -7,8 +7,8 @@ import random
 # import pandas as pd
 from collections import defaultdict
 from typing import Any, Dict, List
-from sklearn.naive_bayes import ComplementNB
-import numpy as np
+# from sklearn.naive_bayes import ComplementNB
+# import numpy as np
 
 #--------------------------------------------------------------------
 def cnbStats(data: Data, rows=None) -> o:
