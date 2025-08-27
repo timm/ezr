@@ -151,96 +151,128 @@ def eg__al_uncertainty_hall_1():
   "SLOW: run uncertainty-based active learning on Hall dataset"
   results = active_learning_text_mining("../moot/text_mining/reading/raw/Hall.csv", n_pos=16, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["hall"], n_neg=16)
   save_active_learning_results(results, "results/hall_16_16.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Hall.csv", n_pos=16, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["hall"], n_neg=16, norm=True)
+  save_active_learning_results(results2, "results/hall_16_16_norm.csv")
   return results
 
 def eg__al_uncertainty_hall_2():
   "SLOW: run uncertainty-based active learning on Hall dataset"
   results = active_learning_text_mining("../moot/text_mining/reading/raw/Hall.csv", n_pos=20, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["hall"], n_neg=20)
   save_active_learning_results(results, "results/hall_20_20.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Hall.csv", n_pos=20, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["hall"], n_neg=20, norm=True)
+  save_active_learning_results(results2, "results/hall_20_20_norm.csv")
   return results
 
 def eg__al_uncertainty_hall_3():
   "SLOW: run uncertainty-based active learning on Hall dataset"
   results = active_learning_text_mining("../moot/text_mining/reading/raw/Hall.csv", n_pos=24, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["hall"], n_neg=24)
   save_active_learning_results(results, "results/hall_24_24.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Hall.csv", n_pos=24, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["hall"], n_neg=24, norm=True)
+  save_active_learning_results(results2, "results/hall_24_24_norm.csv")
   return results
 
 def eg__al_uncertainty_hall_4():
   "SLOW: run uncertainty-based active learning on Hall dataset"
   results = active_learning_text_mining("../moot/text_mining/reading/raw/Hall.csv", n_pos=32, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["hall"], n_neg=32)
   save_active_learning_results(results, "results/hall_32_32.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Hall.csv", n_pos=32, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["hall"], n_neg=32, norm=True)
+  save_active_learning_results(results2, "results/hall_32_32_norm.csv")
   return results
 
 def eg__al_uncertainty_kit_1():
   "SLOW: run uncertainty-based active learning on Kitchenham dataset"
-  results = active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=16, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["kitchenham"], n_neg=16, norm=True)
+  results = active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=16, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["kitchenham"], n_neg=16)
   save_active_learning_results(results, "results/kit_16_16.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=16, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["kitchenham"], n_neg=16, norm=True)
+  save_active_learning_results(results2, "results/kit_16_16_norm.csv")
   return results
 
 def eg__al_uncertainty_kit_2():
   "SLOW: run uncertainty-based active learning on Kitchenham dataset"
-  results = active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=20, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["kitchenham"], n_neg=20, norm=True)
+  results = active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=20, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["kitchenham"], n_neg=20)
   save_active_learning_results(results, "results/kit_20_20.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=20, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["kitchenham"], n_neg=20, norm=True)
+  save_active_learning_results(results2, "results/kit_20_20_norm.csv")
   return results
 
 def eg__al_uncertainty_kit_3():
   "SLOW: run uncertainty-based active learning on Kitchenham dataset"
-  results = active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=24, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["kitchenham"], n_neg=24, norm=True)
+  results = active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=24, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["kitchenham"], n_neg=24)
   save_active_learning_results(results, "results/kit_24_24.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=24, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["kitchenham"], n_neg=24, norm=True)
+  save_active_learning_results(results2, "results/kit_24_24_norm.csv")
   return results
 
 def eg__al_uncertainty_kit_4():
   "SLOW: run uncertainty-based active learning on Kitchenham dataset"
-  results = active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=32, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["kitchenham"], n_neg=32, norm=True)
+  results = active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=32, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["kitchenham"], n_neg=32)
   save_active_learning_results(results, "results/kit_32_32.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Kitchenham.csv", n_pos=32, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["kitchenham"], n_neg=32, norm=True)
+  save_active_learning_results(results2, "results/kit_32_32_norm.csv")
   return results
 
 def eg__al_uncertainty_rad_1():
   "SLOW: run uncertainty-based active learning on Radjenovic dataset"
-  results = active_learning_text_mining("../moot/text_mining/reading/raw/Radjenovic.csv", n_pos=16, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["radjenovic"], n_neg=16, norm=True)
+  results = active_learning_text_mining("../moot/text_mining/reading/raw/Radjenovic.csv", n_pos=16, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["radjenovic"], n_neg=16)
   save_active_learning_results(results, "results/rad_16_16.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Radjenovic.csv", n_pos=16, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["radjenovic"], n_neg=16, norm=True)
+  save_active_learning_results(results2, "results/rad_16_16_norm.csv")
   return results
 
 def eg__al_uncertainty_rad_2():
   "SLOW: run uncertainty-based active learning on Radjenovic dataset"
-  results = active_learning_text_mining("../moot/text_mining/reading/raw/Radjenovic.csv", n_pos=20, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["radjenovic"], n_neg=20, norm=True)
+  results = active_learning_text_mining("../moot/text_mining/reading/raw/Radjenovic.csv", n_pos=20, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["radjenovic"], n_neg=20)
   save_active_learning_results(results, "results/rad_20_20.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Radjenovic.csv", n_pos=20, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["radjenovic"], n_neg=20, norm=True)
+  save_active_learning_results(results2, "results/rad_20_20_norm.csv")
   return results
 
 def eg__al_uncertainty_rad_3():
   "SLOW: run uncertainty-based active learning on Radjenovic dataset"
-  results = active_learning_text_mining("../moot/text_mining/reading/raw/Radjenovic.csv", n_pos=24, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["radjenovic"], n_neg=24, norm=True)
+  results = active_learning_text_mining("../moot/text_mining/reading/raw/Radjenovic.csv", n_pos=24, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["radjenovic"], n_neg=24)
   save_active_learning_results(results, "results/rad_24_24.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Radjenovic.csv", n_pos=24, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["radjenovic"], n_neg=24, norm=True)
+  save_active_learning_results(results2, "results/rad_24_24_norm.csv")
   return results
 
 def eg__al_uncertainty_rad_4():
   "SLOW: run uncertainty-based active learning on Radjenovic dataset"
-  results = active_learning_text_mining("../moot/text_mining/reading/raw/Radjenovic.csv", n_pos=32, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["radjenovic"], n_neg=32, norm=True)
+  results = active_learning_text_mining("../moot/text_mining/reading/raw/Radjenovic.csv", n_pos=32, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["radjenovic"], n_neg=32)
   save_active_learning_results(results, "results/rad_32_32.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Radjenovic.csv", n_pos=32, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["radjenovic"], n_neg=32, norm=True)
+  save_active_learning_results(results2, "results/rad_32_32_norm.csv")
   return results
 
 def eg__al_uncertainty_wah_1():
   "SLOW: run uncertainty-based active learning on Wahono dataset"
   results = active_learning_text_mining("../moot/text_mining/reading/raw/Wahono.csv", n_pos=16, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["wahono"], n_neg=16)
   save_active_learning_results(results, "results/wah_16_16.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Wahono.csv", n_pos=16, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["wahono"], n_neg=16, norm=True)
+  save_active_learning_results(results2, "results/wah_16_16_norm.csv")
   return results
 
 def eg__al_uncertainty_wah_2():
   "SLOW: run uncertainty-based active learning on Wahono dataset"
   results = active_learning_text_mining("../moot/text_mining/reading/raw/Wahono.csv", n_pos=20, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["wahono"], n_neg=20)
   save_active_learning_results(results, "results/wah_20_20.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Wahono.csv", n_pos=20, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["wahono"], n_neg=20, norm=True)
+  save_active_learning_results(results2, "results/wah_20_20_norm.csv")
   return results
 
 def eg__al_uncertainty_wah_3():
   "SLOW: run uncertainty-based active learning on Wahono dataset"
   results = active_learning_text_mining("../moot/text_mining/reading/raw/Wahono.csv", n_pos=24, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["wahono"], n_neg=24)
   save_active_learning_results(results, "results/wah_24_24.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Wahono.csv", n_pos=24, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["wahono"], n_neg=24, norm=True)
+  save_active_learning_results(results2, "results/wah_24_24_norm.csv")
   return results
 
 def eg__al_uncertainty_wah_4():
   "SLOW: run uncertainty-based active learning on Wahono dataset"
   results = active_learning_text_mining("../moot/text_mining/reading/raw/Wahono.csv", n_pos=32, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["wahono"], n_neg=32)
   save_active_learning_results(results, "results/wah_32_32.csv")
+  results2 = active_learning_text_mining("../moot/text_mining/reading/raw/Wahono.csv", n_pos=32, repeats=10, batch_size=1, acq_stop=EARLY_STOPPING["wahono"], n_neg=32, norm=True)
+  save_active_learning_results(results2, "results/wah_32_32_norm.csv")
   return results
 
 #------------------------------------------------------------------------------------------------
