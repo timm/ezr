@@ -26,6 +26,7 @@ big    = 1e32
 
 #--------------------------------------------------------------------
 def label(row): return row
+
 #--------------------------------------------------------------------
 def Num(i=0,s=" "): 
   return o(it=Num, i=i, txt=s, n=0, mu=0, m2=0, sd=0, hi=-big, lo=big,
@@ -244,11 +245,12 @@ def rxs():
                     near = lambda b: likely(data)
                     )
 
-def worker(budgets,data, todo, repeats=20):
+def worker(budgets,data, todo, repeats=100):
   t1   = time.time_ns()
   b4   = adds(disty(data,r) for r in data.rows)
   best = lambda rows: disty(data, distysort(data,rows)[0])
   win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
+  wins = lambda a: win(sum(a)/len(a))
   out  = {}
   for b in budgets:
     fyi(b)
@@ -257,14 +259,14 @@ def worker(budgets,data, todo, repeats=20):
       fyi(".")
       out[(b,k)] = [best(fn(b)) for _ in range(repeats)] 
   eps = adds(x for k in out for x in out[k]).sd * 0.35
-  top = statsTop(out,  eps = eps)
+  top = sorted(statsTop(out,  eps = eps))
   mu  = adds(x for k in top for x in out[k]).mu
   print(win(mu), 
         re.sub(".*/","", the.file), 
         len(data.rows), len(data.cols.x), len(data.cols.y),
         int((time.time_ns() - t1) / (repeats * 1_000_000)),
         *[int(100*x) for x   in [eps, b4.mu, b4.lo, mu]], "|",
-        *[f"{b}_{k}" for b,k in sorted(top)],
+        *[f"{b}_{k},{wins(out[(b,k)])} " for b,k in top],
         sep=", " )
     
 #--------------------------------------------------------------------
