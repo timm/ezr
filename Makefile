@@ -137,8 +137,21 @@ trainReport:
 	$(MAKE) todo=likely files="$(Top)/../moot/optimize/config/SS-[A-J]*.csv" worker | tee $@ ; \
 	gawk -f $(Top)/sh/likely.awk $@ 
 
+~/tmp/lite80.log:
+	$(MAKE) todo=80 files="$(Top)/../moot/optimize/*/*.csv" liteworker | tee $@ 
+
+# using "near80"
+#12 25 26 32 36 41 51 52 53 53 54 58 59 61 63 66 66 67 68 68 71 71 73 75 76 76 77 77 77 78 79 80 80 80 80 81 81 81 81 81 81 82 82 82 83 83 83 83 84 85 85 86 87 87 87 87 88 88 88
+#88 89 89 89 90 90 90 91 91 92 92 92 93 93 94 94 94 95 95 95 95 96 96 96 96 97 97 97 97 97 97 97 97 98 98 98 98 98 98 99 99 99 99 99 99 99 99 99 99 99 100 100 100 100 100 100
+
+# using "rand80"
+#26 26 29 37 39 40 41 42 43 43 44 51 51 53 55 57 61 61 62 65 65 66 66 66 66 67 69 69 69 70 71 72 72 72 73 75 75 75 75 76 76 76 77 77 78 78 79 79 79 80 80 81 81 81 81 81 82 82 82
+#83 83 84 85 85 85 85 87 87 88 88 89 89 90 90 90 91 91 92 92 93 93 94 94 94 95 95 95 95 96 96 96 96 97 97 97 98 98 98 98 99 99 99 99 99 99 99 99 99 99 99 99 99 99 100 100liteworker:
 ~/tmp/lite40.log:
 	$(MAKE) todo=40 files="$(Top)/../moot/optimize/*/*.csv" liteworker | tee $@ 
+
+~/tmp/lite20.log:
+	$(MAKE) todo=20 files="$(Top)/../moot/optimize/*/*.csv" liteworker | tee $@ 
 
 liteworker:
 	@mkdir -p ~/tmp

@@ -232,34 +232,39 @@ def statsTop(rxs:dict[str,list[Number]],
   return {k for _, _, k, _ in its}
 
 #--------------------------------------------------------------------
-def eg__10(): worker(range(10,11,10))
-def eg__20(): worker(range(10,21,10))
-def eg__40(): worker(range(10,41,10))
-def eg__80(): worker(range(10,81,10))
+def eg__10(): worker(range(10,11,10), *rxs())
+def eg__20(): worker(range(10,21,10), *rxs())
+def eg__40(): worker(range(10,41,10), *rxs())
+def eg__80(): worker(range(10,81,10), *rxs())
 
-def worker(budgets, repeats=20):
+def rxs():
   data = Data(csv(the.file))
+  return data, dict(rand = lambda b: random.sample(data.rows, k=b),
+                    kpp  = lambda b: distKpp(data,            k=b),
+                    near = lambda b: likely(data)
+                    )
+
+def worker(budgets,data, todo, repeats=20):
+  t1   = time.time_ns()
   b4   = adds(disty(data,r) for r in data.rows)
   best = lambda rows: disty(data, distysort(data,rows)[0])
   win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
   out  = {}
-  t1 = time.time_ns()
   for b in budgets:
     fyi(b)
     the.Budget = b
-    for k,fn in dict(rand = lambda: random.sample(data.rows, k=b),
-                     kpp  = lambda: distKpp(data,            k=b),
-                     near = lambda: likely(data)).items():
+    for k,fn in todo.items():
       fyi(".")
-      out[(b,k)] = [best(fn()) for _ in range(repeats)] 
+      out[(b,k)] = [best(fn(b)) for _ in range(repeats)] 
   eps = adds(x for k in out for x in out[k]).sd * 0.35
-  top = sorted(statsTop(out,  eps = eps))
+  top = statsTop(out,  eps = eps)
   mu  = adds(x for k in top for x in out[k]).mu
   print(win(mu), 
         re.sub(".*/","", the.file), 
+        len(data.rows), len(data.cols.x), len(data.cols.y),
         int((time.time_ns() - t1) / (repeats * 1_000_000)),
-        *[int(100*x) for x   in [eps, b4.mu, b4.lo, mu]], 
-        *[f"{b}_{k}" for b,k in top],
+        *[int(100*x) for x   in [eps, b4.mu, b4.lo, mu]], "|",
+        *[f"{b}_{k}" for b,k in sorted(top)],
         sep=", " )
     
 #--------------------------------------------------------------------
