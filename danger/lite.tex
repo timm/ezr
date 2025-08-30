@@ -1,0 +1,44 @@
+\documentclass[twocolumn]{article}
+\newcommand{\CodeSize}{\fontsize{5.7}{6}\selectfont}
+\usepackage[
+  top=20mm,
+  bottom=15mm,
+  left=10mm,
+  right=10mm,
+  columnsep=0.25in
+]{geometry}
+
+% Code listing tools ------------------------------------------------
+\usepackage{minted}
+\usepackage{etoolbox}
+\usepackage{fvextra}
+
+% Code listing style ------------------------------------------------
+\setminted[lua]{
+  fontsize=\CodeSize,
+  tabsize=2,
+  breaklines=true,
+  linenos=true,
+  frame=none,
+  framesep=1mm,
+  bgcolor=white,
+  baselinestretch=0.8,
+  style=vs,
+  escapeinside=!!
+}
+% Smaller line number font ------------------------------------------
+\renewcommand{\theFancyVerbLine}{\CodeSize\arabic{FancyVerbLine}}
+
+% Fancy headers
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\texttt{lite.lua}}
+\fancyhead[R]{Page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.2pt}
+
+%--------------------------------------------------------------------
+\begin{document}
+\inputminted{lua}{lite.lua}
+\end{document}
