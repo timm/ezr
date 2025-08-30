@@ -1,31 +1,41 @@
-BEGIN { FS=","   }
+BEGIN { FS=","   
+        _ = SUBSEP}
       { gsub(/[[:space:]]/, "");
-	stats()  }
-END   { report() }
-
-function report(   rxs,ns) {
-  for(n in N) for(rx in N[n]) { rxs[rx] = rx; ns[n] = n+0 }
-  asort(ns,nums)
-  head=" "
-  for(n in nums) head = head "," nums[n]
-  print("\n.\n.\nBESTS", head)
-  for (rx in rxs) {
-    s=rx
-    for (n in ns) 
-      s= s "," (N[n][rx] > 0 ? int(100*N[n][rx]/NR) : ".")
+	      for(i=12;i<=NF;i+=2) stats(i)  }
+END   { 
+  for(x in xs) head = head "," xs[x]
+  print("\n.\nBEST", head)
+  for (y in ys) {
+    s=y
+    for (x in xs)  {
+      n="."
+      if (x in ALL)
+        if (y in ALL[x])
+          n=int(100*length(ALL[x][y])/NR);
+      s= s "," n }
     print s}
-  print("\n----\nWINS", head)
-  for (rx in rxs) {
-    s=rx
-    for (n in ns) 
-      s= s "," (N[n][rx] > 0 ? int(SUM[n][rx]/N[n][rx]) : ".")
+  print("\n.\nMOST", head)
+  for (y in ys) {
+    s=y
+    for (x in xs)  {
+      n="."
+      if (x in ALL)
+        if (y in ALL[x])
+          n=int(mid(ALL[x][y]));
+      s= s "," n }
     print s}
 }
-function stats(    i,a){
-  for(i=12;i<=NF;i+=2)  {
-    split("",a,"")
-    split($i,a,"_");  
-    N[  a[1]][a[2]]++
-    SUM[a[1]][a[2]]+= $(i+1)
-    }}
 
+function stats(i,    a) {
+  split($i,a,"_");  
+  push2(ALL, a[1], a[2], $(i+1)) }
+
+function mid(a,   n,m) {
+  n=asort(a)
+  m=int(.5 + n/2)
+  return a[m ? m : 1] }
+
+function push2(a,x,y,z) { 
+  xs[x] = x 
+  ys[y] = y
+  a[x][y][length(a[x][y])+1]=z }

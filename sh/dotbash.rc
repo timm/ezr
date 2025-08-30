@@ -5,7 +5,7 @@ Xdir="$(basename "$(dirname "$Here")")"  # bold "x" marker from enclosing folder
 export BASH_SILENCE_DEPRECATION_WARNING=1
 
 # Add custom scripts to PATH
-export PATH="$Here:$PATH"
+export PATH="$Here:/Library/TeX/texbin:$PATH "
 
 # Styling: colors and bold
 bold=$(tput bold)

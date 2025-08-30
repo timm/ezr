@@ -238,6 +238,24 @@ def eg__20(): worker(range(10,21,10), *rxs())
 def eg__40(): worker(range(10,41,10), *rxs())
 def eg__80(): worker(range(10,81,10), *rxs())
 
+def eg__nears(): 
+  data = Data(csv(the.file))
+  b4   = adds(disty(data,r) for r in data.rows)
+  best = lambda rows: disty(data, distysort(data,rows)[0])
+  win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
+  for b in [10,20,40,80,160]:
+    the.Budget=b
+    print(b, adds(win(best(likely(data))) for _ in range(20)).mu)
+
+def eg__rands(): 
+  data = Data(csv(the.file))
+  b4   = adds(disty(data,r) for r in data.rows)
+  best = lambda rows: disty(data, distysort(data,rows)[0])
+  win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
+  for b in [10,20,40,80,160]:
+    the.Budget=b
+    print(b, adds(win(best(random.sample(data.rows,k=b))) for _ in range(20)).mu)
+
 def rxs():
   data = Data(csv(the.file))
   return data, dict(rand = lambda b: random.sample(data.rows, k=b),
@@ -245,7 +263,7 @@ def rxs():
                     near = lambda b: likely(data)
                     )
 
-def worker(budgets,data, todo, repeats=100):
+def worker(budgets,data, todo, repeats=20):
   t1   = time.time_ns()
   b4   = adds(disty(data,r) for r in data.rows)
   best = lambda rows: disty(data, distysort(data,rows)[0])
