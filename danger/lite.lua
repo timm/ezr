@@ -9,14 +9,16 @@ local help = [[
     -f  file=../../moot/optimize/misc/auto93.csv  data file
     -h                     show help
 ]]
-
-local b4={}; for k,_ in pairs(_ENV) do b4[k]=k end
-local adds,atom,cat,cats,cells,csv,keys,map,new.push,shuffle,sort
+-- atom = int|num|bool|str
+local adds,add,atom,cat,_cats,_cells,csv
+local _keys,map,new,push,shuffle,sort,sub
 local sqrt = math.sqrt
+local big = 1e32
 
-local the={}; for k,v in help:gmatch("(%S+)=(%S+)") do the[k]=v end
+local the={}; for k,v in help:gmatch"(%S+)=(%S+)" do the[k]=v end
 
-----------------------------------------------------------------------
+-------------------------------------------------------------------------------
+local SYM,NUM,DATA,COLS = {},{},{},{}
 -- **SYM:new**: `(int=0, str="") -> tbl` <br> categorical column
 function SYM:new(at, txt)
   return new(SYM, {n = 0, at = at or 0, txt = txt or "",
@@ -27,7 +29,7 @@ function NUM:new(at, txt)
   return new(NUM, {n  = 0, at = at or 0, txt = txt or "",
                    mu = 0, m2 = 0,     -- mean, sum of squares
                    lo = big, hi = -big,-- min, max
-                   w  = (txt or ""):find"-$" and 0 or 1}) end -- weight
+                   w  = (txt or ""):find"-$" and 0 or 1}) end --weight
 
 -- **COLS:new**: `(arr<str>) -> tbl` <br> build column sets.
 -- Choose NUM if col name starts with uppercase, else SYM.
@@ -48,7 +50,7 @@ function DATA:new(names)
 function DATA:clone(  rows) 
   return adds(rows or {}, adds({self.cols.names}, DATA:new())) end
 
-----------------------------------------------------------------------
+-------------------------------------------------------------------------------
 -- **adds**: `(tbl|arr<any>, tbl=NUM()) -> tbl` <br> add many items
 function adds(t, it)
   it = it or NUM()
@@ -63,7 +65,8 @@ function add(i,x,  inc)
   return x end
 
 -- **sub**: `(tbl, any) -> any` <br> decrement via add
-function sub(i,x) return add(i,x, -1) end
+function sub(i,x) 
+  return add(i,x, -1) end
 
 -- **SYM:_add**: `(str, int) -> nil` <br> bump symbol count
 function SYM:_add(x, inc) 
@@ -88,37 +91,38 @@ function DATA:_add(row, inc)
   for _,col in pairs(self.cols.all) do add(col, row[col.at], inc) end end
 
 -------------------------------------------------------------------------------
--- **atom**: `(str, fun=nil) -> int|num|bool|str` <br> parse literal or trim string
+-- **atom**: `(str, fun=nil) -> atom` <br> parse literal or string
 function atom(s,      f)    
   f = function(s) return s=="true" or s~="false" end
-  return math.tointeger(s) or tonumber(s) or f(s:match'^%s*(.*%S)') end
+  return math.tointeger(s) or tonumber(s) or f(s:match'^%s*(.*%S)')end
 
 -- **cat**: `(any) -> str` <br> stringify value
-function cat(x)
+function cat(x,    f,is)
   f, is = string.format, type(x)
-  return is=="table" and "{" ..table.concat(cats(t,f),", ").. "}" or
-         is=="number" and f(x==math.floor(x) and "%.0f" or "%.3f", x) or 
+  return is=="table" and "{" ..table.concat(_cats(x,f),", ").. "}" or
+         is=="number" and f(x==math.floor(x) and "%.0f" or "%.3f", x) or
          f("%s",x) end
 
--- **cats**: `(tbl, fun) -> arr<str>` <br> stringify table
-function cats(t,f)
+-- **_cats**: `(tbl, fun) -> arr<str>` <br> stringify table
+function _cats(t,f,     u)
   if #t > 0 then return map(t,cat) end
-  u={}; for _,k in pairs(keys(t)) do u[1+#u]=f(":%s %s",k,cat(t[k])) end
+  u={}; for _,k in pairs(_keys(t)) do u[1+#u]=f(":%s %s",k,cat(t[k])) end
   return sort(u) end
 
--- **cells**: `(str) -> arr<int|num|bool|str>` <br> split CSV row into values
-function cells(s,    t)
-  t = {}; for s1 in s:gsub("%s+", ""):gmatch("([^,]+)") do t[1+#t]=atom(s1) end
+-- **cells**: `(str) -> arr<atom>` <br> split CSV row into values
+function _cells(s,    t)
+  t = {}
+  for s1 in s:gsub("%s+", ""):gmatch"([^,]+)" do t[1+#t]=atom(s1) end
   return t end
 
--- **csv**: `(str) -> fun()->arr<int|num|bool|str>` <br> row iterator
+-- **csv**: `(str) -> fun() -> arr<atom>` <br> row iterator
 function csv(src,      s)
   src = io.input(src)
   return function()
-    s = io.read(); if s then return cells(s) else io.close(src) end end end
+    s = io.read(); if s then return _cells(s) else io.close(src) end end end
 
--- **keys**: `(tbl) -> arr<str>` <br> list of non-underscore keys
-function keys(t,  u) 
+-- **_keys**: `(tbl) -> arr<str>` <br> list of non-underscore keys
+function _keys(t,  u) 
   u = {}
   for k,_ in pairs(t) do if tostring(k):sub(1,1) ~= "_" then u[1+#u]=k end end
   return sort(u) end
@@ -128,29 +132,24 @@ function map(t,f,   u)
   u={}; for _,x in pairs(t) do u[1+#u]=f(x) end; return u end
 
 -- **new**: `(tbl, tbl) -> tbl` <br> constructor with metatable
-function new(kl,t) kl.__index = kl; return setmetatable(t,kl) end
+function new(kl,t) 
+  kl.__index = kl; return setmetatable(t,kl) end
 
 -- **push**: `(arr<any>, any) -> any` <br> append to array
-function push(t,x) t[1+#t]=x; return x end
+function push(t,x) 
+  t[1+#t]=x; return x end
 
 -- **shuffle**: `(arr<any>) -> arr<any>` <br> Fisher-Yates shuffle
 function shuffle(t,    j) 
-  for i = #t,2,-1 do j=math.random(i); t[i],t[j] = t[j],t[i] end; return t end
+  for i = #t,2,-1 do 
+    j=math.random(i); t[i],t[j] = t[j],t[i] end; return t end
 
--- **sort**: `(arr<any>, fun|nil) -> arr<any>` <br> sort array in-place
-function sort(t,fn) table.sort(t,fn); return t end
+-- **sort**: `(arr<any>, fun|nil) -> arr<any>` <br> sort in-place
+function sort(t,fn) 
+  table.sort(t,fn); return t end
 
-
--- for i,row in csv(the.file) do 
---   if i==0 then
---     for i,s in pairs(row) do 
---       if s:find:"^[A-Z]" then 
---         nums[i] = {big, -big}
---         if s:find"-$" then y[i]=0 end
---         if s:find"+$" then y[i]=1 end 
---   else rows[1+#rows]=row end
---
--- for x in _ENV do print(x) end
---
--- B, R, best, rest = 0, 0, {}, {}
---for i,row in pairs(shuffle(rows)) do
+-------------------------------------------------------------------------------
+return {help=help, the=the, big=big, sqrt=sqrt, adds=adds, add=add, 
+        atom=atom, cat=cat, _cats=_cats, _cells=_cells, csv=csv, 
+        _keys=_keys, map=map, new=new, push=push, shuffle=shuffle,
+        sort=sort, sub=sub, SYM=SYM, NUM=NUM, COLS=COLS, DATA=DATA}
