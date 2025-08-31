@@ -313,24 +313,10 @@ def eg__ezr(repeats=20):
   "Example function demonstrating the optimization workflow"
   data = Data(csv(the.file))
   b4  = adds(disty(data,row) for row in data.rows)
-  now = adds(ezr1(data,b4,shuffle(data.rows)) for _ in range(1))
-  print(the.Budget, now.mu)
+  ab,abc=Num(s="ab"),Num(s="abc")
+  [ezr1(data,b4,shuffle(data.rows),ab,abc) for _ in range(20)]
+  print(the.Budget, *[int(x) for x in [ab.mu, abc.mu]])
 
-def ezr1(data, b4, rows):
-   win    = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
-   best   = lambda rows: win(disty(data, distysort(data,rows)[0]))
-   half   = len(data.rows)//2
-   train, holdout = data.rows[:half], data.rows[half:]
-   labels = likely(clone(data,train))
-   tree   = Tree(clone(data,labels))
-   treeShow(tree)
-   for row in holdout: print(row); print(treeLeaf(data,row).ys.mu)
-   #some   = sorted(holdout,
-   #                key=lambda row: treeLeaf(tree,row).ys.mu)[the.Check]
-   #  return best(some)
-   #print(best(some))
-   return 10
-#
 the = o(**{k:coerce(v) for k,v in re.findall(r"(\w+)=(\S+)",__doc__)})
 if __name__ == "__main__": main(the, globals())
 
