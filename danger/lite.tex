@@ -1,5 +1,7 @@
 \documentclass[twocolumn]{article}
-\newcommand{\CodeSize}{\fontsize{5.7}{6}\selectfont}
+\usepackage[T1]{fontenc}
+\usepackage{libertinus} % serif + sans + math
+\newcommand{\CodeSize}{\fontsize{6.4}{6.7}\selectfont}
 \usepackage[
   top=20mm,
   bottom=15mm,
@@ -14,17 +16,19 @@
 \usepackage{fvextra}
 
 % Code listing style ------------------------------------------------
-\setminted[lua]{
+\setminted[python]{
   fontsize=\CodeSize,
   tabsize=2,
   breaklines=true,
   linenos=true,
   frame=none,
+  linenos,
+  numbersep=5pt,   % reduce space between line numbers and code
   framesep=1mm,
   bgcolor=white,
   baselinestretch=0.8,
   style=vs,
-  escapeinside=!!
+  escapeinside=##
 }
 % Smaller line number font ------------------------------------------
 \renewcommand{\theFancyVerbLine}{\CodeSize\arabic{FancyVerbLine}}
@@ -34,14 +38,51 @@
 \usepackage{lastpage}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\texttt{lite.lua}}
+\fancyhead[L]{\texttt{lite.py}}
 \fancyhead[R]{Page \thepage\ of \pageref{LastPage}}
 \renewcommand{\headrulewidth}{0.2pt}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{pgffor} % for \foreach
+% --------------------------------------------------------------------
+% Pick ONE of these circled styles:
+% 1. Striking (white on red)
+% \newcommand{\circled}[1]{%
+%   \setlength{\fboxsep}{1pt}%
+%   \fcolorbox{red}{red}{\color{white}\CodeSize\sffamily\bfseries #1}%
+% }
+%2. Professional (white on black)
+% \newcommand{\circled}[1]{%
+%   \setlength{\fboxsep}{1pt}%
+%   \fcolorbox{black}{black}{\color{white}\CodeSize\sffamily\bfseries #1}%
+% }
+%3. Subtle (black on light gray)
+\newcommand{\circled}[1]{%
+  \setlength{\fboxsep}{2pt}%
+  \fcolorbox{gray!80}{gray!80}{\color{white}\CodeSize\sffamily\bfseries #1}%
+}
+% 4. Elegant (white on navy blue)
+ % \newcommand{\circled}[1]{%
+ %   \setlength{\fboxsep}{1pt}%
+ %   \fcolorbox{blue!70!black}{blue!70!black}{\color{white}\CodeSize\sffamily\bfseries #1}%
+ % }
+ %
+ % \newcommand{\circled}[1]{%
+ %  \hfill
+ %  \setlength{\fboxsep}{2pt}%
+ %     \fcolorbox{black}{black}{\color{white}\CodeSize\sffamily\bfseries #1}%
+ %  }
 
+\newcommand{\n}[1]{\circled{#1}}
 %--------------------------------------------------------------------
+\title{EZR.py: a Lean Lab for Learning Lightweight AI}
+\author{Tim Menzies\\{\tt timm@ieee.org}}
+\date{}
 \begin{document}
-\inputminted{lua}{lite.lua}
+\maketitle
+
 
 \input{~/tmp/xindex_lite.tex}
-
+\inputminted{python}{lite.py}
 \end{document}
