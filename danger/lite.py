@@ -310,7 +310,6 @@ def main(settings : o, funs: dict[str,callable]) -> o:
 
 #---------------------------------------------------------------------
 def eg__ezr(repeats=20):
-<<<<<<< HEAD
   "Example function demonstrating the optimization workflow"
   data = Data(csv(the.file))
   b4   = adds(disty(data,row) for row in data.rows)
@@ -341,27 +340,5 @@ def rx1(data, holdout, rows):
   return sorted(holdout, key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]
 
 #---------------------------------------------------------------------
-=======
-  "Example demonstrating the optimization workflow"
-  data   = Data(csv(the.file))
-  b4     = adds(disty(data,row) for row in data.rows)
-  ab,abc = Num(s="ab"),Num(s="abc")
-  [_ezr1(data,b4,shuffle(data.rows),ab,abc) for _ in range(20)]
-  print(the.Budget, *[int(x) for x in [ab.mu, abc.mu]])
-
-def _ezr1(data, b4, rows, ab, abc):
-  "Worker sub-routine  for ezr1"
-  win    = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
-  best   = lambda rows: win(disty(data, distysort(data,rows)[0]))
-  half   = len(data.rows) // 2
-  train, holdout = data.rows[:half], data.rows[half:]
-  labels = likely(clone(data,train))
-  add(ab, best(labels))
-  tree   = Tree(clone(data,labels)) #\n{88}#
-  some   = sorted(holdout,
-                  key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]
-  add(abc, best(some))
-
->>>>>>> c6ed360b3e091f2d2429b787c81674b3c3c0a099
 the = o(**{k:coerce(v) for k,v in re.findall(r"(\w+)=(\S+)",__doc__)})
 if __name__ == "__main__": main(the, globals())

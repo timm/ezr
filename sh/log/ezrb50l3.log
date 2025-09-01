@@ -111,3 +111,5 @@
 50 3 20 69 | ab -6 rand 0 check 32 all -26 FFM-500-100-0.50-SAT-1.csv
 50 3 20 71 | ab -1 rand 6 check 36 all -25 FM-500-100-0.50-SAT-1.csv
 50 3 20 65 | ab -12 rand 2 check 27 all -31 FM-500-100-0.25-SAT-1.csv
+50 3 20 67 | ab -9 rand 0 check 17 all -28 FFM-1000-200-0.50-SAT-1.csv
+50 3 20 56 | ab -9 rand 2 check 21 all -36 Scrum100k.csv
