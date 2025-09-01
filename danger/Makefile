@@ -21,6 +21,6 @@ lite:
 
 pdf=pdflatex -shell-escape -output-directory=$(HOME)/tmp 
 ~/tmp/lite.pdf: lite.tex
-	../sh/xindex.awk lite.lua > ~/tmp/xindex_$<
+	../sh/xindex_py.awk lite.py > ~/tmp/xindex_$<
 	$(pdf) $<
 	open $@

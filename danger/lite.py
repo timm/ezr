@@ -27,7 +27,7 @@ big    = 1e32
 
 #--------------------------------------------------------------------
 def label(row): 
-  "Return the row as its own label"
+  "Stub. Ensure a row is labelled."
   return row
 
 #--------------------------------------------------------------------
@@ -147,7 +147,7 @@ def distx(data:Data, row1:Row, row2:Row) -> float:
 
 #--------------------------------------------------------------------
 def likely(data:Data, rows=None) -> List[Row]:
-  "Find the thing in x most likely to be best. Add to xy. Repeat."
+  "Find an 'x' most likely to be best. Add to xy. Repeat."
   rows = rows or data.rows
   x   = clone(data, shuffle(rows[:]))
   xy, best, rest = clone(data), clone(data), clone(data)
@@ -177,8 +177,8 @@ def guess(xy, best:Data, rest:Data, x:Data) -> Row:
   return x.rows.pop()
 
 #--------------------------------------------------------------------
-def distKpp(data, rows=None, k=20, few=None):
-  "Return key centroids usually separated by distance D^2."
+def distKpp(data, rows=None, k=20, few=None): #\n{100}#
+  "Return centroids separated by distance squared (ish)"
   few = few or the.Few
   rows = rows or data.rows[:]
   random.shuffle(rows)
@@ -243,7 +243,7 @@ def treeCuts(col:o, rows:list[Row], Y:callable, Klass:callable) -> o:
 
   return (_sym if col.it is Sym else _num)(col)
 
-#--------------------------------------------------------------------
+#--------------------------------------------------------------
 def treeNodes(data:Data, lvl=0, key=None) -> Data:
   "iterate over all treeNodes"
   yield lvl, data
@@ -257,10 +257,10 @@ def treeLeaf(data:Data, row:Row, lvl=0) -> Data:
   return data
 
 def treeShow(data:Data, key=lambda d: d.ys.mu) -> None:
-  "Display tree with #rows and win% columns"
+  "Display tree with rows and win columns"
   ats = {}
   print(f"{'#rows':>6} {'win':>4}")
-  for lvl, d in treeNodes(data, key=key):
+  for lvl, d in treeNodes(data, key=key): #\n{100}#
     if lvl == 0: continue
     op, at, y = d.how
     name = data.cols.names[at]
@@ -310,6 +310,7 @@ def main(settings : o, funs: dict[str,callable]) -> o:
 
 #---------------------------------------------------------------------
 def eg__ezr(repeats=20):
+<<<<<<< HEAD
   "Example function demonstrating the optimization workflow"
   data = Data(csv(the.file))
   b4   = adds(disty(data,row) for row in data.rows)
@@ -340,5 +341,27 @@ def rx1(data, holdout, rows):
   return sorted(holdout, key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]
 
 #---------------------------------------------------------------------
+=======
+  "Example demonstrating the optimization workflow"
+  data   = Data(csv(the.file))
+  b4     = adds(disty(data,row) for row in data.rows)
+  ab,abc = Num(s="ab"),Num(s="abc")
+  [_ezr1(data,b4,shuffle(data.rows),ab,abc) for _ in range(20)]
+  print(the.Budget, *[int(x) for x in [ab.mu, abc.mu]])
+
+def _ezr1(data, b4, rows, ab, abc):
+  "Worker sub-routine  for ezr1"
+  win    = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
+  best   = lambda rows: win(disty(data, distysort(data,rows)[0]))
+  half   = len(data.rows) // 2
+  train, holdout = data.rows[:half], data.rows[half:]
+  labels = likely(clone(data,train))
+  add(ab, best(labels))
+  tree   = Tree(clone(data,labels)) #\n{88}#
+  some   = sorted(holdout,
+                  key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]
+  add(abc, best(some))
+
+>>>>>>> c6ed360b3e091f2d2429b787c81674b3c3c0a099
 the = o(**{k:coerce(v) for k,v in re.findall(r"(\w+)=(\S+)",__doc__)})
 if __name__ == "__main__": main(the, globals())

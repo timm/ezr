@@ -1,6 +1,6 @@
 #!/usr/bin/env gawk -f
 BEGIN {
-  print "\\section*{Index} {\\scriptsize \\begin{tabular}{lrll}"
+  print "\\section*{Index} {\\scriptsize \\begin{tabular}{lrp{2in}}"
 
   print "\\textbf{name} & \\textbf{LOC} & \\textbf{kind} & \\textbf{help} \\\\ \\hline" }
 END { print "\\end{tabular}}" }
