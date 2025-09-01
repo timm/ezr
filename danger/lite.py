@@ -335,8 +335,8 @@ def eg__ezr(repeats=20):
         "all",   int(all.mu),
         re.sub(".*/","",the.file)) 
 
-def rx1(data, holdout, rows):
-  tree = Tree(clone(data,rows))
+def rx1(data, holdout, labels):
+  tree = Tree(clone(data, labels))
   return sorted(holdout, key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]
 
 #---------------------------------------------------------------------
