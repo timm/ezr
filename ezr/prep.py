@@ -1,29 +1,45 @@
 #!/usr/bin/env python3 -B
 from ezr.data import *
 import math
+import re
+import os
+import heapq
 
 #--------------------------------------------------------------------
 def load(f:str) -> set:
-  "load words from file"
   try:
     with open(f) as f: return set(w.strip().lower() for w in f if w.strip())
   except: return set()
 
-def stem(w:str, sufs:list) -> str:
-  "stem word by removing longest suffix"
+def stem(w:str, sufs:list, cache:dict={}, max_iter:int=3) -> str:
+  "recursive stemmer with caching and iteration limit"
+  if w in cache: return cache[w]
+  if max_iter <= 0: return cache.setdefault(w, w)
+  
+  original = w
   for s in sufs:
-    if w.endswith(s) and len(w) > len(s) + 2: return w[:-len(s)]
-  return w
+    if w.endswith(s) and len(w) > len(s) + 2:
+      candidate = w[:-len(s)]
+      # Prevent over-stemming: ensure reasonable stem length
+      if len(candidate) >= 2 and len(candidate) >= len(w) * 0.5:
+        # Recursively stem the candidate
+        result = stem(candidate, sufs, cache, max_iter - 1)
+        return cache.setdefault(original, result)
+  return cache.setdefault(original, w)
 
-def tokenize(txt:str, stops:set, sufs:list) -> list:
-  "tokenize and stem text"
-  return [stem(w, sufs) for w in txt.lower().split() 
-          if w.isalpha() and len(w) > 2 and w not in stops]
+def tokenize(txt:str, stops:set, sufs:list, cache:dict={}) -> list:
+  "tokenize and stem text with shared cache"
+  words = re.findall(r'\b[a-zA-Z]+\b', txt.lower())
+  return [stem(w, sufs, cache) for w in words 
+          if len(w) > 2 and w not in stops]
 
 #--------------------------------------------------------------------
-def Prep(stops="etc/stop_words.txt", sufs="etc/suffixes.txt") -> o:
+def Prep(stops="sh/stop_words.txt", sufs="sh/suffixes.txt") -> o:
   "create text preprocessor"
-  return o(it=Prep, stops=load(stops), sufs=sorted(load(sufs), key=len, reverse=True),
+  # Load and deduplicate suffixes, sort by length (longest first)
+  raw_suffixes = load(sufs)
+  suffixes = sorted(list(set(raw_suffixes)), key=len, reverse=True)
+  return o(it=Prep, stops=load(stops), sufs=suffixes,
            docs=[], tf=[], df={}, tfidf={}, top=[])
 
 def addDoc(prep:o, txt:str, klass:str):
@@ -37,11 +53,14 @@ def loadData(prep:o, data:o, txt_col="text", klass_col="klass"):
   for row in data.rows:
     addDoc(prep, str(row[txt_idx]), str(row[klass_idx]))
 
-def compute(prep:o):
-  "compute term frequencies and TF-IDF"
+def compute(prep:o, top_k:int=100):
+  "compute term frequencies and TF-IDF with optimized top-k selection"
+  # Shared cache across all documents for better performance
+  stem_cache = {}
+  
   # Count terms per doc and doc frequency
   for doc in prep.docs:
-    tokens = tokenize(doc.txt, prep.stops, prep.sufs)
+    tokens = tokenize(doc.txt, prep.stops, prep.sufs, stem_cache)
     counts = {}
     for t in tokens:
       counts[t] = counts.get(t, 0) + 1
@@ -50,14 +69,29 @@ def compute(prep:o):
       prep.df[t] = prep.df.get(t, 0) + 1
     prep.tf.append(counts)
   
-  # Compute TF-IDF
+  # Optimized top-k TF-IDF computation
   N = len(prep.docs)
-  for word in prep.df:
-    prep.tfidf[word] = sum(c.get(word, 0) * math.log(N / prep.df[word]) 
-                          for c in prep.tf if word in c)
+  prep.tfidf = {}
   
-  # Get top 50 words
-  prep.top = sorted(prep.tfidf.items(), key=lambda x: x[1], reverse=True)[:50]
+  min_heap = []  # (score, word) pairs, negative for max-heap behavior
+  
+  for word, df in prep.df.items():
+    # Compute TF-IDF score for this word
+    score = sum(c.get(word, 0) * math.log(N / df) for c in prep.tf if word in c)
+    
+    # Maintain only top k words in heap
+    if len(min_heap) < top_k:
+      heapq.heappush(min_heap, (score, word))
+    elif score > min_heap[0][0]:  # Better than worst in top-k
+      heapq.heappop(min_heap)
+      heapq.heappush(min_heap, (score, word))
+  
+  # Extract top k words from heap (they're in min-heap order, so reverse)
+  prep.top = sorted([(word, score) for score, word in min_heap], 
+                   key=lambda x: x[1], reverse=True)
+  
+  # Store only top k TF-IDF values
+  prep.tfidf = {word: score for word, score in prep.top}
 
 def features(prep:o) -> o:
   "create EZR Data object with features"
@@ -81,3 +115,28 @@ def save(prep:o, f="preprocessed.csv"):
       for word, _ in prep.top:
         row.append(str(doc_tf.get(word, 0)))
       f.write(','.join(row) + '\n')
+
+#--------------------------------------------------------------------
+def eg__prep(file:str="../moot/text_mining/reading/processed/Hall.csv"):
+  "test text preprocessor"
+  prep = Prep()
+  loadData(prep, Data(csv(file)))
+  compute(prep)
+  save(prep)
+  return prep
+
+def eg__prep_hall():
+  "test text preprocessor with Hall dataset"
+  return eg__prep("../moot/text_mining/reading/raw/Hall.csv")
+
+def eg__prep_radjenovic():
+  "test text preprocessor with Radjenovic dataset"
+  return eg__prep("../moot/text_mining/reading/raw/Radjenovic.csv")
+
+def eg__prep_kitchenham():
+  "test text preprocessor with Kitchenham dataset"
+  return eg__prep("../moot/text_mining/reading/raw/Kitchenham.csv")
+
+def eg__prep_wahono():
+  "test text preprocessor with Wahono dataset"
+  return eg__prep("../moot/text_mining/reading/raw/Wahono.csv")
