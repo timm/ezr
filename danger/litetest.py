@@ -66,6 +66,10 @@ def eg__likely():
     the.acq = acq
     print(best(likely(data)))
 
+# def eg_ezr():
+#   data = Data(csv(the.file))
+#   def near(b,data1): the.acq="near"; the.Budget=b; return likely(clone(data,)
+#
 def eg__ezr(repeats=20):
   "Example function demonstrating the optimization workflow"
   data = Data(csv(the.file))
