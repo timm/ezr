@@ -1,78 +1,120 @@
-from stats
-import lite import *
+#!/usr/bin/env python3 -B
+
+import stats
+from lite import *
+
+def eg__the(): 
+  print(ok := str == type(the.Delta))
+  assert ok,"str not found"
+
+def eg__csv():
+  print(n := sum(len(row) for row in csv(the.file)))
+  assert n==3192, "missing cells"
+
+def eg__sym(): 
+  print(x := adds("aaaabbc",Sym()).has["a"])
+  assert x==4
+
+def eg__num(): 
+  print(mu := round(adds(random.gauss(10,2) for _ in range(1000)).mu,1))
+  print(sd := round(adds(random.gauss(10,2) for _ in range(1000)).sd,2))
+  assert sd == 1.99 and mu == 10
+
+def eg__data():
+  print(x := round(sum(y.mu for y in Data(csv(the.file)).cols.y),2))
+  assert x == 3009.84
+
+def eg__distx():
+  data = Data(csv(the.file))
+  r1   = data.rows[0]
+  ds   = adds(distx(data,r1,r2) for r2 in data.rows)
+  assert 0.45 <= ds.mu <= 0.55 and ds.lo >= 0 and ds.hi <= 1
+
+def eg__disty():
+  data = Data(csv(the.file))
+  data.rows.sort(key=lambda row: disty(data,row))
+  assert all(0 <= disty(data,r) <= 1 for r in data.rows)
+
+def eg__irisKpp(): 
+  data = Data(csv("../../moot/classify/iris.csv"))
+  mids = distKpp(data,k=10)
+  assert distx(data, mids[0], mids[-1]) > 0.5
+
+def eg__fmap(r=20):
+  "Dist:  diversity-based optimziation with fast map."
+  d    = Data(csv(the.file))
+  b4   = adds(disty(d,row) for row in d.rows)
+  win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
+  best = lambda rows: win(disty(d, distysort(d,rows)[0]))
+  for few in [12,25,50,100]:
+    the.Few = few
+    sway1 = adds(best(distFastermap(d,d.rows,False)) for _ in range(r))
+    sway2 = adds(best(distFastermap(d,d.rows,True )) for _ in range(r))
+    print( *[int(x) for x in [sway1.mu, sway2.mu]])
+
+def eg__likes():
+  data = Data(csv(the.file))
+  ds   = sorted(likes(data,row) for row in data.rows)
+  assert all(-15 < like < -5 for like in ds)
+
+def eg__likely():
+  data = Data(csv(the.file))
+  b4   = adds(disty(data,row) for row in data.rows)
+  win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
+  best = lambda rows: win(disty(data, distysort(data,rows)[0]))
+  for acq in ["near","xploit","xplor","bore","adapt"]:
+    the.acq = acq
+    print(best(likely(data)))
 
 def eg__ezr(repeats=20):
   "Example function demonstrating the optimization workflow"
   data = Data(csv(the.file))
-  b4  = adds(disty(data,row) for row in data.rows)
-  ab,abc=Num(s="ab"),Num(s="abc")
-  [ezr1(data,b4,shuffle(data.rows),ab,abc) for _ in range(20)]
-  print(the.Budget, *[int(x) for x in [ab.mu, abc.mu]])
-
-def ezr1(data, b4, rows, ab, abc):
-   win    = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
-   best   = lambda rows: win(disty(data, distysort(data,rows)[0]))
-   half   = len(data.rows)//2
-   train, holdout = data.rows[:half], data.rows[half:]
-   labels = likely(clone(data,train))
-   add(ab, best(labels[:1]))
-   tree   = Tree(clone(data,labels))
-   some   = sorted(holdout,
-                   key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]
-   add(abc, best(some))
-
-
-def eg__10(): worker(range(10,11,10), *rxs())
-def eg__20(): worker(range(10,21,10), *rxs())
-def eg__40(): worker(range(10,41,10), *rxs())
-def eg__80(): worker(range(10,81,10), *rxs())
-
-def eg__nears(): 
-  data = Data(csv(the.file))
-  b4   = adds(disty(data,r) for r in data.rows)
-  best = lambda rows: disty(data, distysort(data,rows)[0])
+  b4   = adds(disty(data,row) for row in data.rows)
   win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
-  for b in [10,20,40,80,160]:
-    the.Budget=b
-    print(b, adds(win(best(likely(data))) for _ in range(20)).mu)
+  best = lambda rows: win(disty(data, distysort(data,rows)[0]))
+  half = len(data.rows)//2
+  ab, abc, rand, check         = Num(), Num(), Num(), Num()
+  all, sway1,sway2             = Num(), Num(), Num()
+  near,xploit,xplor,bore,adapt = Num(), Num(), Num(), Num(), Num()
+  for i in range(repeats): 
+    data.rows = shuffle(data.rows)
+    train, holdout = data.rows[:half], data.rows[half:]
+    al   = likely(clone(data, train))
+    base = best(rx1(data, holdout, al))
+    add(abc,   base)
+    add(sway1, best(rx1(data,holdout,distFastermap(data,data.rows,False))))
+    add(sway2, best(rx1(data,holdout,distFastermap(data,data.rows,True ))))
+    add(ab,    best(al))
+    add(rand,  best(rx1(data, holdout, train[:the.Budget])))
+    add(check, best(holdout[:the.Check]))
+    add(all,   best(rx1(data, holdout, train)))
+    the.acq="near";   add(near,   best(rx1(data,holdout,likely(clone(data,train)))))
+    the.acq="xploit"; add(xploit, best(rx1(data,holdout,likely(clone(data,train)))))
+    the.acq="xplor";  add(xplor,  best(rx1(data,holdout,likely(clone(data,train)))))
+    the.acq="bore";   add(bore,   best(rx1(data,holdout,likely(clone(data,train)))))
+    the.acq="adapt";  add(adapt,  best(rx1(data,holdout,likely(clone(data,train)))))
+  print(the.Budget, the.leaf, ab.n,  
+        int(abc.mu),  "|",
+        "ab",     int(ab.mu),    
+        "rand",   int(rand.mu), 
+        "check",  int(check.mu),
+        "all",    int(all.mu),
+        "sway1",  int(sway1.mu),
+        "sway2",  int(sway2.mu),
+        "near",   int(near.mu),
+        "xploit", int(xploit.mu),
+        "xplor",  int(xplor.mu),
+        "bore",   int(bore.mu),
+        "adapt",  int(adapt.mu),
+        re.sub(".*/","",the.file)) 
 
-def eg__rands(): 
-  data = Data(csv(the.file))
-  b4   = adds(disty(data,r) for r in data.rows)
-  best = lambda rows: disty(data, distysort(data,rows)[0])
-  win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
-  for b in [10,20,40,80,160]:
-    the.Budget=b
-    print(b, adds(win(best(random.sample(data.rows,k=b))) for _ in range(20)).mu)
+def rx1(data, holdout, labels):
+  tree = Tree(clone(data, labels))
+  return sorted(holdout, key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]
 
-def rxs():
-  data = Data(csv(the.file))
-  return data, dict(rand = lambda b: random.sample(data.rows, k=b),
-                    kpp  = lambda b: distKpp(data,            k=b),
-                    near = lambda b: likely(data)
-                    )
+def eg__all():
+  for f in [eg__csv, eg__sym, eg__num, eg__data, eg__distx,
+            eg__disty, eg__irisKpp, eg__fmap, eg__ezr]:
+      print("\n"+f.__name__); f()
 
-def worker(budgets,data, todo, repeats=20):
-  t1   = time.time_ns()
-  b4   = adds(disty(data,r) for r in data.rows)
-  best = lambda rows: disty(data, distysort(data,rows)[0])
-  win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
-  wins = lambda a: win(sum(a)/len(a))
-  out  = {}
-  for b in budgets:
-    fyi(b)
-    the.Budget = b
-    for k,fn in todo.items():
-      fyi(".")
-      out[(b,k)] = [best(fn(b)) for _ in range(repeats)] 
-  eps = adds(x for k in out for x in out[k]).sd * 0.35
-  top = sorted(stats.top(out,  eps = eps))
-  mu  = adds(x for k in top for x in out[k]).mu
-  print(win(mu), 
-        re.sub(".*/","", the.file), 
-        len(data.rows), len(data.cols.x), len(data.cols.y),
-        int((time.time_ns() - t1) / (repeats * 1_000_000)),
-        *[int(100*x) for x   in [eps, b4.mu, b4.lo, mu]], "|",
-        *[f"{b}_{k},{wins(out[(b,k)])} " for b,k in top],
-        sep=", " )
-    
+if __name__ == "__main__": main(the, globals())

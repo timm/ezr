@@ -1,4 +1,9 @@
 from types import SimpleNamespace as o
+from typing import Any,List,Iterator
+
+Number = int|float
+Atom   = Number|str|bool
+Row    = List[Atom]
 
 def Confuse(): 
   "Create a confusion stats for classification matrix."

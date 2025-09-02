@@ -120,9 +120,9 @@ def eg__disty():
   print("worst4:"); [print("\t",row) for row in data.rows[-10:]]
 
 def eg__irisKpp(): 
-  "Dist: check Kmeans++ centroids on iris."
-  src = csv("../moot/classify/iris.csv")
-  [print(r) for r in distKpp(Data(src),k=10)]
+  data = Data("../moot/classify/iris.csv")
+  mids = distKpp(data,k=10)
+  print(distx(data,mids[0],mids[1]))
 
 def eg__irisK(): 
   "Dist: check Kmeans on iris."
@@ -130,7 +130,7 @@ def eg__irisK():
   for data in distKmeans(Data(src),k=10):
     print(', '.join([out(x) for x in mids(data)])) 
 
-def eg__fmap():
+def eg__fmap(repeats=20):
   "Dist:  diversity-based optimziation with fast map."
   data = Data(csv(the.file))
   for few in [32,64,128,256,512]:
@@ -138,5 +138,5 @@ def eg__fmap():
     print(few)
     n=adds(daBest(data, 
              distFastermap(data,data.rows).labels.rows) 
-                for _ in range(20))
+                for _ in range(repeats))
     print("\t",n.mu,n.sd)

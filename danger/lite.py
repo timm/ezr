@@ -3,6 +3,7 @@
 ezr.py: lightweight incremental multi-objective optimization   
 (c) 2025, Tim Menzies <timm@ieee.org>, MIT license   
    
+    -a  acq=near          label with (near|xploit|xplor|bore|adapt)
     -A  Any=4             on init, how many initial guesses?   
     -B  Budget=30         when growing theory, how many labels?   
     -C  Check=5           budget for checking learned model
@@ -10,6 +11,7 @@ ezr.py: lightweight incremental multi-objective optimization
     -F  Few=128           sample size of data random sampling  
     -K  Ks=0.95           confidence for Kolmogorovâ€"Smirnov test
     -l  leaf=3            min items in tree leaves
+    -m  m=1               Bayes low frequency param
     -p  p=2               distance co-efficient
     -s  seed=1234567891   random number seed   
     -f  file=../../moot/optimize/misc/auto93.csv    data file 
@@ -17,7 +19,7 @@ ezr.py: lightweight incremental multi-objective optimization
 """
 from types import SimpleNamespace as o
 from typing import Any,List,Iterator
-import random, time, math, sys, re
+import traceback, random, time, math, sys, re
 
 Number = int|float
 Atom   = Number|str|bool
@@ -145,6 +147,59 @@ def distx(data:Data, row1:Row, row2:Row) -> float:
   return dist(_aha(col, row1[col.at], row2[col.at])  
               for col in data.cols.x)
 
+def distProject(data,row,east,west,c=None):
+  "Map row along a line east -> west."
+  D = lambda r1,r2 : distx(data,r1,r2)
+  c = c or D(east,west)  
+  a,b = D(row,east), D(row,west)
+  return (a*a +c*c - b*b)/(2*c + 1e-32)
+
+def distFastmap(data,rows=None):
+  "Sort rows along a line between 2 distant points."
+  rows = rows or data.rows
+  X = lambda r1,r2:distx(data,r1,r2)
+  anywhere, *few = random.choices(rows, k=the.Few)
+  here  = max(few, key= lambda r: X(anywhere,r))
+  there = max(few, key= lambda r: X(here,r))
+  c     = X(here,there)
+  return sorted(rows, key=lambda r: distProject(data,r,here,there,c))
+
+def distFastermap(data,rows=None, sway2=True):
+  "Prune half the rows furthest from best distant pair."
+  rows = shuffle(rows or data.rows)
+  raw  = rows[the.Any:]
+  out  = clone(data, rows[:the.Any])
+  Y    = lambda r: disty(out,r)
+  while len(out.rows) < the.Budget and len(raw) >= 2: 
+    east, *rest, west = distFastmap(data,raw)
+    add(out, east)
+    add(out, west)
+    n   = len(rest)//2
+    raw = raw[:n] if Y(east) < Y(west) else raw[n:]
+    if sway2 and len(raw) < 2:
+      raw = shuffle([r for r in rows if r not in out.rows])
+  return sorted(out.rows, key=Y)
+
+#--------------------------------------------------------------------
+def like(i:o, v:Any, prior=0) -> float :
+  "log probability of 'v' belong to the distribution in 'i'"
+  if i.it is Sym:
+    tmp = ((i.has.get(v,0) + the.m*prior) 
+           / (sum(i.has.values())+the.m+1e-32))
+    return math.log(max(tmp, 1e-32))
+  else:
+    var = i.sd * i.sd + 1E-32
+    log_nom = -1 * (v - i.mu) ** 2 / (2 * var)
+    log_denom = 0.5 * math.log(2 * math.pi * var)
+    return log_nom - log_denom
+
+def likes(data:Data, row:Row, nall=100, nh=2) -> float:
+  "How much does this DATA like row?"
+  prior = data.n / (nall + 1e-32)
+  log_prior = math.log(max(prior, 1e-32))
+  tmp = [like(c, row[c.at]) for c in data.cols.x if row[c.at] != "?"]
+  return log_prior + sum(tmp)    
+
 #--------------------------------------------------------------------
 def likely(data:Data, rows=None) -> List[Row]:
   "Find an 'x' most likely to be best. Add to xy. Repeat."
@@ -160,6 +215,7 @@ def likely(data:Data, rows=None) -> List[Row]:
   adds(xy.rows[:n], best); adds(xy.rows[n:], rest)
 
   # loop, labelling the best guess
+  guess = nearer if the.acq=="near" else likelier
   while x.n > 2 and xy.n < the.Budget:
     add(xy, add(best, sub(x, label(guess(xy, best, rest, x)))))
     if best.n > (xy.n**.5):
@@ -168,13 +224,26 @@ def likely(data:Data, rows=None) -> List[Row]:
         add(rest, sub(best, best.rows.pop(-1)))
   return distysort(xy)
 
-def guess(xy, best:Data, rest:Data, x:Data) -> Row:
+def nearer(xy, best:Data, rest:Data, x:Data) -> Row:
   "Remove from `x' any 1 thing more best-ish than rest-ish."
   for _ in range(the.Few):
     row = x.rows[ i := random.randrange(x.n) ]
     if distx(xy, mids(best), row) < distx(xy, mids(rest), row):
       return x.rows.pop(i)
   return x.rows.pop()
+
+def likelier(_, best:Data, rest:Data, x:Data) -> Row:
+  "Sort 'x by the.acq, remove first from 'x'. Return first."
+  e, nall = math.e, best.n + rest.n
+  p = nall/the.Budget
+  q = {'xploit':0, 'xplor':1}.get(the.acq, 1-p)
+  def _fn(row):
+    b,r = e**likes(best,row,nall,2), e**likes(rest,row,nall,2)
+    if the.acq=="bore": return b*b/(r+1e-32)
+    return (b + r*q) / abs(b*q - r + 1e-32)
+  first, *lst = sorted(x.rows[:the.Few*2], key=_fn, reverse=True)
+  x.rows = lst[:the.Few] + x.rows[the.Few*2:] + lst[the.Few:] 
+  return first
 
 #--------------------------------------------------------------------
 def distKpp(data, rows=None, k=20, few=None): #\n{100}#
@@ -302,43 +371,31 @@ def main(settings : o, funs: dict[str,callable]) -> o:
   "from command line, update config find functions to call"
   for n,s in enumerate(sys.argv):
     if (fn := funs.get(f"eg{s.replace('-', '_')}")):
-      random.seed(settings.seed); fn()
+     try: random.seed(settings.seed); fn()
+     except Exception as e:
+       print("Error:", e)
+       traceback.print_exc()
     else:
       for key in vars(settings):
         if s=="-"+key[0]: 
           settings.__dict__[key] = coerce(sys.argv[n+1])
 
-#---------------------------------------------------------------------
-def eg__ezr(repeats=20):
-  "Example function demonstrating the optimization workflow"
+def demo():
+  "The usual run"
   data = Data(csv(the.file))
   b4   = adds(disty(data,row) for row in data.rows)
   win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
   best = lambda rows: win(disty(data, distysort(data,rows)[0]))
   half = len(data.rows)//2
-  ab, abc, rand, check, all = Num(), Num(), Num(), Num(), Num()
-  for i in range(repeats): 
-    data.rows = shuffle(data.rows)
-    train, holdout = data.rows[:half], data.rows[half:]
-    al   = likely(clone(data, train))
-    base = best(rx1(data, holdout, al))
-    add(abc,   base)
-    add(ab,    base - best(al))
-    add(rand,  base - best(rx1(data, holdout, train[:the.Budget])))
-    add(check, base - best(holdout[:the.Check]))
-    add(all,   base - best(rx1(data, holdout, train)))
-  print(the.Budget, the.leaf, ab.n,  
-        int(abc.mu),  "|",
-        "ab",    int(ab.mu),    
-        "rand",  int(rand.mu), 
-        "check", int(check.mu),
-        "all",   int(all.mu),
-        re.sub(".*/","",the.file)) 
-
-def rx1(data, holdout, labels):
-  tree = Tree(clone(data, labels))
-  return sorted(holdout, key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]
-
+  data.rows = shuffle(data.rows)
+  train, holdout = data.rows[:half], data.rows[half:]
+  labels = likely(clone(data, train))
+  tree   = Tree(clone(data, labels))
+  treeShow(tree)
+  print(best(labels),
+        best(sorted(holdout, 
+             key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]))
+  
 #---------------------------------------------------------------------
 the = o(**{k:coerce(v) for k,v in re.findall(r"(\w+)=(\S+)",__doc__)})
-if __name__ == "__main__": main(the, globals())
+if __name__ == "__main__": main(the, globals()); demo()
