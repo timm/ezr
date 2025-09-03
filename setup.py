@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ezr',
-    version='0.2.0',
+    version='0.5.0',
     license="BSD-2-Clause",
     description='Semi-supervised explanations for incremental multi-objective optimization',
     long_description=open("README.md").read(),
@@ -30,7 +30,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'ezr=ezr.__main__:main',  # <--- calls main() in __main__.py
+            'ezr=ezr.__main__:ezrmain',  # <--- calls main() in __main__.py
         ],
     },
 )

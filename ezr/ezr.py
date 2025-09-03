@@ -14,9 +14,10 @@ ezr.py: lightweight incremental multi-objective optimization
     -m  m=1               Bayes low frequency param
     -p  p=2               distance co-efficient
     -s  seed=1234567891   random number seed   
-    -f  file=../../moot/optimize/misc/auto93.csv    data file 
+    -f  file=../moot/optimize/misc/auto93.csv    data file 
     -h                     show help   
 """
+sys.dont_write_bytecode = True
 from types import SimpleNamespace as o
 from typing import Any,List,Iterator
 import traceback, random, time, math, sys, re
@@ -395,7 +396,11 @@ def demo():
   print(best(labels),
         best(sorted(holdout, 
              key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]))
-  
+
+def ezrmain():
+  "top-level call"
+  main(the,globals()); demo()
+
 #---------------------------------------------------------------------
 the = o(**{k:coerce(v) for k,v in re.findall(r"(\w+)=(\S+)",__doc__)})
-if __name__ == "__main__": main(the, globals()); demo()
+if __name__ == "__main__": ezrmain();
