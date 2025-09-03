@@ -1,3 +1,5 @@
+> Due to teaching and admin commitments, this site has yet to stabilize. The   code base is also changing.. [danger/lite.py](danger/lite.py) contains my current working version of this system. If the code interests you, please contact me directly. 
+
 # A Tiny AI Minifesto
 
 <img src="docs/ezr.png" align=right width=400>
@@ -290,8 +292,8 @@ queries—and a few hundred lines of code. It’s a striking illustraionof the P
 a small fraction of the effort**.
 
 Another thing to note here is how fast EZR operates.
-The table below shows how long it takes to find a few dozen sueful examples,
-then convert theem into a tree.
+The table below shows how long it takes to find a few dozen usefyk examples,
+then convert them into a tree.
 The above tree came for
 SS-M  (see http://github/timm/moot/optimize/config) and
 has 862 rows,  3 goals and 17 control settings.
