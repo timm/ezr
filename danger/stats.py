@@ -43,7 +43,7 @@ def confused(cf:Confuse, summary=False) -> List[Confuse]:
                 key=lambda cf: cf.fn + cf.tp)
 
 #------------------------------------------------------------------------------
-def same(x:list[Number], y:list[Number], KS=0.95, Delta="smed") -> bool: 
+def same(x:list[Number], y:list[Number],Ks=0.95,Delta="smed") -> bool: 
   "True if x,y indistinguishable and differ by just a small effect."
   x, y = sorted(x), sorted(y)
   n, m = len(x), len(y)
@@ -67,7 +67,8 @@ def same(x:list[Number], y:list[Number], KS=0.95, Delta="smed") -> bool:
 
 #------------------------------------------------------------------------------
 def top(rxs:dict[str,list[Number]], 
-             reverse=False, same=same, eps=0.01) -> set:
+        reverse=False, same=same, 
+        eps=0.01, Ks=.95, Delta="smed") -> set:
   "Return the subset of rxs's keys associated with best scores."
   its = sorted([(sum(v)/len(v), len(v),k,v) for k,v in rxs.items() if v], 
                reverse=reverse)
@@ -81,7 +82,7 @@ def top(rxs:dict[str,list[Number]],
       s = (len(l1)*(m1-mu)**2 + len(l2)*(m2-mu)**2) / len(l12)
       if sc < s and abs(m1 - m2) > eps:
         sc, cut, left, right = s, i, l1, l2
-    if not (cut > 0 and not same(left, right)): break
+    if not (cut > 0 and not same(left,right,Ks=Ks,Delta=Delta)): break
     its = its[:cut]
   return {k for _, _, k, _ in its}
 

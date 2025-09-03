@@ -69,52 +69,63 @@ def eg__likely():
 # def eg_ezr():
 #   data = Data(csv(the.file))
 #   def near(b,data1): the.acq="near"; the.Budget=b; return likely(clone(data,)
-#
-def eg__ezr(repeats=20):
-  "Example function demonstrating the optimization workflow"
-  data = Data(csv(the.file))
-  b4   = adds(disty(data,row) for row in data.rows)
-  win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
-  best = lambda rows: win(disty(data, distysort(data,rows)[0]))
-  half = len(data.rows)//2
-  ab, abc, rand, check         = Num(), Num(), Num(), Num()
-  all, sway1,sway2             = Num(), Num(), Num()
-  near,xploit,xplor,bore,adapt = Num(), Num(), Num(), Num(), Num()
-  for i in range(repeats): 
-    data.rows = shuffle(data.rows)
-    train, holdout = data.rows[:half], data.rows[half:]
-    al   = likely(clone(data, train))
-    base = best(rx1(data, holdout, al))
-    add(abc,   base)
-    add(sway1, best(rx1(data,holdout,distFastermap(data,data.rows,False))))
-    add(sway2, best(rx1(data,holdout,distFastermap(data,data.rows,True ))))
-    add(ab,    best(al))
-    add(rand,  best(rx1(data, holdout, train[:the.Budget])))
-    add(check, best(holdout[:the.Check]))
-    add(all,   best(rx1(data, holdout, train)))
-    the.acq="near";   add(near,   best(rx1(data,holdout,likely(clone(data,train)))))
-    the.acq="xploit"; add(xploit, best(rx1(data,holdout,likely(clone(data,train)))))
-    the.acq="xplor";  add(xplor,  best(rx1(data,holdout,likely(clone(data,train)))))
-    the.acq="bore";   add(bore,   best(rx1(data,holdout,likely(clone(data,train)))))
-    the.acq="adapt";  add(adapt,  best(rx1(data,holdout,likely(clone(data,train)))))
-  print(the.Budget, the.leaf, ab.n,  
-        int(abc.mu),  "|",
-        "ab",     int(ab.mu),    
-        "rand",   int(rand.mu), 
-        "check",  int(check.mu),
-        "all",    int(all.mu),
-        "sway1",  int(sway1.mu),
-        "sway2",  int(sway2.mu),
-        "near",   int(near.mu),
-        "xploit", int(xploit.mu),
-        "xplor",  int(xplor.mu),
-        "bore",   int(bore.mu),
-        "adapt",  int(adapt.mu),
-        re.sub(".*/","",the.file)) 
 
-def rx1(data, holdout, labels):
-  tree = Tree(clone(data, labels))
+def eg__ezr1():
+  "Example function demonstrating the optimization workflow"
+  d = Data(csv(the.file))
+  D = lambda rows: clone(d, rows)
+  def adapt( _, t,T): the.acq="adapt" ; return so(d,T, likely(D(t)))
+  def all(   b, t,T):                   return so(d,T, t)
+  def bore(  _, t,T): the.acq="bore"  ; return so(d,T, likely(D(t)))
+  def check( b, t,T):                   return random.choices(T,k=the.Check)
+  def kpp(   b, t,T):                   return so(d,T, distKpp(D(t), k=b))
+  def near(  _, t,T): the.acq="near"  ; return so(d,T, likely(D(t)))
+  def rand(  b, t,T):                   return so(d,T, random.choices(t,k=b))
+  def sway1( _, t,T):                   return so(d,T, distFastermap(D(t), sway2=False))
+  def sway2( _, t,T):                   return so(d,T, distFastermap(D(t), sway2=True))
+  def xploit(_, t,T): the.acq="xploit"; return so(d,T, likely(D(t)))
+  def xplor( _, t,T): the.acq="xplore"; return so(d,T, likely(D(t)))
+  return _xper(d, [adapt,all,bore,check,kpp,near,sway1,sway2,xploit,xplor],
+                  [10,20,40,60, 80,100])
+
+def so(data, holdout, train):
+  tree = Tree(clone(data, train))
   return sorted(holdout, key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]
+
+def _xper(data, funs, budgets, repeats=20):
+  half = len(data.rows)//2
+  b4   = adds(disty(data,row) for row in data.rows)
+  win  = lambda v: 100*(1 - (v - b4.lo)/(b4.mu - b4.lo))
+  best = lambda rows: win(disty(data, distysort(data,rows)[0]))
+  rxs,times = {},{}
+  for b in budgets:
+    the.Budget = b
+    for fun in funs:
+      key = (b, fun.__name__); rxs[key]=[]; times[key]=[]
+      for _ in range(repeats): 
+        t0          = time.time_ns()
+        data.rows   = shuffle(data.rows)
+        rxs[key]   += [best(fun(b, data.rows[:half], data.rows[half:]))]
+        times[key] += [(time.time_ns() - t0)/1_000_000]
+  scores = adds(x for lst in rxs.values() for x in lst)
+  top  = set(stats.top(rxs, reverse=True, eps=.35*scores.sd,
+                            Ks=the.Ks, Delta=the.Delta))
+  bang = lambda k: "!" if k in top else " "
+  med  = lambda a: sum(a)/len(a)
+  print("     ,    ,   ,   ",
+        *["win" for k in rxs.keys()],
+        *["msecs" for k in rxs.keys()],sep=",")
+  print("     ,    ,   ,   ",
+        *sorted(k[1] for k in rxs.keys()),
+        *sorted(k[1] for k in rxs.keys()),sep=",")
+  print("     ,rows,x  ,y  ",
+        *sorted(k[0] for k in rxs.keys()),
+        *sorted(k[0] for k in rxs.keys()),
+        "file", sep=",")
+  print(int(scores.mu), len(data.rows), len(data.cols.x), len(data.cols.y),
+        *[f"{int(med(rxs[k]))}{bang(k)}" for k in sorted(rxs.keys())],
+        *[f"{int(med(times[k]))}"  for k in sorted(rxs.keys())],
+        re.sub(".*/","",the.file), sep=",")
 
 def eg__all():
   for f in [eg__csv, eg__sym, eg__num, eg__data, eg__distx,

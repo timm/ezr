@@ -153,10 +153,13 @@ trainReport:
 ~/tmp/lite20.log:
 	$(MAKE) todo=20 files="$(Top)/../moot/optimize/*/*.csv" liteworker | tee $@ 
 
+~/tmp/ezr1.log:
+	$(MAKE) todo=ezr1 files="$(Top)/../moot/optimize/*/*.csv" liteworker | tee $@ 
+
 liteworker:
 	@mkdir -p ~/tmp
 	time ls -r $(files) \
-	  | xargs -P 32 -n 1 -I{} sh -c 'cd danger; python3 -B lite.py -f "{}" --$(todo)'
+	  | xargs -P 32 -n 1 -I{} sh -c 'cd danger; python3 -B litetest.py -f "{}" --$(todo)'
 
 worker:
 	@mkdir -p ~/tmp
