@@ -113,7 +113,7 @@ If the mean and optional [^ref] score seen
    in the input data is $m$ and $o$. and if the optimizer outputs a row with score $r$,
    then the win is how close we get to best the optimal, normalized but the distance means to optimal; i.e.
 
-$$100 (1- \frac{r-o}{m-o})$$
+$$win = 100 \left(1- \frac{r-o}{m-o}\right)$$
 
 [^ref]: More precesiely, our "optimals" are rally "reference optimals"; i.e. the best value
 seen so far. For most of our test data, the actually optizal setting may be unknowable.
