@@ -35,13 +35,16 @@ setup: ## initial setup - clone moot data
 install: ## install in development mode (when ready)
 	pip install -e .
 
-~/tmp/dist.log: 
-	$(MAKE) todo=dist files="$(Top)/../moot/optimize/config/*.csv" run | tee $@ 
+clean:  ## find and delete any __pycache__ dirs
+	find $(Top) -name __pycache__ -exec rm -rf {} \;
+
+~/tmp/dist.log:  ## run ezrtest on many files
+	$(MAKE) todo=dist files="$(Top)/../moot/optimize/*/*.csv" run | tee $@ 
 
 run:
 	@mkdir -p ~/tmp
 	time ls -r $(files) \
-	  | xargs -P 32 -n 1 -I{} sh -c 'cd $(Top)/ezr; python3 -B ezrtest.py -f "{}" --$(todo)'
+	  | xargs -P 24 -n 1 -I{} sh -c 'cd $(Top)/ezr; python3 -B ezrtest.py -f "{}" --$(todo)'
 
 eg1: ## run init tests
 	cd $(Top)/ezr; python3 -B ezrtest.py -f $(Data)/misc/auto93.csv --tree
