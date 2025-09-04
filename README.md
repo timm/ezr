@@ -103,6 +103,27 @@ ezr -f ~/gits/timm/moot/optimize/misc/auto93.csv
      3   31    |  |  |  if Model <= 72;
 ```
 
+## Output Format
+
+- `|`: Hierarchical rule structure (nested conditions)
+- `#rows`: Number of data rows matching the rule
+- `win`: Performance percentage for that branch. 
+
+If the mean and optional [^ref] score seen
+   in the input data is $m$ and $o$. and if the optimizer outputs a row with score $r$,
+   then the win is how close we get to best the optimal, normalized but the distance means to optimal; i.e.
+
+$$100 (1- \frac{r-o}{m-o})$$
+
+[^ref]: More precesiely, our "optimals" are rally "reference optimals"; i.e. the best value
+seen so far. For most of our test data, the actually optizal setting may be unknowable.
+
+Notes:
+
+- We normalize it in this way so we can compace results across differernt data sets. 
+- We use `100*(1-` so that we can report the win as a percentage, with _larger_ wins being _better_. 
+
+
 ## Performance
 
 ezr delivers strong optimization results from remarkably small 
@@ -118,12 +139,6 @@ healthcare, reinforcement learning, sales, testing, and text mining.
 
 **Speed:** Typical runtimes under 100ms. Large datasets (128 
 attributes, 100,000 rows) process in ~3 seconds.
-
-## Output Format
-
-- `#rows`: Number of data rows matching the rule
-- `win`: Performance percentage for that branch
-- `|`: Hierarchical rule structure (nested conditions)
 
 ## Algorithm Pseudocode
 
@@ -169,7 +184,7 @@ straightforward, evaluating their real-world performance is expensive
 and time-consuming. This creates a fundamental bottleneck in 
 optimization workflows.
 
-**The Case for Simplicity:** Research by Adams et al. demonstrates 
+**The Case for Simplicity:** Research by Adams et al. [^adams] demonstrates 
 that humans systematically overlook subtractive changes, preferring 
 to add complexity rather than remove it (4:1 ratio). This cognitive 
 bias affects AI research, where teams often pursue elaborate 
@@ -177,6 +192,8 @@ reinforcement learning and active learning approaches without first
 testing simpler alternatives. One such team lost two years exploring 
 complex acquisition functions that yielded minimal improvements over 
 basic methods.
+
+[^adams]: Adams, G.S., Converse, B.A., Hales, A.H. et al. People systematically overlook subtractive changes. Nature 592, 258–261 (2021). https://doi.org/10.1038/s41586-021-03380-y
 
 ezr embraces the "Less, but Better" philosophy, proving that 
 sophisticated optimization results can emerge from remarkably simple 
