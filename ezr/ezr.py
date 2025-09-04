@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 -B 
+#!/usr/bin/env python3 
 """
 ezr.py: lightweight incremental multi-objective optimization   
 (c) 2025, Tim Menzies <timm@ieee.org>, MIT license   

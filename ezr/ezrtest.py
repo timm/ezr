@@ -1,7 +1,9 @@
-#!/usr/bin/env python3 -B
+#!/usr/bin/env python3
 
-import stats
+import stats,sys
 from ezr import *
+
+sys.dont_write_bytecode = True
 
 def eg__the(): 
   print(ok := str == type(the.Delta))
@@ -85,7 +87,7 @@ def eg__tree():
 #   data = Data(csv(the.file))
 #   def near(b,data1): the.acq="near"; the.Budget=b; return likely(clone(data,)
 
-def eg__ezr1():
+def funs(*lst):
   "Example function demonstrating the optimization workflow"
   d = Data(csv(the.file))
   D = lambda rows: clone(d, rows)
@@ -100,14 +102,20 @@ def eg__ezr1():
   def sway2( _, t,T):                   return so(d,T, distFastermap(D(t), sway2=True))
   def xploit(_, t,T): the.acq="xploit"; return so(d,T, likely(D(t)))
   def xplor( _, t,T): the.acq="xplore"; return so(d,T, likely(D(t)))
-  return _xper(d, [adapt,all,bore,check,kpp,near,sway1,sway2,xploit,xplor],
-                  [10,20,40,60, 80,100])
+  rxs= dict(adapt=adapt, all=all, bore=bore, check=check,
+            kpp=kpp, neear=near, sway1=sway1, sway2=sway2,
+            xploit=xploit, xplor=xplor)
+  return d, [f for k,f in rxs.items() if k in lst]
+
+def eg__dist():
+  d, rxs = funs("kpp", "sway1", "sway2")
+  _xper(d, [50], rxs)
 
 def so(data, holdout, train):
   tree = Tree(clone(data, train))
   return sorted(holdout, key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]
 
-def _xper(data, funs, budgets, repeats=20):
+def _xper(data, budgets, funs, repeats=20):
   half = len(data.rows)//2
   b4   = adds(disty(data,row) for row in data.rows)
   win  = lambda v: 100*(1 - (v - b4.lo)/(b4.mu - b4.lo))
