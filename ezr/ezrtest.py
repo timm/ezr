@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 -B
 
 import stats
-from lite import *
+from ezr import *
 
 def eg__the(): 
   print(ok := str == type(the.Delta))
@@ -66,6 +66,21 @@ def eg__likely():
     the.acq = acq
     print(best(likely(data)))
 
+
+def eg__tree():
+  "Example function demonstrating the optimization workflow"
+  the.acq = "near"
+  data    = Data(csv(the.file))
+  D    = lambda rows: clone(data, rows)
+  b4   = adds(disty(data,row) for row in data.rows)
+  win  = lambda v: 100*(1 - (v - b4.lo)/(b4.mu - b4.lo))
+  best = lambda rows: win(disty(data, distysort(data,rows)[0]))
+  n    = len(data.rows)//2
+  train, holdout= data.rows[:n], data.rows[n:]
+  tree = Tree(clone(data, likely(D(train))))
+  treeShow(tree)
+  print(int(best(sorted(holdout, key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check])))
+
 # def eg_ezr():
 #   data = Data(csv(the.file))
 #   def near(b,data1): the.acq="near"; the.Budget=b; return likely(clone(data,)
@@ -129,7 +144,7 @@ def _xper(data, funs, budgets, repeats=20):
 
 def eg__all():
   for f in [eg__csv, eg__sym, eg__num, eg__data, eg__distx,
-            eg__disty, eg__irisKpp, eg__fmap, eg__ezr]:
+            eg__disty, eg__irisKpp, eg__fmap,eg__tree]:
       print("\n"+f.__name__); f()
 
 if __name__ == "__main__": main(the, globals())

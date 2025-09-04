@@ -17,10 +17,11 @@ ezr.py: lightweight incremental multi-objective optimization
     -f  file=../moot/optimize/misc/auto93.csv    data file 
     -h                     show help   
 """
-sys.dont_write_bytecode = True
 from types import SimpleNamespace as o
 from typing import Any,List,Iterator
 import traceback, random, time, math, sys, re
+
+sys.dont_write_bytecode = True
 
 Number = int|float
 Atom   = Number|str|bool
