@@ -19,7 +19,7 @@ PROMPT_COMMAND='PS1="👀 ${bold}${col1}${Xdir}${col0} ${col1}$(basename "$(dirn
 
 # Essential aliases
 alias ..='cd ..' c='clear' Q='exit'
-alias l='ls -lh' la='ls -la' t='tree -L 1'
+alias l='ls -lh' la='ls -la' t='tree -L 1' ls="\ls --color"
 alias gs='git status -sb' ga='git add .' gc='git commit -m' gp='git push' gl='git log --oneline --graph --decorate'
 alias vi="nvim -u '$Here/etc/init.lua'" h='history'
 alias reload="source '$Here/ell' && echo ✅"
