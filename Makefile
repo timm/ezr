@@ -36,7 +36,8 @@ install: ## install in development mode (when ready)
 	pip install -e .
 
 clean:  ## find and delete any __pycache__ dirs
-	find $(Top) -name __pycache__ -exec rm -rf {} \;
+	files="$$(find $(Top) -name __pycache__ -type d)"; \
+	for f in $$files; do rm -rf "$$f"; done
 
 ~/tmp/dist.log:  ## run ezrtest on many files
 	$(MAKE) todo=dist files="$(Top)/../moot/optimize/*/*.csv" run | tee $@ 
