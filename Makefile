@@ -26,8 +26,7 @@ push: ## commit to main
 	git status
 
 ell:
-	clear
-	cat $(Top)/etc/hi.txt
+	clear; tput setaf 3; cat $(Top)/etc/hi.txt; tput sgr0
 	sh $(Top)/etc/ell
 
 setup: ## initial setup - clone moot data
