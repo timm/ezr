@@ -25,6 +25,9 @@ push: ## commit to main
 	read x ; git commit -am "$$x" ;  git push
 	git status
 
+ell:
+	sh $(Top)/etc/ell
+
 setup: ## initial setup - clone moot data
 	[ -d $(Data) ] || git clone http://github.com/timm/moot $(Top)/../moot
 
