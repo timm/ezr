@@ -21,7 +21,7 @@ pull: ## update from main
 	git pull
 
 push: ## commit to main
-	echo -e "$(LOUD)Why this push? $(SOFT)" 
+	echo -en "$(LOUD)Why this push? $(SOFT)" 
 	read x ; git commit -am "$$x" ;  git push
 	git status
 
