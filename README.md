@@ -1,7 +1,6 @@
 # ezr
 
-Semi-supervised explanations for incremental multi-objective 
-optimization.
+ezr.py: lightweight incremental explanations for multi-objective optimization   
 
 Code support for [Case for Compact AI](docs/case4compactAI.pdf)
 
@@ -25,13 +24,17 @@ Code support for [Case for Compact AI](docs/case4compactAI.pdf)
 **The Labeling Problem:** In optimization, choices are easy to spot 
 but consequences are slow to measure. You can scan hundreds of 
 configurations in minutes, but evaluating their real-world performance 
-may require hours or days of testing.
+may require hours or days of testing. Hence:
+
+> We need to reason more using less data.
 
 **Questioning "Bigger is Better":** Recent research shows only 5% of 
 software engineering papers using LLMs consider simpler alternatives - 
 a major methodological oversight [^llm]. UCL researchers found SVM+TF-IDF 
 methods outperformed "Big AI" by 100x in speed with greater accuracy 
-for effort estimation [^uci].
+for effort estimation [^uci]. Hence:
+
+> We need to enourage the use of faster methods that encourage more exploration of alternatives.
 
 [^llm]: Hou, X. et al. Large language models for SE: A systematic literature review. TOSEM 33, 8 (Sept. 2024).
 

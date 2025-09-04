@@ -1,6 +1,6 @@
 #!/usr/bin/env python3 
 """
-ezr.py: lightweight incremental multi-objective optimization   
+ezr.py: lightweight incremental explanations for multi-objective optimization   
 (c) 2025, Tim Menzies <timm@ieee.org>, MIT license   
    
     -a  acq=near          label with (near|xploit|xplor|bore|adapt)
