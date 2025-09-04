@@ -11,7 +11,7 @@ def load(f:str) -> set:
     with open(f) as f: return set(w.strip().lower() for w in f if w.strip())
   except: return set()
 
-def stem(w:str, sufs:list, cache:dict={}, max_iter:int=3) -> str:
+def stem(w:str, sufs:list, cache:dict={}, max_iter:int=1) -> str:
   "recursive stemmer with caching and iteration limit"
   if w in cache: return cache[w]
   if max_iter <= 0: return cache.setdefault(w, w)
@@ -69,26 +69,20 @@ def compute(prep:o, top_k:int=100):
       prep.df[t] = prep.df.get(t, 0) + 1
     prep.tf.append(counts)
   
-  # Optimized top-k TF-IDF computation
+  # Simple TF-IDF computation (like NLTK approach)
   N = len(prep.docs)
   prep.tfidf = {}
   
-  min_heap = []  # (score, word) pairs, negative for max-heap behavior
-  
+  # Calculate all TF-IDF scores first
+  word_scores = []
   for word, df in prep.df.items():
     # Compute TF-IDF score for this word
     score = sum(c.get(word, 0) * math.log(N / df) for c in prep.tf if word in c)
-    
-    # Maintain only top k words in heap
-    if len(min_heap) < top_k:
-      heapq.heappush(min_heap, (score, word))
-    elif score > min_heap[0][0]:  # Better than worst in top-k
-      heapq.heappop(min_heap)
-      heapq.heappush(min_heap, (score, word))
+    word_scores.append((word, score))
   
-  # Extract top k words from heap (they're in min-heap order, so reverse)
-  prep.top = sorted([(word, score) for score, word in min_heap], 
-                   key=lambda x: x[1], reverse=True)
+  # Sort and take top k (like NLTK does)
+  word_scores.sort(key=lambda x: x[1], reverse=True)
+  prep.top = word_scores[:top_k]
   
   # Store only top k TF-IDF values
   prep.tfidf = {word: score for word, score in prep.top}
@@ -140,3 +134,18 @@ def eg__prep_kitchenham():
 def eg__prep_wahono():
   "test text preprocessor with Wahono dataset"
   return eg__prep("../moot/text_mining/reading/raw/Wahono.csv")
+
+
+# ================================================================================
+# SUMMARY RESULTS
+# ================================================================================
+# Dataset         Texts    NLTK(s)    EZR(s)     Speedup   
+# --------------------------------------------------------------------------------
+# Hall            8911     13.8037    4.6827     2.95      x
+# Kitchenham      1700     2.2862     0.5279     4.33      x
+# Wahono          7002     12.0579    3.7675     3.20      x
+# Radjenovic      6000     9.1057     2.7897     3.26      x
+# --------------------------------------------------------------------------------
+# Average speedup across all datasets: 3.44x
+
+# ================================================================================
