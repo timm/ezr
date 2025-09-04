@@ -116,7 +116,7 @@ If the mean and optional [^ref] score seen
 $$win = 100 \left(1- \frac{r-o}{m-o}\right)$$
 
 [^ref]: More precesiely, our "optimals" are rally "reference optimals"; i.e. the best value
-seen so far. For most of our test data, the actually optizal setting may be unknowable.
+seen so far. For most of our test data, the actual optimal setting may be unknowable.
 
 Notes:
 
