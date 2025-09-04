@@ -3,6 +3,23 @@
 Semi-supervised explanations for incremental multi-objective 
 optimization.
 
+Code support for [Case for Compact AI](docs/case4compactAI.pdf)
+
+```
+@article{menzies2025compact,
+  title={The Case for Compact AI},
+  author={Menzies, Tim},
+  journal={Communications of the ACM},
+  year={2025},
+  month={March},
+  volume={68},
+  number={3},
+  publisher={ACM},
+  url={https://cacm.acm.org/opinion/the-case-for-compact-ai/},
+  note={Opinion}
+}
+```
+
 ## Motivation
 
 **The Labeling Problem:** In optimization, choices are easy to spot 
@@ -12,15 +29,21 @@ may require hours or days of testing.
 
 **Questioning "Bigger is Better":** Recent research shows only 5% of 
 software engineering papers using LLMs consider simpler alternatives - 
-a major methodological oversight. UCL researchers found SVM+TF-IDF 
+a major methodological oversight [^llm]. UCL researchers found SVM+TF-IDF 
 methods outperformed "Big AI" by 100x in speed with greater accuracy 
-for effort estimation.
+for effort estimation [^uci].
+
+[^llm]: Hou, X. et al. Large language models for SE: A systematic literature review. TOSEM 33, 8 (Sept. 2024).
+
+[^uci]: Tawosi, V., Moussa, R., and Sarro, F. Agile effort estimation: Have we solved the problem yet? IEEE Trans SE 49, 4 (2023), 2677–2697.
 
 ezr embraces **"funneling"** - the principle that despite internal 
 complexity, software behavior converges to few outcomes, enabling 
-simpler reasoning. Where LLMs require planetary-scale computation and 
+simpler reasoning [^funnels]. Where LLMs require planetary-scale computation and 
 specialized hardware, ezr achieves state-of-the-art results through 
 smarter questioning on standard laptops.
+
+[^funnels]: Menzies, T., Owen, D., and Richardson, J. The strangest thing about software. Computer 40, 1 (2007).
 
 This approach fosters **human-AI partnership**: unlike opaque LLMs, 
 ezr's small labeled sets and tiny regression trees offer explainable, 
@@ -176,7 +199,7 @@ optimization results interpretable and actionable for stakeholders.
 
 ## Coding Notes
 
-ezr consists of just ~500 lines of Python (no pandas or sklearn) 
+ezr consists of just ~400 lines of Python (no pandas or sklearn) 
 organized into three main files:
 
 ### ezr.py (Core Algorithm)  
