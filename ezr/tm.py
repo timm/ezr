@@ -87,6 +87,9 @@ def active_learning_text_mining(dataset_file, text_col="Abstract", class_col="la
   def _iqr(xs):
     if not xs: return 0
     return _quantile(xs, 0.75) - _quantile(xs, 0.25)
+  def _percentiles(xs):
+    if not xs: return (0, 0)
+    return (_quantile(xs, 0.25), _quantile(xs, 0.75))
   pout(f"Loading dataset: {dataset_file}")
   prep = load_dataset(dataset_file, text_col, class_col)
   if prep is None: return
@@ -96,22 +99,22 @@ def active_learning_text_mining(dataset_file, text_col="Abstract", class_col="la
   if results:
     steps = sorted({i for rr in results for i in range(len(rr))})
     n_neg_display = n_neg or n_pos * 4
-    pout(f"\nResults@step (avg±IQR of {len(results)}) for {dataset_file} with {n_pos} pos & {n_neg_display} neg:")
-    pout("-" * 70)
-    pout(f"{'Step':<12} {'Precision':<18} {'Recall':<16} {'False_Alarm':<20} {'Accuracy':<16} {'Samples':<8}")
-    pout("-" * 70)
+    pout(f"\nResults@step (avg [25th,75th] of {len(results)}) for {dataset_file} with {n_pos} pos & {n_neg_display} neg:")
+    pout("-" * 80)
+    pout(f"{'Step':<12} {'Precision':<20} {'Recall':<18} {'False_Alarm':<22} {'Accuracy':<18} {'Samples':<8}")
+    pout("-" * 80)
     init = n_pos + (n_neg or n_pos * 4)
     for i in steps:
       sr = [rr[i] for rr in results if rr and i < len(rr)]
       if sr and any(any(x) for x in sr):
         cols = [[x[j] for x in sr] for j in range(4)]
         a = [sum(col)/len(col) for col in cols]
-        iq = [_iqr(col) for col in cols]
+        pcts = [_percentiles(col) for col in cols]
         if i == 0: lab, s = "Initial", init
         elif i == len(steps) - 1: lab, s = "Final", len(prep.docs)
         else: acq = i * batch_size; lab, s = f"Step {acq}", init + acq
-        # Show avg±IQR for each metric; False Alarm shown as percent
-        pout(f"{lab:<12} {a[0]:.4f}±{iq[0]:.4f}   {a[1]:.4f}±{iq[1]:.4f}   {a[2]*100:.2f}%±{iq[2]*100:.2f}%   {a[3]:.4f}±{iq[3]:.4f}   {s:<8}")
+        # Show avg [25th,75th] for each metric; False Alarm shown as percent
+        pout(f"{lab:<12} {a[0]:.4f}[{pcts[0][0]:.3f},{pcts[0][1]:.3f}]   {a[1]:.4f}[{pcts[1][0]:.3f},{pcts[1][1]:.3f}]   {a[2]*100:.2f}%[{pcts[2][0]*100:.1f}%,{pcts[2][1]*100:.1f}%]   {a[3]:.4f}[{pcts[3][0]:.3f},{pcts[3][1]:.3f}]   {s:<8}")
   return results
 
 #------------------------------------------------------------------------------------------------
@@ -141,21 +144,21 @@ def save_active_learning_results(results, path, initial_samples=None, batch_size
         hi = min(lo + 1, n - 1)
         frac = pos - lo
         return xs[lo] * (1 - frac) + xs[hi] * frac
-      def _iqr(xs):
-        if not xs: return 0
-        return _quantile(xs, 0.75) - _quantile(xs, 0.25)
-      iq = [_iqr(col) for col in cols]
+      def _percentiles(xs):
+        if not xs: return (0, 0)
+        return (_quantile(xs, 0.25), _quantile(xs, 0.75))
+      pcts = [_percentiles(col) for col in cols]
       if initial_samples is not None and batch_size is not None:
         samples = (final_samples if (final_samples is not None and i == len(steps)-1)
                    else initial_samples + i * batch_size)
       else:
         samples = i
-      rows.append({"Step": i, "Samples": samples, "Recall": a[1], "Recall_IQR": iq[1], "False_Alarm": a[2], "False_Alarm_IQR": iq[2]})
+      rows.append({"Step": i, "Samples": samples, "Recall": a[1], "Recall_25th": pcts[1][0], "Recall_75th": pcts[1][1], "False_Alarm": a[2], "False_Alarm_25th": pcts[2][0], "False_Alarm_75th": pcts[2][1]})
   d = os.path.dirname(path)
   if d:
     os.makedirs(d, exist_ok=True)
   with open(path, "w", newline="") as f:
-    w = csv.DictWriter(f, fieldnames=["Step","Samples","Recall","Recall_IQR","False_Alarm","False_Alarm_IQR"])
+    w = csv.DictWriter(f, fieldnames=["Step","Samples","Recall","Recall_25th","Recall_75th","False_Alarm","False_Alarm_25th","False_Alarm_75th"])
     w.writeheader()
     for r in rows:
       w.writerow(r)
