@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ezr"
+version = "0.5.0"
+description = "Semi-supervised explanations for incremental multi-objective optimization"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.7"
+license = { text = "BSD-2-Clause" }
+authors = [{ name = "Tim Menzies", email = "timm@ieee.org" }]
+urls = { Homepage = "https://github.com/timm/ezr" }
+classifiers = [
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Software Development :: Testing",
+  "Topic :: Education"
+]
+dependencies = []
+
+[project.scripts]
+ezr = "ezr.__main__:ezrmain"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ezr*"]
+
