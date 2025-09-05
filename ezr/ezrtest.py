@@ -109,7 +109,7 @@ def funs(*lst):
 
 def eg__dist():
   d, rxs = funs("kpp", "sway1", "sway2")
-  _xper(d, [50], rxs)
+  _xper(d, [10,20,40,80], rxs)
 
 def so(data, holdout, train):
   tree = Tree(clone(data, train))
