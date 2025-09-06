@@ -2,7 +2,7 @@
 
 ezr.py: lightweight incremental explanations for multi-objective optimization   
 
-Code support for [Case for Compact AI](docs/case4compactAI.pdf)
+Code support for [Case for Compact AI](https://github.com/timm/ezr/blob/main/docs/case4compactAI.pdf)
 
 ```
 @article{menzies2025compact,
