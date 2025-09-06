@@ -130,24 +130,26 @@ def _xper(data, budgets, funs, repeats=20):
         data.rows   = shuffle(data.rows)
         rxs[key]   += [best(fun(b, data.rows[:half], data.rows[half:]))]
         times[key] += [(time.time_ns() - t0)/1_000_000]
+  keys= sorted(list(rxs.keys()))
+  print(keys)
   scores = adds(x for lst in rxs.values() for x in lst)
   top  = set(stats.top(rxs, reverse=True, eps=.35*scores.sd,
                             Ks=the.Ks, Delta=the.Delta))
   bang = lambda k: "!" if k in top else " "
   med  = lambda a: sum(a)/len(a)
   print("     ,    ,   ,   ",
-        *["win" for k in rxs.keys()],
-        *["msecs" for k in rxs.keys()],sep=",")
+        *["win"   for k in keys],
+        *["msecs" for k in keys],sep=",")
   print("     ,    ,   ,   ",
-        *sorted(k[1] for k in rxs.keys()),
-        *sorted(k[1] for k in rxs.keys()),sep=",")
+        *[k[1] for k in keys],
+        *[k[1] for k in keys],sep=",")
   print("     ,rows,x  ,y  ",
-        *sorted(k[0] for k in rxs.keys()),
-        *sorted(k[0] for k in rxs.keys()),
+        *[k[0] for k in keys],
+        *[k[0] for k in keys],
         "file", sep=",")
   print(int(scores.mu), len(data.rows), len(data.cols.x), len(data.cols.y),
-        *[f"{int(med(rxs[k]))}{bang(k)}" for k in sorted(rxs.keys())],
-        *[f"{int(med(times[k]))}"  for k in sorted(rxs.keys())],
+        *[f"{int(med(rxs[k]))}{bang(k)}" for k in keys],
+        *[f"{int(med(times[k]))}"  for k in keys],
         re.sub(".*/","",the.file), sep=",")
 
 def eg__all():
