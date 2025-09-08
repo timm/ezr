@@ -78,9 +78,9 @@ def sub(x:o, v:Any, zap=False) -> Any:
 def add(x: o, v:Any, inc=1, zap=False) -> Any:
   "incrementally update Syms,Nums or Datas"
   if v == "?": return v
-  if x.it is Sym: x.has[v] = inc + x.has.get(v,0)
+  x.n += inc
+  if   x.it is Sym: x.has[v] = inc + x.has.get(v,0)
   elif x.it is Num:
-    x.n += inc
     x.lo, x.hi = min(v, x.lo), max(v, x.hi)
     if inc < 0 and x.n < 2:
       x.sd = x.m2 = x.mu = x.n = 0
@@ -91,10 +91,10 @@ def add(x: o, v:Any, inc=1, zap=False) -> Any:
       x.sd  = 0 if x.n < 2 else (max(0,x.m2)/(x.n-1))**.5
   elif x.it is Data:
     x.mid = None
-    x.n += inc
     if inc > 0: x.rows += [v]
     elif zap: x.rows.remove(v) # slow for long rows
     [add(col, v[col.at], inc) for col in x.cols.all]
+  else: raise TypeError(f"cannot add to {type(x)}")
   return v
 
 #--------------------------------------------------------------------
