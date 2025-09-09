@@ -152,6 +152,87 @@ def _xper(data, budgets, funs, repeats=20):
         *[f"{int(med(times[k]))}"  for k in keys],
         re.sub(".*/","",the.file), sep=",")
 
+#--------------------------------------------------------------------
+def prepare(file:str="../moot/text_mining/reading/processed/Hall.csv"):
+  "SLOW: test text preprocessor"
+  prep = Prep()
+  loadData(prep, Data(csv(file)), txt_col="Abstract", klass_col="label")
+  compute(prep)
+  return prep
+
+def eg__prep_hall():
+  "SLOW: test text preprocessor with Hall dataset"
+  return prepare("../../moot/text_mining/reading/raw/Hall.csv")
+
+def eg__prep_radjenovic():
+  "SLOW: test text preprocessor with Radjenovic dataset"
+  return prepare("../moot/text_mining/reading/raw/Radjenovic.csv")
+
+def eg__prep_kitchenham():
+  "SLOW: test text preprocessor with Kitchenham dataset"
+  return prepare("../moot/text_mining/reading/raw/Kitchenham.csv")
+
+def eg__prep_wahono():
+  "SLOW: test text preprocessor with Wahono dataset"
+  return prepare("../moot/text_mining/reading/raw/Wahono.csv")
+#--------------------------------------------------------------------
+
+def text_mining(file: str, n_repeats: int = 5, norm: bool = False, n_pos: int = 20, n_neg: int = 80) -> bool:
+    data = Data(csv(file))
+    key, all_indices = data.cols.klass.at, set(range(len(data.rows)))
+    pos_idx = [i for i, row in enumerate(data.rows) if row[key] == "yes"]
+    safe_div = lambda num, den: num / den * 100 if den > 0 else 0
+    results = []
+
+    for _ in range(n_repeats):
+        train_pos = random.sample(pos_idx, n_pos)
+        train_rows = [data.rows[i] for i in train_pos + 
+                      random.sample(list(all_indices - set(train_pos)), n_neg)]
+        weights = cnbWeights(cnbStats(data, train_rows), norm=norm)
+        preds = [(r[key] == 'yes', cnbBest(weights, r, data) == 'yes') for r in data.rows]
+        tp, fn, fp, tn = (sum(w and g for w, g in preds), sum(w and not g for w, g in preds),
+                          sum(not w and g for w, g in preds), sum(not w and not g for w, g in preds))
+        results.append({"pd": safe_div(tp, tp+fn), "prec": safe_div(tp, tp+fp),
+                        "pf": safe_div(fp, fp+tn), "acc": safe_div(tp+tn, tp+fn+fp+tn)})
+
+    def _p(vals, p):
+        if not vals: return 0
+        s_vals, k = sorted(vals), (len(vals) - 1) * p
+        f, c = math.floor(k), math.ceil(k)
+        return s_vals[int(f)] + (s_vals[int(c)] - s_vals[int(f)]) * (k - f)
+
+    _med = lambda v: _p(v, 0.5)
+    _iqr = lambda v: _p(v, 0.75) - _p(v, 0.25)
+    labels = {"pd": "Recall (pd)", "prec": "Precision", "pf": "False Alarm (pf)", "acc": "Accuracy"}
+    border = '=' * 55
+    header = f"EZR CNB RESULTS | {n_repeats} REPEATS | {n_pos} POS | {n_neg} NEG | {norm} NORM"
+
+    print(f"\n{border}\n{header}\n{border}\n\nMedian (IQR) across {n_repeats} runs:")
+    for key, name in labels.items():
+        vals = [r[key] for r in results]
+        print(f"{name}: {_med(vals):.1f} ({_iqr(vals):.1f})%")
+    print(border)
+    return True
+  
+def eg__cnbh():
+  "SLOW: Run Complement Naive Bayes on Hall dataset."
+  text_mining("../../moot/text_mining/reading/raw/Hall_minimally_processed.csv", n_pos=12, n_neg=12) # 96, 25
+  text_mining("../../moot/text_mining/reading/raw/Hall_minimally_processed.csv", n_pos=16, n_neg=16) # 96, 20
+  return
+
+def eg__cnbk():
+  "SLOW: Run Complement Naive Bayes on Kitchenham dataset."
+  return text_mining("../moot/text_mining/reading/processed/Kitchenham.csv", n_pos=32, n_neg=32, norm=True) # 96, 49
+
+def eg__cnbr():
+  "SLOW: Run Complement Naive Bayes on Radjenovic dataset."
+  return text_mining("../moot/text_mining/reading/processed/Radjenovic.csv", n_pos=16, n_neg=16, norm=True) # 95, 49
+
+def eg__cnbw():
+  "SLOW: Run Complement Naive Bayes on Wahono dataset."
+  return text_mining("../../moot/text_mining/reading/processed/Wahono.csv", n_pos=20, n_neg=20) # 95, 29
+#--------------------------------------------------------------------
+
 def eg__all():
   for f in [eg__csv, eg__sym, eg__num, eg__data, eg__distx,
             eg__disty, eg__irisKpp, eg__fmap,eg__tree]:

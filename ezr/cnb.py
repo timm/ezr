@@ -12,23 +12,14 @@ from typing import Any, Dict, List
 
 #--------------------------------------------------------------------
 def cnbStats(data: Data, rows=None) -> o:
-    """Calculate Complement Naive Bayes statistics from data.
-    Returns an object with feature counts, class counts, and metadata."""
     rows = rows or data.rows
-    stats = o(
-        f=defaultdict(lambda: defaultdict(int)),  # feature counts per class
-        t=defaultdict(int),                       # total feature counts
-        c=defaultdict(int),                       # class counts
-        n=len(data.cols.x),                       # number of features
-        k=set()                                   # unique classes
-    )
-    
+    stats = o(f=defaultdict(lambda: defaultdict(int)), t=defaultdict(int), 
+              c=defaultdict(int), n=len(data.cols.x), k=set())
     key = data.cols.klass.at
     for row in rows:
         klass = row[key]
         stats.k.add(klass)
         stats.c[klass] += 1
-        
         for col in data.cols.x:
             v = row[col.at]
             if v != "?":
@@ -36,49 +27,34 @@ def cnbStats(data: Data, rows=None) -> o:
                     n = float(v)
                     stats.f[klass][col.at] += n
                     stats.t[col.at] += n
-                except ValueError:
-                    pass
+                except ValueError: pass
     return stats
 
 def cnbWeights(stats: o, alpha: float = 1.0, norm: bool = False) -> Dict[str, Dict[str, float]]:
-    """Calculate feature weights using Complement Naive Bayes formula.
-    Returns weights for each class and feature combination."""
     t_term = sum(stats.t.values())
-    n_feat = stats.n
-    
-    # Calculate log probabilities using complement formula
     logs = {}
     for k in stats.k:
         logs[k] = {}
         for c in stats.t:
-            # Complement NB formula: log(P(not_c|not_k) / P(not_c))
-            numerator = (stats.t[c] + alpha - stats.f[k].get(c, 0)) + 1e-32
-            denominator = (t_term + n_feat * alpha - sum(stats.f[k].values())) + 1e-32
-            logs[k][c] = math.log(numerator / denominator)
-    
+            num = (stats.t[c] + alpha - stats.f[k].get(c, 0)) + 1e-32
+            den = (t_term + stats.n * alpha - sum(stats.f[k].values())) + 1e-32
+            logs[k][c] = math.log(num / den)
     if not norm:
-        # Return negative log probabilities (for minimization)
         return {k: {c: -lp for c, lp in lps.items()} for k, lps in logs.items()}
     else:
-        # Return normalized weights
         return {k: {c: lp / ((sum(lps.values()) or 1e-32)) for c, lp in lps.items()}
                 for k, lps in logs.items()}
 
 def cnbLike(row: Row, x_cols: List, weights_for_class: Dict[str, float]) -> float:
-    """Calculate the score for a single class given a row.
-    Higher scores indicate higher likelihood of belonging to the class."""
     score = 0
     for col in x_cols:
         val = row[col.at]
         if val != "?":
-            try:
-                score += float(val) * weights_for_class.get(col.at, 0)
-            except ValueError:
-                pass
+            try: score += float(val) * weights_for_class.get(col.at, 0)
+            except ValueError: pass
     return score
 
 def cnbBest(weights: Dict[str, Dict[str, float]], row: Row, data: Data) -> Any:
-    """Determine the best class for a row using pre-calculated weights."""
     scores = {k: cnbLike(row, data.cols.x, w) for k, w in weights.items()}
     return max(scores, key=scores.get) if scores else None
 
@@ -191,88 +167,49 @@ def cnbCompare(file: str, n_repeats: int = 5, norm: bool = False, n_pos: int = 2
     return compliance_count == n_repeats
 
 def text_mining(file: str, n_repeats: int = 5, norm: bool = False, n_pos: int = 20, n_neg: int = 80) -> bool:
-    """Test EZR's CNB implementation on text mining datasets using EZR's confuse pattern."""
     data = Data(csv(file))
-    
     key = data.cols.klass.at
-    positive_indices = [i for i, row in enumerate(data.rows) if row[key] == "yes"]
-
-    all_results = []
-
-    for i in range(n_repeats):
+    pos_idx = [i for i, row in enumerate(data.rows) if row[key] == "yes"]
+    results = []
+    
+    for _ in range(n_repeats):
+        train_pos = random.sample(pos_idx, n_pos)
+        train_neg = random.sample([i for i in range(len(data.rows)) if i not in train_pos], n_neg)
+        train_rows = [data.rows[i] for i in train_pos + train_neg]
         
-        # Sample positive examples from known positive indices
-        train_positive_indices = random.sample(positive_indices, n_pos)
-        
-        # Sample negative examples randomly from entire dataset
-        all_indices = list(range(len(data.rows)))
-        # Remove positive indices to avoid overlap
-        available_indices = [i for i in all_indices if i not in train_positive_indices]
-        train_negative_indices = random.sample(available_indices, n_neg)
-        
-        train_indices = train_positive_indices + train_negative_indices
-        train_rows = [data.rows[i] for i in train_indices]
-        
-        # Train EZR CNB model
         stats = cnbStats(data, train_rows)
         weights = cnbWeights(stats, norm=norm)
-
-        # Manually calculate confusion matrix
-        tp, tn, fp, fn = 0, 0, 0, 0
         
+        tp = tn = fp = fn = 0
         for row in data.rows:
-            want = row[key]
-            got = cnbBest(weights, row, data)
-            
-            if want == "yes" and got == "yes":
-                tp += 1
-            elif want == "yes" and got == "no":
-                fn += 1
-            elif want == "no" and got == "yes":
-                fp += 1
-            elif want == "no" and got == "no":
-                tn += 1
+            want, got = row[key], cnbBest(weights, row, data)
+            if want == "yes" and got == "yes": tp += 1
+            elif want == "yes" and got == "no": fn += 1
+            elif want == "no" and got == "yes": fp += 1
+            elif want == "no" and got == "no": tn += 1
         
-        # Calculate metrics
-        pd = (tp / (tp + fn) * 100) if (tp + fn) > 0 else 0  # recall
-        prec = (tp / (tp + fp) * 100) if (tp + fp) > 0 else 0  # precision
-        pf = (fp / (fp + tn) * 100) if (fp + tn) > 0 else 0   # false alarm
-        acc = ((tp + tn) / (tp + tn + fp + fn) * 100) if (tp + tn + fp + fn) > 0 else 0  # accuracy
-        
-        results = {"tp": tp, "tn": tn, "fp": fp, "fn": fn, "pd": pd, "prec": prec, "pf": pf, "acc": acc}
-        all_results.append(results)
+        pd = (tp / (tp + fn) * 100) if (tp + fn) > 0 else 0
+        prec = (tp / (tp + fp) * 100) if (tp + fp) > 0 else 0
+        pf = (fp / (fp + tn) * 100) if (fp + tn) > 0 else 0
+        acc = ((tp + tn) / (tp + tn + fp + fn) * 100) if (tp + tn + fp + fn) > 0 else 0
+        results.append({"pd": pd, "prec": prec, "pf": pf, "acc": acc})
 
-    # Report results using EZR's confusion matrix format
+    def _med(vals): return float(np.median(vals)) if vals else 0.0
+    def _iqr(vals): 
+        if not vals: return 0.0
+        return float(np.percentile(vals, 75)) - float(np.percentile(vals, 25))
+    
+    pds, precs, pfs, accs = [r["pd"] for r in results], [r["prec"] for r in results], [r["pf"] for r in results], [r["acc"] for r in results]
+    
     print(f"\n{'='*55}")
     print(f"EZR CNB RESULTS | {n_repeats} REPEATS | {n_pos} POS | {n_neg} NEG | {norm} NORM")
     print(f"{'='*55}")
-
-    # Calculate per-run metrics collections
-    pds   = [r["pd"]   for r in all_results]
-    precs = [r["prec"] for r in all_results]
-    pfs   = [r["pf"]   for r in all_results]
-    accs  = [r["acc"]  for r in all_results]
-
-    # Median and IQR helpers
-    def _med(vals): return float(np.median(vals)) if vals else 0.0
-    def _iqr(vals):
-      if not vals: return 0.0
-      q75 = float(np.percentile(vals, 75))
-      q25 = float(np.percentile(vals, 25))
-      return q75 - q25
-
-    pd_med,   pd_iqr   = _med(pds),   _iqr(pds)
-    prec_med, prec_iqr = _med(precs), _iqr(precs)
-    pf_med,   pf_iqr   = _med(pfs),   _iqr(pfs)
-    acc_med,  acc_iqr  = _med(accs),  _iqr(accs)
-
     print(f"\nMedian (IQR) across {n_repeats} runs:")
-    print(f"Recall (pd): {pd_med:.1f} ({pd_iqr:.1f})%")
-    print(f"Precision: {prec_med:.1f} ({prec_iqr:.1f})%")
-    print(f"False Alarm (pf): {pf_med:.1f} ({pf_iqr:.1f})%")
-    print(f"Accuracy: {acc_med:.1f} ({acc_iqr:.1f})%")
+    print(f"Recall (pd): {_med(pds):.1f} ({_iqr(pds):.1f})%")
+    print(f"Precision: {_med(precs):.1f} ({_iqr(precs):.1f})%")
+    print(f"False Alarm (pf): {_med(pfs):.1f} ({_iqr(pfs):.1f})%")
+    print(f"Accuracy: {_med(accs):.1f} ({_iqr(accs):.1f})%")
     print(f"{'='*55}")
-
     return True
 
 #--------------------------------------------------------------------
