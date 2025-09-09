@@ -373,7 +373,7 @@ def tokenize(txt:str, stops:set, sufs:list, cache:dict={}) -> list:
           if len(w) > 2 and w not in stops]
 
 #--------------------------------------------------------------------
-def Prep(stops="sh/stop_words.txt", sufs="sh/suffixes.txt") -> o:
+def Prep(stops="etc/stop_words.txt", sufs="etc/suffixes.txt") -> o:
   raw_suffixes = load(sufs)
   suffixes = sorted(list(set(raw_suffixes)), key=len, reverse=True)
   return o(it=Prep, stops=load(stops), sufs=suffixes,
