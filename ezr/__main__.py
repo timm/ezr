@@ -1,3 +1,8 @@
-from ezr.ezr import *
+from ezr.rq import *
+from ezr.tm import *
+from ezr.cnb import *
 
-if __name__ == "__main__": ezrmain()
+def eg__all()  : mainAll(globals())
+def eg__list() : mainList(globals())
+def eg_h()     : print(helpstring)
+if __name__ == "__main__": main(globals())
