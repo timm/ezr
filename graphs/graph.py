@@ -48,24 +48,32 @@ def parse_filename(filename: str) -> Tuple[str, int, int, bool]:
     return dataset, pos, neg, is_norm
 
 
-def read_metrics(filepath: str) -> Tuple[List[int], List[float], List[float]]:
+def read_metrics(filepath: str) -> Tuple[List[int], List[float], List[float], List[float], List[float], List[float], List[float]]:
     steps: List[int] = []
     recall: List[float] = []
+    recall_25th: List[float] = []
+    recall_75th: List[float] = []
     false_alarm: List[float] = []
+    false_alarm_25th: List[float] = []
+    false_alarm_75th: List[float] = []
     with open(filepath, newline="") as f:
         reader = csv.DictReader(f)
         rows = list(reader)
         if not rows:
-            return steps, recall, false_alarm
+            return steps, recall, recall_25th, recall_75th, false_alarm, false_alarm_25th, false_alarm_75th
         # Ignore last line completely
         rows = rows[:-1]
         for row in rows:
-            # Columns: Step, Samples, Recall, False_Alarm
+            # Columns: Step, Samples, Recall, Recall_25th, Recall_75th, False_Alarm, False_Alarm_25th, False_Alarm_75th
             step_val = int(row.get("Step", 0))
             steps.append(step_val)
             recall.append(float(row.get("Recall", 0.0)))
+            recall_25th.append(float(row.get("Recall_25th", 0.0)))
+            recall_75th.append(float(row.get("Recall_75th", 0.0)))
             false_alarm.append(float(row.get("False_Alarm", 0.0)))
-    return steps, recall, false_alarm
+            false_alarm_25th.append(float(row.get("False_Alarm_25th", 0.0)))
+            false_alarm_75th.append(float(row.get("False_Alarm_75th", 0.0)))
+    return steps, recall, recall_25th, recall_75th, false_alarm, false_alarm_25th, false_alarm_75th
 
 
 def ensure_dir(path: str) -> None:
@@ -91,28 +99,39 @@ def plot_dataset_group(dataset: str, combos: Dict[Tuple[int, int], Dict[str, str
     fig.suptitle(f"{dataset} performance.")
 
     legend_handles: Dict[str, Line2D] = {}
+    legend_iqr_handles: Dict[str, any] = {}
 
     for col_idx, (pos, neg) in enumerate(sorted_combos):
         files = combos[(pos, neg)]
         # Prepare data containers
-        series = []  # list of (label, x, y_recall, y_fa)
+        series = []  # list of (label, x, y_recall, y_recall_25th, y_recall_75th, y_fa, y_fa_25th, y_fa_75th)
 
         if files.get("raw"):
-            steps, recall_vals, fa_vals = read_metrics(files["raw"])
+            steps, recall_vals, recall_25th, recall_75th, fa_vals, fa_25th, fa_75th = read_metrics(files["raw"])
             x = [pos + neg + s for s in steps]
-            series.append(("non-normalized", x, recall_vals, fa_vals))
+            series.append(("non-normalized", x, recall_vals, recall_25th, recall_75th, fa_vals, fa_25th, fa_75th))
 
         if files.get("norm"):
-            steps, recall_vals, fa_vals = read_metrics(files["norm"])
+            steps, recall_vals, recall_25th, recall_75th, fa_vals, fa_25th, fa_75th = read_metrics(files["norm"])
             x = [pos + neg + s for s in steps]
-            series.append(("normalized", x, recall_vals, fa_vals))
+            series.append(("normalized", x, recall_vals, recall_25th, recall_75th, fa_vals, fa_25th, fa_75th))
 
         # Recall subplot (row 0)
         ax_recall = axes[0][col_idx]
-        for label, x_vals, y_rec, _ in series:
-            ln, = ax_recall.plot(x_vals, y_rec, label=label)
+        for label, x_vals, y_rec, y_rec_25th, y_rec_75th, _, _, _ in series:
+            # Plot IQR region first (so it appears behind the line)
+            if label not in legend_iqr_handles:
+                iqr_handle = ax_recall.fill_between(x_vals, y_rec_25th, y_rec_75th, alpha=0.2, 
+                                                   label=f"{label} IQR")
+                legend_iqr_handles[label] = iqr_handle
+            else:
+                ax_recall.fill_between(x_vals, y_rec_25th, y_rec_75th, alpha=0.2)
+            
+            # Plot mean line
+            ln, = ax_recall.plot(x_vals, y_rec, label=label, linewidth=2)
             if label not in legend_handles:
                 legend_handles[label] = ln
+            
             # annotate first point value
             if x_vals and y_rec:
                 # first point
@@ -128,10 +147,20 @@ def plot_dataset_group(dataset: str, combos: Dict[Tuple[int, int], Dict[str, str
 
         # False Alarm subplot (row 1)
         ax_fa = axes[1][col_idx]
-        for label, x_vals, _, y_fa in series:
-            ln, = ax_fa.plot(x_vals, y_fa, label=label)
+        for label, x_vals, _, _, _, y_fa, y_fa_25th, y_fa_75th in series:
+            # Plot IQR region first (so it appears behind the line)
+            if label not in legend_iqr_handles:
+                iqr_handle = ax_fa.fill_between(x_vals, y_fa_25th, y_fa_75th, alpha=0.2, 
+                                              label=f"{label} IQR")
+                legend_iqr_handles[label] = iqr_handle
+            else:
+                ax_fa.fill_between(x_vals, y_fa_25th, y_fa_75th, alpha=0.2)
+            
+            # Plot mean line
+            ln, = ax_fa.plot(x_vals, y_fa, label=label, linewidth=2)
             if label not in legend_handles:
                 legend_handles[label] = ln
+            
             # annotate first point value
             if x_vals and y_fa:
                 # first point
@@ -143,10 +172,22 @@ def plot_dataset_group(dataset: str, combos: Dict[Tuple[int, int], Dict[str, str
         ax_fa.grid(True, alpha=0.3)
 
     # Common legend at the bottom
-    if legend_handles:
-        handles = [legend_handles[k] for k in sorted(legend_handles.keys())]
-        labels = sorted(legend_handles.keys())
-        fig.legend(handles=handles, labels=labels, loc="lower center", ncol=len(labels), fontsize=14)
+    if legend_handles or legend_iqr_handles:
+        all_handles = []
+        all_labels = []
+        
+        # Add IQR regions first
+        for label in sorted(legend_iqr_handles.keys()):
+            all_handles.append(legend_iqr_handles[label])
+            all_labels.append(f"{label} IQR")
+        
+        # Add mean lines
+        for label in sorted(legend_handles.keys()):
+            all_handles.append(legend_handles[label])
+            all_labels.append(label)
+        
+        fig.legend(handles=all_handles, labels=all_labels, loc="lower center", 
+                  ncol=len(all_labels), fontsize=14)
 
     fig.tight_layout(rect=[0.02, 0.08, 0.98, 0.94])
     ensure_dir(IMAGES_DIR)
