@@ -1,6 +1,6 @@
 #!/usr/bin/env python3 
 """
-ezr.py: lightweight incremental explanations for multi-objective optimization   
+ezr.py (v0.5): lightweight incremental explanations for multi-objective optimization   
 (c) 2025, Tim Menzies <timm@ieee.org>, MIT license   
    
     -a  acq=near          label with (near|xploit|xplor|bore|adapt)
@@ -343,7 +343,7 @@ def treeShow(data:Data, key=lambda d: d.ys.mu) -> None:
     print(f"{d.ys.n:6} {score:4}    {indent}{expl}{leaf}")
     ats[at] = 1
   used = [data.cols.names[at] for at in sorted(ats)]
-  print(len(data.cols.x), len(used), ', '.join(used))
+  print("\nSelected attributes:", len(used), ', '.join(used))
 
 #--------------------------------------------------------------------
 def fyi(s, end=""):
@@ -385,16 +385,21 @@ def main(settings : o, funs: dict[str,callable]) -> o:
 def demo():
   "The usual run"
   data = Data(csv(the.file))
+  print("\nFile:\t",the.file)
+  print("Rows:\t",len(data.rows))
+  print("X:\t",len(data.cols.x))
+  print("Y:\t",len(data.cols.y),*[c.txt for c in data.cols.y])
+  print(" ")
   b4   = adds(disty(data,row) for row in data.rows)
   win  = lambda v: int(100*(1 - (v - b4.lo)/(b4.mu - b4.lo)))
   best = lambda rows: win(disty(data, distysort(data,rows)[0]))
-  half = len(data.rows)//2
+  half = len(data.rows) // 2
   data.rows = shuffle(data.rows)
   train, holdout = data.rows[:half], data.rows[half:]
   labels = likely(clone(data, train))
   tree   = Tree(clone(data, labels))
   treeShow(tree)
-  print(best(labels),
+  print("Best train: ",best(labels), "hold-out: ",
         best(sorted(holdout, 
              key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]))
 

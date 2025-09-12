@@ -24,6 +24,8 @@ alias gs='git status -sb' ga='git add .' gc='git commit -m' gp='git push' gl='gi
 alias vi="nvim -u '$Here/init.lua'" h='history'
 alias reload="source '$Here/ell' && echo ✅"
 
+plot() { gnuplot -p -e 'plot "-"'; }
+
 # Mega useful extras
 alias grep='grep --color=auto' less='less -R'
 alias ports='lsof -i -P -n | grep LISTEN'
