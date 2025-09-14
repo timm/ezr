@@ -1,4 +1,11 @@
-<a href="https://doi.org/10.5281/zenodo.11183058"><img src="https://zenodo.org/badge/750626390.svg" alt="DOI"></a>
+[![DOI](https://zenodo.org/badge/750626390.svg)](https://doi.org/10.5281/zenodo.11183058)
+[![Purpose](https://img.shields.io/badge/purpose-XAI%20%7C%20Optimization-purple?logo=target&logoColor=white)](https://github.com/timm/ezr)
+[![Python](https://img.shields.io/badge/language-Python-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green?logo=open-source-initiative&logoColor=white)](https://github.com/timm/ezr/blob/main/LICENSE.md)
+[![Docs](https://img.shields.io/badge/docs-online-orange?logo=readthedocs&logoColor=white)](https://timm.github.io/ezr/)
+[![GitHub](https://img.shields.io/badge/github-repo-black?logo=github&logoColor=white)](https://github.com/timm/ezr)
+
+
 
 # ezr
 
