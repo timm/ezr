@@ -1,3 +1,5 @@
+<a href="https://doi.org/10.5281/zenodo.11183058"><img src="https://zenodo.org/badge/750626390.svg" alt="DOI"></a>
+
 # ezr
 
 ezr.py: lightweight incremental explanations for multi-objective optimization   
