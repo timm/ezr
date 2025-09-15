@@ -1,21 +1,26 @@
 #!/usr/bin/env python3 
 """
-ezr.py (v0.5): lightweight incremental XAI for multi-objective optimization   
-(c) 2025, Tim Menzies <timm@ieee.org>, MIT license   
+ezr.py (v0.5): lightweight XAI for multi-objective optimization   
+(c) 2025, Tim Menzies <timm@ieee.org>, MIT license      
+code: http://github.com/timm/ezr    
+data: http://github.com/timm/moot    
+
+Options:
    
-    -a  acq=near          label with (near|xploit|xplor|bore|adapt)
-    -A  Any=4             on init, how many initial guesses?   
-    -B  Budget=30         when growing theory, how many labels?   
-    -C  Check=5           budget for checking learned model
-    -D  Delta=smed        required effect size test for cliff's delta
-    -F  Few=128           sample size of data random sampling  
-    -K  Ks=0.95           confidence for Kolmogorovâ€"Smirnov test
-    -l  leaf=3            min items in tree leaves
-    -m  m=1               Bayes low frequency param
-    -p  p=2               distance co-efficient
-    -s  seed=1234567891   random number seed   
-    -f  file=../moot/optimize/misc/auto93.csv    data file 
-    -h                     show help   
+     -a  acq=near          label with (near|xploit|xplor|bore|adapt)
+     -A  Any=4             on init, how many initial guesses?   
+     -B  Budget=30         when growing theory, how many labels?   
+     -C  Check=5           budget for checking learned model
+     -D  Delta=smed        required effect size test for cliff's delta
+     -F  Few=128           sample size of data random sampling  
+     -K  Ks=0.95           confidence for Kolmogorovâ€"Smirnov test
+     -l  leaf=3            min items in tree leaves
+     -m  m=1               Bayes low frequency param
+     -p  p=2               distance co-efficient
+     -s  seed=1234567891   random number seed   
+     -f  file=../moot/optimize/misc/auto93.csv    data file 
+     -h                     show help   
+
 """
 from types import SimpleNamespace as o
 from typing import Any,Iterator
@@ -140,15 +145,16 @@ def distysort(data:Data,rows=None) -> list[Row]:
 
 def distx(data:Data, row1:Row, row2:Row) -> float:
   "Distance between two rows using x-values"
-  def _aha(col, a,b):
-    if a==b=="?": return 1
-    if col.it is Sym: return a != b
-    a,b = norm(col,a), norm(col,b)
-    a = a if a != "?" else (0 if b>0.5 else 1)
-    b = b if b != "?" else (0 if a>0.5 else 1)
-    return abs(a - b)
-  return dist(_aha(col, row1[col.at], row2[col.at])  
-              for col in data.cols.x)
+  return dist(_aha(c, row1[c.at], row2[c.at])  for c in data.cols.x)
+
+def _aha(col, a,b):
+  "David Aha's distance function."
+  if a==b=="?": return 1
+  if col.it is Sym: return a != b
+  a,b = norm(col,a), norm(col,b)
+  a = a if a != "?" else (0 if b>0.5 else 1)
+  b = b if b != "?" else (0 if a>0.5 else 1)
+  return abs(a - b)
 
 # ## Clustering --------------------------------------------------------
 def distKpp(data, rows=None, k=20, few=None): #\n{100}#

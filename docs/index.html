@@ -17,21 +17,24 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-0'>#</a>
       </div>
-      <p>ezr.py (v0.5): lightweight incremental XAI for multi-objective optimization <br />
-(c) 2025, Tim Menzies <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#116;&#105;&#109;&#109;&#64;&#105;&#101;&#101;&#101;&#46;&#111;&#114;&#103;">&#116;&#105;&#109;&#109;&#64;&#105;&#101;&#101;&#101;&#46;&#111;&#114;&#103;</a>, MIT license   </p>
-<pre><code>-a  acq=near          label with (near|xploit|xplor|bore|adapt)
--A  Any=4             on init, how many initial guesses?   
--B  Budget=30         when growing theory, how many labels?   
--C  Check=5           budget for checking learned model
--D  Delta=smed        required effect size test for cliff's delta
--F  Few=128           sample size of data random sampling  
--K  Ks=0.95           confidence for Kolmogorovâ€"Smirnov test
--l  leaf=3            min items in tree leaves
--m  m=1               Bayes low frequency param
--p  p=2               distance co-efficient
--s  seed=1234567891   random number seed   
--f  file=../moot/optimize/misc/auto93.csv    data file 
--h                     show help
+      <p>ezr.py (v0.5): lightweight XAI for multi-objective optimization <br />
+(c) 2025, Tim Menzies <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#116;&#105;&#109;&#109;&#64;&#105;&#101;&#101;&#101;&#46;&#111;&#114;&#103;">&#116;&#105;&#109;&#109;&#64;&#105;&#101;&#101;&#101;&#46;&#111;&#114;&#103;</a>, MIT license    <br />
+code: http://github.com/timm/ezr  <br />
+data: http://github.com/timm/moot  <br />
+Options:</p>
+<pre><code> -a  acq=near          label with (near|xploit|xplor|bore|adapt)
+ -A  Any=4             on init, how many initial guesses?   
+ -B  Budget=30         when growing theory, how many labels?   
+ -C  Check=5           budget for checking learned model
+ -D  Delta=smed        required effect size test for cliff's delta
+ -F  Few=128           sample size of data random sampling  
+ -K  Ks=0.95           confidence for Kolmogorovâ€"Smirnov test
+ -l  leaf=3            min items in tree leaves
+ -m  m=1               Bayes low frequency param
+ -p  p=2               distance co-efficient
+ -s  seed=1234567891   random number seed   
+ -f  file=../moot/optimize/misc/auto93.csv    data file 
+ -h                     show help
 </code></pre>
     </div>
     <div class='code'>
@@ -374,7 +377,8 @@
       <p>Distance between two rows using x-values</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">distx</span><span class="p">(</span><span class="n">data</span><span class="p">:</span><span class="n">Data</span><span class="p">,</span> <span class="n">row1</span><span class="p">:</span><span class="n">Row</span><span class="p">,</span> <span class="n">row2</span><span class="p">:</span><span class="n">Row</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">distx</span><span class="p">(</span><span class="n">data</span><span class="p">:</span><span class="n">Data</span><span class="p">,</span> <span class="n">row1</span><span class="p">:</span><span class="n">Row</span><span class="p">,</span> <span class="n">row2</span><span class="p">:</span><span class="n">Row</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">dist</span><span class="p">(</span><span class="n">_aha</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">row1</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">at</span><span class="p">],</span> <span class="n">row2</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">at</span><span class="p">])</span>  <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">x</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -383,18 +387,16 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-24'>#</a>
       </div>
-      
+      <p>David Aha&rsquo;s distance function.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>  <span class="k">def</span><span class="w"> </span><span class="nf">_aha</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">a</span><span class="o">==</span><span class="n">b</span><span class="o">==</span><span class="s2">&quot;?&quot;</span><span class="p">:</span> <span class="k">return</span> <span class="mi">1</span>
-    <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">it</span> <span class="ow">is</span> <span class="n">Sym</span><span class="p">:</span> <span class="k">return</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">b</span>
-    <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">col</span><span class="p">,</span><span class="n">a</span><span class="p">),</span> <span class="n">norm</span><span class="p">(</span><span class="n">col</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="n">a</span> <span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">b</span><span class="o">&gt;</span><span class="mf">0.5</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="n">b</span> <span class="k">if</span> <span class="n">b</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">a</span><span class="o">&gt;</span><span class="mf">0.5</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
-  <span class="k">return</span> <span class="n">dist</span><span class="p">(</span><span class="n">_aha</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">row1</span><span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">at</span><span class="p">],</span> <span class="n">row2</span><span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">at</span><span class="p">])</span>  
-              <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">x</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">_aha</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
+  <span class="k">if</span> <span class="n">a</span><span class="o">==</span><span class="n">b</span><span class="o">==</span><span class="s2">&quot;?&quot;</span><span class="p">:</span> <span class="k">return</span> <span class="mi">1</span>
+  <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">it</span> <span class="ow">is</span> <span class="n">Sym</span><span class="p">:</span> <span class="k">return</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">b</span>
+  <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="n">col</span><span class="p">,</span><span class="n">a</span><span class="p">),</span> <span class="n">norm</span><span class="p">(</span><span class="n">col</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+  <span class="n">a</span> <span class="o">=</span> <span class="n">a</span> <span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">b</span><span class="o">&gt;</span><span class="mf">0.5</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="n">b</span> <span class="o">=</span> <span class="n">b</span> <span class="k">if</span> <span class="n">b</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">a</span><span class="o">&gt;</span><span class="mf">0.5</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
