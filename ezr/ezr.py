@@ -264,86 +264,78 @@ def distKpp(data, rows=None, k=20, few=None): #\n{100}#
   return out
 
 #--------------------------------------------------------------------
-treeOps = {'<=' : lambda x,y: x <= y, 
-           '==' : lambda x,y:x == y, 
-           '>'  : lambda x,y:x > y}
-
 def treeSelects(row:Row, op:str, at:int, y:Atom) -> bool: 
   "Have we selected this row?"
-  return (x := row[at]) == "?" or treeOps[op](x, y)
+  if (x:=row[at]) == "?" : return True
+  if op == "<="          : return x <= y
+  if op == "=="          : return x == y
+  if op == ">"           : return x > y
 
-def Tree(data:Data, Klass=Num, Y=None, how=None) -> Data:
-  "Create regression tree."
-  Y = Y or (lambda row: disty(data, row))
-  data.kids, data.how = [], how
-  data.ys = adds(Y(row) for row in data.rows)
-  if len(data.rows) >= the.leaf:
-    hows = [how for col in data.cols.x 
-            if (how := treeCuts(col,data.rows,Y,Klass))]
-    if hows:
-      for how1 in min(hows, key=lambda c: c.div).hows:
-        rows1 = [r for r in data.rows if treeSelects(r, *how1)]
-        if the.leaf <= len(rows1) < len(data.rows):
-          data.kids += [Tree(clone(data,rows1), Klass, Y, how1)]
-  return data
+def Tree(data, rows=None, Y=None, Klass=Num, how=None):
+  "Create tree from list of lists"
+  rows = rows or data.rows
+  Y    = Y or (lambda row: disty(data,row))
+  tree = o(rows=rows, how=how, kids=[], mu=mid(adds(Y(r) for r in rows)))
+  if len(rows) >= the.leaf:
+    spread, cuts = min(treeCuts(c, rows, Y, Klass) for c in data.cols.x)
+    if spread < big:
+      for cut in cuts:
+        subset = [r for r in rows if treeSelects(r, *cut)]
+        if the.leaf <= len(subset) < len(rows):
+          tree.kids += [Tree(data, subset, Y, Klass, cut)]
+  return tree
 
-def treeCuts(col:o, rows:list[Row], Y:callable, Klass:callable) -> o:
-  "Divide a col into ranges."
-  def _sym(sym):
-    d, n = {}, 0
-    for row in rows:
-      if (x := row[col.at]) != "?":
-        n += 1
-        d[x] = d.get(x) or Klass()
-        add(d[x], Y(row))
-    return o(div = sum(c.n/n * div(c) for c in d.values()),
-             hows = [("==",col.at,x) for x in d])
-
-  def _num(num):
-    out, b4, lhs, rhs = None, None, Klass(), Klass()
-    xys = [(row[col.at], add(rhs, Y(row))) # add returns the "y" value
-           for row in rows if row[col.at] != "?"]
-    for x, y in sorted(xys, key=lambda z: z[0]):
-      if x != b4 and the.leaf <= lhs.n <= len(xys) - the.leaf:
-        now = (lhs.n * lhs.sd + rhs.n * rhs.sd) / len(xys)
-        if not out or now < out.div:
-          out = o(div=now, hows=[("<=",col.at,b4), (">",col.at,b4)])
-      add(lhs, sub(rhs, y))
-      b4 = x
-    return out
-
-  return (_sym if col.it is Sym else _num)(col)
+def treeCuts(col, rows, Y, Klass):
+  "Return best cut for column at position 'at'"
+  spread, cuts = big, []
+  xys = [(r[col.at], Y(r)) for r in rows if r[col.at] != "?"]
+  if col.it is Sym:
+    d = {}
+    for x, y in xys:
+      d[x]    = d.get(x) or Klass()
+      add(d[x], y)
+    here = sum(ys.n/len(xys) * div(ys) for ys in d.values())
+    spread, cuts = here, [("==", col.at, x) for x in d]
+  else:
+    xys.sort()
+    l, r = Klass(), Klass()
+    [add(r,y) for _, y in xys]
+    for i, (x, y) in enumerate(xys[:-1]):
+      add(l, sub(r, y))
+      if x != xys[i+1][0]:
+        if the.leaf <= i < len(xys) - the.leaf:
+          here = (l.n * div(l) + r.n * div(r)) / (l.n + r.n)
+          if here < spread:
+            spread, cuts = here, [("<=", col.at, x), (">", col.at, x)]
+  return spread, cuts
 
 #--------------------------------------------------------------
-def treeNodes(data:Data, lvl=0, key=None) -> Data:
-  "iterate over all treeNodes"
-  yield lvl, data
-  for j in sorted(data.kids, key=key) if key else data.kids:
-    yield from treeNodes(j,lvl + 1, key)
+def treeLeaf(tree, row):
+  "Find which leaf a row belongs to"
+  for kid in tree.kids:
+    if treeSelects(row, *kid.how): return treeLeaf(kid, row)
+  return tree
 
-def treeLeaf(data:Data, row:Row, lvl=0) -> Data:
-  "Select a matching leaf"
-  for j in data.kids:
-    if treeSelects(row, *j.how): return treeLeaf(j,row,lvl+1)
-  return data
+def treeNodes(tree, lvl=0):
+  "Iterate over all tree nodes"
+  yield lvl, tree
+  for kid in sorted(tree.kids, key=lambda kid: kid.mu):
+    yield from treeNodes(kid, lvl + 1)
 
-def treeShow(data:Data, key=lambda d: d.ys.mu) -> None:
-  "Display tree with rows and win columns"
-  ats = {}
-  print(f"{'#rows':>6} {'win':>4}")
-  for lvl, d in treeNodes(data, key=key): #\n{100}#
+def treeShow(data,tree,win=None):
+  "Display tree structure with Y means"
+  win = win or (lambda v:int(100*v))
+  n   = {s:0 for s in data.cols.names}
+  for lvl, node in treeNodes(tree):
     if lvl == 0: continue
-    op, at, y = d.how
-    name = data.cols.names[at]
+    op, at, y = node.how
     indent = '|  ' * (lvl - 1)
-    expl = f"if {name} {op} {y}"
-    score = int(100 * (1 - (d.ys.mu - data.ys.lo) /
-             (data.ys.mu - data.ys.lo + 1e-32)))
-    leaf = ";" if not d.kids else ""
-    print(f"{d.ys.n:6} {score:4}    {indent}{expl}{leaf}")
-    ats[at] = 1
-  used = [data.cols.names[at] for at in sorted(ats)]
-  print("\nSelected attributes:", len(used), ', '.join(used))
+    rule = f"if {data.cols.names[at]} {op} {y}"
+    n[data.cols.names[at]] += 1
+    leaf = ";" if not node.kids else ""
+    print(f"n:{len(node.rows):4}   win:{win(node.mu):5}     {indent}{rule}{leaf}")
+  print("\nUsed: ",*sorted([k for k in n.keys() if n[k]>0],
+                           key=lambda k: -n[k]))
 
 #--------------------------------------------------------------------
 def fyi(s, end=""):
@@ -373,16 +365,16 @@ def main(settings : o, funs: dict[str,callable]) -> o:
   "from command line, update config find functions to call"
   for n,s in enumerate(sys.argv):
     if (fn := funs.get(f"eg{s.replace('-', '_')}")):
-     try: random.seed(settings.seed); fn()
-     except Exception as e:
-       print("Error:", e)
-       traceback.print_exc()
+      try: 
+        random.seed(settings.seed); fn()
+      except Exception as e: 
+        print("Error:", e); traceback.print_exc()
     else:
       for key in vars(settings):
         if s=="-"+key[0]: 
           settings.__dict__[key] = coerce(sys.argv[n+1])
 
-def demo():
+def eg__demo():
   "The usual run"
   data = Data(csv(the.file))
   print("\nFile:\t",the.file)
@@ -398,14 +390,14 @@ def demo():
   train, holdout = data.rows[:half], data.rows[half:]
   labels = likely(clone(data, train))
   tree   = Tree(clone(data, labels))
-  treeShow(tree)
+  treeShow(data, tree,win)
   print("Best train: ",best(labels), "hold-out: ",
-        best(sorted(holdout, 
-             key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]))
+         best(sorted(holdout, 
+              key=lambda row: treeLeaf(tree,row).mu)[:the.Check]))
 
 def ezrmain():
   "top-level call"
-  main(the,globals()); demo()
+  main(the,globals())
 
 #---------------------------------------------------------------------
 the = o(**{k:coerce(v) for k,v in re.findall(r"(\w+)=(\S+)",__doc__)})
