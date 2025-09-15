@@ -14,7 +14,7 @@ Data=$(Top)/../moot/optimize
 help: ## show help.
 	@gawk '\
 		BEGIN {FS = ":.*?##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\nHelp:\n"}  \
-    /^[a-z0-9A-Z_%\.\/-]+:.*?##/ {printf("  \033[36m%-15s\033[0m %s\n", $$1, $$2) | "sort" } \
+    /^[a-z0-9A-Z_%\.\/-]+:.*?##/ {printf("  \033[36m%-10s\033[0m %s\n", $$1, $$2) | "sort" } \
 	' $(MAKEFILE_LIST)
 
 pull: ## update from main
@@ -27,7 +27,7 @@ push: ## commit to main
 
 sh: ## run custom shell
 	clear; tput setaf 3; cat $(Top)/etc/hi.txt; tput sgr0
-	sh $(Top)/etc/ell
+	$(Top)/etc/bash.rc
 
 setup: ## initial setup - clone moot data
 	[ -d $(Data) ] || git clone http://github.com/timm/moot $(Top)/../moot
@@ -38,6 +38,17 @@ install: ## install in development mode (when ready)
 clean:  ## find and delete any __pycache__ dirs
 	files="$$(find $(Top) -name __pycache__ -type d)"; \
 	for f in $$files; do rm -rf "$$f"; done
+
+show: ## regenerate index.html from ezr.py
+	cd $(Top); $(MAKE) -B docs/index.html
+
+docs/index.html : $(Top)/ezr/ezr.py
+	gawk -f $(Top)/etc/pycco0.awk $^ > $(Top)/docs/ezr.py
+	cd $(Top)/docs; pycco -d . ezr.py; \
+	echo 'p {text-align:right;}'             >> pycco.css; \
+	echo 'pre {font-size:x-small;}'          >> pycco.css; \
+	echo 'h2 { border-top: #CCC solid 1px;}' >> pycco.css; \
+	mv ezr.html index.html
 
 ~/tmp/dist.log:  ## run ezrtest on many files
 	$(MAKE) todo=dist files="$(Top)/../moot/optimize/*/*.csv" run | tee $@ 
