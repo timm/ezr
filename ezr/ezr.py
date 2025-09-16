@@ -297,9 +297,9 @@ def Tree(data, rows=None, Y=None, Klass=Num, how=None):
 def treeCuts(col, rows, Y:callable, Klass:callable):
   "Return best cut for column at position 'at'"
   xys = sorted([(r[col.at], Y(r)) for r in rows if r[col.at] != "?"])
-  return (_treeCutsSym if col.it is Sym else _treeCutsNum)(col.at,xys,Y,Klass)
+  return (_symCuts if col.it is Sym else _numCuts)(col.at,xys,Y,Klass)
 
-def _treeCutsSym(at,xys,Y,Klass) -> (float, list[Op]):
+def _symCuts(at,xys,Y,Klass) -> (float, list[Op]):
   "Cuts for symbolic column."
   d = {}
   for x, y in xys:
@@ -308,17 +308,17 @@ def _treeCutsSym(at,xys,Y,Klass) -> (float, list[Op]):
   here = sum(ys.n/len(xys) * div(ys) for ys in d.values())
   return here, [("==", at, x) for x in d]
 
-def _treeCutsNum(at,xys,Y,Klass) -> (float, list[Op]):
+def _numCuts(at,xys,Y,Klass) -> (float, list[Op]):
   "Cuts for numeric columns."
-  spread, cuts, l, r = big, [], Klass(), Klass()
-  [add(r,y) for _, y in xys]
+  spread, cuts, left, right = big, [], Klass(), Klass()
+  [add(right,y) for _, y in xys]
   for i, (x, y) in enumerate(xys[:-1]):
-    add(l, sub(r, y))
+    add(left, sub(right, y))
     if x != xys[i+1][0]:
       if the.leaf <= i < len(xys) - the.leaf:
-        here = (l.n * div(l) + r.n * div(r)) / (l.n + r.n)
-        if here < spread:
-          spread = here
+        now = (left.n*div(left) + right.n*div(right)) / (left.n+right.n)
+        if now < spread:
+          spread = now
           cuts = [("<=", at, x), (">", at, x)]
   return spread, cuts
 
