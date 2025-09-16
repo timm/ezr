@@ -1,6 +1,6 @@
 SHELL     := bash
 MAKEFLAGS += --warn-undefined-variables
-.SILENT:
+#.SILENT:
 .ONESHELL:
 
 LOUD = \033[1;34m#
@@ -42,11 +42,12 @@ clean:  ## find and delete any __pycache__ dirs
 show: ## regenerate index.html from ezr.py
 	cd $(Top); $(MAKE) -B docs/index.html
 
-docs/index.html : $(Top)/ezr/ezr.py
-	gawk -f $(Top)/etc/pycco0.awk $^ > $(Top)/docs/ezr.py
-	cd $(Top)/docs; pycco -d . ezr.py; \
-	echo 'p{text-align:right} pre{font-size:small} h2{border-top: #CCC solid 1px}' >> pycco.css;\
-	mv ezr.html index.html
+docs/index.html : docs/ezr.html   ; cp $^ $@
+docs/%.py       : $(Top)/ezr/%.py ; gawk -f $(Top)/etc/pycco0.awk $^ > $@
+docs/%.html     : docs/%.py       
+	pycco -d $(Top)/docs $^
+	echo 'p {text-align:right;} pre {font-size:small;}' >> $(Top)/docs/pycco.css
+	echo 'h2 {border-top: #CCC solid 1px;}'            >> $(Top)/docs/pycco.css
 
 ~/tmp/dist.log:  ## run ezrtest on many files
 	$(MAKE) todo=dist files="$(Top)/../moot/optimize/*/*.csv" run | tee $@ 
