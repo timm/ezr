@@ -1,6 +1,6 @@
 SHELL     := bash
 MAKEFLAGS += --warn-undefined-variables
-#.SILENT:
+.SILENT:
 .ONESHELL:
 
 LOUD = \033[1;34m#
