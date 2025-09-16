@@ -2,24 +2,24 @@
 """
 ezr.py (v0.5): lightweight XAI for multi-objective optimization   
 (c) 2025, Tim Menzies <timm@ieee.org>, MIT license      
-code: http://github.com/timm/ezr    
-data: http://github.com/timm/moot    
+[code](https://github.com/timm/ezr) :: 
+[data](https://github.com/timm/moot)    
 
 Options:
    
-     -a  acq=near          label with (near|xploit|xplor|bore|adapt)
-     -A  Any=4             on init, how many initial guesses?   
-     -B  Budget=30         when growing theory, how many labels?   
-     -C  Check=5           budget for checking learned model
-     -D  Delta=smed        required effect size test for cliff's delta
-     -F  Few=128           sample size of data random sampling  
-     -K  Ks=0.95           confidence for Kolmogorovâ€"Smirnov test
-     -l  leaf=3            min items in tree leaves
-     -m  m=1               Bayes low frequency param
-     -p  p=2               distance co-efficient
-     -s  seed=1234567891   random number seed   
-     -f  file=../moot/optimize/misc/auto93.csv    data file 
-     -h                     show help   
+    -a  acq=near          label with (near|xploit|xplor|bore|adapt)
+    -A  Any=4             on init, how many initial guesses?   
+    -B  Budget=30         when growing theory, how many labels?   
+    -C  Check=5           budget for checking learned model
+    -D  Delta=smed        effect size test for cliff's delta
+    -F  Few=128           sample size of data random sampling  
+    -K  Ks=0.95           confidence for Kolmogorovâ€"Smirnov test
+    -l  leaf=3            min items in tree leaves
+    -m  m=1               Bayes low frequency param
+    -p  p=2               distance co-efficient
+    -s  seed=1234567891   random number seed   
+    -f  file=../moot/optimize/misc/auto93.csv    data file 
+    -h                     show help   
 
 """
 from types import SimpleNamespace as o
@@ -31,8 +31,9 @@ sys.dont_write_bytecode = True
 Qty  = int | float
 Atom = Qty | str | bool
 Row  = list[Atom]
+Op   = (str,int,Atom)
     
-big    = 1e32
+big = 1e32
 
 # ## Labeling ----------------------------------------------------------
 def label(row:Row) -> Row: 
@@ -293,29 +294,32 @@ def Tree(data, rows=None, Y=None, Klass=Num, how=None):
           tree.kids += [Tree(data, subset, Y, Klass, cut)]
   return tree
 
-def treeCuts(col, rows, Y, Klass):
+def treeCuts(col, rows, Y:callable, Klass:callable):
   "Return best cut for column at position 'at'"
-  spread, cuts = big, []
-  xys = [(r[col.at], Y(r)) for r in rows if r[col.at] != "?"]
-  if col.it is Sym:
-    d = {}
-    for x, y in xys:
-      d[x]    = d.get(x) or Klass()
-      add(d[x], y)
-    here = sum(ys.n/len(xys) * div(ys) for ys in d.values())
-    spread, cuts = here, [("==", col.at, x) for x in d]
-  else:
-    xys.sort()
-    l, r = Klass(), Klass()
-    [add(r,y) for _, y in xys]
-    for i, (x, y) in enumerate(xys[:-1]):
-      add(l, sub(r, y))
-      if x != xys[i+1][0]:
-        if the.leaf <= i < len(xys) - the.leaf:
-          here = (l.n * div(l) + r.n * div(r)) / (l.n + r.n)
-          if here < spread:
-            spread = here
-            cuts = [("<=", col.at, x), (">", col.at, x)]
+  xys = sorted([(r[col.at], Y(r)) for r in rows if r[col.at] != "?"])
+  return (_treeCutsSym if col.it is Sym else _treeCutsNum)(col.at,xys,Y,Klass)
+
+def _treeCutsSym(at,xys,Y,Klass) -> (float, list[Op]):
+  "Cuts for symbolic column."
+  d = {}
+  for x, y in xys:
+    d[x] = d.get(x) or Klass()
+    add(d[x], y)
+  here = sum(ys.n/len(xys) * div(ys) for ys in d.values())
+  return here, [("==", at, x) for x in d]
+
+def _treeCutsNum(at,xys,Y,Klass) -> (float, list[Op]):
+  "Cuts for numeric columns."
+  spread, cuts, l, r = big, [], Klass(), Klass()
+  [add(r,y) for _, y in xys]
+  for i, (x, y) in enumerate(xys[:-1]):
+    add(l, sub(r, y))
+    if x != xys[i+1][0]:
+      if the.leaf <= i < len(xys) - the.leaf:
+        here = (l.n * div(l) + r.n * div(r)) / (l.n + r.n)
+        if here < spread:
+          spread = here
+          cuts = [("<=", at, x), (">", at, x)]
   return spread, cuts
 
 # ## Tree Processing -------------------------------------------------

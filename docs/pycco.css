@@ -188,6 +188,4 @@ body .vc { color: #19469D }                     /* Name.Variable.Class */
 body .vg { color: #19469D }                     /* Name.Variable.Global */
 body .vi { color: #19469D }                     /* Name.Variable.Instance */
 body .il { color: #666666 }                     /* Literal.Number.Integer.Long */
-p {text-align:right;}
-pre {font-size:x-small;}
-h2 { border-top: #CCC solid 1px;}
+p{text-align:right} pre{font-size:small} h2{border-top: #CCC solid 1px}

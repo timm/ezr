@@ -13,7 +13,7 @@ Data=$(Top)/../moot/optimize
 
 help: ## show help.
 	@gawk '\
-		BEGIN {FS = ":.*?##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\nHelp:\n"}  \
+		BEGIN {FS = ":.*?##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\ntargets:\n"}  \
     /^[a-z0-9A-Z_%\.\/-]+:.*?##/ {printf("  \033[36m%-10s\033[0m %s\n", $$1, $$2) | "sort" } \
 	' $(MAKEFILE_LIST)
 
@@ -45,9 +45,7 @@ show: ## regenerate index.html from ezr.py
 docs/index.html : $(Top)/ezr/ezr.py
 	gawk -f $(Top)/etc/pycco0.awk $^ > $(Top)/docs/ezr.py
 	cd $(Top)/docs; pycco -d . ezr.py; \
-	echo 'p {text-align:right;}'             >> pycco.css; \
-	echo 'pre {font-size:x-small;}'          >> pycco.css; \
-	echo 'h2 { border-top: #CCC solid 1px;}' >> pycco.css; \
+	echo 'p{text-align:right} pre{font-size:small} h2{border-top: #CCC solid 1px}' >> pycco.css;\
 	mv ezr.html index.html
 
 ~/tmp/dist.log:  ## run ezrtest on many files
@@ -57,6 +55,10 @@ run:
 	@mkdir -p ~/tmp
 	time ls -r $(files) \
 	  | xargs -P 24 -n 1 -I{} sh -c 'cd $(Top)/ezr; python3 -B ezrtest.py -f "{}" --$(todo)'
+
+csvs:
+	cd $(Top); $(foreach d, $(wildcard ../moot/optimize/*/*.csv), \
+	                        python3 -m ezr -f $d;)
 
 eg1: ## run init tests
 	cd $(Top)/ezr; python3 -B ezrtest.py -f $(Data)/misc/auto93.csv --tree
