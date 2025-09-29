@@ -122,10 +122,10 @@ ezr -f ~/gits/timm/moot/optimize/misc/auto93.csv
 - `win`: Performance percentage for that branch. 
 
 If the mean and optional [^ref] score seen
-   in the input data is $m$ and $o$. and if the optimizer outputs a row with score $r$,
+   in the input data are $\mu$ and $o$. and if the optimizer outputs a row with score $x$,
    then the win is how close we get to best the optimal, normalized but the distance means to optimal; i.e.
 
-$$win = 100 \left(1- \frac{r-o}{m-o}\right)$$
+$$win = 100 \left(1- \frac{x-o}{\my-o}\right)$$
 
 [^ref]: More precesiely, our "optimals" are rally "reference optimals"; i.e. the best value
 seen so far. For most of our test data, the actual optimal setting may be unknowable.
