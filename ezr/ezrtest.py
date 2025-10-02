@@ -131,7 +131,6 @@ def _xper(data, budgets, funs, repeats=20):
         rxs[key]   += [best(fun(b, data.rows[:half], data.rows[half:]))]
         times[key] += [(time.time_ns() - t0)/1_000_000]
   keys= sorted(list(rxs.keys()))
-  print(keys)
   scores = adds(x for lst in rxs.values() for x in lst)
   top  = set(stats.top(rxs, reverse=True, eps=.35*scores.sd,
                             Ks=the.Ks, Delta=the.Delta))

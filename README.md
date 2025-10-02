@@ -1,3 +1,12 @@
+[![DOI](https://zenodo.org/badge/750626390.svg)](https://doi.org/10.5281/zenodo.11183058)
+[![Purpose](https://img.shields.io/badge/purpose-XAI%20%7C%20Optimization-purple?logo=target&logoColor=white)](https://github.com/timm/ezr)
+[![Python](https://img.shields.io/badge/language-Python-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green?logo=open-source-initiative&logoColor=white)](https://github.com/timm/ezr/blob/main/LICENSE)
+[![Docs](https://img.shields.io/badge/docs-online-orange?logo=readthedocs&logoColor=white)](https://timm.github.io/ezr/)
+[![GitHub](https://img.shields.io/badge/github-repo-black?logo=github&logoColor=white)](https://github.com/timm/ezr)
+
+
+
 # ezr
 
 ezr.py: lightweight incremental explanations for multi-objective optimization   
@@ -113,10 +122,10 @@ ezr -f ~/gits/timm/moot/optimize/misc/auto93.csv
 - `win`: Performance percentage for that branch. 
 
 If the mean and optional [^ref] score seen
-   in the input data is $m$ and $o$. and if the optimizer outputs a row with score $r$,
+   in the input data are $\mu$ and $o$. and if the optimizer outputs a row with score $x$,
    then the win is how close we get to best the optimal, normalized but the distance means to optimal; i.e.
 
-$$win = 100 \left(1- \frac{r-o}{m-o}\right)$$
+$$win = 100 \left(1- \frac{x-o}{\mu-o}\right)$$
 
 [^ref]: More precesiely, our "optimals" are rally "reference optimals"; i.e. the best value
 seen so far. For most of our test data, the actual optimal setting may be unknowable.
