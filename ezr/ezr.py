@@ -23,7 +23,7 @@ Options:
 
 """
 from types import SimpleNamespace as o
-from typing import Any, List, Iterator, Dict
+from typing import Any, Iterator
 import traceback, random, time, math, sys, re
    
 sys.dont_write_bytecode = True
@@ -350,7 +350,7 @@ def treeShow(data,tree,win=None):
     print(f"{indent}{rule}{leaf}")
   print("\nUsed: ",*sorted([k for k in n.keys() if n[k]>0],
                            key=lambda k: -n[k]))
-        
+
 # ## Misc Utils ------------------------------------------------------
 def fyi(s, end=""):
   "write the standard error (defaults to no new line)"

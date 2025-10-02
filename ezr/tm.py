@@ -4,6 +4,7 @@ tm.py: text mining CNB runner and CNB/preprocessing utilities.
 """
 import random, math, statistics
 from collections import defaultdict
+from typing import List, Iterator
 from ezr import *
 
 #--------------------------------------------------------------------
