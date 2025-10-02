@@ -89,15 +89,14 @@ def add(x: o, v:Any, inc=1, zap=False) -> Any:
   x.n += inc
   if   x.it is Sym: x.has[v] = inc + x.has.get(v,0)
   elif x.it is Num:
-    if isinstance(v, (int, float)):
-      x.lo, x.hi = min(v, x.lo), max(v, x.hi)
-      if inc < 0 and x.n < 2:
-        x.sd = x.m2 = x.mu = x.n = 0
-      else:
-        d     = v - x.mu
-        x.mu += inc * (d / x.n)
-        x.m2 += inc * (d * (v - x.mu))
-        x.sd  = 0 if x.n < 2 else (max(0,x.m2)/(x.n-1))**.5
+    x.lo, x.hi = min(v, x.lo), max(v, x.hi)
+    if inc < 0 and x.n < 2:
+      x.sd = x.m2 = x.mu = x.n = 0
+    else:
+      d     = v - x.mu
+      x.mu += inc * (d / x.n)
+      x.m2 += inc * (d * (v - x.mu))
+      x.sd  = 0 if x.n < 2 else (max(0,x.m2)/(x.n-1))**.5
   elif x.it is Data:
     x.mid = None
     if inc > 0: x.rows += [v]
@@ -352,118 +351,7 @@ def treeShow(data,tree,win=None):
     print(f"{indent}{rule}{leaf}")
   print("\nUsed: ",*sorted([k for k in n.keys() if n[k]>0],
                            key=lambda k: -n[k]))
-
-#--------------------------------------------------------------------
-def load(f:str) -> set:
-  try:
-    with open(f) as f: return set(w.strip().lower() for w in f if w.strip())
-  except: return set()
-
-def stem(w:str, sufs:list, cache:dict={}, max_iter:int=1) -> str:
-  "recursive stemmer with caching and iteration limit"
-  if w in cache: return cache[w]
-  if max_iter <= 0: return cache.setdefault(w, w)
-  original = w
-  for s in sufs:
-    if w.endswith(s) and len(w) > len(s) + 2:
-      candidate = w[:-len(s)]
-      if len(candidate) >= 2 and len(candidate) >= len(w) * 0.5:
-        result = stem(candidate, sufs, cache, max_iter - 1)
-        return cache.setdefault(original, result)
-  return cache.setdefault(original, w)
-
-def tokenize(txt:str, stops:set, sufs:list, cache:dict={}) -> list:
-  "tokenize and stem text"
-  words = re.findall(r'\b[a-zA-Z]+\b', txt.lower())
-  return [stem(w, sufs, cache) for w in words 
-          if len(w) > 2 and w not in stops]
-
-#--------------------------------------------------------------------
-def Prep(stops="etc/stop_words.txt", sufs="etc/suffixes.txt") -> o:
-  raw_suffixes = load(sufs)
-  suffixes = sorted(list(set(raw_suffixes)), key=len, reverse=True)
-  return o(it=Prep, stops=load(stops), sufs=suffixes,
-           docs=[], tf=[], df={}, tfidf={}, top=[])
-
-def addDoc(prep:o, txt:str, klass:str):
-  prep.docs.append(o(txt=txt, klass=klass))
-
-def loadData(prep:o, data:o, txt_col="text", klass_col="klass"):
-  txt_idx = data.cols.names.index(txt_col)
-  klass_idx = data.cols.names.index(klass_col)
-  for row in data.rows:
-    addDoc(prep, str(row[txt_idx]), str(row[klass_idx]))
-
-def compute(prep:o, top_k:int=100):
-  "compute term frequencies and TF-IDF with top-k selection"
-  stem_cache = {}
-  for doc in prep.docs:
-    tokens = tokenize(doc.txt, prep.stops, prep.sufs, stem_cache)
-    counts = {}
-    for t in tokens:
-      counts[t] = counts.get(t, 0) + 1
-    for t in counts:
-      prep.df[t] = prep.df.get(t, 0) + 1
-    prep.tf.append(counts)
-  N = len(prep.docs)
-  prep.tfidf = {}
-  word_scores = []
-  for word, df in prep.df.items():
-    score = sum(c.get(word, 0) * math.log(N / df) for c in prep.tf if word in c)
-    word_scores.append((word, score))
-  word_scores.sort(key=lambda x: x[1], reverse=True)
-  prep.top = word_scores[:top_k]
-  prep.tfidf = {word: score for word, score in prep.top}
-
-#--------------------------------------------------------------------
-def cnbStats(data: Data, rows=None) -> o:
-    rows = rows or data.rows
-    stats = o(f=defaultdict(lambda: defaultdict(int)), t=defaultdict(int), 
-              c=defaultdict(int), n=len(data.cols.x), k=set())
-    key = data.cols.klass.at
-    for row in rows:
-        klass = row[key]
-        stats.k.add(klass)
-        stats.c[klass] += 1
-        for col in data.cols.x:
-            v = row[col.at]
-            if v != "?":
-                try:
-                    n = float(v)
-                    stats.f[klass][col.at] += n
-                    stats.t[col.at] += n
-                except ValueError: pass
-    return stats
-
-def cnbWeights(stats: o, alpha: float = 1.0, norm: bool = False) -> Dict[str, Dict[str, float]]:
-    t_term = sum(stats.t.values())
-    logs = {}
-    for k in stats.k:
-        logs[k] = {}
-        for c in stats.t:
-            num = (stats.t[c] + alpha - stats.f[k].get(c, 0)) + 1e-32
-            den = (t_term + stats.n * alpha - sum(stats.f[k].values())) + 1e-32
-            logs[k][c] = math.log(num / den)
-    if not norm:
-        return {k: {c: -lp for c, lp in lps.items()} for k, lps in logs.items()}
-    else:
-        return {k: {c: lp / ((sum(lps.values()) or 1e-32)) for c, lp in lps.items()}
-                for k, lps in logs.items()}
-
-def cnbLike(row: Row, x_cols: List, weights_for_class: Dict[str, float]) -> float:
-    score = 0
-    for col in x_cols:
-        val = row[col.at]
-        if val != "?":
-            try: score += float(val) * weights_for_class.get(col.at, 0)
-            except ValueError: pass
-    return score
-
-def cnbBest(weights: Dict[str, Dict[str, float]], row: Row, data: Data) -> Any:
-    scores = {k: cnbLike(row, data.cols.x, w) for k, w in weights.items()}
-    return max(scores, key=scores.get) if scores else None
-
-#--------------------------------------------------------------------
+        
 # ## Misc Utils ------------------------------------------------------
 def fyi(s, end=""):
   "write the standard error (defaults to no new line)"

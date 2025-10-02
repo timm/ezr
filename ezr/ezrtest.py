@@ -2,6 +2,7 @@
 
 import stats,sys
 from ezr import *
+from tm import *
 
 sys.dont_write_bytecode = True
 
@@ -176,43 +177,6 @@ def eg__prep_wahono():
   return prepare("../../moot/text_mining/reading/raw/Wahono.csv")
 #--------------------------------------------------------------------
 
-def text_mining(file: str, n_repeats: int = 5, norm: bool = False, n_pos: int = 20, n_neg: int = 80) -> bool:
-    data = Data(csv(file))
-    key, all_indices = data.cols.klass.at, set(range(len(data.rows)))
-    pos_idx = [i for i, row in enumerate(data.rows) if row[key] == "yes"]
-    safe_div = lambda num, den: num / den * 100 if den > 0 else 0
-    results = []
-
-    for _ in range(n_repeats):
-        train_pos = random.sample(pos_idx, n_pos)
-        train_rows = [data.rows[i] for i in train_pos + 
-                      random.sample(list(all_indices - set(train_pos)), n_neg)]
-        weights = cnbWeights(cnbStats(data, train_rows), norm=norm)
-        preds = [(r[key] == 'yes', cnbBest(weights, r, data) == 'yes') for r in data.rows]
-        tp, fn, fp, tn = (sum(w and g for w, g in preds), sum(w and not g for w, g in preds),
-                          sum(not w and g for w, g in preds), sum(not w and not g for w, g in preds))
-        results.append({"pd": safe_div(tp, tp+fn), "prec": safe_div(tp, tp+fp),
-                        "pf": safe_div(fp, fp+tn), "acc": safe_div(tp+tn, tp+fn+fp+tn)})
-
-    def _p(vals, p):
-        if not vals: return 0
-        s_vals, k = sorted(vals), (len(vals) - 1) * p
-        f, c = math.floor(k), math.ceil(k)
-        return s_vals[int(f)] + (s_vals[int(c)] - s_vals[int(f)]) * (k - f)
-
-    _med = lambda v: _p(v, 0.5)
-    _iqr = lambda v: _p(v, 0.75) - _p(v, 0.25)
-    labels = {"pd": "Recall (pd)", "prec": "Precision", "pf": "False Alarm (pf)", "acc": "Accuracy"}
-    border = '=' * 55
-    header = f"EZR CNB RESULTS | {n_repeats} REPEATS | {n_pos} POS | {n_neg} NEG | {norm} NORM"
-
-    print(f"\n{border}\n{header}\n{border}\n\nMedian (IQR) across {n_repeats} runs:")
-    for key, name in labels.items():
-        vals = [r[key] for r in results]
-        print(f"{name}: {_med(vals):.1f} ({_iqr(vals):.1f})%")
-    print(border)
-    return True
-  
 def eg__cnbh():
   "SLOW: Run Complement Naive Bayes on Hall dataset."
   text_mining("../../moot/text_mining/reading/raw/Hall_minimally_processed.csv", n_pos=12, n_neg=12) # 96, 25
