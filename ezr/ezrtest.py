@@ -179,8 +179,8 @@ def eg__prep_wahono():
 
 def eg__cnbh():
   "SLOW: Run Complement Naive Bayes on Hall dataset."
-  text_mining("../../moot/text_mining/reading/raw/Hall_minimally_processed.csv", n_pos=12, n_neg=12) # 96, 25
-  text_mining("../../moot/text_mining/reading/raw/Hall_minimally_processed.csv", n_pos=16, n_neg=16) # 96, 20
+  text_mining("../../moot/text_mining/reading/processed/Hall.csv", n_pos=12, n_neg=12) # 96, 25
+  text_mining("../../moot/text_mining/reading/processed/Hall.csv", n_pos=16, n_neg=16) # 96, 20
   return
 
 def eg__cnbhprep():
