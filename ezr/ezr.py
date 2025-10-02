@@ -24,7 +24,6 @@ Options:
 """
 from types import SimpleNamespace as o
 from typing import Any, List, Iterator, Dict
-from collections import defaultdict
 import traceback, random, time, math, sys, re
    
 sys.dont_write_bytecode = True

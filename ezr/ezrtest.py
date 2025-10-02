@@ -156,7 +156,7 @@ def _xper(data, budgets, funs, repeats=20):
 def prepare(file:str="../../moot/text_mining/reading/raw/Hall.csv"):
   "SLOW: test text preprocessor"
   prep = Prep()
-  loadData(prep, Data(csv(file)), txt_col="Abstract", klass_col="label")
+  loadData(prep, Data(csv(file)), txt_col="abstract", klass_col="label")
   compute(prep)
   return prep
 
@@ -182,6 +182,11 @@ def eg__cnbh():
   text_mining("../../moot/text_mining/reading/raw/Hall_minimally_processed.csv", n_pos=12, n_neg=12) # 96, 25
   text_mining("../../moot/text_mining/reading/raw/Hall_minimally_processed.csv", n_pos=16, n_neg=16) # 96, 20
   return
+
+def eg__cnbhprep():
+  "SLOW: Run CNB using a Prep object directly on Hall dataset."
+  p = prepare("../../moot/text_mining/reading/raw/Hall.csv")
+  return text_mining(p, n_pos=12, n_neg=12)
 
 def eg__cnbk():
   "SLOW: Run Complement Naive Bayes on Kitchenham dataset."

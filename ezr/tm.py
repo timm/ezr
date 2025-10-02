@@ -2,7 +2,8 @@
 """
 tm.py: text mining CNB runner and CNB/preprocessing utilities.
 """
-import random, math
+import random, math, statistics
+from collections import defaultdict
 from ezr import *
 
 #--------------------------------------------------------------------
@@ -49,9 +50,8 @@ def cnbStats(data: Data, rows=None) -> o:
     k=r[key]; st.k.add(k); st.c[k]+=1
     for col in data.cols.x:
       v=r[col.at]
-      if v!="?":
-        try: n=float(v); st.f[k][col.at]+=n; st.t[col.at]+=n
-        except ValueError: pass
+      try: n=float(v) if v!="?" else 0; st.f[k][col.at]+=n; st.t[col.at]+=n
+      except ValueError: pass
   return st
 
 def cnbWeights(st: o, alpha: float = 1.0, norm: bool = False):
@@ -69,9 +69,8 @@ def cnbLike(row, x_cols, w):
   s=0
   for col in x_cols:
     v=row[col.at]
-    if v!="?":
-      try: s+=float(v)*w.get(col.at,0)
-      except ValueError: pass
+    try: s+=float(v)*w.get(col.at,0) if v!="?" else 0
+    except ValueError: pass
   return s
 
 def cnbBest(ws, row, data):
@@ -79,8 +78,9 @@ def cnbBest(ws, row, data):
   return max(sc, key=sc.get) if sc else None
 
 #--------------------------------------------------------------------
-def text_mining(file: str, n_repeats: int = 5, norm: bool = False, n_pos: int = 20, n_neg: int = 80) -> bool:
-  data=Data(csv(file)); key,idx=data.cols.klass.at, set(range(len(data.rows)))
+def text_mining(file_or_prep, n_repeats=5, norm=False, n_pos=20, n_neg=80):
+  data=Data(csv(file_or_prep)) if isinstance(file_or_prep, str) else (lambda p: Data([ [w.capitalize() for w in (list(p.tfidf.keys()) or sorted({w for c in p.tf for w in c})[:100])]+["klass!"] ]+[[ (p.tf[i] if i<len(p.tf) else {}).get(w,0) for w in (list(p.tfidf.keys()) or sorted({w for c in p.tf for w in c})[:100]) ]+[doc.klass] for i,doc in enumerate(p.docs)]))(file_or_prep)
+  key,idx=data.cols.klass.at, set(range(len(data.rows)))
   pos=[i for i,r in enumerate(data.rows) if r[key]=="yes"]; out=[]
   for _ in range(n_repeats):
     tp=fn=fp=tn=0; tpidx=random.sample(pos,n_pos)
@@ -89,12 +89,9 @@ def text_mining(file: str, n_repeats: int = 5, norm: bool = False, n_pos: int = 
     for r in data.rows:
       want=r[key]=="yes"; got=cnbBest(ws,r,data)=="yes"
       tp+=want and got; fn+=want and not got; fp+=(not want) and got; tn+=(not want) and not got
-    safe=lambda a,b: a/b*100 if b>0 else 0
-    out.append(dict(pd=safe(tp,tp+fn), prec=safe(tp,tp+fp), pf=safe(fp,fp+tn), acc=safe(tp+tn,tp+fn+fp+tn)))
-  def P(v,p):
-    if not v: return 0
-    s,k=sorted(v),(len(v)-1)*p; f=int(math.floor(k)); c=int(math.ceil(k)); return s[f]+(s[c]-s[f])*(k-f)
+    out.append(dict(pd=tp/(tp+fn)*100 if tp+fn>0 else 0, prec=tp/(tp+fp)*100 if tp+fp>0 else 0, pf=fp/(fp+tn)*100 if fp+tn>0 else 0, acc=(tp+tn)/(tp+fn+fp+tn)*100 if tp+fn+fp+tn>0 else 0))
   B='='*55; print(f"\n{B}\nEZR CNB RESULTS | {n_repeats} REPEATS | {n_pos} POS | {n_neg} NEG | {norm} NORM\n{B}\n\nMedian (IQR) across {n_repeats} runs:")
   for k,nm in dict(pd="Recall (pd)",prec="Precision",pf="False Alarm (pf)",acc="Accuracy").items():
-    vals=[r[k] for r in out]; print(f"{nm}: {P(vals,.5):.1f} ({P(vals,.75)-P(vals,.25):.1f})%")
+    vals=[r[k] for r in out]
+    print(f"{nm}: {statistics.median(vals):.1f} ({statistics.quantiles(vals,n=4)[2]-statistics.quantiles(vals,n=4)[0]:.1f})%")
   print(B); return True
