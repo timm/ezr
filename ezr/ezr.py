@@ -44,7 +44,7 @@ def label(row:Row) -> Row:
 def Num(at=0,s=" "): 
   "Create a numeric column summarizer"
   return o(it=Num, at=at, txt=s, n=0, mu=0, m2=0, sd=0, 
-           hi=-big, lo=big, more = 0 if s[-1] == "-" else 1)
+           hi=-big, lo=big, best = 0 if s[-1] == "-" else 1)
 
 def Sym(at=0,s=" "): 
   "Create a symbolic column summarizer"
@@ -52,7 +52,7 @@ def Sym(at=0,s=" "):
 
 def Cols(names : list[str]) -> o:
   "Create column summaries from column names"
-  all=[(Num if s[0].isupper() else Sym)(c,s) 
+  all=[(Num if s[0].supper() else Sym)(c,s) 
         for c,s in enumerate(names)]
   klass=None
   for col in all: 
@@ -138,7 +138,7 @@ def dist(src) -> float:
 
 def disty(data:Data, row:Row) -> float:
   "Distance from row to best y-values"
-  return dist(abs(norm(c, row[c.at]) - c.more) for c in data.cols.y)
+  return dist(abs(norm(c, row[c.at]) - c.best) for c in data.cols.y)
 
 def distysort(data:Data,rows=None) -> list[Row]:
   "Sort rows by distance to best y-values"
