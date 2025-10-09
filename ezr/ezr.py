@@ -52,7 +52,7 @@ def Sym(at=0,s=" "):
 
 def Cols(names : list[str]) -> o:
   "Create column summaries from column names"
-  all=[(Num if s[0].supper() else Sym)(c,s) 
+  all=[(Num if s[0].isupper() else Sym)(c,s) 
         for c,s in enumerate(names)]
   klass=None
   for col in all: 

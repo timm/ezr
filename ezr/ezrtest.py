@@ -82,7 +82,8 @@ def eg__tree():
   train, holdout= data.rows[:n], data.rows[n:]
   tree = Tree(clone(data, likely(D(train))))
   treeShow(tree)
-  print(int(best(sorted(holdout, key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check])))
+  print(int(best(sorted(holdout, 
+                        key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check])))
 
 # def eg_ezr():
 #   data = Data(csv(the.file))
@@ -152,7 +153,7 @@ def _xper(data, budgets, funs, repeats=20):
         *[f"{int(med(times[k]))}"  for k in keys],
         re.sub(".*/","",the.file), sep=",")
 
-#--------------------------------------------------------------------
+#------------------------------------------------------------------------------
 def prepare(file:str="../../moot/text_mining/reading/raw/Hall.csv"):
   "SLOW: test text preprocessor"
   prep = Prep()
@@ -179,10 +180,12 @@ def eg__prep_wahono():
 
 def eg__cnbh():
   "SLOW: Run Complement Naive Bayes on Hall dataset."
-  text_mining("../../moot/text_mining/reading/processed/Hall.csv", n_pos=12, n_neg=12) # 96, 25
-  text_mining("../../moot/text_mining/reading/processed/Hall.csv", n_pos=16, n_neg=16) # 96, 20
+  f="../../../moot/text_mining/reading/processed/Hall.csv"
+  text_mining(f, n_pos=12, n_neg=12) # 96, 25
+  text_mining(f, n_pos=16, n_neg=16) # 96, 20
   return
 
+#------------------------------------------------------------------------------
 def eg__cnbhprep():
   "SLOW: Run CNB using a Prep object directly on Hall dataset."
   p = prepare("../../moot/text_mining/reading/raw/Hall.csv")
@@ -190,15 +193,18 @@ def eg__cnbhprep():
 
 def eg__cnbk():
   "SLOW: Run Complement Naive Bayes on Kitchenham dataset."
-  return text_mining("../../moot/text_mining/reading/processed/Kitchenham.csv", n_pos=32, n_neg=32, norm=True) # 96, 49
+  f= "../../moot/text_mining/reading/processed/Kitchenham.csv"
+  return text_mining(f, n_pos=32, n_neg=32, norm=True) # 96, 49
 
 def eg__cnbr():
   "SLOW: Run Complement Naive Bayes on Radjenovic dataset."
-  return text_mining("../../moot/text_mining/reading/processed/Radjenovic.csv", n_pos=16, n_neg=16, norm=True) # 95, 49
+  f = "../../moot/text_mining/reading/processed/Radjenovic.csv"
+  return text_mining(f, n_pos=16, n_neg=16, norm=True) # 95, 49
 
 def eg__cnbw():
   "SLOW: Run Complement Naive Bayes on Wahono dataset."
-  return text_mining("../../moot/text_mining/reading/processed/Wahono.csv", n_pos=20, n_neg=20) # 95, 29
+  f = "../../moot/text_mining/reading/processed/Wahono.csv"
+  return text_mining(f, n_pos=20, n_neg=20) # 95, 29
 #--------------------------------------------------------------------
 
 def eg__all():
