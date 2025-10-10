@@ -33,7 +33,7 @@ def Prep(stops="etc/stop_words.txt", sufs="etc/suffixes.txt") -> o:
   return o(it=Prep, stops=load(stops), sufs=sufs, docs=[], 
            tf=[], df={}, tfidf={}, top=[])
 
-def addDoc(prep:o, txt:str, klass:str): prep.docs.append(o(txt=txt, klass=klass))
+def addDoc(prep:o, txt:str, klass:str): prep.docs.append(o(txt=txt,klass=klass))
 
 def loadData(prep:o, data:o, txt_col="text", klass_col="klass"):
   t=data.cols.names.index(txt_col); k=data.cols.names.index(klass_col)
@@ -54,7 +54,6 @@ def compute(prep:o, top_k:int=100):
   prep.tfidf={w:s for w,s in prep.top}
 
 #------------------------------------------------------------------------------
-#--------------------------------------------------------------------
 def cnbStats(data: Data, rows=None) -> o:
   rows=rows or data.rows; st=o(f=defaultdict(lambda: defaultdict(int)), 
                                t=defaultdict(int), c=defaultdict(int), 
@@ -94,57 +93,35 @@ def cnbBest(ws, row, data):
   return max(sc, key=sc.get) if sc else None
 
 #--------------------------------------------------------------------
-
-# def _prep_data(p):
-#     words = list(p.tfidf.keys()) or sorted({w for c in p.tf for w in c})[:100]
-#     header = [w.capitalize() for w in words] + ["klass!"]
-#     rows = []
-#     for i in range(len(p.tf)):
-#         row = [p.tf[i] if i else 0 for i0 in range(len(header) - 1)]
-#         rows.append(row + [p.klass[i]])
-#     return Data([header] + rows)
-
-# def text_mining(file_or_prep, n_repeats=5, norm=False, n_pos=20, n_neg=80):
-#     data = Data(csv(file_or_prep)) if isinstance(file_or_prep, str) else _prep_data(file_or_prep)
-
-#     out = []
-#     for _ in range(n_repeats):
-#         tp, fp, tn, fn = CNB(data, n_pos, n_neg, norm)  # your CNB runner
-#         out.append(dict(
-#             pd=tp/(tp+fn)*100 if tp+fn>0 else 0,
-#             prec=tp/(tp+fp)*100 if tp+fp>0 else 0,
-#             pf=fp/(fp+tn)*100 if fp+tn>0 else 0,
-#             acc=(tp+tn)/(tp+fn+fp+tn)*100 if tp+fn+fp+tn>0 else 0
-#         ))
-
-#     B = "="*55
-#     print(f"\n{B}\nEZR CNB RESULTS | {n_repeats} REPEATS | {n_pos} POS | {n_neg} NEG | {norm} NORM\n{B}\n")
-#     print(f"Median (IQR) across {n_repeats} runs:")
-
-#     for k, nm in dict(pd="Recall (pd)", prec="Precision", pf="False Alarm (pf)", acc="Accuracy").items():
-#         vals = [r[k] for r in out]
-#         iqr = statistics.quantiles(vals, n=4)[2] - statistics.quantiles(vals, n=4)[0]
-#         print(f"{nm}: {statistics.median(vals):.1f} ({iqr:.1f})%")
-
-#     print(B)
-#     return True
-
+def dataFromPrep(p):
+  ws=(list(p.tfidf.keys()) or sorted({w for c in p.tf for w in c})[:100])
+  return Data([[w.capitalize() for w in ws]+["klass!"]]
+             +[[(p.tf[i] if i<len(p.tf) else {}).get(w,0) for w in ws]+[d.klass]
+               for i,d in enumerate(p.docs)])
 
 def text_mining(file_or_prep,n_repeats=5,norm=False,n_pos=20,n_neg=80):
-  data=Data(csv(file_or_prep)) if isinstance(file_or_prep, str) else (lambda p: Data([ [w.capitalize() for w in (list(p.tfidf.keys()) or sorted({w for c in p.tf for w in c})[:100])]+["klass!"] ]+[[ (p.tf[i] if i<len(p.tf) else {}).get(w,0) for w in (list(p.tfidf.keys()) or sorted({w for c in p.tf for w in c})[:100]) ]+[doc.klass] for i,doc in enumerate(p.docs)]))(file_or_prep)
+  data = (Data(csv(file_or_prep))
+    if isinstance(file_or_prep, str)
+    else dataFromPrep(file_or_prep))
   key,idx=data.cols.klass.at, set(range(len(data.rows)))
-  pos=[i for i,r in enumerate(data.rows) if r[key]=="yes"]
-  out=[]
+  pos=[i for i,r in enumerate(data.rows) if r[key]=="yes"];out=[]
   for _ in range(n_repeats):
     tp=fn=fp=tn=0; tpidx=random.sample(pos,n_pos)
     tr=[data.rows[i] for i in tpidx+random.sample(list(idx-set(tpidx)), n_neg)]
     ws=cnbWeights(cnbStats(data,tr), norm=norm)
     for r in data.rows:
-      want=r[key]=="yes"; got=cnbBest(ws,r,data)=="yes"
-      tp+=want and got; fn+=want and not got; fp+=(not want) and got; tn+=(not want) and not got
-    out.append(dict(pd=tp/(tp+fn)*100 if tp+fn>0 else 0, prec=tp/(tp+fp)*100 if tp+fp>0 else 0, pf=fp/(fp+tn)*100 if fp+tn>0 else 0, acc=(tp+tn)/(tp+fn+fp+tn)*100 if tp+fn+fp+tn>0 else 0))
-  B='='*55; print(f"\n{B}\nEZR CNB RESULTS | {n_repeats} REPEATS | {n_pos} POS | {n_neg} NEG | {norm} NORM\n{B}\n\nMedian (IQR) across {n_repeats} runs:")
-  for k,nm in dict(pd="Recall (pd)",prec="Precision",pf="False Alarm (pf)",acc="Accuracy").items():
-    vals=[r[k] for r in out]
-    print(f"{nm}: {statistics.median(vals):.1f} ({statistics.quantiles(vals,n=4)[2]-statistics.quantiles(vals,n=4)[0]:.1f})%")
+      want=r[key]=="yes"; got=cnbBest(ws,r,data)=="yes";tp+=want and got; 
+      fn+=want and not got; fp+=(not want) and got; tn+=(not want) and not got
+    out.append(dict(pd=tp/(tp+fn)*100 if tp+fn>0 else 0, 
+    prec=tp/(tp+fp)*100 if tp+fp>0 else 0, pf=fp/(fp+tn)*100 if fp+tn>0 else 0, 
+    acc=(tp+tn)/(tp+fn+fp+tn)*100 if tp+fn+fp+tn>0 else 0))
+  B='='*55; print(f"\n{B}")
+  print(f"EZR CNB RESULTS | {n_repeats} REPEATS | {n_pos} POS | "
+    f"{n_neg} NEG | {norm} NORM")
+  print(f"{B}\n\nMedian (IQR) across {n_repeats} runs:")
+  metrics=dict(pd="Recall (pd)", prec="Precision",
+               pf="False Alarm (pf)", acc="Accuracy")
+  for k,nm in metrics.items():
+    vals=[r[k] for r in out]; qs=statistics.quantiles(vals,n=4); iqr=qs[2]-qs[0]
+    print(f"{nm}: {statistics.median(vals):.1f} ({iqr:.1f})%")
   print(B); return True
