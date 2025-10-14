@@ -22,7 +22,7 @@ Options:
     -h                     show help   
 
 """
-from types import SimpleNamespace as o
+from types import simplenamespace as o
 from typing import Any, Iterator
 import traceback, random, time, math, sys, re
    
@@ -101,7 +101,6 @@ def add(x: o, v:Any, inc=1, zap=False) -> Any:
     if inc > 0: x.rows += [v]
     elif zap: x.rows.remove(v) # slow for long rows
     [add(col, v[col.at], inc) for col in x.cols.all]
-  else: raise TypeError(f"cannot add to {type(x)}")
   return v
 
 # ## Misc data functions ----------------------------------------------
