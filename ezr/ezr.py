@@ -22,7 +22,7 @@ Options:
     -h                     show help   
 
 """
-from types import simplenamespace as o
+from types import SimpleNamespace as o
 from typing import Any, Iterator
 import traceback, random, time, math, sys, re
    

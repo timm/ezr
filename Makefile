@@ -52,6 +52,12 @@ docs/%.html     : docs/%.py
 ~/tmp/dist.log:  ## run ezrtest on many files
 	$(MAKE) todo=dist files="$(Top)/../moot/optimize/*/*.csv" run | tee $@ 
 
+~/tmp/dist2.log:  ## run ezrtest on many files
+	$(MAKE) todo=dist2 files="$(Top)/../moot/optimize/*/*.csv" run | tee $@ 
+
+~/tmp/dist3.log:  ## run ezrtest on many files
+	$(MAKE) todo=dist3 files="$(Top)/../moot/optimize/*/*.csv" run | tee $@ 
+
 run:
 	@mkdir -p ~/tmp
 	time ls -r $(files) \

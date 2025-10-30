@@ -104,18 +104,18 @@ def funs(*lst):
   def sway2( _, t,T):                   return so(d,T, distFastermap(D(t), sway2=True))
   def xploit(_, t,T): the.acq="xploit"; return so(d,T, likely(D(t)))
   def xplor( _, t,T): the.acq="xplore"; return so(d,T, likely(D(t)))
-  rxs= dict(adapt=adapt, all=all, bore=bore, check=check,
-            kpp=kpp, neear=near, sway1=sway1, sway2=sway2,
+  rxs= dict(adapt=adapt, all=all, bore=bore, check=check, rand=rand, 
+            kpp=kpp, near=near, sway1=sway1, sway2=sway2,
             xploit=xploit, xplor=xplor)
   return d, [f for k,f in rxs.items() if k in lst]
 
-def eg__dist():
-  d, rxs = funs("kpp", "sway1", "sway2")
-  _xper(d, [10,20,40,80], rxs)
+def eg__dist3(): d, rxs = funs("near", "rand", "xploit","check");          _xper(d, [10,20,40,80], rxs)
+def eg__dist2(): d, rxs = funs("adapt", "xploit", "xplor","near"); _xper(d, [10,20,40,80], rxs)
+def eg__dist():  d, rxs = funs("kpp", "sway1", "sway2");           _xper(d, [10,20,40,80], rxs)
 
 def so(data, holdout, train):
   tree = Tree(clone(data, train))
-  return sorted(holdout, key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check]
+  return sorted(holdout, key=lambda row: treeLeaf(tree,row).mu)[:the.Check]
 
 def _xper(data, budgets, funs, repeats=20):
   half = len(data.rows)//2
