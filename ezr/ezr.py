@@ -11,6 +11,7 @@ Options:
    -p p=2       Distance coeffecient
    -s seed=1    Random number seed
    -S Show=30   Tree display width"""
+#from .tools import helper
 from math import log,exp,sqrt
 import re,sys,random,traceback
 BIG=1e32

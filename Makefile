@@ -1,3 +1,7 @@
+# Case 1: pip install -e . && python -c "from ezr import helper"
+# Case 2: python -m ezr  (from root)
+# Case 3: cd src/ezr && python -c "from tools import helper"
+
 SHELL := /bin/bash
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 CLS    := '\033[H\033[J'
@@ -18,6 +22,8 @@ help: ## show help.
 sh: ## demo of my shell
 	@-echo -e $(CLS)$(cYELLOW); figlet -W -f slant eZR ai; echo -e $(cRESET)
 	@-bash --init-file $(GIT_ROOT)/etc/bash.rc -i
+
+install: ok ## install related repos to $HOME/gits
 
 ok: $(HOME)/gits/moot ## set up baseline
 	@-chmod +x $(GIT_ROOT)/ezr/*.py
