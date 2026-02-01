@@ -1,5 +1,11 @@
 SHELL := /bin/bash
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
+CLS    := '\033[H\033[J'
+cRESET := '\033[0m'
+cRED   := '\033[1;31m'
+cGREEN := '\033[1;32m'
+cBLUE  := '\033[1;34m'
+cYELLOW:= '\033[1;33m'
 
 help: ## show help.
 	@gawk  '\
@@ -10,6 +16,7 @@ help: ## show help.
 		'$(MAKEFILE_LIST)
 
 sh: ## demo of my shell
+	@-echo -e $(CLS)$(cYELLOW); figlet -W -f slant eZR ai; echo -e $(cRESET)
 	@-bash --init-file $(GIT_ROOT)/etc/bash.rc -i
 
 ok: $(HOME)/gits/moot ## set up baseline

@@ -1,3 +1,4 @@
+# vim: set ft=bash :
 GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 
 # aliases

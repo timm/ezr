@@ -50,8 +50,7 @@ def add(i,v):
 
 #-------------------------------------------------------------------------------
 # Query
-def score(num):
-  return BIG if num.n < the.leaf else num.mu + sd(num) /(sqrt(num.n) + 1/BIG)
+def score(num): return BIG if num.n < the.leaf else sd(num)
 
 def mids(data):  return [mid(col) for col in data.cols.all]
 def mid(col): return mode(col) if SYM is col.it else col.mu
@@ -66,7 +65,7 @@ def norm(num,v): return 1 / (1 + exp( -1.7 * clip(z(num,v),-3,3)))
 def bucket(num,v): return int(the.bins * norm(num, v))
 
 #-------------------------------------------------------------------------------
-# distance
+# distanc"::",e
 def minkowski(items):
   n,d = 0,0
   for item in items: n, d = n+1, d+item ** the.p
@@ -94,7 +93,7 @@ def around(data,row,rows): return sorted(rows,key=lambda r:distx(data,row,r))
 #------------------------------------------------------------------------------
 # lib
 
-def clip(v,lo,hi): max(lo, min(hi, v))
+def clip(v,lo,hi): return max(lo, min(hi, v))
 
 def shuffle(lst): random.shuffle(lst); return lst
 
@@ -127,7 +126,7 @@ def cast(s, BOOL={"true": True, "false": False}):
 
 def csv(f):
   with open(f) as file:
-    for s in file: yield [cast(x) for x in s.split(",")]
+    for s in file: yield [cast(x.strip()) for x in s.split(",")]
 
 #-------------------------------------------------------------------------------
 # cli
@@ -166,6 +165,12 @@ def eg__nums():
   nums = adds(gauss(10, 1) for _ in range(1000))
   print(OBJ(mu=nums.mu, sd=sd(nums)))
   assert abs(10 - nums.mu) < .05 and abs(1 - sd(nums)) < .05
+
+def eg__data(f:filename):
+  "asds"
+  data = DATA(csv(f))
+  print(*data.cols.names)
+  print("~",*COLS(data.cols.names).y,sep="\n")
 
 def eg__ys(f:filename):
   "asds"
@@ -209,10 +214,7 @@ random.seed(the.seed)
 if __name__ == "__main__":
   args = iter(sys.argv[1:])
   for s in args:
-    print(s)
-    if f := globals().get(f"eg_{s[1:]}"):
-      print(f)
+    if f := globals().get(f"eg_{s[1:].replace('-','_')}"):
       run(f, *[t(next(args)) for t in f.__annotations__.values()])
     elif s[1:] in the: 
-      print(3)
       the[s[1:]] = cast(next(args, ""))
