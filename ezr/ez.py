@@ -52,7 +52,6 @@ def add(i,v,w=1):
       else: 
         i.mids = None
         for col in i.cols.all: add(col, v[col.at], w)
-        print(v if v==[] else ".")
         (i.rows.append if w>0 else i.rows.remove)(v)
   return v
 
@@ -83,7 +82,6 @@ def minkowski(items):
   return 0 if n==0 else (d / n) ** (1 / the.p)
 
 def disty(data, row):
-  print(">",row)
   return minkowski((norm(y,row[y.at]) - y.goal) for y in data.cols.y)
 
 def distx(data,row1,row2):
@@ -150,13 +148,13 @@ def Tree(data, uses=None):
   def grow(rows):
     at, b, kids = None, None, {}
     if len(rows) > the.leaf*2:
-      print(rows)
-      if tmp :=  bestcut(data, rows):
-        at,b= tmp
+      at,b =  bestcut(data, rows)
+      if at:
+        print("tmp",tmp)
         y,n,q,col = [],[],[],data.cols.all[at]
         for row in rows:
           (q if b=="?" else y if b==bucket(col, row[at]) else n).append(row)
-        max([y,n], key=len).append(q)
+        max([y,n], key=len).extend(q)
         if y and n:
           uses.add(at)
           kids = {True: grow(y), False: grow(n)}
@@ -284,6 +282,7 @@ def eg__tree(f:filename):
   data = DATA(csv(f))
   data1 = clone(data, shuffle(data.rows)[:50])
   tree,_ = Tree(data1)
+  print(tree)
   treeShow(tree)
 
 def eg__test(f:filename):
