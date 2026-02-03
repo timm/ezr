@@ -27,13 +27,14 @@ def acquire(data, rows, score, a=20, budget=50):
 def label(row): return row
 
 def likely(data, rows, b=50, a=4, stop=512):
+  def maybe(row): return likes(best,row,xy.n,2) > likes(rest,row,xy.n,2)
+
   rows = shuffle(rows[:])
-  rows, init = rows[a:], sorted(rows[:a], key=lambda row: disty(data, row))
+  rows, init = rows[a:stop], sorted(rows[:a], key=lambda row: disty(data, row))
   xy = clone(data, init)
   best, rest = clone(data, init[:a//2]), clone(data, init[a//2:])
-  maybe = lambda row: likes(best,row,xy.n,2) > likes(rest,row,xy.n,2)
   while len(rows) > 2 and xy.n < b:
-    for i, row in enumerate(rows[:stop]):
+    for i, row in enumerate(rows):
       if maybe(row): break
     add(xy, add(best, label(rows.pop(i))))
     if best.n > sqrt(xy.n)
