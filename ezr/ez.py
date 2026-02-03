@@ -46,13 +46,14 @@ def add(i,v,w=1):
   if v!="?": 
     i.n += w
     if   SYM  is i.it : i.has[v] = w + i.has.get(v,0)
-    elif NUM  is i.it : d = v - i.mu; i.mu += w*d/i.n; i.m2 += w*d*(v-i.mu)
+    elif NUM  is i.it : d = v-i.mu; i.mu += w*d/i.n; i.m2 += w*d*(v-i.mu)
     elif DATA is i.it :
       if not i.cols: i.cols=COLS(v)
       else: 
         i.mids = None
-        for c in i.cols.all: add(c, v[r.at], w)
-        (i.rows.append if w>0 else i.rows.remove)(row)
+        for col in i.cols.all: add(col, v[col.at], w)
+        print(v if v==[] else ".")
+        (i.rows.append if w>0 else i.rows.remove)(v)
   return v
 
 #-------------------------------------------------------------------------------
@@ -82,6 +83,7 @@ def minkowski(items):
   return 0 if n==0 else (d / n) ** (1 / the.p)
 
 def disty(data, row):
+  print(">",row)
   return minkowski((norm(y,row[y.at]) - y.goal) for y in data.cols.y)
 
 def distx(data,row1,row2):
@@ -127,12 +129,19 @@ def cuts(d, cols):
         n = lhs.n + rhs.n
         mu = (lhs.n*lhs.mu + rhs.n*rhs.mu) / n
         s = (lhs.n*sd(lhs) + rhs.n*sd(rhs)) / n
-        yield score(s), col.at, bins[j][0]
+        yield score(n,mu,s), col.at, bins[j][0]
 
 def merges(bins):
   out = NUM()
-  for b in bins:
-    if b.n: out = merge(out, b)
+  for (_,num) in bins:
+    if num.n: out = merge(out, num)  # ← merge with num, not b
+  return out
+
+def merge(a, b):
+  out = NUM()
+  out.n = a.n + b.n
+  out.mu = (a.n*a.mu + b.n*b.mu) / out.n
+  out.m2 = a.m2 + b.m2 + a.n*b.n*(a.mu - b.mu)**2 / out.n
   return out
 
 #-------------------------------------------------------------------------------
@@ -141,6 +150,7 @@ def Tree(data, uses=None):
   def grow(rows):
     at, b, kids = None, None, {}
     if len(rows) > the.leaf*2:
+      print(rows)
       if tmp :=  bestcut(data, rows):
         at,b= tmp
         y,n,q,col = [],[],[],data.cols.all[at]
@@ -184,7 +194,7 @@ def shuffle(lst): random.shuffle(lst); return lst
 
 def o(t):
   match t:
-    case _ if type(t) is type(o): return t.__doc__
+    case _ if type(t) is type(o): return t.__name__
     case dict(): return "{" + " ".join(f":{k} {o(t[k])}" for k in t) + "}"
     case float(): return f"{int(t)}" if int(t) == t else f"{t:.2f}"
     case list(): return "[" + ", ".join(o(x) for x in t) + "]"
@@ -212,7 +222,8 @@ def cast(s, BOOL={"true": True, "false": False}):
 
 def csv(f):
   with open(f,encoding="utf-8") as file:
-    for s in file: yield [cast(x.strip()) for x in s.split(",")]
+    for s in file: 
+      if s:=s.strip(): yield [cast(x.strip()) for x in s.split(",")]
 
 #-------------------------------------------------------------------------------
 # cli
@@ -256,7 +267,8 @@ def eg__data(f:filename):
   "asds"
   data = DATA(csv(f))
   print(*data.cols.names)
-  print("~",*COLS(data.cols.names).y,sep="\n")
+  print("x",*data.cols.x,sep="\n")
+  print("y",*data.cols.y,sep="\n")
 
 def eg__ys(f:filename):
   "asds"

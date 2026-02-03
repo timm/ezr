@@ -20,7 +20,7 @@ help: ## show help.
 		'$(MAKEFILE_LIST)
 
 sh: ## demo of my shell
-	@-echo -e $(CLS)$(cYELLOW); figlet -W -f slant eZR ai; echo -e $(cRESET)
+	@-echo -e $(CLS)$(cYELLOW); figlet -W -f slant eZR.ai; echo -e $(cRESET)
 	@-bash --init-file $(GIT_ROOT)/etc/bash.rc -i
 
 install: ok ## install related repos to $HOME/gits
