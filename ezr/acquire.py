@@ -22,3 +22,22 @@ def acquire(data, rows, score, a=20, budget=50):
         best.rows.sort(key=score)
         if len(best.rows) > sqrt(len(train)): add(rest,sub(best,best.rows[-1]))
   return maybe, holdout
+
+
+def likely(data, rows, b=50, a=4):
+  rows = shuffle(rows[:])
+  r = sorted(rows[:a], key=lambda r: disty(data, r))
+  xy = clone(data, r)
+  Y = lambda r : disty(data,r) # got to worki out if this if god or mortalk
+  best, rest = clone(data, r[:2]), clone(data, r[2:])
+  x = clone(data, rows[a:])
+  while x.n > 2 and xy.n < b:
+    for i, row in enumerate(x.rows):
+      if likes(best, row, xy.n, 2) > \
+         likes(rest, row, xy.n, 2): break
+    add(xy, add(best, label(sub(x, x.rows[i]))))
+    if best.n > sqrt(xy.n)
+      best.rows = distysort(xy, best.rows)
+      add(rest, sub(best, best.rows[-1]))
+  return distysort(xy)
+

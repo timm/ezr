@@ -24,7 +24,8 @@ def COL(at=0,txt=" "): return what(txt)(at=at, txt=txt, goal=txt[-1]!="-")
 def NUM(**d): return OBJ(it=NUM, **d, n=0, mu=0, m2=0)
 def SYM(**d): return OBJ(it=SYM, **d, n=0, has={})
 
-def DATA(items=None,s=""): return adds(items, OBJ(it=DATA,s=s,rows=[],cols=None))
+def DATA(items=None,s=""):
+ return adds(items, OBJ(it=DATA,s=s,rows=[],cols=None,n=0, mids=None))
 
 def COLS(names):
   cols= [COL(at=n,txt=s) for n,s in enumerate(names)]
@@ -39,23 +40,30 @@ def clone(data, rows=None): return DATA([data.cols.names] + (rows or []))
 def adds(items, it=None):
   it = it or NUM(); [add(it,item) for item in (items or [])]; return it
 
-def add(i,v):
-  if DATA is i.it :
-     if not i.cols: i.cols=COLS(v)
-     else: i.rows += [[add(c,v[c.at]) for c in i.cols.all]]
-  elif v != "?":
-    i.n += 1
-    if SYM is i.it : i.has[v] = 1 + i.has.get(v,0)
-    if NUM is i.it : d = v - i.mu; i.mu += d/i.n; i.m2 += d*(v - i.mu)
+def sub(i,v): return add(i,v, -1)
+
+def add(i,v,w=1):
+  if v!="?": 
+    i.n += w
+    if   SYM  is i.it : i.has[v] = w + i.has.get(v,0)
+    elif NUM  is i.it : d = v - i.mu; i.mu += w*d/i.n; i.m2 += w*d*(v - i.mu)
+    elif DATA is i.it :
+      if not i.cols: i.cols=COLS(v)
+      else: 
+        i.mids = None
+        for c in i.cols.all: add(c, v[r.at])
+        (i.rows.append if w>0 else i.rows.remove)(row)
   return v
 
 #-------------------------------------------------------------------------------
 # Query
 def score(n,_,sd1): return BIG if n < the.leaf else sd1
 
-def mids(data):  return [mid(col) for col in data.cols.all]
 def mid(col): return mode(col) if SYM is col.it else col.mu
 def mode(sym): return max(sym.has, key=sym.has.get)
+def mids(data):  
+  data.mids = data.mids or [mid(col) for col in data.cols.all]
+  return data.mids
 
 def spread(col): return (ent if SYM is col.it else sd)(col)
 def sd(num): return 0 if num.n < 2 else sqrt(num.m2 / (num.n - 1))
