@@ -25,7 +25,7 @@ def NUM(**d): return OBJ(it=NUM, **d, n=0, mu=0, m2=0)
 def SYM(**d): return OBJ(it=SYM, **d, n=0, has={})
 
 def DATA(items=None,s=""):
- return adds(items, OBJ(it=DATA,s=s,rows=[],cols=None,n=0, mids=None))
+ return adds(items, OBJ(it=DATA,s=s,rows=[],cols=None, n=0, mids=None))
 
 def COLS(names):
   cols= [COL(at=n,txt=s) for n,s in enumerate(names)]
@@ -46,12 +46,12 @@ def add(i,v,w=1):
   if v!="?": 
     i.n += w
     if   SYM  is i.it : i.has[v] = w + i.has.get(v,0)
-    elif NUM  is i.it : d = v - i.mu; i.mu += w*d/i.n; i.m2 += w*d*(v - i.mu)
+    elif NUM  is i.it : d = v - i.mu; i.mu += w*d/i.n; i.m2 += w*d*(v-i.mu)
     elif DATA is i.it :
       if not i.cols: i.cols=COLS(v)
       else: 
         i.mids = None
-        for c in i.cols.all: add(c, v[r.at])
+        for c in i.cols.all: add(c, v[r.at], w)
         (i.rows.append if w>0 else i.rows.remove)(row)
   return v
 
@@ -66,7 +66,7 @@ def mids(data):
   return data.mids
 
 def spread(col): return (ent if SYM is col.it else sd)(col)
-def sd(num): return 0 if num.n < 2 else sqrt(num.m2 / (num.n - 1))
+def sd(num): return 0 if num.n < 2 else sqrt(max(0,num.m2)) / (num.n - 1))
 def ent(sym): return -sum(p*log(p,2) for n in sym.has.values() if (p:=n/sym.n)>0)
 
 def z(num,v): return (v -  num.mu) / (sd(num) + 1/BIG)
@@ -75,7 +75,7 @@ def bucket(col,v):
   return v if v=="?" or SYM is col.it else int(the.bins * norm(col,v))
 
 #-------------------------------------------------------------------------------
-# distanc"::",e
+# distance
 def minkowski(items):
   n,d = 0,0
   for item in items: n, d = n+1, d+item ** the.p
@@ -130,10 +130,10 @@ def cuts(d, cols):
         yield score(s), col.at, bins[j][0]
 
 def merges(bins):
-    out = NUM()
-    for b in bins:
-      if b.n: out = merge(out, b) if b.n else out
-    return out
+  out = NUM()
+  for b in bins:
+    if b.n: out = merge(out, b)
+  return out
 
 #-------------------------------------------------------------------------------
 # tree
