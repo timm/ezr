@@ -24,20 +24,20 @@ def acquire(data, rows, score, a=20, budget=50):
   return maybe, holdout
 
 
-def likely(data, rows, b=50, a=4):
+def label(row): return row
+
+def likely(data, rows, b=50, a=4, stop=512):
   rows = shuffle(rows[:])
-  r = sorted(rows[:a], key=lambda r: disty(data, r))
-  xy = clone(data, r)
-  Y = lambda r : disty(data,r) # got to worki out if this if god or mortalk
-  best, rest = clone(data, r[:2]), clone(data, r[2:])
-  x = clone(data, rows[a:])
-  while x.n > 2 and xy.n < b:
-    for i, row in enumerate(x.rows):
-      if likes(best, row, xy.n, 2) > \
-         likes(rest, row, xy.n, 2): break
-    add(xy, add(best, label(sub(x, x.rows[i]))))
+  rows, init = rows[a:], sorted(rows[:a], key=lambda row: disty(data, row))
+  xy = clone(data, init)
+  best, rest = clone(data, init[:a//2]), clone(data, init[a//2:])
+  maybe = lambda row: likes(best,row,xy.n,2) > likes(rest,row,xy.n,2)
+  while len(rows) > 2 and xy.n < b:
+    for i, row in enumerate(rows[:stop]):
+      if maybe(row): break
+    add(xy, add(best, label(rows.pop(i))))
     if best.n > sqrt(xy.n)
-      best.rows = distysort(xy, best.rows)
+      best.rows.sort(key=lambda row:disty(xy,row))
       add(rest, sub(best, best.rows[-1]))
-  return distysort(xy)
+  return maybe
 

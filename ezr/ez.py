@@ -25,7 +25,7 @@ def NUM(**d): return OBJ(it=NUM, **d, n=0, mu=0, m2=0)
 def SYM(**d): return OBJ(it=SYM, **d, n=0, has={})
 
 def DATA(items=None,s=""):
- return adds(items, OBJ(it=DATA,s=s,rows=[],cols=None, n=0, mids=None))
+ return adds(items, OBJ(it=DATA, s=s, rows=[], cols=None, n=0, mids=None))
 
 def COLS(names):
   cols= [COL(at=n,txt=s) for n,s in enumerate(names)]
@@ -66,7 +66,7 @@ def mids(data):
   return data.mids
 
 def spread(col): return (ent if SYM is col.it else sd)(col)
-def sd(num): return 0 if num.n < 2 else sqrt(max(0,num.m2)) / (num.n - 1))
+def sd(num): return 0 if num.n < 2 else sqrt(max(0,num.m2) / (num.n - 1))
 def ent(sym): return -sum(p*log(p,2) for n in sym.has.values() if (p:=n/sym.n)>0)
 
 def z(num,v): return (v -  num.mu) / (sd(num) + 1/BIG)
@@ -192,7 +192,8 @@ def o(t):
     case _: return str(t)
 
 class OBJ(dict):
-  __getattr__,__setattr__,__repr__ = dict.__getitem__,dict.__setitem__,o
+  __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
+  __repr__ = lambda i: o(i)
 
 def gauss(mu,sd1):
   return mu + 2 * sd1 * (sum(random.random() for _ in range(3)) - 1.5)
@@ -210,7 +211,7 @@ def cast(s, BOOL={"true": True, "false": False}):
     except ValueError: return BOOL.get(s, s)
 
 def csv(f):
-  with open(f) as file:
+  with open(f,encoding="utf-8") as file:
     for s in file: yield [cast(x.strip()) for x in s.split(",")]
 
 #-------------------------------------------------------------------------------
@@ -267,30 +268,30 @@ def eg__ys(f:filename):
           round(disty(data,row),2))
 
 def eg__tree(f:filename):
-  ""
+  "treeing"
   data = DATA(csv(f))
   data1 = clone(data, shuffle(data.rows)[:50])
   tree,_ = Tree(data1)
   treeShow(tree)
 
 def eg__test(f:filename):
-  ""
-  data = DATA(csv(filename))
-  mid  = len(data.rows)//2
+  "testing"
+  data = DATA(csv(f))
+  half  = len(data.rows)//2
   Y    = lambda row: disty(data,row)
   b4   = sorted(Y(row) for row in data.rows)
-  win  = lambda row: int(100 * (1 - (Y(row)-b4[0]) / (b4[mid]-b4[0] + 1/BIG)))
+  win  = lambda row: int(100 * (1 - (Y(row)-b4[0]) / (b4[half]-b4[0] + 1/BIG)))
   wins = NUM()
   for _ in range(60):
     rows = shuffle(data.rows)
-    test, train = rows[mid:], rows[:mid][:the.Budget]
+    test, train = rows[half:], rows[:half][:the.Budget]
     tree,_ = Tree(clone(data,train))
     test.sort(key=lambda row: treeLeaf(tree,row).y.mu)
     add(wins, win(min(test[:the.Check], key=Y)))
-  print(f"{round(wins.mu)} ,sd {round(sd(wins))} ,b4 {o(b4[mid])} ,lo {o(b4[0])}",
+  print(f"{round(wins.mu)} ,sd {round(sd(wins))} ,b4 {o(b4[half])} ,lo {o(b4[0])}",
         *[f"{s} {len(a)}" for s,a in
           dict(x=data.cols.x, y=data.cols.y, r=data.rows).items()],
-        *filename.split("/")[-2:], sep=" ,")
+        *f.split("/")[-2:], sep=" ,")
 
 #------------------------------------------------------------------------------
 the= OBJ(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
