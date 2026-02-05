@@ -97,36 +97,42 @@ def around(data,row,rows):
 #-------------------------------------------------------------------------------
 # discretization
 def bestcut(data, rows):
-  d = {}
+  d = {col.at: {} for col in data.cols.x}
   for row in rows:
     y = disty(data, row)
     for col in data.cols.x:
-      k = (col.at, bucket(col, row[col.at]))
-      if k[1] != "?":
-        if k not in d: d[k] = NUM()
-        add(d[k], y)
-  return min(cuts(d, data.cols.x), default=(BIG,None,None))[1:]
+      if (b := bucket(col, row[col.at])) != "?":
+        if b not in d[col.at]: d[col.at][b] = NUM()
+        add(d[col.at][b], y)
+  return min(cut for col in data.cols.x 
+             for cut in cuts(col, list(d[col.at].items())))[1:]
 
-def cuts(d, cols):
-  for col in cols:
-    bins = [(b,num) for (at,b),num in d.items() if at == col.at]
-    if not bins: continue
+def cuts(col, bins):
+  if bins: 
     if SYM is col.it:
-      for b,num in bins: yield (score(col.n, col.mu, sd(num)), col.at, b)
+      for b, num in bins:
+        yield score(col.n, col.mu, sd(num)), col.at, b
     else:
       bins.sort()
-      for j in range(len(bins)-1):
-        lhs, rhs = merges(bins[:j+1]), merges(bins[j+1:])
+      for j, (b, *_) in enumerate(bins[:-1], 1):
+        lhs, rhs = merges(bins[:j]), merges(bins[j:])
         n = lhs.n + rhs.n
-        mu = (lhs.n*lhs.mu + rhs.n*rhs.mu) / n
-        s = (lhs.n*sd(lhs) + rhs.n*sd(rhs)) / n
-        yield score(s), col.at, bins[j][0]
-
+        s = score(n, (lhs.n*lhs.mu + rhs.n*rhs.mu) / n,
+                     (lhs.n*sd(lhs) + rhs.n*sd(rhs)) / n)
+        yield s, col.at, b
+  
 def merges(bins):
-    out = NUM()
-    for b in bins:
-      if b.n: out = merge(out, b) if b.n else out
-    return out
+  out = NUM()
+  for _,num in bins:
+    if num.n: out = merge(out, b)
+  return out
+
+def merge(a, b):
+  out = NUM()
+  out.n = a.n + b.n
+  out.mu = (a.n*a.mu + b.n*b.mu) / out.n if out.n else 0
+  out.m2 = a.m2 + b.m2 + a.n*b.n/out.n * (a.mu - b.mu)**2 if out.n else 0
+  return out
 
 #-------------------------------------------------------------------------------
 # tree
