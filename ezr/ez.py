@@ -119,7 +119,8 @@ def bestcut(data, rows):
 
 def cuts(col, bins):
   if SYM is col.it:
-    for b,n in bins: yield score(col.n, col.mu, sd(n)), col.at, b
+    for b,n in bins: 
+      yield score(col.n, col.mu, sd(n)), col.at, b
   else:
     for j, (b, _) in enumerate(bins[:-1]):
       lhs, rhs = merges(bins[:j+1]), merges(bins[j+1:])
