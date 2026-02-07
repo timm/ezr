@@ -70,8 +70,9 @@ def spread(col): return (ent if SYM is col.it else sd)(col)
 def sd(num): return 0 if num.n < 2 else sqrt(max(0,num.m2) / (num.n - 1))
 def ent(sym): return -sum(p*log(p,2) for n in sym.has.values() if (p:=n/sym.n)>0)
 
-def z(num,v): return (v -  num.mu) / (sd(num) + 1/BIG)
-def norm(num,v): return 1 / (1 + exp( -1.7 * clip(z(num,v),-3,3)))
+def z(num,v): return max(-3, min(3, (v -  num.mu) / (sd(num) + 1/BIG)))
+def norm(num,v): return 1 / (1 + exp( -1.7 * z(num,v)))
+
 def bucket(col,v):
   return v if v=="?" or SYM is col.it else int(the.bins * norm(col,v))
 
@@ -142,24 +143,22 @@ def merge(num1, num2):
  #-------------------------------------------------------------------------------
 # tree
 def Tree(data, uses=None):
+  uses = uses or set()
   def grow(rows):
     at, b, kids = None, None, {}
     if len(rows) > the.leaf*2:
-      at,b =  bestcut(data, rows)
-      if at:
-        print("tmp",tmp)
-        y,n,q,col = [],[],[],data.cols.all[at]
+      if cut := bestcut(data, rows):
+        _,at,b = cut
+        yes,no,col = [],[],data.cols.all[at]
         for row in rows:
-          (q if b=="?" else y if b==bucket(col, row[at]) else n).append(row)
-        max([y,n], key=len).extend(q)
-        if y and n:
+          (yes if b==bucket(col, row[at]) else no).append(row)
+        if yes and no:
           uses.add(at)
-          kids = {True: grow(y), False: grow(n)}
+          kids = {True: grow(yes), False: grow(no)}
     return OBJ(root=data, kids=kids, at=at, bucket=b,
-               x=mids(clone(data,rows)),
-               y=adds(disty(data,row) for row in rows))
+               x = mids(clone(data,rows)),
+               y = adds(disty(data,row) for row in rows))
 
-  uses = uses or set()
   return grow(data.rows), uses
 
 def treeLeaf(t, row):
@@ -209,11 +208,12 @@ def pick(d,n):
     if (n := n-v) <= 0: break
   return k
 
-def cast(s, BOOL={"true": True, "false": False}):
-  try: return int(s)
-  except ValueError:
-    try: return float(s)
-    except ValueError: return BOOL.get(s, s)
+def boolean(s): return {"true":True,"false":False}[s]
+
+def cast(s):
+  for f in [int,float,boolean, str]:
+    try: return f(s)
+    except: ...
 
 def csv(f):
   with open(f,encoding="utf-8") as file:
