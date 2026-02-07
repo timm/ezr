@@ -58,8 +58,6 @@ def add(i,v,w=1):
 
 #-------------------------------------------------------------------------------
 # Query
-def score(n,_,sd1): return BIG if n < the.leaf else sd1
-
 def mid(col): return mode(col) if SYM is col.it else col.mu
 def mode(sym): return max(sym.has, key=sym.has.get)
 def mids(data):  
@@ -104,41 +102,44 @@ def around(data,row,rows):
   return sorted(rows,key=lambda other:distx(data,row,other))
 
 #-------------------------------------------------------------------------------
-# discretization
+# discretization, breaking nums on, at max, the.bins number of chops
 def bestcut(data, rows):
   d = {c.at: {} for c in data.cols.x}
+  total = {c.at: NUM() for c in data.cols.x}       
   for r in rows:
     y = disty(data, r)
     for c in data.cols.x:
       if (b := bucket(c, r[c.at])) != "?":
         if b not in d[c.at]: d[c.at][b] = NUM()
         add(d[c.at][b], y)
-  return min((cut for c in data.cols.x 
-                 for cut in cuts(c, sorted(d[c.at].items()))), 
-                 default=None)
+        add(total[c.at], y)                         
+  return min(cut for c in data.cols.x
+                 for cut in cuts(c, sorted(d[c.at].items()), total[c.at]),
+             defaults=None)
 
-def cuts(col, bins):
+def cuts(col, bins, total):
   if SYM is col.it:
-    for b,n in bins: 
-      yield score(col.n, col.mu, sd(n)), col.at, b
+    for b, num in bins:
+      yield sd(col), col.at, b
   else:
-    for j, (b, _) in enumerate(bins[:-1]):
-      lhs, rhs = merges(bins[:j+1]), merges(bins[j+1:])
-      n  = lhs.n + rhs.n
-      mu = (lhs.n*lhs.mu + rhs.n*rhs.mu) / n
-      s  = (lhs.n*sd(lhs) + rhs.n*sd(rhs)) / n
-      yield score(n, mu, s), col.at, b
+    lhs = NUM()
+    n = total.n
+    for b, num in bins[:-1]:
+      lhs = merge(lhs, num)
+      rhs = unmerge(total, lhs)
+      yield (lhs.n*sd(lhs) + rhs.n*sd(rhs)) / n, col.at, b
 
-def merges(bins):
-  out = bins[0][1]
-  for _, n in bins[1:]: out = merge(out, n)
-  return out
+def unmerge(a, b):  return merge(a, b, -1)
 
-def merge(num1, num2):
-  out = NUM(); out.n = num1.n + num2.n
-  delta = num1.mu - num2.mu
-  out.mu = (num1.n*num1.mu + num2.n*num2.mu) / out.n
-  out.m2 = num1.m2 + num2.m2 + (delta**2 * num1.n * num2.n) / out.n
+def merge(a, b, w=1):
+  out = NUM()
+  out.n = a.n + w * b.n
+  if out.n <= 0: return NUM()
+  out.mu = (a.n * a.mu + w * b.n * b.mu) / out.n
+  if a.n == 0: out.m2 = b.m2
+  else:
+    d = out.mu - b.mu
+    out.m2 = a.m2 + w * (b.m2 + d * d * out.n * b.n / a.n)
   return out
 
  #-------------------------------------------------------------------------------
