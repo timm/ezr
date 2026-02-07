@@ -25,7 +25,7 @@ def NUM(**d): return OBJ(it=NUM, **d, n=0, mu=0, m2=0)
 def SYM(**d): return OBJ(it=SYM, **d, n=0, has={})
 
 def DATA(items=None,s=""):
- return adds(items, OBJ(it=DATA, s=s, rows=[], cols=None, n=0, mids=None))
+ return adds(items, OBJ(it=DATA, n=0, s=s, rows=[], cols=None, mids=None))
 
 def COLS(names):
   cols= [COL(at=n,txt=s) for n,s in enumerate(names)]
@@ -33,7 +33,8 @@ def COLS(names):
              x= [c for c in cols if c.txt[-1] not in "-+!X"],
              y= [c for c in cols if c.txt[-1]     in "-+!" ])
 
-def clone(data, rows=None): return DATA([data.cols.names] + (rows or []))
+def clone(data, rows=None): 
+  return DATA([data.cols.names] + (rows or []))
 
 #-------------------------------------------------------------------------------
 # Update
@@ -104,45 +105,41 @@ def around(data,row,rows):
 #-------------------------------------------------------------------------------
 # discretization
 def bestcut(data, rows):
-  d = {}
-  for row in rows:
-    y = disty(data, row)
-    for col in data.cols.x:
-      k = (col.at, bucket(col, row[col.at]))
-      if k[1] != "?":
-        if k not in d: d[k] = NUM()
-        add(d[k], y)
-  return min(cuts(d, data.cols.x), default=(BIG,None,None))[1:]
+  d = {c.at: {} for c in data.cols.x}
+  for r in rows:
+    y = disty(data, r)
+    for c in data.cols.x:
+      if (b := bucket(c, r[c.at])) != "?":
+        if b not in d[c.at]: d[c.at][b] = NUM()
+        add(d[c.at][b], y)
+  return min((cut for c in data.cols.x 
+                 for cut in cuts(c, sorted(d[c.at].items()))), 
+                 default=None)
 
-def cuts(d, cols):
-  for col in cols:
-    bins = [(b,num) for (at,b),num in d.items() if at == col.at]
-    if not bins: continue
-    if SYM is col.it:
-      for b,num in bins: yield (score(col.n, col.mu, sd(num)), col.at, b)
-    else:
-      bins.sort()
-      for j in range(len(bins)-1):
-        lhs, rhs = merges(bins[:j+1]), merges(bins[j+1:])
-        n = lhs.n + rhs.n
-        mu = (lhs.n*lhs.mu + rhs.n*rhs.mu) / n
-        s = (lhs.n*sd(lhs) + rhs.n*sd(rhs)) / n
-        yield score(n,mu,s), col.at, bins[j][0]
+def cuts(col, bins):
+  if SYM is col.it:
+    for b,n in bins: yield score(col.n, col.mu, sd(n)), col.at, b
+  else:
+    for j, (b, _) in enumerate(bins[:-1]):
+      lhs, rhs = merges(bins[:j+1]), merges(bins[j+1:])
+      n  = lhs.n + rhs.n
+      mu = (lhs.n*lhs.mu + rhs.n*rhs.mu) / n
+      s  = (lhs.n*sd(lhs) + rhs.n*sd(rhs)) / n
+      yield score(n, mu, s), col.at, b
 
 def merges(bins):
-  out = NUM()
-  for (_,num) in bins:
-    if num.n: out = merge(out, num)  # ← merge with num, not b
+  out = bins[0][1]
+  for _, n in bins[1:]: out = merge(out, n)
   return out
 
-def merge(a, b):
-  out = NUM()
-  out.n = a.n + b.n
-  out.mu = (a.n*a.mu + b.n*b.mu) / out.n
-  out.m2 = a.m2 + b.m2 + a.n*b.n*(a.mu - b.mu)**2 / out.n
+def merge(num1, num2):
+  out = NUM(); out.n = num1.n + num2.n
+  delta = num1.mu - num2.mu
+  out.mu = (num1.n*num1.mu + num2.n*num2.mu) / out.n
+  out.m2 = num1.m2 + num2.m2 + (delta**2 * num1.n * num2.n) / out.n
   return out
 
-#-------------------------------------------------------------------------------
+ #-------------------------------------------------------------------------------
 # tree
 def Tree(data, uses=None):
   def grow(rows):
