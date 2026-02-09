@@ -1,3 +1,7 @@
+from ez import *
+
+#-------------------------------------------------------------------------------
+# Data Structures
 def CUT(at=0, b=0, score=BIG, lo=-BIG, hi=BIG):
   return OBJ(it=CUT, at=at, b=b, score=score, lo=lo, hi=hi)
 
@@ -5,10 +9,12 @@ def cutScore(n, mu, sd1):
   return BIG if n < the.leaf else sd1
 
 def cutXys(col, pairs):
-  right = NUM()
-  xys = sorted([(x, add(right, y)) for row, y in pairs
-                 if (x := row[col.at]) != "?"])
-  return xys, right
+  xys, right = [], NUM()
+  for row, y in pairs:
+    if (x := row[col.at]) != "?":
+      add(right, y) 
+      xys.append((x, y, bucket(col, x)))
+  return sorted(xys, key=lambda p: p[0]), right
 
 def cutBest(data, rows):
   def who(col): return cutSym if SYM is col.it else cutNum
@@ -19,41 +25,43 @@ def cutBest(data, rows):
  
 def cutSym(col, xys, _):
   N, d = len(xys), {}
-  for x, y in xys:
+  for x, y, _ in xys: # unpack 3-tuple, ignore bucket 'b'
     if x not in d: d[x] = NUM()
     add(d[x], y)
   for b, num in d.items():
     yield CUT(col.at, b, cutScore(num.n, num.mu, sd(num)))
 
 def cutNum(col, xys, right):
-  N = len(xys)
-  left, cut = NUM(), CUT()
-  old_b = bucket(col, xys[0][0])
-  add(left, sub(right, xys[0][1]))
-  for x, y in xys[1:]:
-    if right.n > 0 and (b := bucket(col, x)) != old_b:
-      cut.hi = x
-      mu = (left.n*left.mu + right.n*right.mu) / N
-      s  = (left.n*sd(left) + right.n*sd(right)) / N
-      yield (cut := CUT(col.at, old_b, cutScore(N, mu, s), lo=x))
-      old_b = b
+  left, cut = NUM(), CUT(at=col.at, lo=-BIG, hi=-BIG)  
+  x, y, last_b = xys[0]
+  pre_x = x            # Track previous x to define split boundary
+  add(left, sub(right, y))
+  for x, y, b in xys[1:]:
+    if b != last_b:
+      cut.hi = pre_x    
+      if left.n >= the.leaf and right.n >= the.leaf:
+          yield CUT(col.at, last_b, cutScore(left.n, left.mu, sd(left)), 
+                    lo=cut.lo, hi=cut.hi)
+      last_b = b
     add(left, sub(right, y))
+    pre_x = x          # Update tracker
   cut.hi = BIG
 
 def cutSelects(cut, data, row):
   col = data.cols.all[cut.at]
   v = row[col.at]
   if v == "?": return False
-  return v == cut.b if SYM is col.it else bucket(col, v) <= cut.b
+  if SYM is col.it: return v == cut.b
+  return v <= cut.hi
 
 def cutShow(cut, data, yes):
   col = data.cols.all[cut.at]
   if SYM is col.it:
     return f"{col.txt} {'==' if yes else '!='} {cut.b}"
-  return f"{col.txt} {'<' if yes else '>='} {o(cut.hi)}"
+  return f"{col.txt} {'<=' if yes else '>'} {o(cut.hi)}"
 
 #-------------------------------------------------------------------------------
-# tree
+# Tree Builder
 def Tree(data, uses=None):
   uses = uses or set()
   def grow(rows):
@@ -79,13 +87,12 @@ def treeLeaf(t, row):
 
 def treeShow(t):
   def show(n, lvl, pre):
-    if n: 
-      g = [n.x[c.at] for c in n.root.cols.y]
-      print(f"{('| '*(lvl-1)+pre):{the.Show}}: ", end="")
-      print(f"{o(n.y.mu):6} : {n.y.n:4} : {o(g)}")
-      if n.kids:
-        for k in sorted(n.kids, key=lambda k: n.kids[k].y.mu):
-          show(n.kids[k], lvl+1, cutShow(n.cut, n.root, k))
-  ys = ', '.join([y.txt for y in t.root.cols.y])
-  print(f"{'':{the.Show}}  Score       N   [{ys}]")
-  show(t, 0, "")
+    if n:
+      print(f"{'|.. ' * lvl}{pre or ''}", end="")
+      if not n.kids:
+        print(f" {o(n.y.mu)} ({n.y.n})")
+      else:
+        print(f" {o(n.y.mu)} ({n.y.n})")
+        show(n.kids.get(True), lvl + 1, cutShow(n.cut, n.root, True))
+        show(n.kids.get(False), lvl + 1, cutShow(n.cut, n.root, False))
+  show(t, 0, None)
