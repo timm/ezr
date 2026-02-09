@@ -229,7 +229,7 @@ def pick(d,n):
   for k,v in d.items():
     if (n := n-v) <= 0: return k
 
-CASTS=[int,float,lambda s: {"true":1,"false":0}.get(s.lower(),s)]
+CASTS = [int,float,lambda s: {"true":1,"false":0}.get(s.lower(),s)]
 
 def cast(s):
   for f in CASTS:
