@@ -41,9 +41,13 @@ clean: ## remove pycadhe
 ghReset:  # GH esotericia. ignore
 	git remote set-url origin https://timmenzies@github.com/timmenzies/ez.git
 
+ruff:
+	ruff check ez.py --ignore E702,E701,E731,E401
+
+
 lint: $f.py  ## Lint python file x.py using `make lint f=x`    
 	# disable naming, docstring, and formatting rules
-	@pylint --disable=C0103,C0104,C0105,C0115,C0116,C0321,C0410 \
+	@pylint --disable=C0103,C0104,C0105,C0115,C0116,C0321,C0410,C3001 \
 	 	      --disable=E0213 \
 	 				--disable=R1735 \
 	 				--disable=W0106,W0201,W0311 $f.py
@@ -85,16 +89,18 @@ YS: ## show y shorting
 TREE: ## show y shorting
 	@./ez.py --tree ~/gits/moot/optimize/misc/auto93.csv  
 
+B?=50
+
 ~/tmp/ez_test.log:  ## run ezrtest on many files
 	@mkdir -p ~/tmp
 	@$(MAKE) todo=test files="$(HOME)/gits/moot/optimize/*/*.csv" run | tee $@ 
 	@echo; date
-	@python3 -B ez.py --the
+	@python3 -B ez.py -B $B --the
 	@sort -n $@  | cut -d, -f 1 | fmt
 
 run:
 	@time ls -r $(files) \
-		| xargs -P 24 -n 1 -I{} sh -c 'python3 -B ez.py --$(todo) "{}"'
+		| xargs -P 24 -n 1 -I{} sh -c 'python3 -B ez.py -B $B --$(todo) "{}"'
 
 #--------------------------
 MY=@bash sh/ell

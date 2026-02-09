@@ -7,7 +7,7 @@ Options:
    -b bins=5    Number of bins
    -B Budget=50 Initial sampling budget
    -C Check=5   final evalaution budget
-   -l leaf=2    Min examples in leaf of tree
+   -l leaf=4    Min examples in leaf of tree
    -p p=2       Distance coeffecient
    -s seed=1    Random number seed
    -S Show=30   Tree display width"""
@@ -18,10 +18,10 @@ BIG=1e32
 
 #-------------------------------------------------------------------------------
 # Create
-def what(s): return NUM if s[0].isupper else SYM
+def what(s): return NUM if s[0].isupper() else SYM
 
 def COL(at=0,txt=" "): return what(txt)(at=at, txt=txt, goal=txt[-1]!="-")
-def NUM(**d): return OBJ(it=NUM, **d, n=0, mu=0, m2=0)
+def NUM(**d): return OBJ(it=NUM, **d, n=0, mu=0, m2=0, low={}, hi={})
 def SYM(**d): return OBJ(it=SYM, **d, n=0, has={})
 
 def DATA(items=None,s=""):
@@ -33,7 +33,7 @@ def COLS(names):
              x= [c for c in cols if c.txt[-1] not in "-+!X"],
              y= [c for c in cols if c.txt[-1]     in "-+!" ])
 
-def clone(data, rows=None): 
+def clone(data, rows=None):
   return DATA([data.cols.names] + (rows or []))
 
 #-------------------------------------------------------------------------------
@@ -44,13 +44,13 @@ def adds(items, it=None):
 def sub(i,v): return add(i,v, -1)
 
 def add(i,v,w=1):
-  if v!="?": 
+  if v!="?":
     i.n += w
     if   SYM  is i.it : i.has[v] = w + i.has.get(v,0)
     elif NUM  is i.it : d = v-i.mu; i.mu += w*d/i.n; i.m2 += w*d*(v-i.mu)
     elif DATA is i.it :
       if not i.cols: i.cols=COLS(v)
-      else: 
+      else:
         i.mids = None
         for col in i.cols.all: add(col, v[col.at], w)
         (i.rows.append if w>0 else i.rows.remove)(v)
@@ -60,7 +60,7 @@ def add(i,v,w=1):
 # Query
 def mid(col): return mode(col) if SYM is col.it else col.mu
 def mode(sym): return max(sym.has, key=sym.has.get)
-def mids(data):  
+def mids(data):
   data.mids = data.mids or [mid(col) for col in data.cols.all]
   return data.mids
 
@@ -72,7 +72,11 @@ def z(num,v): return max(-3, min(3, (v -  num.mu) / (sd(num) + 1/BIG)))
 def norm(num,v): return 1 / (1 + exp( -1.7 * z(num,v)))
 
 def bucket(col,v):
-  return v if v=="?" or SYM is col.it else int(the.bins * norm(col,v))
+   if v=="?" or SYM is col.it: return v
+   b = int(the.bins * norm(col,v))
+   col.low[b] = min(v, col.low.get(b,BIG)) # remember lowest value
+   col.hi[b]  = max(v, col.hi.get(b,-BIG)) # remember lowest value
+   return b
 
 #-------------------------------------------------------------------------------
 # distance
@@ -103,43 +107,48 @@ def around(data,row,rows):
 
 #-------------------------------------------------------------------------------
 # discretization, breaking nums on, at max, the.bins number of chops
+def score(N,n,mu,sd1):  return BIG if n< the.leaf else sd1
+
 def bestcut(data, rows):
   d = {c.at: {} for c in data.cols.x}
-  total = {c.at: NUM() for c in data.cols.x}       
+  total = {c.at: NUM() for c in data.cols.x}
   for r in rows:
     y = disty(data, r)
     for c in data.cols.x:
       if (b := bucket(c, r[c.at])) != "?":
         if b not in d[c.at]: d[c.at][b] = NUM()
         add(d[c.at][b], y)
-        add(total[c.at], y)                         
-  return min(cut for c in data.cols.x
-                 for cut in cuts(c, sorted(d[c.at].items()), total[c.at]),
-             defaults=None)
+        add(total[c.at], y)
+  return min((cut for c in data.cols.x
+                for cut in cuts(len(rows), c,
+                                sorted(d[c.at].items()), total[c.at])),
+           default=None)
 
-def cuts(col, bins, total):
+def cuts(n, col, bins, total):
   if SYM is col.it:
     for b, num in bins:
-      yield sd(col), col.at, b
+      yield score(n, num.n, num.mu, sd(num)), col.at, b
   else:
     lhs = NUM()
     n = total.n
     for b, num in bins[:-1]:
       lhs = merge(lhs, num)
       rhs = unmerge(total, lhs)
-      yield (lhs.n*sd(lhs) + rhs.n*sd(rhs)) / n, col.at, b
+      mu  = (lhs.n*lhs.mu  + rhs.n*rhs.mu)  / n 
+      s   = (lhs.n*sd(lhs) + rhs.n*sd(rhs)) / n 
+      yield score(n, total.n, mu, s), col.at, b
 
-def unmerge(a, b):  return merge(a, b, -1)
+def unmerge(num1, num2): return merge(num1,num2,w=-1)
 
-def merge(a, b, w=1):
+def merge(num1, num2, w=1):
   out = NUM()
-  out.n = a.n + w * b.n
+  out.n = num1.n + w * num2.n
   if out.n <= 0: return NUM()
-  out.mu = (a.n * a.mu + w * b.n * b.mu) / out.n
-  if a.n == 0: out.m2 = b.m2
+  out.mu = (num1.n * num1.mu + w * num2.n * num2.mu) / out.n
+  if num1.n == 0: out.m2 = num2.m2
   else:
-    d = out.mu - b.mu
-    out.m2 = a.m2 + w * (b.m2 + d * d * out.n * b.n / a.n)
+    d = out.mu - num2.mu
+    out.m2 = num1.m2 + w * (num2.m2 + d * d * out.n * num2.n / num1.n)
   return out
 
  #-------------------------------------------------------------------------------
@@ -148,38 +157,50 @@ def Tree(data, uses=None):
   uses = uses or set()
   def grow(rows):
     at, b, kids = None, None, {}
-    if len(rows) > the.leaf*2:
+    if len(rows) > the.leaf :
       if cut := bestcut(data, rows):
         _,at,b = cut
         yes,no,col = [],[],data.cols.all[at]
         for row in rows:
-          (yes if b==bucket(col, row[at]) else no).append(row)
+          (yes if selects(col, row, b) else no).append(row)
         if yes and no:
-          uses.add(at)
-          kids = {True: grow(yes), False: grow(no)}
+          if len(yes) >= the.leaf: kids[True] = grow(yes)
+          if len(no) >= the.leaf: kids[False] = grow(no)
+          if kids: uses.add(at)
     return OBJ(root=data, kids=kids, at=at, bucket=b,
                x = mids(clone(data,rows)),
                y = adds(disty(data,row) for row in rows))
-
   return grow(data.rows), uses
 
+def selects(col, row, b):
+  bucket_val = bucket(col, row[col.at])
+  if bucket_val == "?": return False  
+  return bucket_val == b if SYM is col.it else bucket_val <= b
+
 def treeLeaf(t, row):
-  if not t.kids: return t
+  if not t or not t.kids: return t  
   col = t.root.cols.all[t.at]
-  return treeLeaf(t.kids[bucket(col, row[col.at]) == t.bucket], row)
+  kid = t.kids.get(bucket(col, row[col.at]) == t.bucket)
+  return treeLeaf(kid, row) if kid else t  
 
 def treeShow(t):
   def show(n, lvl, pre):
+    if not n: return
     g = [n.x[c.at] for c in n.root.cols.y]
     print(f"{('| '*(lvl-1)+pre):{the.Show}}: ",end="")
     print(f"{o(n.y.mu):6} : {n.y.n:4} : {o(g)}")
-    for k in sorted(n.kids or {}, reverse=True):
-      c, b = n.root.cols.all[n.at], n.bucket
-      s = f"{c.txt} {'==' if k else '!='} {b}" if SYM is c.it else \
-          f"{c.txt} {'<=' if k else '>'} bin{b}"
-      show(n.kids[k], lvl+1, s)
+    if n.kids:
+      for k in sorted(n.kids, key=lambda k: n.kids[k].y.mu):
+        c, b = n.root.cols.all[n.at], n.bucket
+        show(n.kids[k], lvl+1, showCol(c, b, k))
   ys = ', '.join([y.txt for y in t.root.cols.y])
-  print(f"{'':{the.Show}}   Score      N   [{ys}]"); show(t, 0, "")
+  print(f"{'':{the.Show}}  Score       N   [{ys}]"); show(t, 0, "")
+
+def showCol(col, bucket, left):
+  if SYM is col.it:
+    return f"{col.txt} {'==' if left else '!='} {bucket}"
+  val = col.low.get(bucket+1, col.hi.get(bucket, '?'))
+  return f"{col.txt} {'<' if left else '>='} {o(val)}"
 
 #------------------------------------------------------------------------------
 # lib
@@ -198,8 +219,7 @@ def o(t):
     case _: return str(t)
 
 class OBJ(dict):
-  __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
-  __repr__ = lambda i: o(i)
+  __getattr__,__setattr__,__repr__ = dict.__getitem__,dict.__setitem__,o
 
 def gauss(mu,sd1):
   return mu + 2 * sd1 * (sum(random.random() for _ in range(3)) - 1.5)
@@ -207,19 +227,18 @@ def gauss(mu,sd1):
 def pick(d,n):
   n *= random.random()
   for k,v in d.items():
-    if (n := n-v) <= 0: break
-  return k
+    if (n := n-v) <= 0: return k
 
-def boolean(s): return {"true":True,"false":False}[s]
+CASTS=[int,float,lambda s: {"true":1,"false":0}.get(s.lower(),s)]
 
 def cast(s):
-  for f in [int,float,boolean, str]:
+  for f in CASTS:
     try: return f(s)
-    except: ...
+    except ValueError: ...
 
 def csv(f):
   with open(f,encoding="utf-8") as file:
-    for s in file: 
+    for s in file:
       if s:=s.strip(): yield [cast(x.strip()) for x in s.split(",")]
 
 #-------------------------------------------------------------------------------
@@ -234,9 +253,17 @@ def filename(s): return s
 def eg_h():
   "Show help."
   print(__doc__)
-  for k, v in globals().items():
+  for k, fun in globals().items():
     if k.startswith("eg_"):
-     print(f"   -{re.sub(f'^_','-',k[3:]):<12}{v.__doc__.strip()}")
+     s = re.sub('^_','-',k[3:])
+     print(f"   -{s:<12}{fun.__doc__.strip()}")
+
+def eg__all(f:filename):
+  "Run all examples."
+  for k, fun in globals().items():
+    if k.startswith("eg_") and k!= "eg__all":
+      print("\n#---------",k)
+      run(fun,f) if fun.__annotations__.values() else run(fun)
 
 def eg__the():
   "Show config."
@@ -279,9 +306,8 @@ def eg__ys(f:filename):
 def eg__tree(f:filename):
   "treeing"
   data = DATA(csv(f))
-  data1 = clone(data, shuffle(data.rows)[:50])
+  data1 = clone(data, shuffle(data.rows)[:the.Budget])
   tree,_ = Tree(data1)
-  print(tree)
   treeShow(tree)
 
 def eg__test(f:filename):
@@ -299,6 +325,7 @@ def eg__test(f:filename):
     test.sort(key=lambda row: treeLeaf(tree,row).y.mu)
     add(wins, win(min(test[:the.Check], key=Y)))
   print(f"{round(wins.mu)} ,sd {round(sd(wins))} ,b4 {o(b4[half])} ,lo {o(b4[0])}",
+        f" ,B {the.Budget}",
         *[f"{s} {len(a)}" for s,a in
           dict(x=data.cols.x, y=data.cols.y, r=data.rows).items()],
         *f.split("/")[-2:], sep=" ,")
@@ -312,7 +339,8 @@ def main():
   for s in args:
     if f := globals().get(f"eg_{s[1:].replace('-','_')}"):
       run(f, *[t(next(args)) for t in f.__annotations__.values()])
-    elif s[1:] in the:
-      the[s[1:]] = cast(next(args, ""))
+    else:
+      for k in the:
+        if k[0] == s[1]: the[k] = cast(next(args, ""))
 
 if __name__ == "__main__": main()
