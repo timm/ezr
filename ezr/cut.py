@@ -25,28 +25,29 @@ def cutBest(data, rows):
  
 def cutSym(col, xys, _):
   N, d = len(xys), {}
-  for x, y, _ in xys: # unpack 3-tuple, ignore bucket 'b'
+  for x, y, _ in xys: 
     if x not in d: d[x] = NUM()
     add(d[x], y)
   for b, num in d.items():
     yield CUT(col.at, b, cutScore(num.n, num.mu, sd(num)))
 
 def cutNum(col, xys, right):
-  left, cut = NUM(), CUT(at=col.at, lo=-BIG, hi=-BIG)  
+  N, left, cut = len(xys), NUM(), CUT(at=col.at, lo=-BIG, hi=-BIG)  
   x, y, last_b = xys[0]
-  pre_x = x            # Track previous x to define split boundary
+  pre_x = x            
   add(left, sub(right, y))
   for x, y, b in xys[1:]:
     if b != last_b:
       cut.hi = pre_x    
       if left.n >= the.leaf and right.n >= the.leaf:
-          yield CUT(col.at, last_b, cutScore(left.n, left.mu, sd(left)), 
-                    lo=cut.lo, hi=cut.hi)
+        score = cutScore(N, (left.n * left.mu  + right.n * right.mu)  / N,
+                            (left.n * sd(left) + right.n * sd(right)) / N)
+        yield CUT(col.at, last_b, score, lo=cut.lo, hi=cut.hi)
+      cut.lo = pre_x   
       last_b = b
     add(left, sub(right, y))
-    pre_x = x          # Update tracker
-  cut.hi = BIG
-
+    pre_x = x
+   
 def cutSelects(cut, data, row):
   col = data.cols.all[cut.at]
   v = row[col.at]

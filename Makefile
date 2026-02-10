@@ -58,13 +58,12 @@ lint: $f.py  ## Lint python file x.py using `make lint f=x`
 	@a2ps               \
 		-Br               \
 		--quiet            \
-		--portrait          \
-    --lines-per-page=100  \
-		--font-size=6 \
+		--landscape          \
+		--font-size=5 \
 		--line-numbers=1      \
 		--borders=no           \
 		--pro=color             \
-		--columns=2              \
+		--columns=3              \
 		-M letter                 \
 		-o - $< | ps2pdf - $@
 	@open $@
@@ -100,7 +99,7 @@ B?=50
 
 run:
 	@time ls -r $(files) \
-		| xargs -P 24 -n 1 -I{} sh -c 'python3 -B ez.py -B $B --$(todo) "{}"'
+		| xargs -P 24 -n 1 -I{} sh -c 'python3 -B ez1.py -B $B --$(todo) "{}"'
 
 #--------------------------
 MY=@bash sh/ell

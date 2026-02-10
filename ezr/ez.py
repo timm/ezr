@@ -16,7 +16,7 @@ from math import log,exp,sqrt
 import re,sys,random,traceback
 BIG=1e32
 
-#-------------------------------------------------------------------------------
+#---------------------------------------------------------------------
 # Create
 def what(s): return NUM if s[0].isupper() else SYM
 
@@ -36,7 +36,7 @@ def COLS(names):
 def clone(data, rows=None):
   return DATA([data.cols.names] + (rows or []))
 
-#-------------------------------------------------------------------------------
+#---------------------------------------------------------------------
 # Update
 def adds(items, it=None):
   it = it or NUM(); [add(it,item) for item in (items or [])]; return it
@@ -56,7 +56,7 @@ def add(i,v,w=1):
         (i.rows.append if w>0 else i.rows.remove)(v)
   return v
 
-#-------------------------------------------------------------------------------
+#---------------------------------------------------------------------
 # Query
 def mid(col): return mode(col) if SYM is col.it else col.mu
 def mode(sym): return max(sym.has, key=sym.has.get)
@@ -78,7 +78,7 @@ def bucket(col,v):
    col.hi[b]  = max(v, col.hi.get(b,-BIG)) # remember lowest value
    return b
 
-#-------------------------------------------------------------------------------
+#---------------------------------------------------------------------
 # distance
 def minkowski(items):
   n,d = 0,0
@@ -105,7 +105,7 @@ def nearest(*args): return around(*args)[0]
 def around(data,row,rows):
   return sorted(rows,key=lambda other:distx(data,row,other))
 
-#-------------------------------------------------------------------------------
+#---------------------------------------------------------------------
 # discretization, breaking nums on, at max, the.bins number of chops
 def score(N,n,mu,sd1):  return BIG if n< the.leaf else sd1
 
@@ -151,7 +151,7 @@ def merge(num1, num2, w=1):
     out.m2 = num1.m2 + w * (num2.m2 + d * d * out.n * num2.n / num1.n)
   return out
 
- #-------------------------------------------------------------------------------
+ #---------------------------------------------------------------------
 # tree
 def Tree(data, uses=None):
   uses = uses or set()
@@ -202,7 +202,7 @@ def showCol(col, bucket, left):
   val = col.low.get(bucket+1, col.hi.get(bucket, '?'))
   return f"{col.txt} {'<' if left else '>='} {o(val)}"
 
-#------------------------------------------------------------------------------
+#--------------------------------------------------------------------
 # lib
 
 def clip(v,lo,hi): return max(lo, min(hi, v))
@@ -241,7 +241,7 @@ def csv(f):
     for s in file:
       if s:=s.strip(): yield [cast(x.strip()) for x in s.split(",")]
 
-#-------------------------------------------------------------------------------
+#---------------------------------------------------------------------
 # cli
 def run(f,*args):
   random.seed(the.seed)
@@ -279,7 +279,8 @@ def eg__csv(f:filename) :
 
 def eg__syms():
   "Example: SYMs summaries."
-  syms = adds("aaaabbc",SYM()); print(o(x:=ent(syms))); assert abs(1.379-x) < .05
+  syms = adds("aaaabbc",SYM())
+  print(o(x:=ent(syms))); assert abs(1.379-x) < .05
 
 def eg__nums():
   "Example: NUMs summaries."
@@ -316,7 +317,7 @@ def eg__test(f:filename):
   half  = len(data.rows)//2
   Y    = lambda row: disty(data,row)
   b4   = sorted(Y(row) for row in data.rows)
-  win  = lambda row: int(100 * (1 - (Y(row)-b4[0]) / (b4[half]-b4[0] + 1/BIG)))
+  win  = lambda r: int(100 * (1 - (Y(r)-b4[0]) / (b4[half]-b4[0] + 1/BIG)))
   wins = NUM()
   for _ in range(60):
     rows = shuffle(data.rows)
@@ -330,7 +331,7 @@ def eg__test(f:filename):
           dict(x=data.cols.x, y=data.cols.y, r=data.rows).items()],
         *f.split("/")[-2:], sep=" ,")
 
-#------------------------------------------------------------------------------
+#--------------------------------------------------------------------
 the= OBJ(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
 random.seed(the.seed)
 
