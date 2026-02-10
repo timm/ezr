@@ -211,8 +211,6 @@ def treeShow(t):
 #--------------------------------------------------------------------
 # lib
 
-def clip(v,lo,hi): return max(lo, min(hi, v))
-
 def shuffle(lst): random.shuffle(lst); return lst
 
 def o(t):
