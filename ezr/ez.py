@@ -4,7 +4,7 @@ ezr.py: easy AI tools
 (c) 2025 Tim Menzies, MIT license
 
 Options:
-   -b bins=5    Number of bins
+   -b bins=7    Number of bins
    -B Budget=50 Initial sampling budget
    -C Check=5   final evalaution budget
    -l leaf=4    Min examples in leaf of tree
@@ -21,7 +21,7 @@ BIG=1e32
 def what(s): return NUM if s[0].isupper() else SYM
 
 def COL(at=0,txt=" "): return what(txt)(at=at, txt=txt, goal=txt[-1]!="-")
-def NUM(**d): return OBJ(it=NUM, **d, n=0, mu=0, m2=0, low={}, hi={})
+def NUM(**d): return OBJ(it=NUM, **d, n=0, mu=0, m2=0)
 def SYM(**d): return OBJ(it=SYM, **d, n=0, has={})
 
 def DATA(items=None,s=""):
@@ -46,8 +46,11 @@ def sub(i,v): return add(i,v, -1)
 def add(i,v,w=1):
   if v!="?":
     i.n += w
+    if i.n <= 0: i.n,i.mu,i.m2 = 0,0,0; return v
     if   SYM  is i.it : i.has[v] = w + i.has.get(v,0)
-    elif NUM  is i.it : d = v-i.mu; i.mu += w*d/i.n; i.m2 += w*d*(v-i.mu)
+    elif NUM  is i.it : 
+      if i.n <= 0: i.n,i.mu,i.m2 = 0,0,0
+      else: d = v-i.mu; i.mu += w*d/i.n; i.m2 += w*d*(v-i.mu)
     elif DATA is i.it :
       if not i.cols: i.cols=COLS(v)
       else:
@@ -66,17 +69,14 @@ def mids(data):
 
 def spread(col): return (ent if SYM is col.it else sd)(col)
 def sd(num): return 0 if num.n < 2 else sqrt(max(0,num.m2) / (num.n - 1))
-def ent(sym): return -sum(p*log(p,2) for n in sym.has.values() if (p:=n/sym.n)>0)
+def ent(sym): 
+  return -sum(p*log(p,2) for n in sym.has.values() if (p:=n/sym.n)>0)
 
 def z(num,v): return max(-3, min(3, (v -  num.mu) / (sd(num) + 1/BIG)))
 def norm(num,v): return 1 / (1 + exp( -1.7 * z(num,v)))
 
 def bucket(col,v):
-   if v=="?" or SYM is col.it: return v
-   b = int(the.bins * norm(col,v))
-   col.low[b] = min(v, col.low.get(b,BIG)) # remember lowest value
-   col.hi[b]  = max(v, col.hi.get(b,-BIG)) # remember lowest value
-   return b
+   return v if (v=="?" or SYM is col.it) else int(the.bins * norm(col,v))
 
 #---------------------------------------------------------------------
 # distance
@@ -106,101 +106,107 @@ def around(data,row,rows):
   return sorted(rows,key=lambda other:distx(data,row,other))
 
 #---------------------------------------------------------------------
-# discretization, breaking nums on, at max, the.bins number of chops
-def score(N,n,mu,sd1):  return BIG if n< the.leaf else sd1
+# Discretization
+def CUT(at=0, b=0, score=BIG, lo=-BIG, hi=BIG):
+  return OBJ(it=CUT, at=at, b=b, score=score, lo=lo, hi=hi)
 
-def bestcut(data, rows):
-  d = {c.at: {} for c in data.cols.x}
-  total = {c.at: NUM() for c in data.cols.x}
-  for r in rows:
-    y = disty(data, r)
-    for c in data.cols.x:
-      if (b := bucket(c, r[c.at])) != "?":
-        if b not in d[c.at]: d[c.at][b] = NUM()
-        add(d[c.at][b], y)
-        add(total[c.at], y)
-  return min((cut for c in data.cols.x
-                for cut in cuts(len(rows), c,
-                                sorted(d[c.at].items()), total[c.at])),
-           default=None)
+def cutScore(n, mu, sd1):
+  return BIG if n < the.leaf else sd1
 
-def cuts(n, col, bins, total):
+def cutXys(col, pairs):
+  xys, right = [], NUM()
+  for row, y in pairs:
+    if (x := row[col.at]) != "?":
+      add(right, y) 
+      xys.append((x, y, bucket(col, x)))
+  return sorted(xys, key=lambda p: p[0]), right
+
+def cutBest(data, rows):
+  def who(col): return cutSym if SYM is col.it else cutNum
+  pairs = [(row, disty(data, row)) for row in rows]
+  return min((cut for c in data.cols.x 
+                  for cut in who(c)(c, *cutXys(c, pairs))),
+             key=lambda c: c.score, default=None)
+ 
+def cutSym(col, xys, _):
+  N, d = len(xys), {}
+  if N: 
+    for x, y, _ in xys: 
+      if x not in d: d[x] = NUM()
+      add(d[x], y)
+    for b, num in d.items():
+      yield CUT(col.at, b, cutScore(num.n, num.mu, sd(num)))
+
+def cutNum(col, xys, right):
+  N, left, cut = len(xys), NUM(), CUT(at=col.at, lo=-BIG, hi=-BIG)  
+  if N > 1:
+    x, y, last_b = xys[0]
+    pre_x = x            
+    add(left, sub(right, y))
+    for x, y, b in xys[1:]:
+      if b != last_b:
+        cut.hi = pre_x    
+        if left.n >= the.leaf and right.n >= the.leaf:
+          score = cutScore(N,
+                           (left.n * left.mu  + right.n * right.mu)  / N,
+                           (left.n * sd(left) + right.n * sd(right)) / N)
+          yield CUT(col.at, last_b, score, lo=cut.lo, hi=cut.hi)
+        cut.lo = pre_x   
+        last_b = b
+      add(left, sub(right, y))
+      pre_x = x
+   
+def cutSelects(cut, data, row):
+  col = data.cols.all[cut.at]
+  v = row[col.at]
+  if v == "?": return False
+  if SYM is col.it: return v == cut.b
+  return v <= cut.hi
+
+def cutShow(cut, data, yes):
+  col = data.cols.all[cut.at]
   if SYM is col.it:
-    for b, num in bins:
-      yield score(n, num.n, num.mu, sd(num)), col.at, b
-  else:
-    lhs = NUM()
-    n = total.n
-    for b, num in bins[:-1]:
-      lhs = merge(lhs, num)
-      rhs = unmerge(total, lhs)
-      mu  = (lhs.n*lhs.mu  + rhs.n*rhs.mu)  / n 
-      s   = (lhs.n*sd(lhs) + rhs.n*sd(rhs)) / n 
-      yield score(n, total.n, mu, s), col.at, b
+    return f"{col.txt} {'==' if yes else '!='} {cut.b}"
+  return f"{col.txt} {'<=' if yes else '>'} {o(cut.hi)}"
 
-def unmerge(num1, num2): return merge(num1,num2,w=-1)
-
-def merge(num1, num2, w=1):
-  out = NUM()
-  out.n = num1.n + w * num2.n
-  if out.n <= 0: return NUM()
-  out.mu = (num1.n * num1.mu + w * num2.n * num2.mu) / out.n
-  if num1.n == 0: out.m2 = num2.m2
-  else:
-    d = out.mu - num2.mu
-    out.m2 = num1.m2 + w * (num2.m2 + d * d * out.n * num2.n / num1.n)
-  return out
-
- #---------------------------------------------------------------------
-# tree
+#------------------------------------------------------------------------
+# Tree Builder
 def Tree(data, uses=None):
   uses = uses or set()
   def grow(rows):
-    at, b, kids = None, None, {}
-    if len(rows) > the.leaf :
-      if cut := bestcut(data, rows):
-        _,at,b = cut
-        yes,no,col = [],[],data.cols.all[at]
+    cut, kids = None, {}
+    if len(rows) > the.leaf:
+      if (cut := cutBest(data, rows)):
+        yes, no = [], []
         for row in rows:
-          (yes if selects(col, row, b) else no).append(row)
+          (yes if cutSelects(cut, data, row) else no).append(row)
         if yes and no:
           if len(yes) >= the.leaf: kids[True] = grow(yes)
-          if len(no) >= the.leaf: kids[False] = grow(no)
-          if kids: uses.add(at)
-    return OBJ(root=data, kids=kids, at=at, bucket=b,
-               x = mids(clone(data,rows)),
-               y = adds(disty(data,row) for row in rows))
+          if len(no)  >= the.leaf: kids[False] = grow(no)
+          if kids: uses.add(cut.at)
+    return OBJ(root=data, kids=kids, cut=cut,
+               x=mids(clone(data, rows)),
+               y=adds(disty(data, row) for row in rows))
   return grow(data.rows), uses
 
-def selects(col, row, b):
-  bucket_val = bucket(col, row[col.at])
-  if bucket_val == "?": return False  
-  return bucket_val == b if SYM is col.it else bucket_val <= b
-
 def treeLeaf(t, row):
-  if not t or not t.kids: return t  
-  col = t.root.cols.all[t.at]
-  kid = t.kids.get(bucket(col, row[col.at]) == t.bucket)
-  return treeLeaf(kid, row) if kid else t  
+  if not t or not t.kids: return t
+  kid = t.kids.get(cutSelects(t.cut, t.root, row))
+  return treeLeaf(kid, row) if kid else t
 
 def treeShow(t):
+  ys = [c for c in t.root.cols.y]
+  head = "  ".join(f"{y.txt:>8}" for y in ys)
   def show(n, lvl, pre):
-    if not n: return
-    g = [n.x[c.at] for c in n.root.cols.y]
-    print(f"{('| '*(lvl-1)+pre):{the.Show}}: ",end="")
-    print(f"{o(n.y.mu):6} : {n.y.n:4} : {o(g)}")
-    if n.kids:
-      for k in sorted(n.kids, key=lambda k: n.kids[k].y.mu):
-        c, b = n.root.cols.all[n.at], n.bucket
-        show(n.kids[k], lvl+1, showCol(c, b, k))
-  ys = ', '.join([y.txt for y in t.root.cols.y])
-  print(f"{'':{the.Show}}  Score       N   [{ys}]"); show(t, 0, "")
-
-def showCol(col, bucket, left):
-  if SYM is col.it:
-    return f"{col.txt} {'==' if left else '!='} {bucket}"
-  val = col.low.get(bucket+1, col.hi.get(bucket, '?'))
-  return f"{col.txt} {'<' if left else '>='} {o(val)}"
+    if n:
+      tree = f"{'|.. ' * (lvl - 1)}{pre or ''}"
+      g = "  ".join(f"{o(n.x[c.at]):>8}" for c in ys)
+      print(f"{tree:{the.Show}}  {o(n.y.mu):>6} ({n.y.n:>3})  {g}")
+      if n.kids:
+        show(n.kids.get(True), lvl + 1, cutShow(n.cut, n.root, True))
+        show(n.kids.get(False), lvl + 1, cutShow(n.cut, n.root, False))
+  print(f"{'':{the.Show}}  {'Score':>6} {'N':>5}  {head}")
+  show(t, 0, None)
 
 #--------------------------------------------------------------------
 # lib
@@ -317,7 +323,7 @@ def eg__test(f:filename):
   half  = len(data.rows)//2
   Y    = lambda row: disty(data,row)
   b4   = sorted(Y(row) for row in data.rows)
-  win  = lambda r: int(100 * (1 - (Y(r)-b4[0]) / (b4[half]-b4[0] + 1/BIG)))
+  win  = lambda r: int(100 * (1 - (Y(r)-b4[0]) / (b4[half]-b4[0] + 1E-6)))
   wins = NUM()
   for _ in range(60):
     rows = shuffle(data.rows)
@@ -326,7 +332,7 @@ def eg__test(f:filename):
     test.sort(key=lambda row: treeLeaf(tree,row).y.mu)
     add(wins, win(min(test[:the.Check], key=Y)))
   print(f"{round(wins.mu)} ,sd {round(sd(wins))} ,b4 {o(b4[half])} ,lo {o(b4[0])}",
-        f" ,B {the.Budget}",
+        f" B {the.Budget}",
         *[f"{s} {len(a)}" for s,a in
           dict(x=data.cols.x, y=data.cols.y, r=data.rows).items()],
         *f.split("/")[-2:], sep=" ,")
