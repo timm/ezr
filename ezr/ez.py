@@ -107,51 +107,47 @@ def around(data,row,rows):
 
 #--------------------------------------------------------------------
 # Simple rule generation
-def score(b, r): return b**2 / (b + r + 1e-30)
+def ruleScore(b, r): return b**2 / (b + r + 1e-30)
 
-def bore(data):
+def ruleGrow(data):
+  lo, hi = {}, {}
+  def stats(rows):
+    d, n = {}, len(rows)
+    for r in rows:
+      for c in data.cols.x:
+        if (v := r[c.at]) != "?":
+          k = (c.at, bucket(c, v))
+          d[k] = d.get(k, 0) + 1 / n
+          lo[k] = min(lo.get(k, v), v)
+          hi[k] = max(hi.get(k, v), v)
+    return d
+
+  def grow(b, r, used):
+    if len(b) > the.leaf and r:
+      bd, rd = stats(b), stats(r)
+      if best_k := max((k for k in bd if k[0] not in used), default=None,
+                       key=lambda k: ruleScore(bd[k], rd.get(k, 0))):
+        col = data.cols.all[best_k[0]]
+        match = lambda row: bucket(col, row[col.at]) == best_k[1]
+        b1    = [row for row in b if match(row)]
+        r1    = [row for row in r if match(row)]
+        s     = adds(disty(data, row) for row in b1)
+        if s.n >= the.leaf and (len(b1) < len(b) or len(r1) < len(r)):
+          used.add(best_k[0])
+          yield (col.txt, lo[best_k], hi[best_k], s.n, s.mu)
+          yield from grow(b1, r1, used)
+    
   data.rows.sort(key=lambda r: disty(data, r))
   n = max(int(len(data.rows)**0.5), the.leaf + 1)
-  lo, hi = {}, {}
-  for row in data.rows:
-    for col in data.cols.x:
-      if (v := row[col.at]) != "?":
-        k = (col.at, bucket(col, v))
-        if k not in lo: lo[k], hi[k] = v, v
-        lo[k], hi[k] = min(lo[k], v), max(hi[k], v)
-  return list(_bore(data, data.rows[:n], data.rows[n:],
-                    n, len(data.rows) - n, lo, hi))
+  return list(grow(data.rows[:n], data.rows[n:], set()))
 
-def _bore(data, best, rest, B, R, lo, hi, used=None):
-  used = used or set()
-  if len(best) > the.leaf and rest:
-    bd, rd = _boreCounts(data, best, rest, B, R)
-    bd = {k:v for k,v in bd.items() if k[0] not in used}
-    if bd:
-      b1, r1, col, k = _pick(data, bd, rd, best, rest)
-      if len(b1) < len(best) or len(r1) < len(rest):
-        s = adds((disty(data, r) for r in b1), NUM())
-        if s.n >= the.leaf:
-          yield (col.txt, k[0], lo[k], hi[k], s.n, s.mu)
-          used.add(col.at)
-          yield from _bore(data, b1, r1, B, R, lo, hi, used)
-
-def _boreCounts(data, best, rest, B, R, bd=None, rd=None):
-  bd = {} if bd is None else bd
-  rd = {} if rd is None else rd
-  for col in data.cols.x:
-    for rows, d, n in [(best, bd, B), (rest, rd, R)]:
-      for row in [r for r in rows if (v := r[col.at]) != "?"]:
-        k = (col.at, bucket(col, v))
-        d[k] = d.get(k, 0) + 1 / n
-  return bd, rd
-
-def _pick(data, bd, rd, best, rest):
-  k = max(bd, key=lambda x: score(bd[x], rd.get(x, 0)))
-  col = data.cols.all[k[0]]
-  sub = lambda l: [r for r in l if bucket(col, r[col.at]) == k[1]]
-  return sub(best), sub(rest), col, k
-
+def ruleShow(rules):
+  pre = "IF  "
+  for txt, lo, hi, n, mu in rules:
+    bnd = f"{txt} == {o(lo)}" if lo==hi else f"{o(lo)} <= {txt} <= {o(hi)}"
+    print(f"{pre}{bnd:<35} THEN {o(mu)} ({n})")
+    pre = "AND "
+     
 #--------------------------------------------------------------------
 # lib
 
@@ -245,12 +241,7 @@ def eg__data(f:filename):
 
 def eg__bore(f:filename):
   "best or rest rule generation"
-  d = DATA(csv(f))
-  print(f"\n{'Rule (Conjunction)':<30} | {'Score'}")
-  print("-" * 45)
-  for txt, at, lo, hi, n, mu, *_ in bore(d):
-     phrase = f"{txt} == {o(lo)}" if lo==hi else f"{o(lo)} <= {txt} <= {o(hi)}"
-     print(f"IF {phrase:<27} | {mu:.4f} ({n})")
+  ruleShow(ruleGrow(DATA(csv(f))))
 
 #--------------------------------------------------------------------
 the= OBJ(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
