@@ -282,7 +282,6 @@ def eg__test(f: filename):
     100*(1-(Y(r)-b4[0])/(b4[half]-b4[0]+1E-6)))
   wins = NUM()
   for _ in range(60):
-    print(".",end="",flush=True,file=sys.stderr)
     rows = shuffle(data.rows)
     test = rows[half:]
     train = rows[:half][:the.Budget]
