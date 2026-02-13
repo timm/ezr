@@ -127,24 +127,24 @@ def treeSplits(col, rows):
       if left: yield med, left, right
 
 
-def TREE(data0, rows0):
+def TREE(data, rows0):
   used=set()
-  def _w(data,rows): 
+  def _w(rows): 
     return len(rows)*sd(adds(disty(data,r) for r in rows))
 
-  def grow(data,rows):
+  def grow(rows):
     if len(rows) >= 2*the.leaf:
       if b := min((OBJ(col=c,cut=cut,left=left,right=right)
                    for c in data.cols.x
                    for cut,left,right in treeSplits(c,rows)),
-                  key=lambda b: _w(data,b.left)+_w(data,b.right),
+                  key=lambda b: _w(b.left)+_w(b.right),
                   default=None):
         used.add(b.col.txt)
         return OBJ(col=b.col, cut=b.cut,
-                   left=grow(data,b.left),
-                   right=grow(data,b.right))
+                   left=grow(b.left),
+                   right=grow(b.right))
     return OBJ(y=adds(disty(data,r) for r in rows))
-  return grow(data0,rows0), used
+  return grow(rows0), used
  
 def treeLeaf(t, row):
   if c := t.get('col'):
@@ -155,17 +155,24 @@ def treeLeaf(t, row):
     return treeLeaf(kid, row)
   return t
 
-def treeShow(t, lvl=0, pre=""):
-  s = f"{'|.. '*(lvl-1)}{pre}" if pre else ""
-  if c := t.get('col'):
-    if pre: print(s)
-    op = '==' if SYM is c.it else '<='
-    no = '!=' if SYM is c.it else '>'
-    treeShow(t.left,lvl+1,f"{c.txt} {op} {o(t.cut)}")
-    treeShow(t.right,lvl+1,f"{c.txt} {no} {o(t.cut)}")
-  else:
-    print(f"{s:{the.Show}} {o(t.y.mu):>6} ({t.y.n})")
-   
+def treeShow(t, data):
+  y = lambda n: n.y.mu if n.get('y') else y(n.left)
+  s = adds(disty(data,r) for r in data.rows)
+  print(f"{'':{the.Show}} {o(s.mu):>6} ({s.n})")
+  def show(t, lvl=0, pre=""):
+    s = f"{'|.. '*(lvl-1)}{pre}" if pre else ""
+    if c := t.get('col'):
+      if pre: print(s)
+      op = '==' if SYM is c.it else '<='
+      no = '!=' if SYM is c.it else '>'
+      for kid,txt in sorted(
+          [(t.left,op),(t.right,no)],
+          key=lambda p: y(p[0])):
+        show(kid,lvl+1,f"{c.txt} {txt} {o(t.cut)}")
+    else:
+      print(f"{s:{the.Show}} {o(t.y.mu):>6} ({t.y.n})")
+  show(t)
+
 #--------------------------------------------------------------------
 # lib
 def shuffle(lst): random.shuffle(lst); return lst
@@ -261,7 +268,7 @@ def eg__tree(f: filename):
   print(".",file=sys.stderr)
   data1 = clone(data, shuffle(data.rows)[:the.Budget])
   tree,used = TREE(data1, data1.rows)
-  treeShow(tree)
+  treeShow(tree,data1)
   print(":used",len(used), len(data.cols.x))
 
 def eg__test(f: filename):
