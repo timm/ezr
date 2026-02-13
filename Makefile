@@ -88,7 +88,15 @@ YS: ## show y shorting
 TREE: ## show y shorting
 	@./ez.py --tree ~/gits/moot/optimize/misc/auto93.csv  
 
+stats:
+	gawk -F, 'ENDFILE {print NF, FNR,FILENAME}' ~/gits/moot/optimize/*/*.csv | sort -k1,1n -k2,2n | column -t
+
 B?=50
+
+~/tmp/ez_tree.log:  ## run ezrtest on many files
+	@mkdir -p ~/tmp
+	@$(MAKE) todo=tree files="$(HOME)/gits/moot/optimize/*/*.csv" run | tee $@ 
+
 
 ~/tmp/ez_test.log:  ## run ezrtest on many files
 	@mkdir -p ~/tmp
