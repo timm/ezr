@@ -117,7 +117,7 @@ def splits(col, rows):
   at = col.at
   if SYM is col.it:
     for v in set(r[at] for r in rows if r[at]!="?"):
-      lo,hi = selects(rows,at,lambda x,v=v: x==v)
+      lo,hi = selects(rows,at,lambda x: x==v)
       if lo: yield v, lo, hi
   else:
     vals = sorted(r[at] for r in rows if r[at]!="?")
@@ -131,12 +131,11 @@ def _w(data,rows):
 
 def TREE(data, rows):
   if len(rows) >= 2*the.leaf:
-    if b := min(
-       (OBJ(col=c,cut=cut,lo=lo,hi=hi)
-        for c in data.cols.x
-        for cut,lo,hi in splits(c,rows)),
-       key=lambda b: _w(data,b.lo)+_w(data,b.hi),
-       default=None):
+    if b := min((OBJ(col=c,cut=cut,lo=lo,hi=hi)
+                 for c in data.cols.x
+                 for cut,lo,hi in splits(c,rows)),
+                key=lambda b: _w(data,b.lo)+_w(data,b.hi),
+                default=None):
       return OBJ(col=b.col, cut=b.cut,
                  lo=TREE(data,b.lo),
                  hi=TREE(data,b.hi))
@@ -178,10 +177,9 @@ def eg__test(f: filename):
   half = len(data.rows)//2
   Y = lambda r: disty(data,r)
   b4 = sorted(Y(r) for r in data.rows)
-  win = lambda r: int(
-    100*(1-(Y(r)-b4[0])/(b4[half]-b4[0]+1E-6)))
+  win = lambda r: int(100*(1-(Y(r)-b4[0])/(b4[half]-b4[0]+1E-6)))
   wins = NUM()
-  for _ in range(60):
+  for _ in range(20):
     rows = shuffle(data.rows)
     test = rows[half:]
     train = rows[:half][:the.Budget]
