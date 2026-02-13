@@ -126,11 +126,12 @@ def treeSplits(col, rows):
       left,right = treeSelects(rows,at,lambda x: x<=med)
       if left: yield med, left, right
 
-def _w(data,rows): 
-  return len(rows)*sd(adds(disty(data,r) for r in rows))
 
 def TREE(data0, rows0):
   used=set()
+  def _w(data,rows): 
+    return len(rows)*sd(adds(disty(data,r) for r in rows))
+
   def grow(data,rows):
     if len(rows) >= 2*the.leaf:
       if b := min((OBJ(col=c,cut=cut,left=left,right=right)
