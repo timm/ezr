@@ -105,8 +105,7 @@ def nearest(*args): return around(*args)[0]
 def around(data,row,rows):
   return sorted(rows,key=lambda other:distx(data,row,other))
 
-#--------------------------------------------------------------------
-# Simple rule generation
+#-- Rule Generation ----------------------------------------------------
 # --- build 1 rile
 def ruleAdd(rule, at, b):
   spans = rule.setdefault(at, [])
@@ -129,14 +128,14 @@ def ruleSelects(data, rule, rows):
   return [r for r in rows if ruleSelect(data, rule, r)]
 
 # --- show a rule
-def ruleShowClause(txt, lo, hi):
+def ruleShow1(txt, lo, hi):
   return f"{txt} == {o(lo)}" if lo == hi else f"{o(lo)} <= {txt} <= {o(hi)}"
 
 def ruleShow(rule, data, lo, hi, rows=None):
   pre = "IF  "
   for at, spans in rule.items():
     txt = data.cols.all[at].txt
-    s = " OR ".join(ruleShowClause(txt, lo[at,a], hi[at,b]) for a,b in spans)
+    s = " OR ".join(ruleShow1(txt,lo[at,a],hi[at,b]) for a,b in spans)
     if rows:
       rows = ruleSelects(data, {at: spans}, rows)
       s2 = adds(disty(data, r) for r in rows)
@@ -164,7 +163,7 @@ def ruleGrow(data):
   def grow(b, r, rule):
     if len(b) > the.leaf and r:
       bd, rd = stats(b), stats(r)
-      if most := max((k for k in bd if not ruleSeen(rule, *k)), default=None,
+      if most:= max((k for k in bd if not ruleSeen(rule,*k)),default=None,
                       key=lambda k: score(bd[k], rd.get(k, 0))):
         at, want = most
         b1 = ruleSelects(data, {at:[(want,want)]}, b)
@@ -182,7 +181,6 @@ def ruleGrow(data):
 
 #--------------------------------------------------------------------
 # lib
-
 def shuffle(lst): random.shuffle(lst); return lst
 
 def o(t):
@@ -216,7 +214,6 @@ def csv(f):
   with open(f,encoding="utf-8") as file:
     for s in file:
       if s:=s.strip(): yield [cast(x.strip()) for x in s.split(",")]
-
 #---------------------------------------------------------------------
 # cli
 def run(f,*args):
