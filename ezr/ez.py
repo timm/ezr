@@ -105,79 +105,98 @@ def nearest(*args): return around(*args)[0]
 def around(data,row,rows):
   return sorted(rows,key=lambda other:distx(data,row,other))
 
-#-- Rule Generation ----------------------------------------------------
-# --- build 1 rile
-def ruleAdd(rule, at, b):
-  spans = rule.setdefault(at, [])
-  for i, (a, z) in enumerate(spans):
-    if a-1 <= b <= z+1:
-      spans[i] = (min(a,b), max(z,b))
-      return
-  spans.append((b, b))
+#--------------------------------------------------------------------
+def selects(rows, at, fn):
+  lo, hi = [], []
+  for r in rows:
+    if (v := r[at]) != "?": (lo if fn(v) else hi).append(r)
+  return ((lo,hi) if len(lo) >= the.leaf and len(hi) >= the.leaf
+                  else (None,None))
 
-def ruleSeen(rule, at, b):
-  return at in rule and any(a <= b <= z for a, z in rule[at])
+def splits(col, rows):
+  at = col.at
+  if SYM is col.it:
+    for v in set(r[at] for r in rows if r[at]!="?"):
+      lo,hi = selects(rows,at,lambda x,v=v: x==v)
+      if lo: yield v, lo, hi
+  else:
+    vals = sorted(r[at] for r in rows if r[at]!="?")
+    if len(vals) >= 2:
+      med = vals[len(vals)//2]
+      lo,hi = selects(rows,at,lambda x: x<=med)
+      if lo: yield med, lo, hi
 
-# --- query rows with a rule 
-def ruleSelect(data, rule, row):
-  fn = lambda at, a, z: a <= bucket(data.cols.all[at], row[at]) <= z
-  return all(any(fn(at, a, z) for a, z in spans)
-             for at, spans in rule.items())
+def _w(data,rows): 
+  return len(rows)*sd(adds(disty(data,r) for r in rows))
 
-def ruleSelects(data, rule, rows):
-  return [r for r in rows if ruleSelect(data, rule, r)]
+def TREE(data, rows):
+  if len(rows) >= 2*the.leaf:
+    if b := min(
+       (OBJ(col=c,cut=cut,lo=lo,hi=hi)
+        for c in data.cols.x
+        for cut,lo,hi in splits(c,rows)),
+       key=lambda b: _w(data,b.lo)+_w(data,b.hi),
+       default=None):
+      return OBJ(col=b.col, cut=b.cut,
+                 lo=TREE(data,b.lo),
+                 hi=TREE(data,b.hi))
+  return OBJ(y=adds(disty(data,r) for r in rows))
+ 
+def treeLeaf(t, row):
+  if c := t.get('col'):
+    v = row[c.at]
+    if v == "?": return treeLeaf(t.lo, row)
+    if SYM is c.it: kid = t.lo if v==t.cut else t.hi
+    else:           kid = t.lo if v<=t.cut else t.hi
+    return treeLeaf(kid, row)
+  return t
 
-# --- show a rule
-def ruleShow1(txt, lo, hi):
-  return f"{txt} == {o(lo)}" if lo == hi else f"{o(lo)} <= {txt} <= {o(hi)}"
-
-def ruleShow(rule, data, lo, hi, rows=None):
-  pre = "IF  "
-  for at, spans in rule.items():
-    txt = data.cols.all[at].txt
-    s = " OR ".join(ruleShow1(txt,lo[at,a],hi[at,b]) for a,b in spans)
-    if rows:
-      rows = ruleSelects(data, {at: spans}, rows)
-      s2 = adds(disty(data, r) for r in rows)
-      print(f"{pre}{s:<35} THEN {o(s2.mu)} ({s2.n})")
-    else:
-      print(f"{pre}{s}")
-    pre = "AND "
+def treeShow(t, lvl=0, pre=""):
+  s = f"{'|.. '*(lvl-1)}{pre}" if pre else ""
+  if c := t.get('col'):
+    if pre: print(s)
+    op = '==' if SYM is c.it else '<='
+    no = '!=' if SYM is c.it else '>'
+    treeShow(t.lo,lvl+1,f"{c.txt} {op} {o(t.cut)}")
+    treeShow(t.hi,lvl+1,f"{c.txt} {no} {o(t.cut)}")
+  else:
+    print(f"{s:{the.Show}} {o(t.y.mu):>6} ({t.y.n})")
    
-# --- grow rules
-def ruleGrow(data):
-  lo, hi = {}, {}
-  def stats(rows):
-    d, n = {}, len(rows)
-    for r in rows:
-      for c in data.cols.x:
-        if (v := r[c.at]) != "?":
-          k = (c.at, bucket(c, v))
-          d[k] = d.get(k, 0) + 1 / n
-          lo[k] = min(lo.get(k, v), v)
-          hi[k] = max(hi.get(k, v), v)
-    return d
+#-------------------------------------------------
+def filename(s): return str(s)
 
-  def score(b, r): return b**2 / (b + r + 1e-30)
+def eg__tree(f: filename):
+  "treeing"
+  data = DATA(csv(f))
+  data1 = clone(data,
+                shuffle(data.rows)[:the.Budget])
+  treeShow(tree(data1, data1.rows))
 
-  def grow(b, r, rule):
-    if len(b) > the.leaf and r:
-      bd, rd = stats(b), stats(r)
-      if most:= max((k for k in bd if not ruleSeen(rule,*k)),default=None,
-                      key=lambda k: score(bd[k], rd.get(k, 0))):
-        at, want = most
-        b1 = ruleSelects(data, {at:[(want,want)]}, b)
-        r1 = ruleSelects(data, {at:[(want,want)]}, r)
-        s  = adds(disty(data, row) for row in b1)
-        if s.n >= the.leaf and (len(b1) < len(b) or len(r1) < len(r)):
-          ruleAdd(rule, at, want)
-          grow(b1, r1, rule)
-
-  data.rows.sort(key=lambda r: disty(data, r))
-  n = max(int(len(data.rows)**0.5), the.leaf + 1)
-  rule = {}
-  grow(data.rows[:n], data.rows[n:], rule)
-  return rule, lo, hi
+def eg__test(f: filename):
+  "testing"
+  data = DATA(csv(f))
+  half = len(data.rows)//2
+  Y = lambda r: disty(data,r)
+  b4 = sorted(Y(r) for r in data.rows)
+  win = lambda r: int(
+    100*(1-(Y(r)-b4[0])/(b4[half]-b4[0]+1E-6)))
+  wins = NUM()
+  for _ in range(60):
+    rows = shuffle(data.rows)
+    test = rows[half:]
+    train = rows[:half][:the.Budget]
+    t = tree(clone(data,train), train)
+    test.sort(key=lambda r: treeLeaf(t,r).y.mu)
+    add(wins, win(min(test[:the.Check], key=Y)))
+  print(f"{round(wins.mu)}"
+        f" ,sd {round(sd(wins))}"
+        f" ,b4 {o(b4[half])}"
+        f" ,lo {o(b4[0])}"
+        f" ,B {the.Budget}",
+    *[f"{s} {len(a)}" for s,a in
+      dict(x=data.cols.x, y=data.cols.y,
+           r=data.rows).items()],
+    *f.split("/")[-2:], sep=" ,")
 
 #--------------------------------------------------------------------
 # lib
@@ -268,14 +287,37 @@ def eg__data(f:filename):
   print("x",*data.cols.x,sep="\n")
   print("y",*data.cols.y,sep="\n")
 
-def eg__bore(f:filename):
-  "best or rest rule generation"
+def eg__tree(f: filename):
+  "treeing"
   data = DATA(csv(f))
-  some = clone(data, shuffle(data.rows)[:50])
-  [print(row) for row in some.rows]
-  rule, lo, hi = ruleGrow(some)
-  n = max(int(len(some.rows)**0.5), the.leaf + 1)
-  ruleShow(rule, some, lo, hi, some.rows[:n])
+  data1 = clone(data, shuffle(data.rows)[:the.Budget])
+  treeShow(TREE(data1, data1.rows))
+
+def eg__test(f: filename):
+  "testing"
+  data = DATA(csv(f))
+  half = len(data.rows)//2
+  Y = lambda r: disty(data,r)
+  b4 = sorted(Y(r) for r in data.rows)
+  win = lambda r: int(
+    100*(1-(Y(r)-b4[0])/(b4[half]-b4[0]+1E-6)))
+  wins = NUM()
+  for _ in range(60):
+    rows = shuffle(data.rows)
+    test = rows[half:]
+    train = rows[:half][:the.Budget]
+    t = TREE(clone(data,train), train)
+    test.sort(key=lambda r: treeLeaf(t,r).y.mu)
+    add(wins, win(min(test[:the.Check], key=Y)))
+  print(f"{round(wins.mu)}"
+        f" ,sd {round(sd(wins))}"
+        f" ,b4 {o(b4[half])}"
+        f" ,lo {o(b4[0])}"
+        f" ,B {the.Budget}",
+    *[f"{s} {len(a)}" for s,a in
+      dict(x=data.cols.x, y=data.cols.y,
+           r=data.rows).items()],
+    *f.split("/")[-2:], sep=" ,")
 
 #--------------------------------------------------------------------
 the= OBJ(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
@@ -290,5 +332,4 @@ def main(settings,funs):
       for k in settings:
         if k[0] == s[1]: settings[k] = cast(next(args, ""))
 
-#--------------------------------------------------------------------
 if __name__ == "__main__": main(the,globals())
