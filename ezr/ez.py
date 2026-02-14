@@ -110,68 +110,66 @@ def treeSelects(rows, at, fn):
   left, right = [], []
   for r in rows:
     if (v := r[at]) != "?": (left if fn(v) else right).append(r)
-  return ((left,right) if len(left) >= the.leaf and len(right) >= the.leaf
-                  else (None,None))
+  return ((left, right) if len(left) >= the.leaf and len(right) >= the.leaf
+          else (None, None))
 
 def treeSplits(col, rows):
   at = col.at
   if SYM is col.it:
-    for v in set(r[at] for r in rows if r[at]!="?"):
-      left,right = treeSelects(rows,at,lambda x: x==v)
+    for v in set(r[at] for r in rows if r[at] != "?"):
+      left, right = treeSelects(rows, at, lambda x: x == v)
       if left: yield v, left, right
   else:
-    vals = sorted(r[at] for r in rows if r[at]!="?")
+    vals = sorted(r[at] for r in rows if r[at] != "?")
     if len(vals) >= 2:
-      med = vals[len(vals)//2]
-      left,right = treeSelects(rows,at,lambda x: x<=med)
+      med = vals[len(vals) // 2]
+      left, right = treeSelects(rows, at, lambda x: x <= med)
       if left: yield med, left, right
 
+def TREE(data, rows):
+  tree = OBJ(y = adds(disty(data, r) for r in rows))
+  if len(rows) >= 2 * the.leaf:
+    best, bestW = None, BIG
+    for c in data.cols.x:
+      for cut, left, right in treeSplits(c, rows):
+        w = sum(len(s)*sd(adds(disty(data,r) for r in s))
+                for s in [left,right])
+        if w < bestW:
+          best, bestW = (c, cut, left, right), w
+    if best:
+      c, cut, left, right = best
+      tree.update(col=c, cut=cut, left=TREE(data, left),
+                                  right=TREE(data, right))
+  return tree
 
-def TREE(data, rows0):
-  used=set()
-  def _w(rows): 
-    return len(rows)*sd(adds(disty(data,r) for r in rows))
-
-  def grow(rows):
-    if len(rows) >= 2*the.leaf:
-      if b := min((OBJ(col=c,cut=cut,left=left,right=right)
-                   for c in data.cols.x
-                   for cut,left,right in treeSplits(c,rows)),
-                  key=lambda b: _w(b.left)+_w(b.right),
-                  default=None):
-        used.add(b.col.txt)
-        return OBJ(col=b.col, cut=b.cut,
-                   left=grow(b.left),
-                   right=grow(b.right))
-    return OBJ(y=adds(disty(data,r) for r in rows))
-  return grow(rows0), used
- 
-def treeLeaf(t, row):
-  if c := t.get('col'):
-    v = row[c.at]
-    if v == "?": return treeLeaf(t.left, row)
-    if SYM is c.it: kid = t.left if v==t.cut else t.right
-    else:           kid = t.left if v<=t.cut else t.right
+def treeLeaf(tree, row):
+  if "col" in tree:                          
+    v = row[tree.col.at]
+    if v == "?": return treeLeaf(tree.left, row)
+    kid = (tree.left if (v == tree.cut
+                         if SYM is tree.col.it
+                         else v <= tree.cut) else tree.right)
     return treeLeaf(kid, row)
-  return t
+  return tree
 
-def treeShow(t, data):
-  y = lambda n: n.y.mu if n.get('y') else y(n.left)
-  s = adds(disty(data,r) for r in data.rows)
-  print(f"{'':{the.Show}} {o(s.mu):>6} ({s.n})")
-  def show(t, lvl=0, pre=""):
-    s = f"{'|.. '*(lvl-1)}{pre}" if pre else ""
-    if c := t.get('col'):
-      if pre: print(s)
-      op = '==' if SYM is c.it else '<='
-      no = '!=' if SYM is c.it else '>'
-      for kid,txt in sorted(
-          [(t.left,op),(t.right,no)],
-          key=lambda p: y(p[0])):
-        show(kid,lvl+1,f"{c.txt} {txt} {o(t.cut)}")
-    else:
-      print(f"{s:{the.Show}} {o(t.y.mu):>6} ({t.y.n})")
-  show(t)
+def treeUsed(tree):
+  return {n.col.txt for n,_,_ in treeNodes(tree) if "col" in n}
+
+def treeNodes(tree, lvl=0, pre=""):
+  if tree:
+    yield tree, lvl, pre
+    if "col" in tree:                        
+      op = '==' if SYM is tree.col.it else '<='
+      no = '!=' if SYM is tree.col.it else '>'
+      for kid, txt in sorted([(tree.left, op), (tree.right, no)],
+                              key=lambda p: p[0].y.mu):
+        yield from treeNodes(kid, lvl+1,
+                             f"{tree.col.txt} {txt} {o(tree.cut)}")
+
+def treeShow(tree):                          
+  for n, lvl, pre in treeNodes(tree):
+    s = f"{'|   '*(lvl-1)}{pre}" if pre else ""
+    print(f"{s:{the.Show}} {o(n.y.mu):>6} ({n.y.n})")
 
 #--------------------------------------------------------------------
 # lib
@@ -265,40 +263,32 @@ def eg__data(f:filename):
 def eg__tree(f: filename):
   "treeing"
   data = DATA(csv(f))
-  print(".",file=sys.stderr)
   data1 = clone(data, shuffle(data.rows)[:the.Budget])
-  tree,used = TREE(data1, data1.rows)
-  treeShow(tree,data1)
-  print(":used",len(used), len(data.cols.x))
-
+  tree = TREE(data1, data1.rows)
+  treeShow(tree)                  
+  print(":used", len(treeUsed(tree)), len(data.cols.x))
+ 
 def eg__test(f: filename):
   "testing"
   data = DATA(csv(f))
-  print(".",file=sys.stderr)
   half = len(data.rows)//2
   Y = lambda r: disty(data,r)
   b4 = sorted(Y(r) for r in data.rows)
-  win = lambda r: int(
-    100*(1-(Y(r)-b4[0])/(b4[half]-b4[0]+1E-6)))
-  wins = NUM()
+  win = lambda r: int(100*(1-(Y(r)-b4[0])/(b4[half]-b4[0]+1E-6)))
+  wins, used = NUM(), 0
   for _ in range(60):
     rows = shuffle(data.rows)
-    test = rows[half:]
-    train = rows[:half][:the.Budget]
-    tree,used = TREE(clone(data,train), train)
+    test, train = rows[half:], rows[:half][:the.Budget]
+    tree = TREE(clone(data,train), train)
+    used += len(treeUsed(tree))
     test.sort(key=lambda r: treeLeaf(tree,r).y.mu)
     add(wins, win(min(test[:the.Check], key=Y)))
-  print(f"{round(wins.mu)}"
-        f" ,sd {round(sd(wins))}"
-        f" ,b4 {o(b4[half])}"
-        f" ,lo {o(b4[0])}"
-        f" ,used {len(used)}"
-        f" ,B {the.Budget}",
-    *[f"{s} {len(a)}" for s,a in
-      dict(x=data.cols.x, y=data.cols.y,
-           r=data.rows).items()],
-    *f.split("/")[-2:], sep=" ,")
-
+  print(f"{round(wins.mu)} ,sd {round(sd(wins))} ,b4 {o(b4[half])}"
+        f" ,lo {o(b4[0])} ,used {int(used/60)} ,B {the.Budget}",
+        *[f"{s} {len(a)}" for s,a in
+          dict(x=data.cols.x, y=data.cols.y, r=data.rows).items()],
+        *f.split("/")[-2:], sep=" ,")
+ 
 #--------------------------------------------------------------------
 the= OBJ(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
 random.seed(the.seed)
