@@ -16,56 +16,57 @@ OPTIONS:
   -s seed=1    Random number seed
   -S Show=30   Tree display width
 """
-
-# INPUT: CSV. Row 1 defines columns. Uppercase=numeric, lowercase=symbolic.
-#   Suffixes: "+" maximize, "-" minimize, "!" class label, "X" ignore.
-#   Missing values: "?".
-# 
-# API ( Hints: i:instance d:DATA c:COL r:row v:value f:file ):
-#   OBJ(**d)           Dict subclass with dot-notation access
-#   csv(f)             Generator yielding parsed rows from CSV file
-#   cast(s)            Cast string to int, float, bool, or string
-# 
-#   NUM(at,txt)        Numeric column (tracks n, mu, m2)
-#   SYM(at,txt)        Symbolic column (tracks n, has)
-#   DATA(items,s)      Dataset: rows + COLS structure
-#   COLS(names)        Build x/y column lists from header names
-#   clone(d, rows)     New DATA with same structure, optional rows
-# 
-#   add(i,v)           Update NUM/SYM stats or add row to DATA
-#   mid(c), spread(c)  Central tendency and diversity for a column
-#   norm(c,v)          Normalize numeric v to 0..1
-#   like(c,v,prior)    Likelihood of v in column c
-#   likes(d,r,n,nh)    Log-likelihood of row r in dataset d
-# 
-#   distx(d,r1,r2)     Minkowski distance between rows over x cols
-#   disty(d,r)         Distance of row r from heaven over y cols
-# 
-#   TREE(d,rows)       Build regression tree via variance reduction
-#   treeLeaf(t,r)      Leaf node for row r
-#   treeNodes(t)       Iterator over (node, level, label) triples
-#   treeUsed(t)        Set of column names used in tree splits
-#   treeShow(t)        Print tree with indentation and y stats
-# 
-# TYPE TAGS (.it field routes logic instead of subclassing):
-#   NUM  SYM  DATA
-# 
-# XAI MECHANISMS:
-#   Contrast Sets: Isolates "best" rows (sorted by disty, top sqrt(n)).
-#     Contrasts their attribute ranges against the rest using score().
-#     Yields simple IF/THEN rules — actionable and human-readable.
-#   Interpretable Trees: Printed recursively. Indentation = conjunctions.
-#     Leaves show mid/spread of y. Sorted so best branch prints first.
-# 
-# ARCHITECTURE:
-#   OBJ-Dict Dualism   Factory fns return OBJ dicts with dot-notation
-#   Functional Routing .it tag routes logic (no subclass dispatch)
-#   Config via Docstring  Options regex-parsed from this string at startup
-#   Reflection Tests   Any eg_* function is auto-runnable via CLI
 from math import log,exp,sqrt
 import re,sys,random,traceback
 BIG=1e32
 
+"""
+INPUT: CSV. Row 1 defines columns. Uppercase=numeric, lowercase=symbolic.
+  Suffixes: "+" maximize, "-" minimize, "!" class label, "X" ignore.
+  Missing values: "?".
+
+API ( Hints: i:instance d:DATA c:COL r:row v:value f:file ):
+  OBJ(**d)           Dict subclass with dot-notation access
+  csv(f)             Generator yielding parsed rows from CSV file
+  cast(s)            Cast string to int, float, bool, or string
+
+  NUM(at,txt)        Numeric column (tracks n, mu, m2)
+  SYM(at,txt)        Symbolic column (tracks n, has)
+  DATA(items,s)      Dataset: rows + COLS structure
+  COLS(names)        Build x/y column lists from header names
+  clone(d, rows)     New DATA with same structure, optional rows
+
+  add(i,v)           Update NUM/SYM stats or add row to DATA
+  mid(c), spread(c)  Central tendency and diversity for a column
+  norm(c,v)          Normalize numeric v to 0..1
+  like(c,v,prior)    Likelihood of v in column c
+  likes(d,r,n,nh)    Log-likelihood of row r in dataset d
+
+  distx(d,r1,r2)     Minkowski distance between rows over x cols
+  disty(d,r)         Distance of row r from heaven over y cols
+
+  TREE(d,rows)       Build regression tree via variance reduction
+  treeLeaf(t,r)      Leaf node for row r
+  treeNodes(t)       Iterator over (node, level, label) triples
+  treeUsed(t)        Set of column names used in tree splits
+  treeShow(t)        Print tree with indentation and y stats
+
+TYPE TAGS (.it field routes logic instead of subclassing):
+  NUM  SYM  DATA
+
+XAI MECHANISMS:
+  Contrast Sets: Isolates "best" rows (sorted by disty, top sqrt(n)).
+    Contrasts their attribute ranges against the rest using score().
+    Yields simple IF/THEN rules — actionable and human-readable.
+  Interpretable Trees: Printed recursively. Indentation = conjunctions.
+    Leaves show mid/spread of y. Sorted so best branch prints first.
+
+ARCHITECTURE:
+  OBJ-Dict Dualism   Factory fns return OBJ dicts with dot-notation
+  Functional Routing .it tag routes logic (no subclass dispatch)
+  Config via Docstring  Options regex-parsed from this string at startup
+  Reflection Tests   Any eg_* function is auto-runnable via CLI
+"""
 #---- create ---------------------------------------------------------
 def what(s): return NUM if s[0].isupper() else SYM
 
