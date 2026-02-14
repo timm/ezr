@@ -52,18 +52,18 @@ lint: $f.py  ## Lint python file x.py using `make lint f=x`
 	 				--disable=R1735 \
 	 				--disable=W0106,W0201,W0311 $f.py
 
-~/tmp/%.pdf: %.py  Makefile ## .py ==> .pdf
+~/tmp/%.pdf: %.py $(MAKEFILE_LIST) ## .py ==> .pdf
 	@mkdir -p ~/tmp
 	@echo "pdf-ing $@ ... "
 	@a2ps               \
 		-Br               \
 		--quiet            \
-		--landscape          \
-		--font-size=5 \
+		--portrait          \
+		--chars-per-line=80 \
 		--line-numbers=1      \
 		--borders=no           \
 		--pro=color             \
-		--columns=3              \
+		--columns=2             \
 		-M letter                 \
 		-o - $< | ps2pdf - $@
 	@open $@

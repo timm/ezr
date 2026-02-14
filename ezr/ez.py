@@ -1,23 +1,72 @@
 #!/usr/bin/env python3 -B
 """
-ezr.py: easy AI tools
-(c) 2025 Tim Menzies, MIT license
+ez.py: lightweight XAI for optimization, classification, regression
+(c) 2025 Tim Menzies, MIT license.
 
-Options:
-   -b bins=7    Number of bins
-   -B Budget=50 Initial sampling budget
-   -C Check=5   final evalaution budget
-   -l leaf=4    Min examples in leaf of tree
-   -p p=2       Distance coeffecient
-   -s seed=1    Random number seed
-   -S Show=30   Tree display width"""
-#from .tools import helper
+USAGE: python3 ez.py [OPTIONS] [FILE]                          
+
+OPTIONS:
+  -b bins=7    Number of bins for numeric discretization
+  -B Budget=50 Training sample budget
+  -C Check=5   Final evaluation budget
+  -k k=1       Bayes low-frequency hack for symbolic attributes
+  -l leaf=4    Min rows in tree leaf
+  -m m=2       Bayes low-frequency hack for class priors
+  -p p=2       Minkowski distance power (1:manhattan, 2:euclidean)
+  -s seed=1    Random number seed
+  -S Show=30   Tree display width
+"""
+
+# INPUT: CSV. Row 1 defines columns. Uppercase=numeric, lowercase=symbolic.
+#   Suffixes: "+" maximize, "-" minimize, "!" class label, "X" ignore.
+#   Missing values: "?".
+# 
+# API ( Hints: i:instance d:DATA c:COL r:row v:value f:file ):
+#   OBJ(**d)           Dict subclass with dot-notation access
+#   csv(f)             Generator yielding parsed rows from CSV file
+#   cast(s)            Cast string to int, float, bool, or string
+# 
+#   NUM(at,txt)        Numeric column (tracks n, mu, m2)
+#   SYM(at,txt)        Symbolic column (tracks n, has)
+#   DATA(items,s)      Dataset: rows + COLS structure
+#   COLS(names)        Build x/y column lists from header names
+#   clone(d, rows)     New DATA with same structure, optional rows
+# 
+#   add(i,v)           Update NUM/SYM stats or add row to DATA
+#   mid(c), spread(c)  Central tendency and diversity for a column
+#   norm(c,v)          Normalize numeric v to 0..1
+#   like(c,v,prior)    Likelihood of v in column c
+#   likes(d,r,n,nh)    Log-likelihood of row r in dataset d
+# 
+#   distx(d,r1,r2)     Minkowski distance between rows over x cols
+#   disty(d,r)         Distance of row r from heaven over y cols
+# 
+#   TREE(d,rows)       Build regression tree via variance reduction
+#   treeLeaf(t,r)      Leaf node for row r
+#   treeNodes(t)       Iterator over (node, level, label) triples
+#   treeUsed(t)        Set of column names used in tree splits
+#   treeShow(t)        Print tree with indentation and y stats
+# 
+# TYPE TAGS (.it field routes logic instead of subclassing):
+#   NUM  SYM  DATA
+# 
+# XAI MECHANISMS:
+#   Contrast Sets: Isolates "best" rows (sorted by disty, top sqrt(n)).
+#     Contrasts their attribute ranges against the rest using score().
+#     Yields simple IF/THEN rules — actionable and human-readable.
+#   Interpretable Trees: Printed recursively. Indentation = conjunctions.
+#     Leaves show mid/spread of y. Sorted so best branch prints first.
+# 
+# ARCHITECTURE:
+#   OBJ-Dict Dualism   Factory fns return OBJ dicts with dot-notation
+#   Functional Routing .it tag routes logic (no subclass dispatch)
+#   Config via Docstring  Options regex-parsed from this string at startup
+#   Reflection Tests   Any eg_* function is auto-runnable via CLI
 from math import log,exp,sqrt
 import re,sys,random,traceback
 BIG=1e32
 
-#---------------------------------------------------------------------
-# Create
+#---- create ---------------------------------------------------------
 def what(s): return NUM if s[0].isupper() else SYM
 
 def COL(at=0,txt=" "): return what(txt)(at=at, txt=txt, goal=txt[-1]!="-")
@@ -36,8 +85,7 @@ def COLS(names):
 def clone(data, rows=None):
   return DATA([data.cols.names] + (rows or []))
 
-#---------------------------------------------------------------------
-# Update
+#--- update ----------------------------------------------------------
 def adds(items, it=None):
   it = it or NUM(); [add(it,item) for item in (items or [])]; return it
 
@@ -59,8 +107,7 @@ def add(i,v,w=1):
         (i.rows.append if w>0 else i.rows.remove)(v)
   return v
 
-#---------------------------------------------------------------------
-# Query
+#--- qeury -----------------------------------------------------------
 def mid(col): return mode(col) if SYM is col.it else col.mu
 def mode(sym): return max(sym.has, key=sym.has.get)
 def mids(data):
@@ -72,14 +119,7 @@ def sd(num): return 0 if num.n < 2 else sqrt(max(0,num.m2) / (num.n - 1))
 def ent(sym): 
   return -sum(p*log(p,2) for n in sym.has.values() if (p:=n/sym.n)>0)
 
-def z(num,v): return max(-3, min(3, (v -  num.mu) / (sd(num) + 1/BIG)))
-def norm(num,v): return 1 / (1 + exp( -1.7 * z(num,v)))
-
-def bucket(col,v):
-   return v if (v=="?" or SYM is col.it) else int(the.bins * norm(col,v))
-
-#---------------------------------------------------------------------
-# distance
+#---- distance -------------------------------------------------------
 def minkowski(items):
   n,d = 0,0
   for item in items: n, d = n+1, d+item ** the.p
@@ -99,18 +139,38 @@ def aha(col,u,v):
   v = v if v != "?" else (0 if u>0.5 else 1)
   return abs(u - v)
 
-def furthest(*args): return around(*args)[-1]
-def nearest(*args): return around(*args)[0]
+def furthest(*args): return order(*args)[-1]
+def nearest(*args): return order(*args)[0]
+def order(data,r1,rows): return sorted(rows,key=lambda r1:distx(data,r1,r2))
 
-def around(data,row,rows):
-  return sorted(rows,key=lambda other:distx(data,row,other))
+#--- bayes ------------------------------------------------------------
+def z(num,v): return max(-3, min(3, (v -  num.mu) / (sd(num) + 1/BIG)))
+def norm(num,v): return 1 / (1 + exp( -1.7 * z(num,v)))
 
-#--------------------------------------------------------------------
+def bucket(col,v):
+   return v if (v=="?" or SYM is col.it) else int(the.bins * norm(col,v))
+
+def like(col, v, prior=0):
+  if NUM is col.it: 
+    var = sd(col)**2 + 1/BIG
+    return (1/sqrt(2*3.14159*var)) * exp(-((v - col.mu)**2)/(2*var))
+  else:        
+    n = col.has.get(v, 0) + the.k*prior
+    return max(1/BIG, n/(col.n + the.k))
+
+def likes(data, row, nall, nh):
+  prior = (len(data.rows) + the.m) / (nall + the.m * nh)
+  out = log(prior)
+  for col in data.cols.x:
+    if (v := row[col.at]) != "?": out += log(like(col, v, prior))
+  return out
+
+#--- tree -----------------------------------------------------------
 def treeSelects(rows, at, fn):
   left, right = [], []
   for r in rows:
     if (v := r[at]) != "?": (left if fn(v) else right).append(r)
-  return ((left, right) if len(left) >= the.leaf and len(right) >= the.leaf
+  return ((left,right) if len(left)>=the.leaf and len(right)>=the.leaf
           else (None, None))
 
 def treeSplits(col, rows):
@@ -171,8 +231,7 @@ def treeShow(tree):
     s = f"{'|   '*(lvl-1)}{pre}" if pre else ""
     print(f"{s:{the.Show}} {o(n.y.mu):>6} ({n.y.n})")
 
-#--------------------------------------------------------------------
-# lib
+#--- lib -------------------------------------------------------------
 def shuffle(lst): random.shuffle(lst); return lst
 
 def o(t):
@@ -206,8 +265,7 @@ def csv(f):
   with open(f,encoding="utf-8") as file:
     for s in file:
       if s:=s.strip(): yield [cast(x.strip()) for x in s.split(",")]
-#---------------------------------------------------------------------
-# cli
+#--- tests ----------------------------------------------------------
 def run(f,*args):
   random.seed(the.seed)
   try: f(*args)
@@ -289,7 +347,7 @@ def eg__test(f: filename):
           dict(x=data.cols.x, y=data.cols.y, r=data.rows).items()],
         *f.split("/")[-2:], sep=" ,")
  
-#--------------------------------------------------------------------
+#--- main ------------------------------------------------------------
 the= OBJ(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
 random.seed(the.seed)
 
