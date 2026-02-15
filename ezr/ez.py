@@ -142,7 +142,8 @@ def aha(col,u,v):
 
 def furthest(*args): return order(*args)[-1]
 def nearest(*args): return order(*args)[0]
-def order(data,r1,rows): return sorted(rows,key=lambda r1:distx(data,r1,r2))
+
+def order(data,r1,rows): return sorted(rows,key=lambda r2:distx(data,r1,r2))
 
 #--- bayes ------------------------------------------------------------
 def z(num,v): return max(-3, min(3, (v -  num.mu) / (sd(num) + 1/BIG)))
@@ -335,7 +336,7 @@ def eg__test(f: filename):
   b4 = sorted(Y(r) for r in data.rows)
   win = lambda r: int(100*(1-(Y(r)-b4[0])/(b4[half]-b4[0]+1E-6)))
   wins, used = NUM(), 0
-  for _ in range(60):
+  for _ in range(20):
     rows = shuffle(data.rows)
     test, train = rows[half:], rows[:half][:the.Budget]
     tree = TREE(clone(data,train), train)
@@ -343,7 +344,7 @@ def eg__test(f: filename):
     test.sort(key=lambda r: treeLeaf(tree,r).y.mu)
     add(wins, win(min(test[:the.Check], key=Y)))
   print(f"{round(wins.mu)} ,sd {round(sd(wins))} ,b4 {o(b4[half])}"
-        f" ,lo {o(b4[0])} ,used {int(used/60)} ,B {the.Budget}",
+        f" ,lo {o(b4[0])} ,used {int(used/20)} ,B {the.Budget}",
         *[f"{s} {len(a)}" for s,a in
           dict(x=data.cols.x, y=data.cols.y, r=data.rows).items()],
         *f.split("/")[-2:], sep=" ,")

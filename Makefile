@@ -93,6 +93,13 @@ stats:
 
 B?=50
 
+~/tmp/ez_acq.log:  ## run ezrtest on many files
+	@mkdir -p ~/tmp
+	@time ls -r $(HOME)/gits/moot/optimize/*/*.csv  | \
+	 xargs -P 24 -n 1 -I{} sh -c 'python3 -B acq.py -B $B --acquires "{}"' | \
+	 tee $@
+	@sort -n $@  | cut -d, -f 1 | fmt
+
 ~/tmp/ez_tree.log:  ## run ezrtest on many files
 	@mkdir -p ~/tmp
 	@$(MAKE) todo=tree files="$(HOME)/gits/moot/optimize/*/*.csv" run | tee $@ 
