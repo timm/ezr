@@ -9,6 +9,7 @@ OPTIONS:
   -b bins=7    Number of bins for numeric discretization
   -B Budget=50 Training sample budget
   -C Check=5   Final evaluation budget
+  -d decs=2      show floats to this many decimal places
   -k k=1       Bayes low-frequency hack for symbolic attributes
   -l leaf=4    Min rows in tree leaf
   -m m=2       Bayes low-frequency hack for class priors
@@ -189,12 +190,14 @@ def treeSplits(col, rows):
       if left: yield med, left, right
 
 def TREE(data, rows):
-  tree = OBJ(y = adds(disty(data, r) for r in rows))
+  center = mids(clone(data,rows))
+  tree = OBJ(mids={col.txt:center[col.at] for col in data.cols.y},
+             y = adds(disty(data, r) for r in rows))
   if len(rows) >= 2 * the.leaf:
     best, bestW = None, BIG
     for c in data.cols.x:
       for cut, left, right in treeSplits(c, rows):
-        w = sum(len(s)*sd(adds(disty(data,r) for r in s))
+        w = sum(len(s)*spread(adds(disty(data,r) for r in s))
                 for s in [left,right])
         if w < bestW:
           best, bestW = (c, cut, left, right), w
@@ -224,14 +227,14 @@ def treeNodes(tree, lvl=0, pre=""):
       op = '==' if SYM is tree.col.it else '<='
       no = '!=' if SYM is tree.col.it else '>'
       for kid, txt in sorted([(tree.left, op), (tree.right, no)],
-                              key=lambda p: p[0].y.mu):
+                              key=lambda p: mid(p[0].y)):
         yield from treeNodes(kid, lvl+1,
                              f"{tree.col.txt} {txt} {o(tree.cut)}")
 
 def treeShow(tree):                          
   for n, lvl, pre in treeNodes(tree):
     s = f"{'|   '*(lvl-1)}{pre}" if pre else ""
-    print(f"{s:{the.Show}} {o(n.y.mu):>6} ({n.y.n})")
+    print(f"{s:{the.Show}} {o(mid(n.y)):>6} ({n.y.n:>3})",o(n.mids))
 
 #--- lib -------------------------------------------------------------
 def shuffle(lst): random.shuffle(lst); return lst
@@ -240,7 +243,7 @@ def o(t):
   match t:
     case _ if type(t) is type(o): return t.__name__
     case dict(): return "{" + " ".join(f":{k} {o(t[k])}" for k in t) + "}"
-    case float(): return f"{int(t)}" if int(t) == t else f"{t:.2f}"
+    case float(): return f"{int(t)}" if int(t) == t else f"{t:.{the.decs}f}"
     case list(): return "[" + ", ".join(o(x) for x in t) + "]"
     case tuple(): return "(" + ", ".join(o(x) for x in t) + ")"
     case _: return str(t)
@@ -266,7 +269,8 @@ def cast(s):
 def csv(f):
   with open(f,encoding="utf-8") as file:
     for s in file:
-      if s:=s.strip(): yield [cast(x.strip()) for x in s.split(",")]
+      if s:=s.partition("#")[0].strip(): 
+        yield [cast(x.strip()) for x in s.split(",")]
 #--- tests ----------------------------------------------------------
 def run(f,*args):
   random.seed(the.seed)
