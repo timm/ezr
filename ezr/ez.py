@@ -38,36 +38,47 @@ API ( Hints: i:instance d:DATA c:COL r:row v:value f:file ):
   clone(d, rows)     New DATA with same structure, optional rows
 
   add(i,v)           Update NUM/SYM stats or add row to DATA
+  sub(i,v)           Undo an add (decremental update)
   mid(c), spread(c)  Central tendency and diversity for a column
-  norm(c,v)          Normalize numeric v to 0..1
+  sd(c), ent(c)      Spread for NUM (std dev) or SYM (entropy)
+  norm(c,v)          Normalize numeric v to 0..1 via CDF
+  z(c,v)             Z-score of v, clamped to [-3, 3]
+  bucket(c,v)        Discretize numeric v into bins
+
   like(c,v,prior)    Likelihood of v in column c
   likes(d,r,n,nh)    Log-likelihood of row r in dataset d
 
+  aha(c,u,v)         Per-column distance (handles mixed types)
+  minkowski(items)    Averaged Minkowski distance over items
   distx(d,r1,r2)     Minkowski distance between rows over x cols
   disty(d,r)         Distance of row r from heaven over y cols
+  order(d,r,rows)    Sort rows by distx from r
+  nearest(d,r,rows)  Closest row to r in rows (by distx)
+  furthest(d,r,rows) Most distant row from r (by distx)
 
-  TREE(d,rows)       Build regression tree via variance reduction
+  gauss(mu,sd)       Gaussian random number (CLT approx)
+  pick(d,n)          Weighted random selection from dict d
+  shuffle(lst)       Shuffle list in place, return it
+
+  TREE(d,rows)       Build spread tree via variance reduction
   treeLeaf(t,r)      Leaf node for row r
   treeNodes(t)       Iterator over (node, level, label) triples
   treeUsed(t)        Set of column names used in tree splits
   treeShow(t)        Print tree with indentation and y stats
 
-TYPE TAGS (.it field routes logic instead of subclassing):
-  NUM  SYM  DATA
+KEY ALGORITHMS:
+  Welford    Incremental mean/variance in one pass (add/sub)
+  Shannon    Entropy for symbolic diversity (ent)
+  Aha        Heterogeneous distance: 0..1 for all types (aha)
+  CDF norm   Sigmoid of z-score, not min/max (norm)
+  Bayes      Log-likelihood with k,m smoothing (like/likes)
+  Spread     Trees split to minimize sd or entropy (TREE)
 
-XAI MECHANISMS:
-  Contrast Sets: Isolates "best" rows (sorted by disty, top sqrt(n)).
-    Contrasts their attribute ranges against the rest using score().
-    Yields simple IF/THEN rules — actionable and human-readable.
-  Interpretable Trees: Printed recursively. Indentation = conjunctions.
-    Leaves show mid/spread of y. Sorted so best branch prints first.
-
-ARCHITECTURE:
-  OBJ-Dict Dualism   Factory fns return OBJ dicts with dot-notation
-  Functional Routing .it tag routes logic (no subclass dispatch)
-  Config via Docstring  Options regex-parsed from this string at startup
-  Reflection Tests   Any eg_* function is auto-runnable via CLI
-"""
+PATTERNS:
+  Composite   adds/add, likes/like, distx/aha, mids/mid
+  Pipeline    DATA → adds → add → column updates
+  Undo        sub(i,v) reverses add(i,v) exactly
+ """
 #---- create ---------------------------------------------------------
 def what(s): return NUM if s[0].isupper() else SYM
 
