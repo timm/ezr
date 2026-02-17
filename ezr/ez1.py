@@ -6,7 +6,7 @@ class It(dict):
   __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
   __repr__= lambda self: str({k:short(self[k]) for k in self})
 
-the = It(Keep=256, seed=1, decs=2)
+the = It(Keep=256, seed=1, decs=2,p=2)
 random.seed(the.seed)
 
 from typing import Iterator,Iterable,Any
@@ -38,7 +38,7 @@ def keep(l:Num, v:Any, seen:int):
   if len(l) < the.Keep: 
     l += [v]
   elif rand() < the.Keep / seen:
-    l[int(rand() * the.Keep)] = v
+    l[1+int(rand() * (the.Keep -2))] = v
 
 #--------------------------------------------------------------------
 def Data(items:Iterable) -> Data:
@@ -51,7 +51,7 @@ def adds(d:Data, row:Row):
     cols   = {i:Col(s) for i,s in enumerate(row)}
     x      = {i:c for i,c in cols.items() if row[i][-1] not in "-+!X"}
     y      = {i:c for i,c in cols.items() if row[i][-1]     in "-+!" }
-    w      = {i:row[i][-1] != "!" for i in y}
+    w      = {i:row[i][-1] != "-" for i in y}
     d.cols = It(names=row, all=cols, x=x, y=y, w=w)
   else: # reading remaining rows
     d.mid = None
@@ -77,8 +77,8 @@ def minkowski(items: Iterable):
   return (d / n) ** (1 / the.p)
 
 def disty(d:Data, row:Row):
-  return minkowski((norm(y, row[n]) - d.ok().cols.w[n]) 
-                   for n,y in d.cols.y.items())
+  return minkowski((norm(y, row[n]) - d.cols.w[n]) 
+                   for n,y in ok(d).cols.y.items())
 
 def short(x:Any) -> Any:
   if isa(x,float): x= int(x) if int(x) == x else round(x,the.decs)
@@ -97,6 +97,10 @@ def csv(f:str) -> Iterator[Row]:
       if s:=s.partition("#")[0].strip(): 
         yield [cast(x.strip()) for x in s.split(",")]
 
+def align(m: list[list]):
+  ws = [max(len(str(x)) for x in col) for col in zip(*m)]
+  for l in m: print(", ".join(f"{str(v):>{w}}" for v, w in zip(l,ws)))
+
 #-----------------------------------------------------
 def eg_h(): print(__doc__)
 
@@ -106,24 +110,27 @@ def eg_K(n:int): the.Keep=n
 def eg__the(): print(the)
 
 def eg__keep(): 
-  the.Keep,lst = 32,[]
-  for i in range(10**3): keep(lst,i,i)
+  the.Keep,lst = 20,[]
+  for i in range(10**4): keep(lst,i,i)
   print(sorted(lst))
 
-def eg__csv(f:str):
-  for row in csv(f): print(row)
+def eg__csv(file:str):
+  align(list(csv(file))[::30])
 
-def eg__data(f:str):
-  d = ok(Data(csv(f)))
-  for row in d.rows: print(row)
-  print("mid",ok(d).mids)
+def eg__data(file:str):
+  d = Data(csv(file))
+  align([ok(d).mids] + [d.cols.names] + d.rows[::30])
+
+def eg__disty(file:str):
+  d = Data(csv(file))
+  align([d.cols.names] + sorted(d.rows,key=lambda r:disty(d,r))[::30])
 
 #-----------------------------------------------------
 
-def main(settings,funs):
+def cli(funs):
   args = iter(sys.argv[1:])
   for s in args:
     if f := funs.get(f"eg_{s[1:].replace('-','_')}"):
-      f(*[cast(next(args)) for t in f.__annotations__.values()])
+      f(*[make(next(args)) for make in f.__annotations__.values()])
 
-if __name__ == "__main__": main(the,globals())
+if __name__ == "__main__": cli(globals())
