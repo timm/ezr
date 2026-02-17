@@ -4,23 +4,23 @@ rand=random.random
 
 class It(dict):
   __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
-  __repr__= lambda self: o(self)
+  __repr__= lambda self: str({k:short(self[k]) for k in self})
 
-the = It(Keep=256, seed=1)
+the = It(Keep=256, seed=1, decs=2)
 random.seed(the.seed)
 
-from typing import Iterable,Any
+from typing import Iterator,Iterable,Any
 Qty  = int | float
 Row  = list[Qty | str]
 Rows = list[Row]
-
+Data = It
 Num,Sym,isa = list,dict,isinstance
 
 def Col(s:str) -> Num | Sym: 
   return (Num if s[0].isupper() else Sym)()
 
-def mid(col:Col) -> Any:
-  return col[len(col)//2] if isa(col,Num) else max(col, key=col.get)
+def mid(c:Col) -> Any:
+  return c[len(c)//2] if isa(c,Num) else max(c, key=c.get)
 
 def sd(n:Num) -> float: 
   i = len(n)//10; return (n[9*i] - n[i]) / 2.56
@@ -41,7 +41,7 @@ def keep(l:Num, v:Any, seen:int):
     l[int(rand() * the.Keep)] = v
 
 #--------------------------------------------------------------------
-def Data(items:Iterable):
+def Data(items:Iterable) -> Data:
   d = It(rows=[], cols=None, mids=None)
   for row in items: adds(d,row)
   return d
@@ -49,51 +49,49 @@ def Data(items:Iterable):
 def adds(d:Data, row:Row):
   if not d.cols: # reading row0 with column names
     cols   = {i:Col(s) for i,s in enumerate(row)}
-    x      = {i:col for i,col in cols.items() if row[i][-1] not in "-+!X"}
-    y      = {i:col for i,col in cols.items() if row[i][-1]     in "-+!" }
+    x      = {i:c for i,c in cols.items() if row[i][-1] not in "-+!X"}
+    y      = {i:c for i,c in cols.items() if row[i][-1]     in "-+!" }
     w      = {i:row[i][-1] != "!" for i in y}
     d.cols = It(names=row, all=cols, x=x, y=y, w=w)
   else: # reading remaining rows
     d.mid = None
-    d.rows.append(row)
-    for i, col in d.cols.all.items(): add(col, row[i], len(d.rows))
+    d.rows += [row]
+    [add(c,v,len(d.rows)) for i, c in d.cols.all.items() 
+                          if (v:=row[i]) != "?"]
 
 def add(c:Col, v:Any, seen=0):
-  if v != "?":
-    if isa(c,Sym): c[v] = 1 + c.get(v, 0)
-    else: keep(c,v,seen)
-  return v
+  if isa(c,Sym): c[v] = 1 + c.get(v, 0)
+  else: keep(c,v,seen)
 
-def ok(data):
-  if not data.mids:
-    [col.sort() for col in data.cols.all.values() if isa(col,Num)]
-    data.mids = [mid(col) for col in data.cols.all.values()]
-  return data
+def ok(d:Data) -> Data:
+  if not d.mids:
+    [c.sort() for c in d.cols.all.values() if isa(c,Num)]
+    d.mids = [mid(c) for c in d.cols.all.values()]
+  return d
 
 #--------------------------------------------------------------------
-def minkowski(items):
+def minkowski(items: Iterable):
   n,d = 0,0
-  for item in items: n, d = n+1, d+item ** the.p
-  return 0 if n==0 else (d / n) ** (1 / the.p)
+  for item in items: 
+    n, d = n+1, d+item ** the.p
+  return (d / n) ** (1 / the.p)
 
-def disty(data, row):
-  return minkowski((norm(y, row[n]) - data.ok().cols.w[n]) 
-                   for n,y in data.cols.y.items())
+def disty(d:Data, row:Row):
+  return minkowski((norm(y, row[n]) - d.ok().cols.w[n]) 
+                   for n,y in d.cols.y.items())
 
-def o(t):
-  match t:
-    case dict(): return "{" + " ".join(f":{k} {o(t[k])}" for k in t) + "}"
-    case float(): return f"{int(t)}" if int(t) == t else f"{t:.{the.decs}f}"
-    case _: return str(t)
+def short(x:Any) -> Any:
+  if isa(x,float): x= int(x) if int(x) == x else round(x,the.decs)
+  return x
 
 CASTS = [int,float,lambda s: {"true":1,"false":0}.get(s.lower(),s)]
 
-def cast(s):
+def cast(s:str) -> int | float | str:
   for f in CASTS:
     try: return f(s)
     except ValueError: ...
 
-def csv(f):
+def csv(f:str) -> Iterator[Row]:
   with open(f,encoding="utf-8") as file:
     for s in file:
       if s:=s.partition("#")[0].strip(): 
