@@ -51,7 +51,7 @@ def keep(l:Num, v:Any, seen:int):
 def Data(items:Iterable) -> Data:
   d = Box(rows=[], cols=None, mids=None)
   for row in items: adds(d,row)
-  return d
+  return ok(d)
 
 def adds(d:Data, row:Row):
   if not d.cols: # reading row0 with column names
@@ -63,10 +63,10 @@ def adds(d:Data, row:Row):
   else: # reading remaining rows
     d.mid = None
     d.rows += [row]
-    [add(c,v,len(d.rows)) for i, c in d.cols.all.items() 
-                          if (v:=row[i]) != "?"]
+    [add(c,row[i],len(d.rows)) for i, c in d.cols.all.items()]
 
 def add(c:Col, v:Any, seen=0):
+  if v=="?": return
   if isa(c,Sym): c[v] = 1 + c.get(v, 0)
   else: keep(c,v,seen)
 
