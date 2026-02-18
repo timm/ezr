@@ -12,6 +12,7 @@ Options:
 from typing import Iterator,Iterable,Any
 import random,sys,re
 rand=random.random
+choice=random.choice
 
 class Box(dict):
   __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
@@ -102,6 +103,12 @@ def nearest(*args)  -> Row: return order(*args)[0]
 
 def order(d:Data,r1:Row,rows:Rows) -> Rows: 
  return sorted(rows,key=lambda r2:distx(d,r1,r2))
+
+def nearby(c:Col, v:Any) -> Any:
+  if isa(c,Sym): return pick(c)
+  lo,hi = c[0],c[-1]
+  v = v if v != "?" else mid(c)
+  return lo + (v + choice(c) - choice(c) - lo) % (hi-lo+1E-32)
 
 def pick(d:Sym) -> Any:
   n = sum(d.values()) * rand()
