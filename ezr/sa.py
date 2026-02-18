@@ -1,9 +1,8 @@
 #!/usr/bin/env python3 -B
 """sa.py: simulated annealing
 (c) 2026 Tim Menzies timm@ieee.org, MIT license"""
-import sys
+import sys,random
 from math import exp
-import random
 choice,choices,rand = random.choice,random.choices,random.random
 from ez1 import (nearest,disty,nearby,csv,say,Data,shuffle)
 
@@ -12,6 +11,7 @@ def oneplus1(d:Data, mutator, accept, b=4000):
     near = nearest(d, r, d.rows)
     for i in d.cols.y: r[i] = near[i]
     return disty(d, r)
+
   h,s,e = 0, choice(d.rows)[:], 1E32
   best, best_e = s[:], e
   while True:

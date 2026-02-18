@@ -1,8 +1,7 @@
 #!/usr/bin/env python3 -B
 """ls.py: local search + comparison with sa
 (c) 2026 Tim Menzies timm@ieee.org, MIT license"""
-import sys
-import random
+import sys,random
 choice,rand = random.choice,random.random
 from ez1 import (nearby,csv,say,Data,shuffle)
 from sa import sa, oneplus1
