@@ -45,13 +45,14 @@ dirty() {
   [[ -n $(git status -s 2>/dev/null) ]] && echo "*"
 }
 
-# prompt 
+# Leave these as raw escape codes
 bold=$(tput bold)
 col0=$(tput sgr0)
 col1=$(tput setaf 6)
 col2=$(tput setaf 3)
 
-_prompt_string='🧩${bold}${col1}$(basename "$(dirname "$PWD")")/$(basename "$PWD")${col0} ${col2}$(branch)$(dirty)${col0} ▶ '
+# Wrap the variables inline using \[ and \]
+_prompt_string='🧩\[${bold}${col1}\]$(basename "$(dirname "$PWD")")/$(basename "$PWD")\[${col0}\] \[${col2}\]$(branch)$(dirty)\[${col0}\] ▶ '
 
 if [ -n "$ZSH_VERSION" ]; then
   setopt PROMPT_SUBST
