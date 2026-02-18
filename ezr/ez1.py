@@ -15,7 +15,7 @@ rand=random.random
 
 class Box(dict):
   __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
-  __repr__ = lambda self: str({k:short(self[k]) for k in self})
+  __repr__ = lambda self: str({k:say(self[k]) for k in self})
 
 Qty  = int | float
 Row  = list[Qty | str]
@@ -91,16 +91,17 @@ def distx(d:Data, r1:Row, r2:Row) -> float:
 
 def aha(d:Data, c:Col, u:Any, v:Any) -> float:
   if u==v=="?": return 1
-  if isa(c.SYM): return u != v
+  if isa(c,Sym): return u != v
   u,v = norm(c,u), norm(c,v)
   u = u if u != "?" else (0 if v>0.5 else 1)
   v = v if v != "?" else (0 if u>0.5 else 1)
   return abs(u - v)
 
-def furthest(*args): return order(*args)[-1]
-def nearest(*args): return order(*args)[0]
+def furthest(*args) -> Row: return order(*args)[-1]
+def nearest(*args)  -> Row: return order(*args)[0]
 
-def order(data,r1,rows): return sorted(rows,key=lambda r2:distx(data,r1,r2))
+def order(d:Data,r1:Row,rows:Rows) -> Rows: 
+ return sorted(rows,key=lambda r2:distx(d,r1,r2))
 
 def pick(d:Sym) -> Any:
   n = sum(d.values()) * rand()
@@ -115,9 +116,8 @@ def shuffle(lst:list) -> list:
   random.shuffle(lst)
   return lst
 
-def short(x:Any) -> Any:
-  if isa(x,float): x= int(x) if int(x) == x else round(x,the.decs)
-  return x
+def say(x:Any) -> Any:
+  return x if not isa(x,float) else int(x) if int(x)==x else round(x,the.decs)
 
 CASTS = [int,float,lambda s: {"true":1,"false":0}.get(s.lower(),s)]
 
