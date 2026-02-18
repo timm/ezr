@@ -6,7 +6,7 @@
 ![LOC 300](https://img.shields.io/badge/LOC-300-yellow?logo=codecov&logoColor=white&labelColor=FDE047&color=C3A700)
 ![License](https://img.shields.io/badge/©_2026-timm-black?logo=github&logoColor=white&labelColor=24292e&color=000000&link=http://timm.fyi)
 
-# ezr.py: 
+# ezr.py : 
 
 ## How easy can we make AI for SE?
 
