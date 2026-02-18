@@ -186,10 +186,8 @@ def eg__disty(file:str):
 the = Box(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
 random.seed(the.seed)
 
-def cli(funs):
+if __name__ == "__main__": 
   args = sys.argv[1:]
   while args:
-    if f := funs.get(f"eg_{args.pop(0)[1:].replace('-','_')}"):
+    if f := globals().get(f"eg_{args.pop(0)[1:].replace('-','_')}"):
       f(*[make(args.pop(0)) for make in f.__annotations__.values()])
-
-if __name__ == "__main__": cli(globals())
