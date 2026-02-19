@@ -6,23 +6,26 @@ ez1.py: asdas
 Options:
   -d decs=2          print floats to this many decimals
   -K Keep=256        keep this many nums per column
+  -k k=1             for low value frequences in Bayes
+  -m m=2             for low class frequqnecies in Bayes
   -p p=2             Minkowski distance coeffecience (2:Euclidean)
   -s seed=1          random number seed """
 
-from typing import Iterator,Iterable,Any
 import random,sys,re
-rand=random.random
-choice=random.choice
+from math import sqrt,log,exp
+from typing import Iterator,Iterable,Any
+rand,choice = random.random, random.choice
 
-class Box(dict):
+class Thing(dict):
   __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
-  __repr__ = lambda self: str({k:say(self[k]) for k in self})
+  __repr__ = lambda i: "{"+' '.join(f":{k} {say(i[k])}" for k in i)+"}"
 
 Qty  = int | float
 Row  = list[Qty | str]
 Rows = list[Row]
-Data = Box
+Data = Thing
 
+BIG=1E32
 #--------------------------------------------------------------------
 Num,Sym,isa = list,dict,isinstance
 
@@ -50,16 +53,16 @@ def keep(l:Num, v:Any, seen:int):
 
 #--------------------------------------------------------------------
 def Data(items:Iterable) -> Data:
-  d = Box(rows=[], cols=None, mids=None)
+  d = Thing(rows=[], cols=None, mids=None)
   for row in items: adds(d,row)
-  return ok(d) if d.rows else d
+  return ok(d)
 
 def adds(d:Data, row:Row):
   if not d.cols: # reading row0 with column names
     cols   = {i:Col(s) for i,s in enumerate(row)}
     x      = {i:c for i,c in cols.items() if row[i][-1] not in "-+!X"}
     y      = {i:c for i,c in cols.items() if row[i][-1]     in "-+!" }
-    d.cols = Box(names=row, all=cols, x=x, y=y, 
+    d.cols = Thing(names=row, all=cols, x=x, y=y, 
                  w= {i:row[i][-1] != "-" for i in y})
   else: # reading remaining rows
     d.mid = None
@@ -72,7 +75,7 @@ def add(c:Col, v:Any, seen=0):
   else: keep(c,v,seen)
 
 def ok(d:Data) -> Data:
-  if not d.mids:
+  if not d.mids and d.rows:
     [c.sort() for c in d.cols.all.values() if isa(c,Num)]
     d.mids = [mid(c) for c in d.cols.all.values()]
   return d
@@ -104,6 +107,7 @@ def nearest(*args)  -> Row: return order(*args)[0]
 def order(d:Data,r1:Row,rows:Rows) -> Rows: 
  return sorted(rows,key=lambda r2:distx(d,r1,r2))
 
+#--------------------------------------------------------------------
 def nearby(c:Col, v:Any) -> Any:
   if isa(c,Sym): return pick(c)
   lo,hi = c[0],c[-1]
@@ -119,6 +123,19 @@ def gauss(mu:float, s:float) -> float:
   return mu + 2 * s * (sum(rand() for _ in range(3)) - 1.5)
 
 #--------------------------------------------------------------------
+def like(c:Col, v:Any, prior=0) -> float:
+  if isa(c,Num):
+    var = sd(c)**2 + 1/BIG
+    return (1/sqrt(2*3.14159*var)) * exp(-((v - mid(c))**2)/(2*var))
+  n = c.get(v, 0) + the.k*prior
+  return max(1/BIG, n/sum(d.values()) + the.k)
+
+def likes(d:Data, row:Row, nall:int, nh:int) -> float:
+  prior= (len(d.rows) + the.m) / (nall + the.m * nh)
+  ls= (like(c,v,prior) for i,c in d.cols.x.items() if (v:=row[i])!="?")
+  return log(prior) + sum(map(log,ls))
+
+#--------------------------------------------------------------------
 def shuffle(lst:list) -> list:
   random.shuffle(lst)
   return lst
@@ -183,7 +200,7 @@ def eg__disty(file:str):
   align([d.cols.names] + sorted(d.rows,key=lambda r:disty(d,r))[::30])
 
 #-----------------------------------------------------
-the = Box(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
+the = Thing(**{k: cast(v) for k,v in re.findall(r"(\S+)=(\S+)",__doc__)})
 random.seed(the.seed)
 
 if __name__ == "__main__": 

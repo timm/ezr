@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 -B 
 #!/usr/bin/env python3 -B
 import sys, random
-from ez1 import Data, adds, choice, csv, distx, ok, align
+from ez1 import Data, adds, choice, csv, distx, ok, align,say
 
 def kmeans(data, rows=None, k=20, n=10, cents=None):
   rows  = rows or data.rows
