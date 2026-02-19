@@ -16,9 +16,8 @@ def ls(d, p=0.5, n=20, b=4000):
   return oneplus1(d, mutate, accept, b)
 
 if __name__ == "__main__":
-  seed,file = sys.argv[1:]
-  random.seed(float(seed))
-  d0 = Data(csv(file))
+  random.seed(float(sys.argv[1]))
+  d0 = Data(csv(sys.argv[2]))
   seen={sa:[],ls:[]}
   for _ in range(20):
     d1 = Data([d0.cols.names] + shuffle(d0.rows)[:50])

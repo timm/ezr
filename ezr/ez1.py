@@ -52,7 +52,7 @@ def keep(l:Num, v:Any, seen:int):
 def Data(items:Iterable) -> Data:
   d = Box(rows=[], cols=None, mids=None)
   for row in items: adds(d,row)
-  return ok(d)
+  return ok(d) if d.rows else d
 
 def adds(d:Data, row:Row):
   if not d.cols: # reading row0 with column names
