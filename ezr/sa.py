@@ -4,33 +4,36 @@
 import sys,random
 from math import exp
 choice,choices,rand = random.choice,random.choices,random.random
-from ez1 import (nearest,disty,nearby,csv,say,Data,shuffle)
+from ez2 import (nearest,disty,nearby,csv,says,Data,shuffle)
 
-def oneplus1(d:Data, mutator, accept, b=4000):
+def oneplus1(d:Data, mutator, accept, b=1000, restart=0):
   def score(r):
     near = nearest(d, r, d.rows)
-    for i in d.cols.y: r[i] = near[i]
+    for y in d.cols.y: r[y.at] = near[y.at]
     return disty(d, r)
-
-  h,s,e = 0, choice(d.rows)[:], 1E32
-  best, best_e = s[:], e
+  h, best, best_e =  0, None, 1E32
+  s,e,last_improvement = choice(d.rows)[:],1E32,0 # START
   while True:
+    if h >= b: return
     for sn in mutator(s):
-      if h >= b: return
       en = score(sn)
       if accept(e, en, h, b): s, e = sn, en
       if en < best_e:
         best, best_e = sn[:], en
+        last_improvement = h
         yield h, best_e, best
       h += 1
+      if restart and h - last_improvement > restart: 
+        s, e,last_improvement = choice(d.rows)[:], 1E32,0 #RESTART   
+        break               
 
 def sa(d, m=0.5, b=4000):
   def accept(e,en,h,b):
     return en<e or rand() < exp((e - en)/(1 - h/b))
   def mutate(s):
     sn = s[:]
-    for i in choices(list(d.cols.x), k=max(1,int(m*len(d.cols.x)))):
-      sn[i] = nearby(d.cols.x[i], sn[i])
+    for x in choices(list(d.cols.x), k=max(1,int(m*len(d.cols.x)))):
+      sn[x.at] = nearby(x,sn[x.at])
     yield sn
   return oneplus1(d, mutate, accept, b)
 
@@ -39,5 +42,6 @@ if __name__ == "__main__":
   random.seed(float(seed))
   d0 = Data(csv(file))
   d1 = Data([d0.cols.names] + shuffle(d0.rows)[:50])
+  says(["Evals","Energy"] + d1.cols.names, 8)
   for h,e,row in sa(d1):
-    print(h, say(e), [say(v) for v in row])
+    says([h,e] + row, 8)

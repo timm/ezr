@@ -1,7 +1,8 @@
 #!/usr/bin/env python3 -B 
 #!/usr/bin/env python3 -B
 import sys, random
-from ez1 import Data, adds, choice, csv, distx, ok, align,say
+from ez2 import Data, adds, csv, distx, align,say
+choice=random.choice
 
 def kmeans(data, rows=None, k=20, n=10, cents=None):
   rows  = rows or data.rows
@@ -24,4 +25,4 @@ if __name__ == "__main__":
     print(f"err={err:.3f}")
     if abs(last - err) <= 0.01: break
     last = err
-  align([ok(k).mids for k in kids])
+  align([k.mids for k in kids])

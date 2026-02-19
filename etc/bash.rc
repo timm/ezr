@@ -8,6 +8,7 @@ grep() { command grep --color=auto "$@"; }
 col()  { command column -s, -t "$@"; }
 tmux() { command tmux -u -f $GIT_ROOT/etc/tmux.rc; }
 vi()   { command nvim -u $GIT_ROOT/etc/nviminit.lua "$@"; }
+eza()  { command eza --icons=always "$@"; }
 
 # environment
 export EDITOR="$(command -v nano)"
