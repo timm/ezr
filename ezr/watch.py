@@ -1,7 +1,7 @@
 import ez2, os, sys
 ez2.SYM = ez2.Sym
 
-def run(f, E=33, a=0.3, W=15, B=5):
+def run(f, E=64, a=0.3, W=15, B=5):
   ez2.the.bins = B
   mid = (B + 1) // 2 # Dynamically find the middle score to hide
   
