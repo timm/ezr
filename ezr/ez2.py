@@ -13,7 +13,7 @@ Options:
   -m m=2             for low class frequencies in Bayes
   -p p=2             Minkowski distance coefficient (2:Euclidean)
   -s seed=1          random number seed
-  -S Show=30         width of tree display"""
+  -S Show=30         width of tree display """
 import random, sys, re
 from math import sqrt, log, exp
 from typing import Iterator, Iterable, Any
@@ -45,7 +45,8 @@ def Cols(names: list[str]) -> Cols:
   cols = [Col(i,s) for i,s in enumerate(names)]
   return Thing(it = Cols, names = names, all= cols,
                x = [c for c in cols if c.txt[-1] not in "-+!X"],
-               y = [c for c in cols if c.txt[-1]     in "-+!" ])
+               y = [c for c in cols if c.txt[-1]     in "-+!" ],
+               klass = next((c for c in cols if c.txt[-1] == "!"), None))
 
 def clone(data, rows=None): return Data([data.cols.names] + (rows or []))
 

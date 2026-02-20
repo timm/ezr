@@ -1,19 +1,27 @@
-def dictval(row,col): return row.get(c.at,"?")
-def listval(row,col): return row[c.at]
+#!/usr/bin/env python3 -B
+"""bayes.py: incremental naive Bayes classifier
+(c) 2026 Tim Menzies timm@ieee.org, MIT license"""
+from ez2   import Data, add, clone, csv, likes, says, main,align
+from stats import Confuse, confuse, confused
 
-def likes(data, row, nall=100, nh=2) -> float:
-  get = dictval if instance(row, dict) end listval
-  prior = data.n / (nall + 1e-32)
-  log_prior = math.log(max(prior, 1e-32))
-  tmp = [like(c, val) for col in data.cols.x if (v:=row[col.at\)!="?"]
-  return log_prior + sum(tmp)
+def nbayes(src, warmup=10):
+  rows = iter(src)
+  d    = Data([next(rows)])
+  every, ks, cf = clone(d), {}, Confuse()
+  def best(k):
+    return likes(ks[k], r, every.n, len(ks))
+  for r in rows:
+    k = r[d.cols.klass.at]
+    if k not in ks: ks[k] = clone(d)
+    if every.n >= warmup:
+      confuse(cf, str(k), str(max(ks, key=best)))
+    add(ks[k], add(every, r))
+  return cf
 
-def likeds(data, rowd, nall, nh, bins):
-  prior = (data.n + the.k) / (nall + the.k * nh)
-  out   = log(prior)
-  for col_id, bin_id in rowd.items():
-    col = data.cols.all[col_id]
-    count = bins.get((col_id, bin_id), 0)
-    out += log((count + the.m * (1/nh)) / (col.n + the.m))
-  return out
+def eg__bayes(f:str):
+  rows = [["label","n","pd","pf","prec","acc"]]
+  for c in confused(nbayes(csv(f))):
+    rows.append([c.label, c.fn+c.tp, c.pd, c.pf, c.prec, c.acc])
+  align(rows)
 
+if __name__ == "__main__": main(globals())
