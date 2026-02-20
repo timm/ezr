@@ -20,7 +20,7 @@ from typing import Iterator, Iterable, Any
 rand = random.random
 
 #---- base object ----------------------------------------------------
-class o(dict):
+class O(dict):
   __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
   __repr__ = lambda i: "{"+' '.join(f":{k} {say(i[k])}" for k in i)+"}"
 
@@ -29,21 +29,21 @@ Qty = int | float
 Val = Qty | str
 Row = list[Val]
 Rows = list[Row]
-Col,Num,Sym,Data,Cols = o,o,o,o,o
+Col,Num,Sym,Data,Cols = O,O,O,O,O
 
 #---- constructors ---------------------------------------------------
 def Col(at=0,txt=" ") -> Col: 
   return (Num if txt[0].isupper() else Sym)(at=at,txt=txt, goal=txt[-1]!="-")
 
-def Num(**d) -> Num: return o(it=Num, **d, n=0, mu=0, m2=0)
-def Sym(**d) -> Num: return o(it=Sym, **d, n=0, has={})
+def Num(**d) -> Num: return O(it=Num, **d, n=0, mu=0, m2=0)
+def Sym(**d) -> Num: return O(it=Sym, **d, n=0, has={})
 
 def Data(items:Iterable[Row] = None) -> Data:
-  return adds(items, o(it=Data, n=0, rows=[], cols=None, mids=None))
+  return adds(items, O(it=Data, n=0, rows=[], cols=None, mids=None))
 
 def Cols(names: list[str]) -> Cols:
   cols = [Col(i,s) for i,s in enumerate(names)]
-  return o(it = Cols, names = names, all= cols,
+  return O(it = Cols, names = names, all= cols,
                x = [c for c in cols if c.txt[-1] not in "-+!X"],
                y = [c for c in cols if c.txt[-1]     in "-+!" ],
                klass = next((c for c in cols if c.txt[-1] == "!"), None))
@@ -51,31 +51,28 @@ def Cols(names: list[str]) -> Cols:
 def clone(data, rows=None): return Data([data.cols.names] + (rows or []))
 
 #---- update ---------------------------------------------------------
-def add(t:o, v:Val|Row, w=1) -> Any:
+def add(this:Col|Data, v:Val|Row, w=1) -> Any:
   if v != "?":
-    t.n += w
-    if Sym is t.it: 
-      t.has[v] = w + t.has.get(v, 0)
-    elif Num is t.it:
-      if t.n <= 0: t.n,t.mu,t.m2 = 0,0,0
-      else: d = v - t.mu; t.mu += w * d/t.n; t.m2 += w * d*(v - t.mu)
-    elif Data is t.it:
-      if not t.cols: t.cols = Cols(v)
+    this.n += w
+    if Sym is this.it: 
+      this.has[v] = w + this.has.get(v, 0)
+    elif Num is this.it:
+      if this.n <= 0: this.n,this.mu,this.m2 = 0,0,0
+      else: d = v-this.mu; this.mu += w*d/this.n; this.m2 += w*d*(v-this.mu)
+    elif Data is this.it:
+      if not this.cols: this.cols = Cols(v)
       else:
-        t.mids = None
-        for col in t.cols.all: add(col, v[col.at], w)
-        (t.rows.append if w > 0 else t.rows.remove)(v)
+        this.mids = None
+        for col in this.cols.all: add(col, v[col.at], w)
+        (this.rows.append if w > 0 else this.rows.remove)(v)
   return v
 
-def sub(t:o, v:Any) -> Any: return add(t, v, w=-1)
+def sub(this:O, v:Any) -> Any: return add(this, v, w=-1)
 
-def adds(items:Iterable[Row]=None, thing=None) -> o:
-  thing = thing or Num()
-  [add(thing, item) for item in (items or [])]
-  return thing
-
-def nearby(c:Col, v:Any) -> Val:
-  return pick(c.has) if Sym is c.it else gauss(mid(c) if v=="?" else v,sd(c))
+def adds(items:Iterable[Row]=None, this=None) -> O:
+  this = this or Num()
+  [add(this, item) for item in (items or [])]
+  return this
 
 #---- query ----------------------------------------------------------
 def mid(c:Col) -> Val:
@@ -98,6 +95,9 @@ def z(num:Num, v:Qty) -> float:
 
 def norm(c:Col, v:Val) -> Val:
   return v if v == "?" or Sym is c.it else 1 / (1 + exp(-1.7 * z(c, v)))
+
+def bucket(col,v):
+   return v if (v=="?" or SYM is col.it) else int(the.bins * norm(col,v))
 
 #---- distance -------------------------------------------------------
 def minkowski(items: Iterable[Qty]) -> float:
@@ -125,6 +125,9 @@ def nearest(*args)  -> Row: return order(*args)[0]
 
 def order(d:Data, r1:Row, rows:Rows) -> Rows:
   return sorted(rows, key=lambda r2: distx(d, r1, r2))
+
+def nearby(c:Col, v:Any) -> Val:
+  return pick(c.has) if Sym is c.it else gauss(mid(c) if v=="?" else v,sd(c))
 
 #---- Bayes ----------------------------------------------------------
 def like(c:Col, v:Any, prior=0) -> float:
@@ -230,7 +233,7 @@ def eg__bayes(file:str):
     print(say(round(likes(d, r, nall, 1), 2)))
 
 #---- main -----------------------------------------------------------
-the = o(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
+the = O(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
 random.seed(the.seed)
 
 def main(funs):

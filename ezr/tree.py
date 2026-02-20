@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 -B
 from ez2 import (BIG, Data, Num, Sym, the, Rows, Row, Col,
   add, adds, csv, clone, disty, main, sd, shuffle,
-  mids, mid, say, spread, o)
+  mids, mid, say, spread, O)
 
 def treeSelects(rows:Rows, at:int, fn:callable) -> (Rows,Rows):
   left, right = [], []
@@ -22,9 +22,9 @@ def treeSplits(c:Col, rows:Rows) -> tuple[int,Rows,Rows]:
       left, right = treeSelects(rows, c.at, lambda x: x <= med)
       if left: yield med, left, right
 
-def Tree(d:Data, rows:Rows) -> o:
+def Tree(d:Data, rows:Rows) -> O:
   center = mids(clone(d,rows))
-  t = o(mids={col.txt:center[col.at] for col in d.cols.y},
+  t = O(mids={col.txt:center[col.at] for col in d.cols.y},
                y = adds(disty(d, r) for r in rows))
   if len(rows) >= 2 * the.leaf:
     best, bestW = None, BIG
@@ -67,7 +67,7 @@ def treeNodes(t, lvl=0, pre="") -> tuple[Tree,int,str]:
 def treeShow(t:Tree):
   for n, lvl, pre in treeNodes(t):
     s = f"{'|   '*(lvl-1)}{pre}" if pre else ""
-    print(f"{s:{the.Show}} {say(mid(n.y)):>6} ({n.y.n:>3})",o(**n.mids))
+    print(f"{s:{the.Show}} {say(mid(n.y)):>6} ({n.y.n:>3})",O(**n.mids))
 
 #-------------------------------------------------
 def eg__tree(f: str):
