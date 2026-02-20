@@ -114,7 +114,7 @@ B?=50
 
 run:
 	@time ls -r $(files) \
-		| xargs -P 24 -n 1 -I{} sh -c 'python3 -B ez.py -B $B --$(todo) "{}"'
+		| xargs -P 24 -n 1 -I{} sh -c 'python3 -B tree.py -B $B --$(todo) "{}"'
 
 #--------------------------
 MY=@bash sh/ell

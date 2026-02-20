@@ -4,12 +4,16 @@ ez1.py: lightweight incremental Bayes classifier with add/delete support
 (c) 2026 Tim Menzies timm@ieee.org, MIT license
 
 Options:
+  -B Budget=50       training evalaution budget
   -b bins=7          discretize numerics into this many bins
+  -C Check=5         testing evaluation budget
   -d decs=2          print floats to this many decimals
   -k k=1             for low value frequencies in Bayes
+  -l leaf=3          min rows per tree leaf
   -m m=2             for low class frequencies in Bayes
   -p p=2             Minkowski distance coefficient (2:Euclidean)
-  -s seed=1          random number seed """
+  -s seed=1          random number seed
+  -S Show=30         width of tree display"""
 import random, sys, re
 from math import sqrt, log, exp
 from typing import Iterator, Iterable, Any
@@ -88,15 +92,11 @@ def sd(num:Num) -> float:
 def ent(sym:Sym) -> float:
   return -sum(p*log(p,2) for n in sym.has.values() if (p:=n/sym.n) > 0)
 
-#---- normalization --------------------------------------------------
 def z(num:Num, v:Qty) -> float:
   return max(-3, min(3, (v - num.mu) / (sd(num) + 1/BIG)))
 
 def norm(c:Col, v:Val) -> Val:
   return v if v == "?" or Sym is c.it else 1 / (1 + exp(-1.7 * z(c, v)))
-
-def bucket(c:Col, v:Any) -> Val:
-  return v if (v == "?" or Sym is c.it) else int(the.bins * norm(c, v))
 
 #---- distance -------------------------------------------------------
 def minkowski(items: Iterable[Qty]) -> float:
