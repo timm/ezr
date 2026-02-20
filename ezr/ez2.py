@@ -66,10 +66,10 @@ def add(t:Thing, v:Val|Row, w=1) -> Any:
 
 def sub(t:Thing, v:Any) -> Any: return add(t, v, w=-1)
 
-def adds(items:Iterable[Row]=None, i=None) -> Thing:
-  i = i or Num()
-  [add(i, item) for item in (items or [])]
-  return i
+def adds(items:Iterable[Row]=None, thing=None) -> Thing:
+  thing = thing or Num()
+  [add(thing, item) for item in (items or [])]
+  return thing
 
 def nearby(c:Col, v:Any) -> Val:
   return pick(c.has) if Sym is c.it else gauss(mid(c) if v=="?" else v,sd(c))
@@ -143,7 +143,7 @@ def likes(d:Data, row:Row, n_all:int, n_h:int) -> float:
   return log(prior) + sum(map(log,likelihoods))
 
 #---- lib ------------------------------------------------------------
-def says(lst:lst,w=None): print(*[say(x,w) for x in lst])
+def says(lst:list,w=None): print(*[say(x,w) for x in lst])
 
 def say(x, w=None):
   if type(x)==type(say): x= x.__name__ or '()'
