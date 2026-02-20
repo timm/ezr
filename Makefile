@@ -59,7 +59,7 @@ lint: $f.py  ## Lint python file x.py using `make lint f=x`
 		-Br               \
 		--quiet            \
 		--portrait          \
-		--chars-per-line=80 \
+		--chars-per-line=90 \
 		--line-numbers=1      \
 		--borders=no           \
 		--pro=color             \

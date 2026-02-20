@@ -10,7 +10,6 @@ Options:
   -m m=2             for low class frequencies in Bayes
   -p p=2             Minkowski distance coefficient (2:Euclidean)
   -s seed=1          random number seed """
-
 import random, sys, re
 from math import sqrt, log, exp
 from typing import Iterator, Iterable, Any
@@ -21,13 +20,12 @@ class Thing(dict):
   __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
   __repr__ = lambda i: "{"+' '.join(f":{k} {say(i[k])}" for k in i)+"}"
 
+BIG = 1E32
 Qty = int | float
 Val = Qty | str
 Row = list[Val]
 Rows = list[Row]
 Col,Num,Sym,Data,Cols = Thing,Thing,Thing,Thing,Thing
-
-BIG = 1E32
 
 #---- constructors ---------------------------------------------------
 def Col(at=0,txt=" ") -> Col: 
@@ -142,7 +140,7 @@ def likes(d:Data, row:Row, n_all:int, n_h:int) -> float:
                 for x in d.cols.x if (v:=row[x.at])!="?")
   return log(prior) + sum(map(log,likelihoods))
 
-#---- lib ------------------------------------------------------------
+#---- lib ------------------------------------------------------------
 def says(lst:list,w=None): print(*[say(x,w) for x in lst])
 
 def say(x, w=None):
@@ -150,6 +148,7 @@ def say(x, w=None):
   elif type(x)==float: x= str(int(x) if int(x)==x else f"{x:.{the.decs}f}")
   else: x= str(x)
   return f"{x:>{w}}" if w else x
+
 def shuffle(lst:list) -> list: random.shuffle(lst); return lst
 
 def pick(d:dict) -> Any:
