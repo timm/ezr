@@ -20,7 +20,7 @@ from typing import Iterator, Iterable, Any
 rand = random.random
 
 #---- base object ----------------------------------------------------
-class Thing(dict):
+class o(dict):
   __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
   __repr__ = lambda i: "{"+' '.join(f":{k} {say(i[k])}" for k in i)+"}"
 
@@ -29,21 +29,21 @@ Qty = int | float
 Val = Qty | str
 Row = list[Val]
 Rows = list[Row]
-Col,Num,Sym,Data,Cols = Thing,Thing,Thing,Thing,Thing
+Col,Num,Sym,Data,Cols = o,o,o,o,o
 
 #---- constructors ---------------------------------------------------
 def Col(at=0,txt=" ") -> Col: 
   return (Num if txt[0].isupper() else Sym)(at=at,txt=txt, goal=txt[-1]!="-")
 
-def Num(**d) -> Num: return Thing(it=Num, **d, n=0, mu=0, m2=0)
-def Sym(**d) -> Num: return Thing(it=Sym, **d, n=0, has={})
+def Num(**d) -> Num: return o(it=Num, **d, n=0, mu=0, m2=0)
+def Sym(**d) -> Num: return o(it=Sym, **d, n=0, has={})
 
 def Data(items:Iterable[Row] = None) -> Data:
-  return adds(items, Thing(it=Data, n=0, rows=[], cols=None, mids=None))
+  return adds(items, o(it=Data, n=0, rows=[], cols=None, mids=None))
 
 def Cols(names: list[str]) -> Cols:
   cols = [Col(i,s) for i,s in enumerate(names)]
-  return Thing(it = Cols, names = names, all= cols,
+  return o(it = Cols, names = names, all= cols,
                x = [c for c in cols if c.txt[-1] not in "-+!X"],
                y = [c for c in cols if c.txt[-1]     in "-+!" ],
                klass = next((c for c in cols if c.txt[-1] == "!"), None))
@@ -51,7 +51,7 @@ def Cols(names: list[str]) -> Cols:
 def clone(data, rows=None): return Data([data.cols.names] + (rows or []))
 
 #---- update ---------------------------------------------------------
-def add(t:Thing, v:Val|Row, w=1) -> Any:
+def add(t:o, v:Val|Row, w=1) -> Any:
   if v != "?":
     t.n += w
     if Sym is t.it: 
@@ -67,9 +67,9 @@ def add(t:Thing, v:Val|Row, w=1) -> Any:
         (t.rows.append if w > 0 else t.rows.remove)(v)
   return v
 
-def sub(t:Thing, v:Any) -> Any: return add(t, v, w=-1)
+def sub(t:o, v:Any) -> Any: return add(t, v, w=-1)
 
-def adds(items:Iterable[Row]=None, thing=None) -> Thing:
+def adds(items:Iterable[Row]=None, thing=None) -> o:
   thing = thing or Num()
   [add(thing, item) for item in (items or [])]
   return thing
@@ -230,7 +230,7 @@ def eg__bayes(file:str):
     print(say(round(likes(d, r, nall, 1), 2)))
 
 #---- main -----------------------------------------------------------
-the = Thing(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
+the = o(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
 random.seed(the.seed)
 
 def main(funs):
