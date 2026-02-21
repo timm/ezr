@@ -97,9 +97,6 @@ def z(num:Num, v:Qty) -> float:
 def norm(c:Col, v:Val) -> Val:
   return v if v == "?" or Sym is c.it else 1 / (1 + exp(-1.7 * z(c, v)))
 
-def bucket(col,v):
-   return v if (v=="?" or Sym is col.it) else int(the.bins * norm(col,v))
-
 #---- distance -------------------------------------------------------
 def minkowski(items: Iterable[Qty]) -> float:
   n, d = 0, 0
