@@ -4,10 +4,11 @@ ez1.py: lightweight incremental Bayes classifier with add/delete support
 (c) 2026 Tim Menzies timm@ieee.org, MIT license
 
 Options:
-  -B Budget=50       training evalaution budget
+  -B Budget=50       training evaluation budget
   -b bins=7          discretize numerics into this many bins
   -C Check=5         testing evaluation budget
   -d decs=2          print floats to this many decimals
+  -F Few=128         search space for new roes
   -k k=1             for low value frequencies in Bayes
   -l leaf=3          min rows per tree leaf
   -m m=2             for low class frequencies in Bayes
@@ -51,7 +52,7 @@ def Cols(names: list[str]) -> Cols:
 def clone(data, rows=None): return Data([data.cols.names] + (rows or []))
 
 #---- update ---------------------------------------------------------
-def add(this:Col|Data, v:Val|Row, w=1) -> Any:
+def add(this:'Col|Data', v:'Val|Row', w=1) -> Any:
   if v != "?":
     this.n += w
     if Sym is this.it: 
@@ -97,7 +98,7 @@ def norm(c:Col, v:Val) -> Val:
   return v if v == "?" or Sym is c.it else 1 / (1 + exp(-1.7 * z(c, v)))
 
 def bucket(col,v):
-   return v if (v=="?" or SYM is col.it) else int(the.bins * norm(col,v))
+   return v if (v=="?" or Sym is col.it) else int(the.bins * norm(col,v))
 
 #---- distance -------------------------------------------------------
 def minkowski(items: Iterable[Qty]) -> float:
@@ -140,9 +141,8 @@ def like(c:Col, v:Any, prior=0) -> float:
 
 def likes(d:Data, row:Row, n_all:int, n_h:int) -> float:
   prior = (len(d.rows) + the.m) / (n_all + the.m * n_h)
-  likelihoods= (like(x,v,prior) 
-                for x in d.cols.x if (v:=row[x.at])!="?")
-  return log(prior) + sum(map(log,likelihoods))
+  ls = [like(x,v,prior) for x in d.cols.x if (v:=row[x.at])!="?"]
+  return log(prior) + sum(log(v) for v in ls if v>0)
 
 #---- lib ------------------------------------------------------------
 def says(lst:list,w=None): print(*[say(x,w) for x in lst])

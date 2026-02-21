@@ -13,10 +13,10 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.scripts]
-ezbayes  = "ezr.bayes:main"
-eztree   = "ezr.tree:main"
-ezsa     = "ezr.sa:main"
-ezkmeans = "ezr.kmeans:main"
+ezrbayes  = "ezr.bayes:main"
+ezrtree   = "ezr.tree:main"
+ezrsa     = "ezr.sa:main"
+ezrkmeans = "ezr.kmeans:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["ezr"]
