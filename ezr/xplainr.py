@@ -4,7 +4,9 @@ Options:
   -B Bpc=2         best bins per column
   -M Maxr=5        max rule size
   -S Support=10    min rows matching a rule
-  -T Top=8         top columns by signal"""
+  -T Top=8         top columns by signal
+  --rules file     make rules from csv file"""
+
 import re
 from ez import (Data, Num, Row, csv, disty, adds,
                  the, cast, main, O, shuffle, clone)
@@ -30,32 +32,25 @@ def ruleStr(cols:dict, rule:dict) -> str:
   return " and ".join(parts)
 
 def rules(d:Data, cols:dict, train:list):
-  seen = set()
-  n    = 0
-
   def score(rule):
     k = tuple(sorted(rule.items()))
     if k not in seen:
       seen.add(k)
       if ys := ruleScore(d, cols, rule, train):
         return ys.mu
-
-  spans = [(x.at, b, s, (n:=n+1))
-           for x in sorted(d.cols.x,
-                           key=signal, reverse=True)[:cfg.Top]
-           for b in sorted(x.bins,
-                           key=lambda b: x.bins[b].y.mu)[:cfg.Bpc]
+  seen = set()
+  spans = [(x.at, b, s, len(seen))
+           for x in sorted(d.cols.x, key=signal, reverse=True)[:cfg.Top]
+           for b in sorted(x.bins, key=lambda b: x.bins[b].y.mu)[:cfg.Bpc]
            if (s := score({x.at: b})) is not None]
-
   beam = sorted((s, i, {at:b}) for at,b,s,i in spans)[:cfg.Top]
   for s, _, rule in beam: yield s, _, rule
-
   for _ in range(2, cfg.Maxr+1):
     beam = sorted(
-      [(s, (n:=n+1), new) for _,_, rule in beam
-                          for at, b, *_ in spans if at not in rule
-                          if (s := score(new := {**rule, at: b}))
-                          is not None])[:cfg.Top]
+      [(s, len(seen), new) for _,_, rule in beam
+                           for at, b, *_ in spans if at not in rule
+                           if (s := score(new := {**rule, at: b}))
+                           is not None])[:cfg.Top]
     if not beam: break
     for s, _, rule in beam: yield s, _, rule
 
@@ -72,11 +67,12 @@ def report(d:Data):
     print(f"{score:>6.2f}  {t.mu:>6.2f}"
           f"  {t.n:>4}  {ruleStr(cols, rule)}")
    
-def eg_h():            print(__doc__)
-def eg__report(f:str): report(Data(csv(f)))
+def eg_h():  print(__doc__)
 def eg_B(n:int): cfg.Bpc     = n
 def eg_M(n:int): cfg.Maxr    = n
 def eg_S(n:int): cfg.Support = n
 def eg_T(n:int): cfg.Top     = n
+
+def eg__report(f:str): report(Data(csv(f)))
 
 if __name__ == "__main__": main(globals())
