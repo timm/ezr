@@ -1,50 +1,57 @@
 #!/usr/bin/env python3 -B
 import sys, random
 from ez2 import Data, add, sub, adds, clone, csv, says
-from ez2 import disty, distx, likes, mids, shuffle, the
+from ez2 import disty, distx, likes, main, mids, shuffle, the
+from ez2 import eg__the, eg_s
 choice=random.choice
 
-def nearer(xy, best, rest, r):
-  return distx(xy, mids(best), r) - distx(xy, mids(rest), r)
+def nearer(seen:Data, best:Data, rest:Data, r:row) -> bool:
+  return distx(seen, mids(best), r) - distx(seen, mids(rest), r)
 
-def likelier(xy, best, rest, r):
-  return likes(rest, r, xy.n, 2) - likes(best, r, xy.n, 2)
+def likelier(seen:Data, best:Data, rest:Data, r:row) -> bool:
+  return likes(rest, r, seen.n, 2) - likes(best, r, seen.n, 2)
 
-def acquire(xy, best, rest, x, scorer=nearer, eager=True):
+def acquire(seen:Data, best:Data, rest:Data, 
+            unseen:Data, scorer=nearer, eager=True) -> Row:
   if eager: 
-    return min(x.rows[:the.Few], key=lambda r: scorer(xy,best,rest,r))
-  for m in range(the.Few):
-    r = choice(x.rows)
-    if scorer(xy, best, rest, r) < 0: break
+    return min(unseen.rows, key=lambda r: scorer(seen,best,rest,r))
+  for m in range(unseen.n):
+    r = choice(unseen.rows)
+    if scorer(seen, best, rest, r) < 0: break
   return r
 
-def guess(d, Any=4, Budget=50, label=lambda r:r, **kwargs):
-  rows = shuffle(d.rows[:])
-  x    = clone(d, rows[Any:])
-  xy   = clone(d, rows[:Any])
-  xy.rows.sort(key= (Y := lambda r: disty(xy, r)))
-  n    = round(Any**0.5)
-  best = adds(xy.rows[:n], clone(d))
-  rest = adds(xy.rows[n:], clone(d))
-  while x.n > 2 and xy.n < Budget:
-    add(xy, add(best, sub(x, label(acquire(xy,best,rest,x, **kwargs)))))
-    if best.n > xy.n**.5:
+def guess(d:Data, Any=4, Budget=50, label=lambda r:r, **kwargs) -> Data:
+  rows   = shuffle(d.rows[:])
+  unseen = clone(d, rows[Any:][:the.Few])
+  seen   = clone(d, rows[:Any])
+  seen.rows.sort(key= (Y := lambda r: disty(seen, r)))
+  n      = round(Any**0.5)
+  best   = adds(seen.rows[:n], clone(d))
+  rest   = adds(seen.rows[n:], clone(d))
+  while unseen.n > 2 and seen.n < Budget:
+    add(seen,
+      add(best,
+        label(
+          sub(unseen, 
+            acquire(seen, best, rest, unseen, **kwargs)))))
+    if best.n > seen.n**.5:
       best.rows.sort(key = Y)
-      while best.n > xy.n**.5:
-        add(rest, sub(best, best.rows[-1]))
-  return clone(d, sorted(xy.rows, key = Y))
+      while best.n > seen.n**.5:
+        add(rest, 
+          sub(best, best.rows[-1]))
+  return clone(d, sorted(seen.rows, key = Y))
 
-def win(d):
+def win(d:Data) -> callable:
   b4 = sorted(disty(d, r) for r in d.rows)
   lo, med = b4[0], b4[len(b4)//2]
-  return lambda r: int(100*(1-(disty(d,r)-lo)/(med-lo+1E-6)))
+  return lambda r: int(100*(1 - (disty(d,r) - lo)/(med - lo + 1E-6)))
 
-if __name__ == "__main__":
-  random.seed(float(sys.argv[1]))
-  d = Data(csv(sys.argv[2]))
+def eg__four(file:str):
+  d = Data(csv(file))
   score = win(d)
   for eager in [False, True]:
-    for scorer in [nearer, likelier]:
-      tmp = sorted(score(guess(d, scorer=scorer, eager=eager).rows[0])
-                   for _ in range(20))
-      says(tmp + [eager, scorer.__name__], w=3)
+    for fn in [nearer, likelier]:
+      tmp= [score(guess(d,scorer=fn,eager=eager).rows[0]) for _ in range(20)]
+      says(sorted(tmp) + [eager, fn.__name__], w=3)
+
+if __name__ == "__main__": main(globals())
