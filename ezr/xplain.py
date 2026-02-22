@@ -1,58 +1,54 @@
 #!/usr/bin/env python3 -B
-"""xplan.py: which attribute bins predict low distance-to-heaven"""
+"""xplain.py: which attribute bins predict low distance-to-heaven"""
 import sys
-from ez2 import Data, Num, Sym, csv, norm, disty, add, adds, sd
+from ez2 import BIG, Data, Num, Sym, O, Qty, csv, norm, disty, add, adds, sd, the
 
-W, B = 15, 9
-BLOCKS = " ▁▂▃▄▅▆▇█"
-RESET  = "\033[0m"
+WIDTH = 15
 
-def bnum(col, v): return min(B, max(1, int(B * norm(col, v))))
+def Span(lo=BIG, hi=-BIG): return O(lo=lo, hi=hi, y=Num())
 
-def color(s):
-  if s <= 3: return "\033[1;32m"  # bright green = good
-  if s >= 7: return "\033[1;31m"  # bright red   = bad
-  return "\033[2;37m"             # dim gray      = middle
+def spanAdd(s, x:Qty, y:float):
+  s.lo = min(s.lo, x)
+  s.hi = max(s.hi, x)
+  add(s.y, y)
 
-def discretize(col, v):
-  if v == "?": return v
-  b    = v if Sym is col.it else bnum(col, v)
-  bins = col.setdefault('bins', {})
-  if b not in bins: bins[b] = Num(lo=v, hi=v) if Num is col.it else Num()
-  elif Num is col.it:
-    bins[b].lo = min(bins[b].lo, v)
-    bins[b].hi = max(bins[b].hi, v)
-  return b
+def bnum(col, v):
+  return v if Sym is col.it else min(the.bins, max(1, int(the.bins * norm(col, v))))
+
+def spanShow(s, ys) -> str:
+  blocks = " ▁▂▃▄▅▆▇█"
+  reset  = "\033[0m"
+  score  = max(1, bnum(ys, s.y.mu))
+  c = "\033[1;32m" if score <= the.bins//3 else "\033[1;31m" if score >= 2*the.bins//3 else "\033[2;37m"
+  return f"{c}{blocks[min(score,len(blocks)-1)]}{reset}"
 
 def xplanTrain(d):
+  for x in d.cols.x: x.bins = {}
   ys = Num()
   for r in d.rows:
     y = add(ys, disty(d, r))
     for x in d.cols.x:
       if (v := r[x.at]) != "?":
-        b = discretize(x, v)
-        add(x.bins[b], y)
+        b = bnum(x, v)
+        x.bins[b] = x.bins.get(b) or Span(lo=v, hi=v)
+        spanAdd(x.bins[b], v, y)
   return d, ys
 
-def signal(x, ys):
-  return sd(adds(bnum(ys, b.mu) for b in x.bins.values()))
+def signal(x):
+  return sd(adds(s.y.mu for s in x.bins.values()))
 
-def xplanReport(d, ys):
-  sep = f"{'-'*W}-+-{'-'*6}-{'-'*6}-+-{'-'*(B+1)}"
-  print(f"{'NAME':<{W}} | {'lo':>6} {'hi':>6} | {'░'*(B+1)}")
-  print(sep)
-  for x in sorted(d.cols.x, key=lambda x: signal(x, ys), reverse=True):
-    def cell(k):
-      b = x.bins.get(k)
-      if not b: return "░"
-      s = max(1, bnum(ys, b.mu))
-      return f"{color(s)}{BLOCKS[s]}{RESET}"
-    lo = round(x.bins[min(x.bins)].lo, 2) if Num is x.it else min(x.bins)
-    hi = round(x.bins[max(x.bins)].hi, 2) if Num is x.it else max(x.bins)
-    print(f"{x.txt[:W]:<{W}} | {str(lo):>6} {str(hi):>6} | "
-          f"{''.join(cell(k) for k in range(B+1))}")
+def report1(x, ys) -> str:
+  lo, hi = x.bins[min(x.bins)].lo, x.bins[max(x.bins)].hi
+  if Num is x.it: lo, hi = round(lo, the.decs), round(hi, the.decs)
+  spark = "".join(spanShow(x.bins[k], ys) if k in x.bins else "░"
+                  for k in range(the.bins+1))
+  return f"{x.txt[:WIDTH]:<{WIDTH}} | {str(lo):>6} {str(hi):>6} | {spark}"
+
+def report(d, ys):
+  print(f"{'NAME':<{WIDTH}} | {'lo':>6} {'hi':>6} | {'░'*(the.bins+1)}")
+  print(f"{'-'*WIDTH}-+-{'-'*6}-{'-'*6}-+-{'-'*(the.bins+1)}")
+  for x in sorted(d.cols.x, key=signal, reverse=True):
+    print(report1(x, ys))
 
 if __name__ == "__main__":
-  xplanReport(
-     *xplanTrain(
-        Data(csv(sys.argv[-1]))))
+  report(*xplanTrain(Data(csv(sys.argv[-1]))))
