@@ -1,14 +1,15 @@
 #!/usr/bin/env python3 -B
 import sys, random
-from ez2 import Data, add, sub, adds, clone, csv, says
+from math import sqrt
+from ez2 import Data, add, sub, adds, clone, csv, says, Row
 from ez2 import disty, distx, likes, main, mids, shuffle, the
 from ez2 import eg__the, eg_s
-choice=random.choice
+choice = random.choice
 
-def nearer(seen:Data, best:Data, rest:Data, r:row) -> bool:
+def nearer(seen:Data, best:Data, rest:Data, r:Row) -> bool:
   return distx(seen, mids(best), r) - distx(seen, mids(rest), r)
 
-def likelier(seen:Data, best:Data, rest:Data, r:row) -> bool:
+def likelier(seen:Data, best:Data, rest:Data, r:Row) -> bool:
   return likes(rest, r, seen.n, 2) - likes(best, r, seen.n, 2)
 
 def acquire(seen:Data, best:Data, rest:Data, 
@@ -25,7 +26,7 @@ def guess(d:Data, Any=4, Budget=50, label=lambda r:r, **kwargs) -> Data:
   unseen = clone(d, rows[Any:][:the.Few])
   seen   = clone(d, rows[:Any])
   seen.rows.sort(key= (Y := lambda r: disty(seen, r)))
-  n      = round(Any**0.5)
+  n      = round(sqrt(Any))
   best   = adds(seen.rows[:n], clone(d))
   rest   = adds(seen.rows[n:], clone(d))
   while unseen.n > 2 and seen.n < Budget:
@@ -34,9 +35,9 @@ def guess(d:Data, Any=4, Budget=50, label=lambda r:r, **kwargs) -> Data:
         label(
           sub(unseen, 
             acquire(seen, best, rest, unseen, **kwargs)))))
-    if best.n > seen.n**.5:
+    if best.n > sqrt(seen.n):
       best.rows.sort(key = Y)
-      while best.n > seen.n**.5:
+      while best.n > sqrt(seen.n):
         add(rest, 
           sub(best, best.rows[-1]))
   return clone(d, sorted(seen.rows, key = Y))
