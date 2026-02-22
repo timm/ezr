@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 -B
 """bayes.py: incremental naive Bayes classifier
 (c) 2026 Tim Menzies timm@ieee.org, MIT license"""
-from ez2   import Data, add, clone, csv, likes, says, main,align
+from ez   import Data, add, clone, csv, likes, says, main,align
 from stats import Confuse, confuse, confused
 
 def nbayes(src, warmup=10):

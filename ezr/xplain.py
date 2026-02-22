@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 -B
 """xplain.py: which attribute bins predict low distance-to-heaven"""
 import sys
-from ez2 import BIG, Data, Num, Sym, O, Qty, csv, norm, disty, add, adds, sd, the
+from ez import BIG,Data,Num,Sym,O,Qty,csv,norm,disty,add,adds,sd,the
 
 WIDTH = 15
 
@@ -12,14 +12,15 @@ def spanAdd(s, x:Qty, y:float):
   s.hi = max(s.hi, x)
   add(s.y, y)
 
-def bnum(col, v):
+def rowBin(col, v):
   return v if Sym is col.it else min(the.bins, max(1, int(the.bins * norm(col, v))))
 
 def spanShow(s, ys) -> str:
   blocks = " ▁▂▃▄▅▆▇█"
   reset  = "\033[0m"
-  score  = max(1, bnum(ys, s.y.mu))
-  c = "\033[1;32m" if score <= the.bins//3 else "\033[1;31m" if score >= 2*the.bins//3 else "\033[2;37m"
+  score  = max(1, rowBin(ys, s.y.mu))
+  c = "\033[1;32m" if score <= the.bins//3 else \
+      "\033[1;31m" if score >= 2*the.bins//3 else "\033[2;37m"
   return f"{c}{blocks[min(score,len(blocks)-1)]}{reset}"
 
 def xplanTrain(d):
@@ -29,13 +30,14 @@ def xplanTrain(d):
     y = add(ys, disty(d, r))
     for x in d.cols.x:
       if (v := r[x.at]) != "?":
-        b = bnum(x, v)
+        b = rowBin(x, v)
         x.bins[b] = x.bins.get(b) or Span(lo=v, hi=v)
         spanAdd(x.bins[b], v, y)
   return d, ys
 
-def signal(x):
-  return sd(adds(s.y.mu for s in x.bins.values()))
+def signal(x): return sd(adds(s.y.mu for s in x.bins.values()))
+
+def colsDict(d): return {x.at: x for x in d.cols.x}
 
 def report1(x, ys) -> str:
   lo, hi = x.bins[min(x.bins)].lo, x.bins[max(x.bins)].hi
@@ -50,5 +52,4 @@ def report(d, ys):
   for x in sorted(d.cols.x, key=signal, reverse=True):
     print(report1(x, ys))
 
-if __name__ == "__main__":
-  report(*xplanTrain(Data(csv(sys.argv[-1]))))
+if __name__ == "__main__": report(*xplanTrain(Data(csv(sys.argv[-1]))))

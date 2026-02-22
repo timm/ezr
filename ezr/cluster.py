@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 -B
 "Usage: python3 -B cluster.py 100 CSV"
 import sys, random
-from ez2 import Data, csv, distx, furthest, pick, shuffle, says
+from ez import Data, csv, distx, furthest, pick, shuffle, says
 from kmeans import kmeans
 sample,choice = random.sample,random.choice
 

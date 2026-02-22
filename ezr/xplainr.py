@@ -1,59 +1,82 @@
 #!/usr/bin/env python3 -B
-"""xplainr.py: rule generation from top signals"""
-import sys
-from ez2 import BIG, Data, Num, Sym, Row, csv, disty, adds, the
-from xplain import xplanTrain, signal, bnum
+"""xplainr.py: rule generation from top signals
+Options:
+  -B Bpc=2         best bins per column
+  -M Maxr=5        max rule size
+  -S Support=10    min rows matching a rule
+  -T Top=8         top columns by signal"""
+import re
+from ez import (Data, Num, Row, csv, disty, adds,
+                 the, cast, main, O, shuffle, clone)
+from xplain import xplanTrain, signal, rowBin, colsDict
 
-TOP  = 8
-MAXR = 5
+cfg = O(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
 
-def combos(lst:list, n:int):
-  if n:
-    for i, x in enumerate(lst):
-      for rest in combos(lst[i+1:], n-1):
-        yield (x, *rest)
-  else: yield ()
-
-def ruleMatch(d:Data, rule:dict, row:Row) -> bool:
-  return all(row[at] != "?" and
-             (row[at] if Sym is d.cols.all[at].it 
-                      else bnum(d.cols.all[at], row[at])) == b
+def ruleMatch(cols:dict, rule:dict, row:Row) -> bool:
+  return all(row[at] != "?" and rowBin(cols[at], row[at]) == b
              for at, b in rule.items())
 
-def ruleScore(d:Data, rule:dict) -> float:
-  ys = adds(disty(d, r) for r in d.rows if ruleMatch(d, rule, r))
-  return ys.mu if ys.n else BIG
+def ruleScore(d:Data, cols:dict, rule:dict, rows:list) -> Num|None:
+  if (ys := adds( disty(d,r) for r in rows
+                  if ruleMatch(cols, rule, r))).n >= cfg.Support:
+    return ys
 
-def ruleStr(d:Data, rule:dict) -> str:
+def ruleStr(cols:dict, rule:dict) -> str:
   parts = []
-  for at, b in rule.items():
-    col = d.cols.all[at]
-    if Sym is col.it:
-      parts.append(f"{col.txt}={b}")
-    else:
-      s = col.bins[b]
-      parts.append(
-        f"{col.txt}={round(s.lo, the.decs)}..{round(s.hi, the.decs)}")
+  for at, b in sorted(rule.items()):
+    col, s = cols[at], cols[at].bins[b]
+    parts.append(f"{col.txt}={b}" if not hasattr(s, 'lo') else
+      f"{col.txt}={round(s.lo,the.decs)}..{round(s.hi,the.decs)}")
   return " and ".join(parts)
 
-def rules(d:Data, ys:Num, top=TOP, maxr=MAXR):
-  spans = sorted([(x, b) for x in d.cols.x
-                         for b in x.bins],
-                 key=lambda t: signal(t[0]), reverse=True)[:top]
-  n = 0
-  for size in range(1, maxr+1):
-    for combo in combos(spans, size):
-      rule = {x.at: b for x, b in combo}
-      if len(rule) == size:
-        yield ruleScore(d, rule), size, (n := n+1), rule
+def rules(d:Data, cols:dict, train:list):
+  seen = set()
+  n    = 0
 
-def report(d:Data, ys:Num, top=TOP, maxr=MAXR):
-  print(f"{'score':>6}  {'n':>5}  rule")
-  for score, size, _, rule in sorted(rules(d, ys, top, maxr))[:top]:
-    fx =sum(ruleMatch(d,rule,r) for r in d.rows)
-    print(f"{score:>6.2f}  {fx:>5}  {ruleStr(d, rule)}")
+  def score(rule):
+    k = tuple(sorted(rule.items()))
+    if k not in seen:
+      seen.add(k)
+      if ys := ruleScore(d, cols, rule, train):
+        return ys.mu
 
-if __name__ == "__main__":
-  d = Data(csv(sys.argv[-1]))
-  report(d, *xplanTrain(d)[1:])
+  spans = [(x.at, b, s, (n:=n+1))
+           for x in sorted(d.cols.x,
+                           key=signal, reverse=True)[:cfg.Top]
+           for b in sorted(x.bins,
+                           key=lambda b: x.bins[b].y.mu)[:cfg.Bpc]
+           if (s := score({x.at: b})) is not None]
 
+  beam = sorted((s, i, {at:b}) for at,b,s,i in spans)[:cfg.Top]
+  for s, _, rule in beam: yield s, _, rule
+
+  for _ in range(2, cfg.Maxr+1):
+    beam = sorted(
+      [(s, (n:=n+1), new) for _,_, rule in beam
+                          for at, b, *_ in spans if at not in rule
+                          if (s := score(new := {**rule, at: b}))
+                          is not None])[:cfg.Top]
+    if not beam: break
+    for s, _, rule in beam: yield s, _, rule
+
+def report(d:Data):
+  rows = shuffle(d.rows[:])
+  mid  = len(rows) // 2
+  train, test = rows[:mid], rows[mid:]
+  d_train = clone(d, train)
+  xplanTrain(d_train)
+  cols = colsDict(d_train)
+  print(f"{'train':>6}  {'test':>6}  {'n':>4}  rule")
+  for score, _, rule in sorted(rules(d_train, cols, train))[:cfg.Top]:
+    if not (t := ruleScore(d_train, cols, rule, test)): continue
+    print(f"{score:>6.2f}  {t.mu:>6.2f}"
+          f"  {t.n:>4}  {ruleStr(cols, rule)}")
+   
+def eg_h():            print(__doc__)
+def eg__report(f:str): report(Data(csv(f)))
+def eg_B(n:int): cfg.Bpc     = n
+def eg_M(n:int): cfg.Maxr    = n
+def eg_S(n:int): cfg.Support = n
+def eg_T(n:int): cfg.Top     = n
+
+if __name__ == "__main__": main(globals())

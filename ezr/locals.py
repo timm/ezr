@@ -1,9 +1,9 @@
 #!/usr/bin/env python3 -B
-"""ls.py: local search + comparison with sa
+"""locals.py: local search + comparison with sa
 (c) 2026 Tim Menzies timm@ieee.org, MIT license"""
 import sys,random
 choice,rand = random.choice,random.random
-from ez2 import (nearby,csv,says,Data,shuffle)
+from ez import (nearby,csv,says,Data,shuffle)
 from sa import sa, oneplus1
 
 def lsRminus(d,**args):  return ls(d,restarts=0,  **args)

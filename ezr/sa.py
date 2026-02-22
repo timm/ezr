@@ -4,7 +4,7 @@
 import sys,random
 from math import exp
 choice,choices,rand = random.choice,random.choices,random.random
-from ez2 import (nearest,disty,nearby,csv,says,Data,shuffle)
+from ez import (nearest,disty,nearby,csv,says,Data,shuffle)
 
 def oneplus1(d:Data, mutator, accept, b=1000, restart=0):
   def score(r):

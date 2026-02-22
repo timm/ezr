@@ -1,6 +1,6 @@
 #!/usr/bin/env python3 -B 
 import sys, random
-from ez2 import Data, add, csv, distx, align,say,mids
+from ez import Data, add, csv, distx, align,say,mids
 choice=random.choice
 
 def kmeans(d:Data, rows=None, k=10, n=10, cents=None):

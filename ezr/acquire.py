@@ -1,9 +1,9 @@
 #!/usr/bin/env python3 -B
 import sys, random
 from math import sqrt
-from ez2 import Data, add, sub, adds, clone, csv, says, Row
-from ez2 import disty, distx, likes, main, mids, shuffle, the
-from ez2 import eg__the, eg_s
+from ez import Data, add, sub, adds, clone, csv, says, Row
+from ez import disty, distx, likes, main, mids, shuffle, the
+from ez import eg__the, eg_s
 choice = random.choice
 
 def nearer(seen:Data, best:Data, rest:Data, r:Row) -> bool:

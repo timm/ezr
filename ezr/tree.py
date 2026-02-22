@@ -1,5 +1,5 @@
 #!/usr/bin/env python3 -B
-from ez2 import (BIG, Data, Num, Sym, the, Rows, Row, Col,
+from ez import (BIG, Data, Num, Sym, the, Rows, Row, Col,
   add, adds, csv, clone, disty, main, sd, shuffle,
   mids, mid, say, spread, O)
 

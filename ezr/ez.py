@@ -1,380 +1,243 @@
 #!/usr/bin/env python3 -B
 """
-ez.py: lightweight XAI for optimization, classification, regression
-(c) 2025 Tim Menzies, MIT license.
+ez1.py: lightweight incremental Bayes classifier with add/delete support
+(c) 2026 Tim Menzies timm@ieee.org, MIT license
 
-USAGE: python3 ez.py [OPTIONS] [FILE]                          
+Options:
+  -B Budget=50       training evaluation budget
+  -b bins=7          discretize numerics into this many bins
+  -C Check=5         testing evaluation budget
+  -d decs=2          print floats to this many decimals
+  -F Few=128         search space for new roes
+  -k k=1             for low value frequencies in Bayes
+  -l leaf=3          min rows per tree leaf
+  -m m=2             for low class frequencies in Bayes
+  -p p=2             Minkowski distance coefficient (2:Euclidean)
+  -s seed=1          random number seed
+  -S Show=30         width of tree display """
+import random, sys, re
+from math import sqrt, log, exp
+from typing import Iterator, Iterable, Any
+rand = random.random
 
-OPTIONS:
-  -b bins=7    Number of bins for numeric discretization
-  -B Budget=50 Training sample budget
-  -C Check=5   Final evaluation budget
-  -d decs=2      show floats to this many decimal places
-  -k k=1       Bayes low-frequency hack for symbolic attributes
-  -l leaf=4    Min rows in tree leaf
-  -m m=2       Bayes low-frequency hack for class priors
-  -p p=2       Minkowski distance power (1:manhattan, 2:euclidean)
-  -s seed=1    Random number seed
-  -S Show=30   Tree display width
-"""
-from math import log,exp,sqrt
-import re,sys,random,traceback
-BIG=1e32
+#---- base object ----------------------------------------------------
+class O(dict):
+  __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
+  __repr__ = lambda i: "{"+' '.join(f":{k} {say(i[k])}" for k in i)+"}"
 
-"""
-INPUT: CSV. Row 1 defines columns. Uppercase=numeric, lowercase=symbolic.
-  Suffixes: "+" maximize, "-" minimize, "!" class label, "X" ignore.
-  Missing values: "?".
+BIG = 1E32
+Qty = int | float
+Val = Qty | str
+Row = list[Val]
+Rows = list[Row]
+Col,Num,Sym,Data,Cols = O,O,O,O,O
 
-API ( Hints: i:instance d:DATA c:COL r:row v:value f:file ):
-  OBJ(**d)           Dict subclass with dot-notation access
-  csv(f)             Generator yielding parsed rows from CSV file
-  cast(s)            Cast string to int, float, bool, or string
+#---- constructors ---------------------------------------------------
+def Col(at=0,txt=" ") -> Col: 
+  return (Num if txt[0].isupper() else Sym)(at=at,txt=txt, goal=txt[-1]!="-")
 
-  NUM(at,txt)        Numeric column (tracks n, mu, m2)
-  SYM(at,txt)        Symbolic column (tracks n, has)
-  DATA(items,s)      Dataset: rows + COLS structure
-  COLS(names)        Build x/y column lists from header names
-  clone(d, rows)     New DATA with same structure, optional rows
+def Num(**d) -> Num: return O(it=Num, **d, n=0, mu=0, m2=0)
+def Sym(**d) -> Num: return O(it=Sym, **d, n=0, has={})
 
-  add(i,v)           Update NUM/SYM stats or add row to DATA
-  sub(i,v)           Undo an add (decremental update)
-  mid(c), spread(c)  Central tendency and diversity for a column
-  sd(c), ent(c)      Spread for NUM (std dev) or SYM (entropy)
-  norm(c,v)          Normalize numeric v to 0..1 via CDF
-  z(c,v)             Z-score of v, clamped to [-3, 3]
-  bucket(c,v)        Discretize numeric v into bins
+def Data(items:Iterable[Row] = None) -> Data:
+  return adds(items, O(it=Data, n=0, rows=[], cols=None, mids=None))
 
-  like(c,v,prior)    Likelihood of v in column c
-  likes(d,r,n,nh)    Log-likelihood of row r in dataset d
+def Cols(names: list[str]) -> Cols:
+  cols = [Col(i,s) for i,s in enumerate(names)]
+  return O(it = Cols, names = names, all= cols,
+               x = [c for c in cols if c.txt[-1] not in "-+!X"],
+               y = [c for c in cols if c.txt[-1]     in "-+!" ],
+               klass = next((c for c in cols if c.txt[-1] == "!"), None))
 
-  aha(c,u,v)         Per-column distance (handles mixed types)
-  minkowski(items)    Averaged Minkowski distance over items
-  distx(d,r1,r2)     Minkowski distance between rows over x cols
-  disty(d,r)         Distance of row r from heaven over y cols
-  order(d,r,rows)    Sort rows by distx from r
-  nearest(d,r,rows)  Closest row to r in rows (by distx)
-  furthest(d,r,rows) Most distant row from r (by distx)
+def clone(data, rows=None): return Data([data.cols.names] + (rows or []))
 
-  gauss(mu,sd)       Gaussian random number (CLT approx)
-  pick(d,n)          Weighted random selection from dict d
-  shuffle(lst)       Shuffle list in place, return it
-
-  TREE(d,rows)       Build spread tree via variance reduction
-  treeLeaf(t,r)      Leaf node for row r
-  treeNodes(t)       Iterator over (node, level, label) triples
-  treeUsed(t)        Set of column names used in tree splits
-  treeShow(t)        Print tree with indentation and y stats
-
-KEY ALGORITHMS:
-  Welford    Incremental mean/variance in one pass (add/sub)
-  Shannon    Entropy for symbolic diversity (ent)
-  Aha        Heterogeneous distance: 0..1 for all types (aha)
-  CDF norm   Sigmoid of z-score, not min/max (norm)
-  Bayes      Log-likelihood with k,m smoothing (like/likes)
-  Spread     Trees split to minimize sd or entropy (TREE)
-
-PATTERNS:
-  Composite   adds/add, likes/like, distx/aha, mids/mid
-  Pipeline    DATA → adds → add → column updates
-  Undo        sub(i,v) reverses add(i,v) exactly
- """
-#---- create ---------------------------------------------------------
-def what(s): return NUM if s[0].isupper() else SYM
-
-def COL(at=0,txt=" "): return what(txt)(at=at, txt=txt, goal=txt[-1]!="-")
-def NUM(**d): return OBJ(it=NUM, **d, n=0, mu=0, m2=0)
-def SYM(**d): return OBJ(it=SYM, **d, n=0, has={})
-
-def DATA(items=None,s=""):
- return adds(items, OBJ(it=DATA, n=0, s=s, rows=[], cols=None, mids=None))
-
-def COLS(names):
-  cols= [COL(at=n,txt=s) for n,s in enumerate(names)]
-  return OBJ(it=COLS, names=names, all=cols,
-             x= [c for c in cols if c.txt[-1] not in "-+!X"],
-             y= [c for c in cols if c.txt[-1]     in "-+!" ])
-
-def clone(data, rows=None):
-  return DATA([data.cols.names] + (rows or []))
-
-#--- update ----------------------------------------------------------
-def adds(items, it=None):
-  it = it or NUM(); [add(it,item) for item in (items or [])]; return it
-
-def sub(i,v): return add(i,v, -1)
-
-def add(i,v,w=1):
-  if v!="?":
-    i.n += w
-    if i.n <= 0: i.n,i.mu,i.m2 = 0,0,0; return v
-    if   SYM  is i.it : i.has[v] = w + i.has.get(v,0)
-    elif NUM  is i.it : 
-      if i.n <= 0: i.n,i.mu,i.m2 = 0,0,0
-      else: d = v-i.mu; i.mu += w*d/i.n; i.m2 += w*d*(v-i.mu)
-    elif DATA is i.it :
-      if not i.cols: i.cols=COLS(v)
+#---- update ---------------------------------------------------------
+def add(this:'Col|Data', v:'Val|Row', w=1) -> Any:
+  if v != "?":
+    this.n += w
+    if Sym is this.it: 
+      this.has[v] = w + this.has.get(v, 0)
+    elif Num is this.it:
+      if this.n <= 0: this.n,this.mu,this.m2 = 0,0,0
+      else: d = v-this.mu; this.mu += w*d/this.n; this.m2 += w*d*(v-this.mu)
+    elif Data is this.it:
+      if not this.cols: this.cols = Cols(v)
       else:
-        i.mids = None
-        for col in i.cols.all: add(col, v[col.at], w)
-        (i.rows.append if w>0 else i.rows.remove)(v)
+        this.mids = None
+        for col in this.cols.all: add(col, v[col.at], w)
+        (this.rows.append if w > 0 else this.rows.remove)(v)
   return v
 
-#--- qeury -----------------------------------------------------------
-def mid(col): return mode(col) if SYM is col.it else col.mu
-def mode(sym): return max(sym.has, key=sym.has.get)
-def mids(data):
-  data.mids = data.mids or [mid(col) for col in data.cols.all]
-  return data.mids
+def sub(this:O, v:Any) -> Any: return add(this, v, w=-1)
 
-def spread(col): return (ent if SYM is col.it else sd)(col)
-def sd(num): return 0 if num.n < 2 else sqrt(max(0,num.m2) / (num.n - 1))
-def ent(sym): 
-  return -sum(p*log(p,2) for n in sym.has.values() if (p:=n/sym.n)>0)
+def adds(items:Iterable[Row]=None, this=None) -> O:
+  this = this or Num()
+  [add(this, item) for item in (items or [])]
+  return this
+
+#---- query ----------------------------------------------------------
+def mid(c:Col) -> Val:
+  return c.mu if Num is c.it else  max(c.has, key=c.has.get)
+
+def mids(d:Data) -> Row:
+  d.mids = d.mids or [mid(c) for c in d.cols.all]
+  return d.mids
+
+def spread(c:Col) -> float: return ent(c) if Sym is c.it else sd(c)
+
+def sd(num:Num) -> float:
+  return 0 if num.n < 2 else sqrt(max(0, num.m2) / (num.n - 1))
+
+def ent(sym:Sym) -> float:
+  return -sum(p*log(p,2) for n in sym.has.values() if (p:=n/sym.n) > 0)
+
+def z(num:Num, v:Qty) -> float:
+  return max(-3, min(3, (v - num.mu) / (sd(num) + 1/BIG)))
+
+def norm(c:Col, v:Val) -> Val:
+  return v if v == "?" or Sym is c.it else 1 / (1 + exp(-1.7 * z(c, v)))
 
 #---- distance -------------------------------------------------------
-def minkowski(items):
-  n,d = 0,0
-  for item in items: n, d = n+1, d+item ** the.p
-  return 0 if n==0 else (d / n) ** (1 / the.p)
+def minkowski(items: Iterable[Qty]) -> float:
+  n, d = 0, 0
+  for item in items: 
+    n, d = n+1, d + item**the.p
+  return 0 if n == 0 else (d / n) ** (1 / the.p)
 
-def disty(data, row):
-  return minkowski((norm(y,row[y.at]) - y.goal) for y in data.cols.y)
+def disty(d:Data, r:Row) -> float:
+  return minkowski((norm(y, r[y.at]) - y.goal) for y in d.cols.y)
 
-def distx(data,row1,row2):
-  return minkowski(aha(x, row1[x.at], row2[x.at]) for x in data.cols.x)
+def distx(d:Data, r1:Row, r2:Row) -> float:
+  return minkowski(aha(x, r1[x.at], r2[x.at]) for x in d.cols.x)
 
-def aha(col,u,v):
-  if u==v=="?": return 1
-  if SYM is col.it : return u != v
-  u,v = norm(col,u), norm(col,v)
-  u = u if u != "?" else (0 if v>0.5 else 1)
-  v = v if v != "?" else (0 if u>0.5 else 1)
+def aha(c:Col, u:Val, v:Val) -> float:
+  if u == v == "?": return 1
+  if Sym is c.it: return u != v
+  u, v = norm(c, u), norm(c, v)
+  u = u if u != "?" else (0 if v > 0.5 else 1)
+  v = v if v != "?" else (0 if u > 0.5 else 1)
   return abs(u - v)
 
-def furthest(*args): return order(*args)[-1]
-def nearest(*args): return order(*args)[0]
+def furthest(*args) -> Row: return order(*args)[-1]
+def nearest(*args)  -> Row: return order(*args)[0]
 
-def order(data,r1,rows): return sorted(rows,key=lambda r2:distx(data,r1,r2))
+def order(d:Data, r1:Row, rows:Rows) -> Rows:
+  return sorted(rows, key=lambda r2: distx(d, r1, r2))
 
-#--- bayes ------------------------------------------------------------
-def z(num,v): return max(-3, min(3, (v -  num.mu) / (sd(num) + 1/BIG)))
-def norm(num,v): return 1 / (1 + exp( -1.7 * z(num,v)))
+def nearby(c:Col, v:Any) -> Val:
+  return pick(c.has) if Sym is c.it else gauss(mid(c) if v=="?" else v,sd(c))
 
-def bucket(col,v):
-   return v if (v=="?" or SYM is col.it) else int(the.bins * norm(col,v))
-
-def like(col, v, prior=0):
-  if NUM is col.it: 
-    var = sd(col)**2 + 1/BIG
-    return (1/sqrt(2*3.14159*var)) * exp(-((v - col.mu)**2)/(2*var))
-  else:        
-    n = col.has.get(v, 0) + the.k*prior
-    return max(1/BIG, n/(col.n + the.k))
-
-def likes(data, row, nall, nh):
-  prior = (len(data.rows) + the.m) / (nall + the.m * nh)
-  out = log(prior)
-  for col in data.cols.x:
-    if (v := row[col.at]) != "?": out += log(like(col, v, prior))
-  return out
-
-#--- tree -----------------------------------------------------------
-def treeSelects(rows, at, fn):
-  left, right = [], []
-  for r in rows:
-    if (v := r[at]) != "?": (left if fn(v) else right).append(r)
-  return ((left,right) if len(left)>=the.leaf and len(right)>=the.leaf
-          else (None, None))
-
-def treeSplits(col, rows):
-  at = col.at
-  if SYM is col.it:
-    for v in set(r[at] for r in rows if r[at] != "?"):
-      left, right = treeSelects(rows, at, lambda x: x == v)
-      if left: yield v, left, right
+#---- Bayes ----------------------------------------------------------
+def like(c:Col, v:Any, prior=0) -> float:
+  if Num is c.it:
+    var = sd(c)**2 + 1/BIG
+    return (1/sqrt(2*3.14159*var)) * exp(-((v - c.mu)**2) / (2*var))
   else:
-    vals = sorted(r[at] for r in rows if r[at] != "?")
-    if len(vals) >= 2:
-      med = vals[len(vals) // 2]
-      left, right = treeSelects(rows, at, lambda x: x <= med)
-      if left: yield med, left, right
+    n = c.has.get(v, 0) + the.k * prior
+    return max(1/BIG, n / (c.n + the.k))
 
-def TREE(data, rows):
-  center = mids(clone(data,rows))
-  tree = OBJ(mids={col.txt:center[col.at] for col in data.cols.y},
-             y = adds(disty(data, r) for r in rows))
-  if len(rows) >= 2 * the.leaf:
-    best, bestW = None, BIG
-    for c in data.cols.x:
-      for cut, left, right in treeSplits(c, rows):
-        w = sum(len(s)*spread(adds(disty(data,r) for r in s))
-                for s in [left,right])
-        if w < bestW:
-          best, bestW = (c, cut, left, right), w
-    if best:
-      c, cut, left, right = best
-      tree.update(col=c, cut=cut, left=TREE(data, left),
-                                  right=TREE(data, right))
-  return tree
+def likes(d:Data, row:Row, n_all:int, n_h:int) -> float:
+  prior = (len(d.rows) + the.m) / (n_all + the.m * n_h)
+  ls = [like(x,v,prior) for x in d.cols.x if (v:=row[x.at])!="?"]
+  return log(prior) + sum(log(v) for v in ls if v>0)
 
-def treeLeaf(tree, row):
-  if "col" in tree:                          
-    v = row[tree.col.at]
-    if v == "?": return treeLeaf(tree.left, row)
-    kid = (tree.left if (v == tree.cut
-                         if SYM is tree.col.it
-                         else v <= tree.cut) else tree.right)
-    return treeLeaf(kid, row)
-  return tree
+#---- lib ------------------------------------------------------------
+def says(lst:list,w=None): print(*[say(x,w) for x in lst])
 
-def treeUsed(tree):
-  return {n.col.txt for n,_,_ in treeNodes(tree) if "col" in n}
+def say(x, w=None):
+  if type(x)==type(say): x= x.__name__ or '()'
+  elif type(x)==float: x= str(int(x) if int(x)==x else f"{x:.{the.decs}f}")
+  else: x= str(x)
+  return f"{x:>{w}}" if w else x
 
-def treeNodes(tree, lvl=0, pre=""):
-  if tree:
-    yield tree, lvl, pre
-    if "col" in tree:                        
-      op = '==' if SYM is tree.col.it else '<='
-      no = '!=' if SYM is tree.col.it else '>'
-      for kid, txt in sorted([(tree.left, op), (tree.right, no)],
-                              key=lambda p: mid(p[0].y)):
-        yield from treeNodes(kid, lvl+1,
-                             f"{tree.col.txt} {txt} {o(tree.cut)}")
+def shuffle(lst:list) -> list: random.shuffle(lst); return lst
 
-def treeShow(tree):                          
-  for n, lvl, pre in treeNodes(tree):
-    s = f"{'|   '*(lvl-1)}{pre}" if pre else ""
-    print(f"{s:{the.Show}} {o(mid(n.y)):>6} ({n.y.n:>3})",o(n.mids))
-
-#--- lib -------------------------------------------------------------
-def shuffle(lst): random.shuffle(lst); return lst
-
-def o(t):
-  match t:
-    case _ if type(t) is type(o): return t.__name__
-    case dict(): return "{" + " ".join(f":{k} {o(t[k])}" for k in t) + "}"
-    case float(): return f"{int(t)}" if int(t) == t else f"{t:.{the.decs}f}"
-    case list(): return "[" + ", ".join(o(x) for x in t) + "]"
-    case tuple(): return "(" + ", ".join(o(x) for x in t) + ")"
-    case _: return str(t)
-
-class OBJ(dict):
-  __getattr__,__setattr__,__repr__ = dict.__getitem__,dict.__setitem__,o
-
-def gauss(mu,sd1):
-  return mu + 2 * sd1 * (sum(random.random() for _ in range(3)) - 1.5)
-
-def pick(d,n):
-  n *= random.random()
-  for k,v in d.items():
+def pick(d:dict) -> Any:
+  n = sum(d.values()) * rand()
+  for k, v in d.items():
     if (n := n-v) <= 0: return k
 
-CASTS = [int,float,lambda s: {"true":1,"false":0}.get(s.lower(),s)]
+def gauss(mu:float, s:float) -> float:
+  return mu + 2 * s * (sum(rand() for _ in range(3)) - 1.5)
 
-def cast(s):
+CASTS = [int, float, lambda s: {"true":1,"false":0}.get(s.lower(), s)]
+
+def cast(s:str) -> Val:
   for f in CASTS:
     try: return f(s)
     except ValueError: ...
 
 def csv(f):
-  with open(f,encoding="utf-8") as file:
+  with open(f, encoding="utf-8") as file:
     for s in file:
-      if s:=s.partition("#")[0].strip(): 
+      if s := s.partition("#")[0].strip():
         yield [cast(x.strip()) for x in s.split(",")]
-#--- tests ----------------------------------------------------------
-def run(f,*args):
-  random.seed(the.seed)
-  try: f(*args)
-  except Exception: traceback.print_exc()
 
-def filename(s): return s
+def align(m:list[list]):
+  m = [[say(x) for x in row] for row in m]
+  ws = [max(len(str(x)) for x in col) for col in zip(*m)]
+  for l in m: print(", ".join(f"{str(v):>{w}}" for v, w in zip(l, ws)))
 
+#---- demos ----------------------------------------------------------
 def eg_h():
-  "Show help."
+  "show help"
   print(__doc__)
   for k, fun in globals().items():
-    if k.startswith("eg_"):
-     s = re.sub('^_','-',k[3:])
-     print(f"   -{s:<12}{fun.__doc__.strip()}")
+    if k.startswith("eg__"):
+      args = " ".join(fun.__annotations__)
+      cmd  = f"{k[4:]} {args}".strip()
+      print(f"  --{cmd:<16} {fun.__doc__ or ''}")
 
-def eg__all(f:filename):
-  "Run all examples."
-  for k, fun in globals().items():
-    if k.startswith("eg_") and k!= "eg__all":
-      print("\n#---------",k)
-      run(fun,f) if fun.__annotations__.values() else run(fun)
+def eg_s(n:int): the.seed=n; random.seed(n)
+def eg_d(n:int): the.decs=n
+def eg_p(n:int): the.p=n
 
 def eg__the():
-  "Show config."
+  "show config"
   print(the)
 
-def eg_s(n:int):
-  "Set random number seed."
-  the.seed=n; random.seed(n)
+def eg__csv(file:str):
+  "demo csv reader"
+  align(list(csv(file))[::30])
 
-def eg__csv(f:filename) :
-  "Example: csv reader."
-  [print(row) for row in list(csv(f))[::40]]
+def eg__data(file:str):
+  "demo data storage"
+  d = Data(csv(file))
+  align([mids(d)] + [d.cols.names] + d.rows[::30])
 
-def eg__syms():
-  "Example: SYMs summaries."
-  syms = adds("aaaabbc",SYM())
-  print(o(x:=ent(syms))); assert abs(1.379-x) < .05
+def eg__disty(file:str):
+  "demo row distance to heaven"
+  d = Data(csv(file))
+  align([d.cols.names] + sorted(d.rows, key=lambda r: disty(d, r))[::30])
 
-def eg__nums():
-  "Example: NUMs summaries."
-  nums = adds(gauss(10, 1) for _ in range(1000))
-  print(OBJ(mu=nums.mu, sd=sd(nums)))
-  assert abs(10 - nums.mu) < .05 and abs(1 - sd(nums)) < .05
+def eg__addsub(file:str):
+  "demo incremental add then delete"
+  d = Data(csv(file))
+  rows=d.rows[:]
+  for row in rows[::-1]:
+     sub(d, row)
+     if d.n == 50: one=mids(d)
+  for row in rows:
+     add(d, row)
+     if d.n == 50: two=mids(d)
+  assert all(abs(a-b)<0.00001 for a,b in zip(one,two))
 
-def eg__data(f:filename):
-  "asds"
-  data = DATA(csv(f))
-  print(*data.cols.names)
-  print("x",*data.cols.x,sep="\n")
-  print("y",*data.cols.y,sep="\n")
+def eg__bayes(file:str):
+  "demo naive bayes likelihood"
+  d = Data(csv(file))
+  nall = len(d.rows)
+  for r in d.rows[::30]:
+    print(say(round(likes(d, r, nall, 1), 2)))
 
-def eg__tree(f: filename):
-  "treeing"
-  data = DATA(csv(f))
-  data1 = clone(data, shuffle(data.rows)[:the.Budget])
-  tree = TREE(data1, data1.rows)
-  treeShow(tree)                  
-  print(":used", len(treeUsed(tree)), len(data.cols.x))
- 
-def eg__test(f: filename):
-  "testing"
-  data = DATA(csv(f))
-  half = len(data.rows)//2
-  Y = lambda r: disty(data,r)
-  b4 = sorted(Y(r) for r in data.rows)
-  win = lambda r: int(100*(1-(Y(r)-b4[0])/(b4[half]-b4[0]+1E-6)))
-  wins, used = NUM(), 0
-  for _ in range(20):
-    rows = shuffle(data.rows)
-    test, train = rows[half:], rows[:half][:the.Budget]
-    tree = TREE(clone(data,train), train)
-    used += len(treeUsed(tree))
-    test.sort(key=lambda r: treeLeaf(tree,r).y.mu)
-    add(wins, win(min(test[:the.Check], key=Y)))
-  print(f"{round(wins.mu)} ,sd {round(sd(wins))} ,b4 {o(b4[half])}"
-        f" ,lo {o(b4[0])} ,used {int(used/20)} ,B {the.Budget}",
-        *[f"{s} {len(a)}" for s,a in
-          dict(x=data.cols.x, y=data.cols.y, r=data.rows).items()],
-        *f.split("/")[-2:], sep=" ,")
- 
-#--- main ------------------------------------------------------------
-the= OBJ(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
+#---- main -----------------------------------------------------------
+the = O(**{k: cast(v) for k, v in re.findall(r"(\S+)=(\S+)", __doc__)})
 random.seed(the.seed)
 
-def main(settings,funs):
-  args = iter(sys.argv[1:])
-  for s in args:
-    if f := funs.get(f"eg_{s[1:].replace('-','_')}"):
-      run(f, *[t(next(args)) for t in f.__annotations__.values()])
-    else:
-      for k in settings:
-        if k[0] == s[1]: settings[k] = cast(next(args, ""))
+def main(funs):
+  args = sys.argv[1:]
+  while args:
+    if f := funs.get(f"eg_{args.pop(0)[1:].replace('-','_')}"):
+      f(*[make(args.pop(0)) for make in f.__annotations__.values()])
 
-if __name__ == "__main__": main(the,globals())
+if __name__ == "__main__": main(globals())
+
