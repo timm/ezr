@@ -44,12 +44,13 @@ def report1(x, ys) -> str:
   if Num is x.it: lo, hi = round(lo, the.decs), round(hi, the.decs)
   spark = "".join(spanShow(x.bins[k], ys) if k in x.bins else "░"
                   for k in range(the.bins+1))
-  return f"{x.txt[:WIDTH]:<{WIDTH}} | {str(lo):>6} {str(hi):>6} | {spark}"
+  return f"  {x.txt[:WIDTH]:<{WIDTH}} | {str(lo):>6} {str(hi):>6} | {spark}"
 
 def report(d, ys):
-  print(f"{'NAME':<{WIDTH}} | {'lo':>6} {'hi':>6} | {'░'*(the.bins+1)}")
-  print(f"{'-'*WIDTH}-+-{'-'*6}-{'-'*6}-+-{'-'*(the.bins+1)}")
+  print(f"\n  {'NAME':<{WIDTH}} | {'lo':>6} {'hi':>6} | {'░'*(the.bins+1)}")
+  print(f"  {'-'*WIDTH}-+-{'-'*6}-{'-'*6}-+-{'-'*(the.bins+1)}")
   for x in sorted(d.cols.x, key=signal, reverse=True):
     print(report1(x, ys))
+  print(" ")
 
 if __name__ == "__main__": report(*xplanTrain(Data(csv(sys.argv[-1]))))
