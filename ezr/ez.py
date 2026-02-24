@@ -1,6 +1,6 @@
 #!/usr/bin/env python3 -B
 """
-ez1.py: lightweight incremental Bayes classifier with add/delete support
+ez.py: lightweight incremental Bayes classifier with add/delete support
 (c) 2026 Tim Menzies timm@ieee.org, MIT license
 
 Options:
@@ -8,12 +8,13 @@ Options:
   -b bins=7          discretize numerics into this many bins
   -C Check=5         testing evaluation budget
   -d decs=2          print floats to this many decimals
-  -F Few=128         search space for new roes
+  -F Few=128         search space for new rows
   -k k=1             for low value frequencies in Bayes
   -l leaf=3          min rows per tree leaf
   -m m=2             for low class frequencies in Bayes
   -p p=2             Minkowski distance coefficient (2:Euclidean)
   -s seed=1          random number seed
+  -N Norm=0          CNB weight normalization (0/1)
   -S Show=30         width of tree display """
 import random, sys, re
 from math import sqrt, log, exp
@@ -141,7 +142,7 @@ def likes(d:Data, row:Row, n_all:int, n_h:int) -> float:
   ls = [like(x,v,prior) for x in d.cols.x if (v:=row[x.at])!="?"]
   return log(prior) + sum(log(v) for v in ls if v>0)
 
-#---- lib ------------------------------------------------------------
+#---- lib ------------------------------------------------------------
 def says(lst:list,w=None): print(*[say(x,w) for x in lst])
 
 def say(x, w=None):
