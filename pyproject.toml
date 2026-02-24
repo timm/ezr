@@ -17,6 +17,8 @@ ezrbayes  = "ezr.bayes:main"
 ezrtree   = "ezr.tree:main"
 ezrsa     = "ezr.sa:main"
 ezrkmeans = "ezr.kmeans:main"
+ezrprep   = "ezr.prep:main"
+ezrtext   = "ezr.textmine:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["ezr"]

@@ -15,6 +15,7 @@ Options:
   -m m=2             for low class frequencies in Bayes
   -p p=2             Minkowski distance coefficient (2:Euclidean)
   -s seed=1          random number seed
+  -N Norm=0          CNB weight normalization (0/1)
   -S Show=30         width of tree display """
 import random, sys, re
 from math import log, exp, sqrt, pi
