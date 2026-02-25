@@ -1,0 +1,259 @@
+#!/usr/bin/env python3 -B
+"""
+ez.py: lightweight incremental Bayes classifier with add/delete support
+(c) 2026 Tim Menzies timm@ieee.org, MIT license
+
+Options:
+  -B Budget=50       training evaluation budget
+  -b bins=7          discretize numerics into this many bins
+  -C Check=5         testing evaluation budget
+  -d decs=2          print floats to this many decimals
+  -F Few=128         search space for new rows
+  -k k=1             for low value frequencies in Bayes
+  -l leaf=3          min rows per tree leaf
+  -m m=2             for low class frequencies in Bayes
+  -p p=2             Minkowski distance coefficient (2:Euclidean)
+  -s seed=1          random number seed
+  -S Show=30         width of tree display """
+import random, sys, re
+from math import log, exp, sqrt, pi
+from random import random as r, choice
+from bisect import insort, bisect_left
+from typing import Iterable
+
+BIG = 1E32
+Val = int | float | str
+Row = list[Val]
+Col = "Num | Sym"
+
+#---- columns --------------------------------------------------------
+class Num(list):
+  def __init__(i, mx:int=512):
+    super().__init__(); i.mx=mx; i.seen=0
+
+  __repr__ = lambda i: str([say(v) for v in i])
+  __len__  = lambda i: list.__len__(i)
+
+  def add(i, v:Val) -> Val:
+    if v=="?": return v
+    i.seen+=1; n=len(i)
+    if   n < i.mx: insort(i, v)
+    elif r() < i.mx/i.seen: i.pop(int(r()*n)); insort(i, v)
+    return v
+
+  def sub(i, v:Val) -> Val:
+    if v=="?": return v
+    if (p:=bisect_left(i,v)) < len(i) and i[p]==v: i.pop(p)
+    return v
+
+  def mid(i)    -> float: return i[len(i)//2] if i else 0
+  def spread(i) -> float:
+    n=len(i); return (i[int(.9*n)]-i[int(.1*n)])/2.56 if n>4 else 0
+
+  def norm(i, v:Val) -> Val:
+    if v=="?" or len(i)<2: return v
+    a,b = i[int(.05*len(i))], i[int(.95*len(i))]
+    return 0 if a==b else max(0, min(1, (v-a)/(b-a)))
+
+  def pick(i, v:Val=None) -> Val:
+    return (i.mid() if v is None or v=="?" else v) + choice(i) - choice(i)
+
+  def distx(i, u:Val, v:Val) -> float:
+    if u==v=="?": return 1
+    u,v = i.norm(u), i.norm(v)
+    u = u if u!="?" else (0 if v>0.5 else 1)
+    v = v if v!="?" else (0 if u>0.5 else 1)
+    return abs(u-v)
+
+  def like(i, v:Val, prior:float=0) -> float:
+    s = i.spread() + 1/BIG
+    return (1/sqrt(2*pi*s*s)) * exp(-((v-i.mid())**2) / (2*s*s))
+
+class Sym(dict):
+  def __init__(i): super().__init__()
+
+  __repr__ = lambda i: str({k:say(i[k]) for k in i})
+  __len__  = lambda i: sum(dict.values(i))
+
+  def add(i, v:Val) -> Val:
+    if v=="?": return v
+    i[v] = i.get(v,0)+1; return v
+
+  def sub(i, v:Val) -> Val:
+    if v=="?": return v
+    i[v] = i.get(v,0)-1; return v
+
+  def mid(i)    -> Val:   return max(i, key=i.get)
+  def spread(i) -> float:
+    n=len(i); return -sum(p*log(p,2) for v in i.values() if (p:=v/n)>0)
+  def norm(i, v:Val)         -> Val:   return v
+  def distx(i, u:Val, v:Val) -> float: return float(u!=v)
+  def pick(i, v:Val=None)    -> Val:   return pick(i)
+
+  def like(i, v:Val, prior:float=0) -> float:
+    return max(1/BIG, (i.get(v,0) + the.k*prior) / (len(i) + the.k))
+
+#---- cols, data -----------------------------------------------------
+class Cols:
+  def __init__(i, names:list[str]):
+    i.names = names
+    i.all   = {at:(Num if s[0].isupper() else Sym)() for at,s in enumerate(names)}
+    i.w     = {at: s[-1]!="-" for at,s in enumerate(names) if s[-1] in "-+!"}
+    i.x     = {at:c for at,c in i.all.items() if at not in i.w}
+    i.y     = {at:i.all[at] for at in i.w}
+    i.klass = next((i.all[at] for at,s in enumerate(names) if s[-1]=="!"), None)
+
+  __repr__ = lambda i: str(i.names)
+
+class Data:
+  def __init__(i, items:Iterable[Row]):
+    i.rows=[]; i._mid=None
+    i.cols = Cols(next(items := iter(items)))
+    [i.add(row) for row in items]
+
+  __len__ = lambda i: len(i.rows)
+
+  def add(i, row:Row) -> Row:
+    i._mid=None
+    for at,c in i.cols.all.items(): c.add(row[at])
+    i.rows.append(row); return row
+
+  def sub(i, row:Row) -> Row:
+    i._mid=None
+    for at,c in i.cols.all.items(): c.sub(row[at])
+    i.rows.remove(row); return row
+
+  def mid(i) -> Row:
+    i._mid = i._mid or [c.mid() for c in i.cols.all.values()]
+    return i._mid
+
+  def like(i, row:Row, n_all:int, n_h:int) -> float:
+    prior = (len(i)+the.m) / (n_all+the.m*n_h)
+    ls = [c.like(v,prior) for at,c in i.cols.x.items() if (v:=row[at])!="?"]
+    return log(prior) + sum(log(v) for v in ls if v>0)
+
+  def distx(i, r1:Row, r2:Row) -> float:
+    return minkowski(c.distx(r1[at],r2[at]) for at,c in i.cols.x.items())
+
+  def disty(i, r:Row) -> float:
+    return minkowski(c.norm(r[at])-i.cols.w[at] for at,c in i.cols.y.items())
+
+  def sortx(i, r:Row, rows:list[Row]) -> list[Row]:
+    return sorted(rows, key=lambda r2: i.distx(r,r2))
+
+  def sorty(i) -> "Data":
+    i.rows.sort(key=lambda row: i.disty(row)); return i
+
+  def nearest(i,  r:Row, rows:list[Row]) -> Row: return i.sortx(r,rows)[0]
+  def furthest(i, r:Row, rows:list[Row]) -> Row: return i.sortx(r,rows)[-1]
+
+#---- lib ------------------------------------------------------------
+def of(f):
+  "add f to the class named in its first argument's annotation"
+  cls = next(iter(f.__annotations__.values()))
+  setattr(cls, f.__name__, f); return f
+
+def say(x, w:int=None) -> str:
+  if type(x)==float: x = str(int(x) if int(x)==x else f"{x:.{the.decs}f}")
+  else: x = str(x)
+  return f"{x:>{w}}" if w else x
+
+def says(lst:list, w:int=None): print(*[say(x,w) for x in lst])
+
+def adds(items:Iterable, col:Col=None) -> Col:
+  col = col or Num()
+  [col.add(v) for v in items]; return col
+
+def minkowski(items:Iterable) -> float:
+  n=d=0
+  for x in items: n,d = n+1, d+x**the.p
+  return 0 if n==0 else (d/n)**(1/the.p)
+
+def pick(d:dict) -> Val:
+  n = sum(d.values()) * r()
+  for k,v in d.items():
+    if (n:=n-v) <= 0: return k
+
+def shuffle(lst:list) -> list: random.shuffle(lst); return lst
+
+CASTS = [int, float, lambda s: {"true":1,"false":0}.get(s.lower(),s)]
+
+def cast(s:str) -> Val:
+  for f in CASTS:
+    try: return f(s)
+    except ValueError: ...
+
+def csv(f:str) -> Iterable[Row]:
+  with open(f, encoding="utf-8") as file:
+    for s in file:
+      if s := s.partition("#")[0].strip():
+        yield [cast(x.strip()) for x in s.split(",")]
+
+def align(m:list[list]):
+  m  = [[say(x) for x in row] for row in m]
+  ws = [max(len(x) for x in col) for col in zip(*m)]
+  for row in m: print(", ".join(f"{v:>{w}}" for v,w in zip(row,ws)))
+
+#---- demos ----------------------------------------------------------
+def eg_h():
+  "show help"
+  print(__doc__)
+  for k,fun in globals().items():
+    if k.startswith("eg__"):
+      args = " ".join(fun.__annotations__)
+      print(f"  --{(k[4:]+' '+args).strip():<16} {fun.__doc__ or ''}")
+
+def eg_s(n:int): the.seed=n; random.seed(n)
+def eg_d(n:int): the.decs=n
+def eg_p(n:int): the.p=n
+
+def eg__the():
+  "show config"; print(vars(the))
+
+def eg__csv(file:str):
+  "demo csv reader"
+  align(list(csv(file))[::30])
+
+def eg__data(file:str):
+  "demo data storage"
+  d = Data(csv(file))
+  align([d.mid()] + [d.cols.names] + d.rows[::30])
+
+def eg__disty(file:str):
+  "demo row distance to heaven"
+  d = Data(csv(file))
+  align([d.cols.names] + sorted(d.rows, key=lambda r: d.disty(r))[::30])
+
+def eg__addsub(file:str):
+  "demo incremental add then delete"
+  d = Data(csv(file)); rows = d.rows[:]
+  for row in rows[::-1]:
+    d.sub(row)
+    if len(d)==50: one=d.mid()
+  for row in rows:
+    d.add(row)
+    if len(d)==50: two=d.mid()
+  assert all(a==b for a,b in zip(one,two))
+
+def eg__bayes(file:str):
+  "demo naive bayes likelihood"
+  d = Data(csv(file)); nall=len(d)
+  for row in d.rows[::30]: print(round(d.like(row,nall,1), 2))
+
+#---- main -----------------------------------------------------------
+class The:
+  def __init__(i, s:str=__doc__):
+    for k,v in re.findall(r"(\S+)=(\S+)", s): setattr(i, k, cast(v))
+  __repr__ = lambda i: str(vars(i))
+
+the = The()
+random.seed(the.seed)
+
+def main(funs:dict):
+  args = sys.argv[1:]
+  while args:
+    if f := funs.get(f"eg_{args.pop(0)[1:].replace('-','_')}"):
+      f(*[make(args.pop(0)) for make in f.__annotations__.values()])
+
+if __name__ == "__main__": main(globals())
+
