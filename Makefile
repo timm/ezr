@@ -92,11 +92,12 @@ stats:
 	gawk -F, 'ENDFILE {print NF, FNR,FILENAME}' ~/gits/moot/optimize/*/*.csv | sort -k1,1n -k2,2n | column -t
 
 B?=50
+C?=5
 
 ~/tmp/ez_acq.log:  ## run ezrtest on many files
 	@mkdir -p ~/tmp
 	@time ls -r $(HOME)/gits/moot/optimize/*/*.csv  | \
-	 xargs -P 24 -n 1 -I{} sh -c 'python3 -B acq.py -B $B --acquires "{}"' | \
+	 xargs -P 24 -n 1 -I{} sh -c 'python3 -B acquire_class.py -B $B --data "{}"' | \
 	 tee $@
 	@sort -n $@  | cut -d, -f 1 | fmt
 
@@ -107,10 +108,12 @@ B?=50
 
 ~/tmp/ez_test.log:  ## run ezrtest on many files
 	@mkdir -p ~/tmp
-	@$(MAKE) todo=test files="$(HOME)/gits/moot/optimize/*/*.csv" run | tee $@ 
+	time ls -r $(HOME)/gits/moot/optimize/*/*.csv  | \
+	   xargs -P 24 -n 1 -I{} sh -c 'python3 -B tree_class.py  -B $B  -C $C --test "{}"' | \
+		 tee $@
 	@echo; date
-	@python3 -B ez.py -B $B --the
-	@sort -n $@  | cut -d, -f 1 | fmt
+	@python3 -B ez_class.py -B $B --the
+	@sort -n $@  | cut -d, -f 1 | fmt -85
 
 run:
 	@time ls -r $(files) \
