@@ -108,16 +108,25 @@ C?=5
 
 ~/tmp/ez_test.log:  ## run ezrtest on many files
 	@mkdir -p ~/tmp
-	time ls -r $(HOME)/gits/moot/optimize/*/*.csv  | \
-	   xargs -P 24 -n 1 -I{} sh -c 'python3 -B tree_class.py  -B $B  -C $C --test "{}"' | \
+	@time ls -r $(HOME)/gits/moot/optimize/*/*.csv  | \
+	   xargs -P 24 -n 1 -I{} sh -c 'python3 -B tree_class.py  -B $B  -C $C -s $$RANDOM --test "{}"' | \
 		 tee $@
 	@echo; date
 	@python3 -B ez_class.py -B $B --the
-	@sort -n $@  | cut -d, -f 1 | fmt -85
+	@sort -n $@  | cut -d, -f 1 | gawk '{n[NR]=$$1} END {print "OUT " n[int(NR/2)]}'
+
 
 run:
 	@time ls -r $(files) \
 		| xargs -P 24 -n 1 -I{} sh -c 'python3 -B tree.py -B $B --$(todo) "{}"'
+
+~/tmp/runs.log:
+	@for i in $$(seq 1 100); do \
+	  C=$$(( RANDOM % 4 + 3 )); \
+	  B=$$(( RANDOM % 76 + 25 )); \
+	  num=$$(make -B C=$$C B=$$B ~/tmp/ez_test.log | grep OUT); \
+	  echo "$$C $$B $$num"; \
+	done | tee $@
 
 #--------------------------
 MY=@bash sh/ell

@@ -2,7 +2,7 @@
 """tree.py: decision tree for multi-objective optimization
 (c) 2026 Tim Menzies timm@ieee.org, MIT license"""
 from types import SimpleNamespace as o
-from ez_class import (BIG, Data, Num, Sym, the, eg_B,
+from ez_class import (BIG, Data, Num, Sym, the, eg_B,eg_C,
   Row, csv, adds, say, shuffle, main, filename)
 
 Row  = list
@@ -79,7 +79,7 @@ def treeShow(d:Data, t:o):
     print(f"{s:{the.Show}} {say(n.y.mid()):>6} ({n.y.seen:>3})", o(**n.mids))
 
 #---- demos -----------------------------------------------------------
-def eg__tree(f:filename):
+def eg__data(f:filename):
   "show decision tree"
   d  = Data(csv(f))
   d1 = clone(d, shuffle(d.rows)[:the.Budget])
@@ -93,7 +93,7 @@ def eg__test(f:filename):
   b4   = sorted(Y(r) for r in d.rows)
   win  = lambda r: int(100*(1-(Y(r)-b4[0])/(b4[half]-b4[0]+1E-3)))
   wins = Num()
-  for _ in range(60):
+  for _ in range(20):
     rows  = shuffle(d.rows)
     test  = rows[half:]
     train = rows[:half][:the.Budget]
