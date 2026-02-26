@@ -18,7 +18,7 @@ def ruleMatch(cols:dict, rule:dict, row:Row) -> bool:
   return all(row[at] != "?" and rowBin(cols[at], row[at]) == b
              for at, b in rule.items())
 
-def ruleScore(d:Data, cols:dict, rule:dict, rows:list) -> Num|None:
+def ruleScore(d:Data, cols:dict, rule:dict, rows:list) -> 'Num|None':
   if (ys := adds( disty(d,r) for r in rows
                   if ruleMatch(cols, rule, r))).n >= cfg.Support:
     return ys

@@ -25,7 +25,8 @@ from types import SimpleNamespace as o
 from pathlib import Path
 
 BIG = 1E32
-Val = int | float | str
+Qty = int | float
+Val = Qty | bool | str
 Row = list[Val]
 Col = "Num | Sym"
 
@@ -45,7 +46,7 @@ class Sym(dict):
     return -sum(p*log(p,2) for k in i if (p:=i[k]/n)>0)
   def norm(i, v:Val) -> Val:   return v
   def distx(i, u:Val, v:Val) -> int: return int(u!=v)
-  def pick(i, v:Val=None) -> Val:   return pick(i)
+  def pick(i, _:Val=None) -> Val:   return pick(i)
   def like(i, v:Val, prior:float=0) -> float:
     n = sum(i.values())
     return max(1/BIG, (i.get(v,0) + the.k*prior) / (n + the.k))
@@ -73,9 +74,9 @@ class Num(list):
   def mid(i) -> float: return i[len(i)//2] if i else 0
 
   def spread(i) -> float:
-    if not i: return 0
-    n = len(i)//10
-    a,b = (9*n,n) if len(i) > 4 else (-1,0)
+    if len(i) < 2: return 0
+    n = max(1, len(i)//10)             
+    a,b = min(9*n, len(i)-1), min(n, len(i)-1)
     return (i[a]-i[b])/2.56
 
   def norm(i, v:Val) -> Val:
@@ -83,7 +84,7 @@ class Num(list):
     a,b = i[int(.05*len(i))], i[int(.95*len(i))]
     return 0 if a==b else max(0, min(1, (v-a)/(b-a)))
 
-  def pick(i, v:Val=None) -> Val:
+  def pick(i, v:Qty=None) -> Val:
     return (i.mid() if v is None or v=="?" else v) + choice(i) - choice(i)
 
   def distx(i, u:Val, v:Val) -> float:
@@ -93,29 +94,29 @@ class Num(list):
     v = v if v!="?" else (0 if u>0.5 else 1)
     return abs(u-v)
 
-  def like(i, v:Val, prior:float=0) -> float:
+  def like(i, v:Qty, prior:float=0) -> float:
     s = i.spread() + 1/BIG
     return (1/sqrt(2*pi*s*s)) * exp(-((v-i.mid())**2) / (2*s*s))
 
-#---- cols, data -----------------------------------------------------
+#---- cols -----------------------------------------------------
+def col(s:str): return (Num if s[0].isupper() else Sym)()
+
 class Cols:
+  __repr__ = lambda i: str(i.names)
   def __init__(i, names:list[str]):
     i.names = names
-    i.all   = {at:(Num if s[0].isupper() else Sym)() for at,s in enumerate(names)}
-    i.w     = {at: s[-1]!="-" for at,s in enumerate(names) if s[-1] in "-+!"}
-    i.x     = {at:c for at,c in i.all.items() if at not in i.w}
-    i.y     = {at:i.all[at] for at in i.w}
-    i.klass = next((i.all[at] for at,s in enumerate(names) if s[-1]=="!"), None)
+    i.all = {at:col(s) for at,s in enumerate(names)}
+    i.w = {at: s[-1]!="-" for at,s in enumerate(names) if s[-1] in "-+!"}
+    i.x = {at:c for at,c in i.all.items() if at not in i.w and names[at][-1] != "X"}
+    i.y = {at:i.all[at] for at in i.w}
+    i.klass = next((at for at,s in enumerate(names) if s[-1]=="!"), None)
 
-  __repr__ = lambda i: str(i.names)
-
+#---- cols -----------------------------------------------------
 class Data:
   def __init__(i, items:Iterable[Row]):
     i.rows=[]; i._mid=None
     i.cols = Cols(next(items := iter(items)))
     [i.add(row) for row in items]
-
-  __len__ = lambda i: len(i.rows)
 
   def add(i, row:Row) -> Row:
     i._mid=None
@@ -142,7 +143,7 @@ class Data:
     return minkowski(c.distx(r1[at],r2[at]) for at,c in i.cols.x.items())
 
   def disty(i, r:Row) -> float:
-    return minkowski(c.norm(r[at])-i.cols.w[at] for at,c in i.cols.y.items())
+    return minkowski(c.norm(r[at]) - i.cols.w[at] for at,c in i.cols.y.items())
 
   def sortx(i, r:Row, rows:list[Row]) -> list[Row]:
     return sorted(rows, key=lambda r2: i.distx(r,r2))
@@ -216,44 +217,52 @@ def eg_s(n:int): the.seed=n; random.seed(n)
 def eg_d(n:int): the.decs=n
 def eg_p(n:int): the.p=n
 
-def eg__the():
-  "show config"; print(the.__dict__)
+def eg__the(): "show config"; print(the.__dict__)
 
-def eg__csv(file:filename):
-  "demo csv reader"
-  align(list(csv(file))[::30])
+def eg__csv(file:filename): "demo csv reader"; align(list(csv(file))[::30])
 
-def eg__data(file:str):
+def eg__data(file:filename):
   "demo data storage"
   d = Data(csv(file))
   align([d.mid()] + [d.cols.names] + d.rows[::30])
 
-def eg__disty(file:str):
+def eg__disty(file:filename):
   "demo row distance to heaven"
   d = Data(csv(file))
+  print({d.cols.names[i]:d.cols.w[i] for i in d.cols.w})
+
   align([d.cols.names] + sorted(d.rows, key=lambda r: d.disty(r))[::30])
 
-def eg__addsub(file:str):
+def eg__addsub(file:filename):
   "demo incremental add then delete"
-  d = Data(csv(file)); rows = d.rows[:]
+  d = Data(csv(file)); 
+  d1=Data([d.cols.names]+ d.rows[:the.Keep])
+  rows=d1.rows[:]
+  m1=d1.mid()
   for row in rows[::-1]:
-    d.sub(row)
-    if len(d.rows)==50: one=d.mid()
+    d1.sub(row)
+    if len(d1.rows)==the.Keep //3    : aone=d1.mid()
+    if len(d1.rows)==the.Keep //3 * 2: atwo=d1.mid()
+  m2=d1.mid()
   for row in rows:
-    d.add(row)
-    if len(d.rows)==50: two=d.mid()
-  print([a-b for a,b in zip(one,two)])
-  assert all(a==b for a,b in zip(one,two))
+    d1.add(row)
+    if len(d1.rows)==the.Keep//3     : bone=d1.mid()
+    if len(d1.rows)==the.Keep//3 * 2 : btwo=d1.mid()
+  print(aone,atwo,m1)
+  print(bone,btwo,m2)
+  assert all(a==b for a,b in zip(aone,bone))
+  assert all(a==b for a,b in zip(atwo,btwo))
 
-def eg__like(file:str):
+def eg__like(file:filename):
   "demo naive bayes likelihood"
   d = Data(csv(file)); 
-  for row in d.rows[::30]: print(round(d.like(row,len(d.rows),1), 2))
+  d.rows.sort(key=lambda r: d.like(r,len(d.rows),2))
+  for row in d.rows[::30]:
+     print(row, say(d.like(row,len(d.rows),2)))
 
 #---- main -----------------------------------------------------------
 
 the= o(**{k:cast(v) for k,v in re.findall(r"(\S+)=(\S+)", __doc__)})
-print(the)
 random.seed(the.seed)
 
 def main(funs:dict):
