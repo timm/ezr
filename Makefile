@@ -97,7 +97,7 @@ C?=5
 ~/tmp/ez_acq.log:  ## run ezrtest on many files
 	@mkdir -p ~/tmp
 	@time ls -r $(HOME)/gits/moot/optimize/*/*.csv  | \
-	 xargs -P 24 -n 1 -I{} sh -c 'python3 -B acquire_class.py -B $B --data "{}"' | \
+	 xargs -P 24 -n 1 -I{} sh -c 'python3 -B acquire_class.py -B $B --compare "{}"' | \
 	 tee $@
 	@sort -n $@  | cut -d, -f 1 | fmt
 
@@ -113,8 +113,16 @@ C?=5
 		 tee $@
 	@echo; date
 	@python3 -B ez_class.py -B $B --the
-	@sort -n $@  | cut -d, -f 1 | gawk '{n[NR]=$$1} END {print "OUT " n[int(NR/2)]}'
+	@sort -n $@  | cut -d, -f 1 | fmt -85
 
+~/tmp/ez_test_old.log:  ## run ezrtest on many files
+	@mkdir -p ~/tmp
+	@time ls -r $(HOME)/gits/moot/optimize/*/*.csv  | \
+	   xargs -P 24 -n 1 -I{} sh -c 'python3 -B tree.py  -B $B  -C $C -s $$RANDOM --test "{}"' | \
+		 tee $@
+	@echo; date
+	@python3 -B ez_class.py -B $B --the
+	@sort -n $@  | cut -d, -f 1 | fmt -85
 
 run:
 	@time ls -r $(files) \

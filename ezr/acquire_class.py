@@ -3,12 +3,10 @@
 (c) 2026 Tim Menzies timm@ieee.org, MIT license"""
 import random
 from math import sqrt
-from ez_class import Data, adds, csv, says, Row, shuffle, the, main, filename
+from ez_class import Data,csv,Row,shuffle,the,main,filename
+from tree_class import evaluate, random_trainer, clone
 
 choice = random.choice
-
-def clone(d:Data, rows:list=[]) -> Data:
-  return Data([d.cols.names] + rows)
 
 def nearer(seen:Data, best:Data, rest:Data, r:Row) -> float:
   return seen.distx(best.mid(), r) - seen.distx(rest.mid(), r)
@@ -25,8 +23,11 @@ def acquire(seen:Data, best:Data, rest:Data,
     if scorer(seen, best, rest, r) < 0: break
   return r
 
-def guess(d:Data, Any=4, Budget=50, label=lambda r:r, **kwargs) -> Data:
-  rows   = shuffle(d.rows[:])
+def guess(d:Data, rows:list, Any=4, Budget=None, 
+          scorer=nearer, eager=True, label=lambda r:r) -> list[Row]:
+  """Active learner that returns trained rows"""
+  Budget = Budget or the.Budget
+  rows   = shuffle(rows[:])
   unseen = clone(d, rows[Any:][:the.Few])
   seen   = clone(d, rows[:Any])
   seen.rows.sort(key=(Y := lambda r: seen.disty(r)))
@@ -38,25 +39,38 @@ def guess(d:Data, Any=4, Budget=50, label=lambda r:r, **kwargs) -> Data:
       best.add(
         label(
           unseen.sub(
-            acquire(seen, best, rest, unseen, **kwargs)))))
+            acquire(seen, best, rest, unseen, scorer=scorer, eager=eager)))))
     if len(best.rows) > sqrt(len(seen.rows)):
       best.rows.sort(key=Y)
       while len(best.rows) > sqrt(len(seen.rows)):
         rest.add(best.sub(best.rows[-1]))
-  return clone(d, sorted(seen.rows, key=Y))
+  return sorted(seen.rows, key=Y)
 
-def win(d:Data) -> callable:
-  b4    = sorted(d.disty(r) for r in d.rows)
-  lo,med = b4[0], b4[len(b4)//2]
-  return lambda r: int(100*(1 - (d.disty(r) - lo)/(med - lo + 1E-6)))
+# Create trainer wrappers for evaluate()
+def guess_lazy_nearer(d:Data, rows:list) -> list[Row]:
+  return guess(d, rows, scorer=nearer, eager=False)
+guess_lazy_nearer.__name__ = "guess_lazy_nearer"
 
-def eg__data(f:filename):
-  "compare acquisition strategies across 20 runs"
-  d     = Data(csv(f))
-  score = win(d)
-  for eager in [False, True]:
-    for fn in [nearer, likelier]:
-      tmp = [score(guess(d, scorer=fn, eager=eager).rows[0]) for _ in range(20)]
-      says(sorted(tmp) + [eager, fn.__name__], w=3)
+def guess_lazy_likelier(d:Data, rows:list) -> list[Row]:
+  return guess(d, rows, scorer=likelier, eager=False)
+guess_lazy_likelier.__name__ = "guess_lazy_likelier"
+
+def guess_eager_nearer(d:Data, rows:list) -> list[Row]:
+  return guess(d, rows, scorer=nearer, eager=True)
+guess_eager_nearer.__name__ = "guess_eager_nearer"
+
+def guess_eager_likelier(d:Data, rows:list) -> list[Row]:
+  return guess(d, rows, scorer=likelier, eager=True)
+guess_eager_likelier.__name__ = "guess_eager_likelier"
+
+#---- demos -----------------------------------------------------------
+def eg__compare(f:filename):
+  "compare all trainers: random + 4 guess strategies"
+  print("")
+  d = Data(csv(f))
+  for trainer in [random_trainer, 
+                  guess_lazy_nearer, guess_lazy_likelier,
+                  guess_eager_nearer, guess_eager_likelier]:
+    evaluate(d, trainer, file=f)
 
 if __name__ == "__main__": main(globals())

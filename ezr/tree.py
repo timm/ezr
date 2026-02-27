@@ -86,7 +86,7 @@ def eg__test(f: str):
   win = lambda r: int(
     100 * (1 - (Y(r) - b4[0])/(b4[half] - b4[0] + 1E-3)))
   wins = Num()
-  for _ in range(60):
+  for _ in range(20):
     rows = shuffle(data.rows)
     test = rows[half:]
     train = rows[:half][:the.Budget]
