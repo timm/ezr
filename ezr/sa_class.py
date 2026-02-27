@@ -29,16 +29,10 @@ def oneplus1(d:Data, mutator:callable, accept:callable, b=1000, restart=0):
         break               
 
 def sa(d:Data, restarts=0, m=0.5, b=1000):
-  def accept(e,en,h,b):
-    return en<e or rand() < exp((e - en)/(1 - h/b + 1E-32))
-  def mutate(s):
-    sn = s[:]
-    xs = list(d.cols.x.items())
-    for at,c in choices(xs, k=max(1,int(m*len(xs)))):
-       sn[at] = c.pick(sn[at])
-    yield sn
+  def accept(e,en,h,b): return en<e or rand() < exp((e-en)/(1-h/b + 1E-32))
+  def mutate(s)       : yield d.pick(s, n=max(1, int(m*len(d.cols.x))))
   return oneplus1(d, mutate, accept, b, restarts)
-
+ 
 def eg__data(f:filename):
   d0 = Data(csv(f))
   d1 = Data([d0.cols.names] + shuffle(d0.rows)[:50])

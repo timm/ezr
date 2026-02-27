@@ -85,7 +85,9 @@ class Num(list):
     return 0 if a==b else max(0, min(1, (v-a)/(b-a)))
 
   def pick(i, v:Qty=None) -> Val:
-    return (i.mid() if v is None or v=="?" else v) + choice(i) - choice(i)
+    result = (i.mid() if v is None or v=="?" else v) + choice(i) - choice(i)
+    lo, hi = i[0], i[-1]
+    return lo + ((result - lo) % (hi - lo + 1E-32))
 
   def distx(i, u:Val, v:Val) -> float:
     if u==v=="?": return 1
@@ -145,14 +147,21 @@ class Data:
   def disty(i, r:Row) -> float:
     return minkowski(c.norm(r[at]) - i.cols.w[at] for at,c in i.cols.y.items())
 
-  def sortx(i, r:Row, rows:list[Row]) -> list[Row]:
-    return sorted(rows, key=lambda r2: i.distx(r,r2))
-
   def sorty(i) -> "Data":
     i.rows.sort(key=lambda row: i.disty(row)); return i
 
+  def sortx(i, r:Row, rows:list[Row]) -> list[Row]:
+    return sorted(rows, key=lambda r2: i.distx(r,r2))
+
   def nearest(i,  r:Row, rows:list[Row]) -> Row: return i.sortx(r,rows)[0]
   def furthest(i, r:Row, rows:list[Row]) -> Row: return i.sortx(r,rows)[-1]
+ 
+  def pick(i, row=None, n=1) -> Row:
+    if not row: return [c.pick() for c in i.cols.all.values()]
+    s, k = row[:], n if n > 0 else len(i.cols.x)
+    for at, c in random.sample(list(i.cols.x.items()), min(k, len(i.cols.x))):
+      s[at] = c.pick(s[at])
+    return s
 
 #---- lib ------------------------------------------------------------
 def say(x, w:int=None) -> str:

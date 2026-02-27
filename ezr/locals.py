@@ -10,14 +10,11 @@ def lsRminus(d,**args):  return ls(d,restarts=0,  **args)
 def saRplus(d, **args):  return sa(d,restarts=100,**args)
 
 def ls(d, restarts=100, p=0.5, n=20, b=1000):
-  def accept(e,en,*_):
-    return en<e
+  def accept(e, en, *_): return en < e
   def mutate(s):
-    x = choice(list(d.cols.x))
-    for _ in range(n if rand() < p else 1):
-      sn = s[:]; sn[x.at] = nearby(x, sn[x.at]); yield sn
+    for _ in range(n if rand() < p else 1): yield d.pick(s, n=1)
   return oneplus1(d, mutate, accept, b, restarts)
-
+ 
 if __name__ == "__main__":
   print("usage: python3 -B mutate.py SEED CSV")
   random.seed(float(sys.argv[1]))

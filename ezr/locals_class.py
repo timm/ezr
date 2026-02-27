@@ -10,14 +10,13 @@ def lsRminus(d, **args): return ls(d, restarts=0,   **args)
 def saRplus(d,  **args): return sa(d, restarts=100, **args)
 
 def ls(d, restarts=100, p=0.5, n=20, b=1000):
-  def accept(e, en, *_):
-    return en < e
+  def accept(e, en, *_): return en < e
   def mutate(s):
-    at, c = choice(list(d.cols.x.items()))
+    at, c = choice(list(d.cols.x.items()))  
     for _ in range(n if rand() < p else 1):
-      sn = s[:]; sn[at] = c.pick(sn[at]); yield sn
+       s = s[:]; s[at] = c.pick(s[at]); yield s  
   return oneplus1(d, mutate, accept, b, restarts)
-
+ 
 def eg__data(f:filename):
   "compare ls, sa, lsRminus, saRplus across 20 shuffled samples"
   d0   = Data(csv(f))

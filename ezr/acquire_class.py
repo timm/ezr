@@ -3,7 +3,7 @@
 (c) 2026 Tim Menzies timm@ieee.org, MIT license"""
 import random
 from math import sqrt
-from ez_class import Data,csv,Row,shuffle,the,main,filename
+from ez_class import Data,csv,Row,shuffle,the,main,filename,eg_s
 from tree_class import evaluate, random_trainer, clone
 
 choice = random.choice
