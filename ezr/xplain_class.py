@@ -43,19 +43,22 @@ def xplanTrain(d:Data):
 def signal(x) -> float:
   return adds(s.y.mid() for s in x.bins.values()).spread()
 
-def report1(d:Data, at:int, x, ys) -> str:
+def report1(d:Data, at:int, x, ys, signals:Num) -> str:
   name = d.cols.names[at]
   lo, hi = x.bins[min(x.bins)].lo, x.bins[max(x.bins)].hi
   if isinstance(x, Num): lo, hi = round(lo, the.decs), round(hi, the.decs)
   spark = "".join(spanShow(x.bins[k], ys) if k in x.bins else "░"
                   for k in range(the.bins+1))
-  return f"  {name[:WIDTH]:<{WIDTH}} | {str(lo):>6} {str(hi):>6} | {spark}"
+  s= signals.norm(signal(x))
+  bars= "+" * int(20*s)
+  return f"  {name[:WIDTH]:<{WIDTH}} | {str(lo):>6} {str(hi):>6} | {spark} {bars} [{int(100*s)}]"
 
 def report(d:Data, ys):
   print(f"\n  {'NAME':<{WIDTH}} | {'lo':>6} {'hi':>6} | {'░'*(the.bins+1)}")
   print(f"  {'-'*WIDTH}-+-{'-'*6}-{'-'*6}-+-{'-'*(the.bins+1)}")
-  for at,x in sorted(d.cols.x.items(), key=lambda kv: signal(kv[1]), reverse=True):
-    print(report1(d, at, x, ys))
+  signals=Num()
+  for at,x in sorted(d.cols.x.items(), key=lambda kv: signals.add(signal(kv[1])), reverse=True):
+    print(report1(d, at, x, ys, signals))
   print(" ")
 
 def eg__data(f:filename):

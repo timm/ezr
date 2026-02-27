@@ -224,6 +224,7 @@ def eg_h():
 
 def eg_s(n:int): the.seed=n; random.seed(n)
 def eg_d(n:int): the.decs=n
+def eg_S(n:int): the.Show=n
 def eg_B(n:int): the.Budget=n
 def eg_C(n:int): the.Check=n
 def eg_p(n:int): the.p=n
