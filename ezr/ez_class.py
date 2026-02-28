@@ -15,7 +15,12 @@ Options:
   -m m=2             for low class frequencies in Bayes
   -p p=2             Minkowski distance coefficient (2:Euclidean)
   -s seed=1          random number seed
-  -S Show=30         width of tree display """
+  -N Norm=0          CNB weight normalization (0/1)
+  -S Show=30         width of tree display
+  -T Top=100         top TF-IDF features to keep
+  -v valid=20        repeats for statistical testing
+  -y yes=20          positive samples for text mining
+  -Y no=20           negative samples for text mining """
 import random, sys, re
 from math import log, exp, sqrt, pi
 from random import random as r, choice

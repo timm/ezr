@@ -18,7 +18,7 @@ def nbayes(src, warmup=10):
     add(ks[k], add(every, r))
   return cf
 
-def eg__bayes(f:str):
+def eg__file(f:str):
   rows = [["label","n","pd","pf","prec","acc"]]
   for c in confused(nbayes(csv(f))):
     rows.append([c.label, c.fn+c.tp, c.pd, c.pf, c.prec, c.acc])
