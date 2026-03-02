@@ -4,7 +4,7 @@ import re, math
 from pathlib import Path
 from types import SimpleNamespace as o
 from typing import Iterable
-from ez_class import (Data, Val, cast, main, align,
+from ez import (Data, Val, cast, main, align,
                       the, filename)
 
 _DIR = Path(__file__).parent

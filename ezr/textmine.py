@@ -3,7 +3,7 @@
 import random, statistics
 from math import log
 from collections import defaultdict
-from ez_class import (Data, Row, csv, main, align,
+from ez import (Data, Row, csv, main, align,
                       the, say, filename, eg_B, eg_s)
 from prep     import dataFromPrep
 
