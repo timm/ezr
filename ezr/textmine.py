@@ -16,8 +16,7 @@ def cnb(data:Data, rows:list=None,
   for r in rows:
     k=r[key]; klasses.add(k)
     for at in data.cols.x:
-      try: v=float(r[at]) if r[at]!="?" else 0
-      except ValueError: v=0
+      v = r[at] if r[at]!="?" else 0
       freq[k][at]+=v; total[at]+=v
   T,n,ws = sum(total.values()), len(data.cols.x), {}
   for k in klasses:
@@ -32,8 +31,7 @@ def cnb(data:Data, rows:list=None,
 
 def cnbLike(ws:dict, at:int, row:Row,
             k:str) -> float:
-  try: v=float(row[at]) if row[at]!="?" else 0
-  except ValueError: return 0
+  v = row[at] if row[at]!="?" else 0
   return v * ws[k].get(at, 0)
 
 def cnbLikes(ws:dict, data:Data, row:Row,
