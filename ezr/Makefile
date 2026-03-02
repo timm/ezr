@@ -3,7 +3,16 @@ P=python3 -B
 O=$(HOME)/gits/moot/optimize/misc/auto93.csv
 C=$(HOME)/gits/moot/classify/diabetes.csv
 
-tests: class cluster kmeans bayes tree xplain xplainr acquire locals
+R=$(HOME)/gits/moot/text_mining/reading/raw/Hall.csv
+T=$(HOME)/gits/moot/text_mining/reading/processed/Hall.csv
+
+fast: class cluster kmeans bayes tree xplain xplainr acquire prep textmine 
+
+slower: localsSlow prepSlow textmineSlow
+
+slowest: XXX
+
+all: fast slower slowest
 
 acquire:
 	$P acquire.py --compare $O
@@ -25,11 +34,27 @@ class:
 kmeans:
 	$P kmeans.py --data $C
 
-locals:
+localsSlow:
 	$P locals.py --data $O
+
+prep:
+	$P prep.py --tokenize $R
+	$P prep.py --nostop $R
+	$P prep.py --stem $R
+
+prepSlow:
+	$P prep.py --tfidf $R
 
 sa:
 	$P sa.py --data $O
+
+textmine:
+	$P textmine.py --like $T
+	$P textmine.py --sweep $T
+	$P textmine.py  --data $T
+
+textmineSlow:
+	$P textmine.py --active $T
 
 tree:
 	$P tree.py --data $O
