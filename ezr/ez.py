@@ -4,6 +4,8 @@ ez.py: lightweight incremental Bayes classifier with add/delete support
 (c) 2026 Tim Menzies timm@ieee.org, MIT license
 
 Options:
+  -A Any=4           initial start
+  -A Any=4           initial start
   -B Budget=50       training evaluation budget
   -b bins=7          discretize numerics into this many bins
   -C Check=5         testing evaluation budget
@@ -15,7 +17,18 @@ Options:
   -m m=2             for low class frequencies in Bayes
   -p p=2             Minkowski distance coefficient (2:Euclidean)
   -s seed=1          random number seed
-  -S Show=30         width of tree display """
+  -N Norm=0          CNB weight normalization (0/1)
+  -S Show=30         width of tree display 
+  -y yes=20          positive samples for text mining
+  -Y no=20           negative samples for text mining 
+  -T Top=100         top TF-IDF features to keep
+  -v valid=20        number of repeats for statistical testing
+  -N Norm=0          CNB weight normalization (0/1)
+  -S Show=30         width of tree display 
+  -y yes=20          positive samples for text mining
+  -Y no=20           negative samples for text mining 
+  -T Top=100         top TF-IDF features to keep
+  -v valid=20        number of repeats for statistical testing"""
 import random, sys, re
 from math import log, exp, sqrt, pi
 from random import random as r, choice
@@ -194,11 +207,14 @@ def cast(s:str) -> Val:
     try: return f(s)
     except ValueError: ...
 
-def csv(f:str) -> Iterable[Row]:
+def nocomments(s): return s.partition("#")[0].split(",")
+
+def csv(f, clean=nocomments):
   with open(f, encoding="utf-8") as file:
     for s in file:
-      if s := s.partition("#")[0].strip():
-        yield [cast(x.strip()) for x in s.split(",")]
+      r = clean(s)
+      if any(x.strip() for x in r):
+        yield [cast(x.strip()) for x in r]
 
 def align(m:list[list]):
   m  = [[str(say(x)) for x in row] for row in m]
