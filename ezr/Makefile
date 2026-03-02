@@ -1,10 +1,10 @@
 -include  ../Makefile
-P=python3 -B 
-O=$(HOME)/gits/moot/optimize/misc/auto93.csv
-C=$(HOME)/gits/moot/classify/diabetes.csv
+Py=python3 -B 
+Opt=$(HOME)/gits/moot/optimize/misc/auto93.csv
+Klas=$(HOME)/gits/moot/classify/diabetes.csv
 
-R=$(HOME)/gits/moot/text_mining/reading/raw/Hall.csv
-T=$(HOME)/gits/moot/text_mining/reading/processed/Hall.csv
+Raw=$(HOME)/gits/moot/text_mining/reading/raw/Hall.csv
+Cooked=$(HOME)/gits/moot/text_mining/reading/processed/Hall.csv
 
 fast: class cluster kmeans bayes tree xplain xplainr acquire prep textmine 
 
@@ -15,53 +15,53 @@ slowest: XXX
 all: fast slower slowest
 
 acquire:
-	$P acquire.py --compare $O
+	$(Py) acquire.py --compare $(Opt)
 
 bayes:
-	$P bayes.py __data $C
+	$(Py) bayes.py __data $(Klas)
 
 cluster:
-	$P cluster.py --data $O
+	$(Py) cluster.py --data $(Opt)
 
 class:
-	$P ez.py --the
-	$P ez.py --csv $O
-	$P ez.py --data $O
-	$P ez.py --disty $O
-	$P ez.py --addsub $O
-	$P ez.py --like $O
+	$(Py) ez.py --the
+	$(Py) ez.py --csv $(Opt)
+	$(Py) ez.py --data $(Opt)
+	$(Py) ez.py --disty $(Opt)
+	$(Py) ez.py --addsub $(Opt)
+	$(Py) ez.py --like $(Opt)
 
 kmeans:
-	$P kmeans.py --data $C
+	$(Py) kmeans.py --data $(Klas)
 
 localsSlow:
-	$P locals.py --data $O
+	$(Py) locals.py --data $(Opt)
 
 prep:
-	$P prep.py --tokenize $R
-	$P prep.py --nostop $R
-	$P prep.py --stem $R
+	$(Py) prep.py --tokenize $(Raw)
+	$(Py) prep.py --nostop $(Raw)
+	$(Py) prep.py --stem $(Raw)
 
 prepSlow:
-	$P prep.py --tfidf $R
+	$(Py) prep.py --tfidf $(Raw)
 
 sa:
-	$P sa.py --data $O
+	$(Py) sa.py --data $(Opt)
 
 textmine:
-	$P textmine.py --like $T
-	$P textmine.py --sweep $T
-	$P textmine.py  --data $T
+	$(Py) textmine.py --like $(Cooked)
+	$(Py) textmine.py --sweep $(Cooked)
+	$(Py) textmine.py  --data $(Cooked)
 
 textmineSlow:
-	$P textmine.py --active $T
+	$(Py) textmine.py --active $(Cooked)
 
 tree:
-	$P tree.py --data $O
-	$P tree.py --test $O
+	$(Py) tree.py --data $(Opt)
+	$(Py) tree.py --test $(Opt)
 
 xplain:
-	$P xplain.py --data $O
+	$(Py) xplain.py --data $(Opt)
 
 xplainr:
-	$P xplainr.py --data $O
+	$(Py) xplainr.py --data $(Opt)
