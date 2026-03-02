@@ -2,8 +2,8 @@
 """cluster.py: k-means++ seeding vs vanilla k-means comparison
 (c) 2026 Tim Menzies timm@ieee.org, MIT license"""
 import random
-from ez_class    import Data, csv, pick, shuffle, says, main, filename,choice
-from kmeans_class import kmeans
+from ez    import Data, csv, pick, shuffle, says, main, filename,choice
+from kmeans import kmeans
 sample = random.sample
 
 def kpp(d:Data, rows=None, k=10, few=256):

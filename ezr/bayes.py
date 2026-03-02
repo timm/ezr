@@ -1,24 +1,24 @@
 #!/usr/bin/env python3 -B
 """bayes.py: incremental naive Bayes classifier
 (c) 2026 Tim Menzies timm@ieee.org, MIT license"""
-from ez   import Data, add, clone, csv, likes, says, main,align
+from ez import Data,csv,says,main,align,Iterable,filename
 from stats import Confuse, confuse, confused
 
-def nbayes(src, warmup=10):
+def nbayes(src:Iterable, warmup:int=10) -> Confuse:
   rows = iter(src)
   d    = Data([next(rows)])
-  every, ks, cf = clone(d), {}, Confuse()
+  every, ks, cf = Data([d.cols.names]), {}, Confuse()
   def best(k):
-    return likes(ks[k], r, every.n, len(ks))
+    return ks[k].like( r, len(every.rows), len(ks))
   for r in rows:
-    k = r[d.cols.klass.at]
-    if k not in ks: ks[k] = clone(d)
-    if every.n >= warmup:
+    k = r[d.cols.klass]
+    if k not in ks: ks[k] = Data([d.cols.names])
+    if len(every.rows) >= warmup:
       confuse(cf, str(k), str(max(ks, key=best)))
-    add(ks[k], add(every, r))
+    ks[k].add(every.add(r))
   return cf
 
-def eg__bayes(f:str):
+def eg__data(f:filename):
   rows = [["label","n","pd","pf","prec","acc"]]
   for c in confused(nbayes(csv(f))):
     rows.append([c.label, c.fn+c.tp, c.pd, c.pf, c.prec, c.acc])
