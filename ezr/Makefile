@@ -10,7 +10,8 @@ fast: class cluster kmeans bayes tree xplain xplainr acquire prep textmine
 
 slower: localsSlow prepSlow textmineSlow
 
-slowest: XXX
+slowest: 
+	@echo "see xxxx "
 
 all: fast slower slowest
 
