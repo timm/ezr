@@ -215,9 +215,6 @@ def csv(f, clean=nocomments):
       r = clean(s)
       if any(x.strip() for x in r):
         yield [cast(x.strip()) for x in r]
-      r = clean(s)
-      if any(x.strip() for x in r):
-        yield [cast(x.strip()) for x in r]
 
 def align(m:list[list]):
   m  = [[str(say(x)) for x in row] for row in m]
