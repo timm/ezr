@@ -121,7 +121,7 @@ def eg__sweep(file:filename):
   for y in [10, 20, 40]:
     the.yes=the.no=y; text_mining(file)
 
-def eg__file(file:filename):
+def eg__data(file:filename):
   "random baseline evaluation"
   return text_mining(file)
 

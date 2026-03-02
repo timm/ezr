@@ -9,6 +9,9 @@ from ez import (Data, Val, cast, main, align,
 
 _DIR = Path(__file__).parent
 
+def prepare(f:str) -> o:
+  return tfidf(stem(nostop(tokenize(f))))
+
 #---- resources -------------------------------------------------------
 def _load(pkg:str) -> set:
   try: s = (_DIR / pkg).read_text()
@@ -86,9 +89,6 @@ def dataFromPrep(p:o) -> Data:
     [[w.capitalize() for w in ws] + ["klass!"]]
     + [[tf.get(w, 0) for w in ws] + [d.klass]
        for tf, d in zip(p.tf, p.docs)])
-
-def prepare(f:str) -> o:
-  return tfidf(stem(nostop(tokenize(f))))
 
 #---- demos -----------------------------------------------------------
 def eg__tokenize(file:filename):

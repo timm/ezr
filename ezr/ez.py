@@ -22,7 +22,7 @@ Options:
   -y yes=20          positive samples for text mining
   -Y no=20           negative samples for text mining 
   -T Top=100         top TF-IDF features to keep
-  -v valid=20        number of repeats for statistical testing"""
+  -v valid=20        number of repeats for statistical testing
   -N Norm=0          CNB weight normalization (0/1)
   -S Show=30         width of tree display 
   -y yes=20          positive samples for text mining
@@ -207,9 +207,6 @@ def cast(s:str) -> Val:
     try: return f(s)
     except ValueError: ...
 
-def nocomments(s): return s.partition("#")[0].split(",")
-
-def csv(f, clean=nocomments):
 def nocomments(s): return s.partition("#")[0].split(",")
 
 def csv(f, clean=nocomments):
