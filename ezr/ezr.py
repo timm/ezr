@@ -304,24 +304,14 @@ def treeCuts(col, rows, Y:callable, Klass:callable):
   xys = sorted([(r[col.at], Y(r)) for r in rows if r[col.at] != "?"])
   return (_symCuts if col.it is Sym else _numCuts)(col.at,xys,Y,Klass)
 
-# def _symCuts(at,xys,Y,Klass) -> (float, list[Op]):
-#   "Cuts for symbolic column."
-#   d = {}
-#   for x, y in xys:
-#     d[x] = d.get(x) or Klass()
-#     add(d[x], y)
-#   print(d)
-#   input()
-#   here = sum(ys.n/len(xys) * div(ys) for ys in d.values())
-#   return here, [("==", at, x) for x in d]
-
-## Re-writing _symCuts to return binary splits
 def _symCuts(at, xys, Y, Klass) -> (float, list[Op]):
     "Cuts for symbolic column (binary split)."
     unique_vals = set(x for x, _ in xys)
     spread, cuts = big, []
     for val in unique_vals:
-        left, right = Klass(), Klass()
+        #  left, right = Klass(), Klass()
+        left, right = Sym(), Sym()
+
         [add(left if x == val else right, y) for x, y in xys]
         if left.n >= the.leaf and right.n >= the.leaf:
             now = (left.n * div(left) + right.n * div(right)) / (left.n + right.n)
