@@ -1,0 +1,46 @@
+# Better prefix key
+unbind C-b
+set -g prefix C-a
+bind C-a send-prefix
+
+# Mouse support
+set -g mouse on
+
+# Start numbering at 1
+set -g base-index 1
+setw -g pane-base-index 1
+
+# Intuitive split keys
+bind | split-window -h
+bind - split-window -v
+unbind '"'
+unbind %
+
+# Layout Manual Binding (L)
+# This allows you to re-trigger the layout manually if needed
+bind L split-window -h -p 50 \; split-window -v -p 33 \; select-pane -t 0 \; split-window -v -p 25 \; send-keys 'htop' C-m \; select-pane -t 0
+
+# Colors & history
+set -g default-terminal "screen-256color"
+set -g history-limit 10000
+set -sg escape-time 0
+
+# Simple status bar
+set -g status-style bg=black,fg=white
+set -g status-left '#[fg=green][#S] '
+set -g status-right '#[fg=yellow]%Y-%m-%d #[fg=white]%H:%M'
+
+bind -n C-Up    resize-pane -U 1
+bind -n C-Down  resize-pane -D 1
+bind -n C-Left  resize-pane -L 1
+bind -n C-Right resize-pane -R 1
+
+
+# --- FIXED HOOK ---
+# We do not use run-shell. We use native commands separated by semicolons.
+# Logic: 
+# 1. Split Horizontal (Left/Right)
+# 2. Split Right Vertical (Right Top / Right Bottom)
+# 3. Select Left Pane
+# 4. Split Left Vertical (Left Top / Left Bottom for htop)
+set-hook -g after-new-session "split-window -h -p 50 ; split-window -v -p 33 ; select-pane -t 0 ; split-window -v -p 25 ; send-keys 'htop' C-m ; select-pane -t 0"

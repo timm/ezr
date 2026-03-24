@@ -14,6 +14,11 @@ cYELLOW:= '\033[1;33m'
 help: ## show help
 	@gawk -f $(ETC)/help.awk $(MAKEFILE_LIST) 
 
+pyclean: ## remove python temporaries
+	cd $(GIT_ROOT); find . -type d -name __pycache__ -exec rm -rf {} +
+	cd $(GIT_ROOT); find . -type d -name .pytest_cache -exec rm -rf {} +
+	cd $(GIT_ROOT); find . -type d -name "*.egg-info" -exec rm -rf {} +
+
 sh: ## demo of my shell
 	@-echo -e $(CLS)$(cYELLOW); figlet -W -f slant eZR.ai; echo -e $(cRESET)
 	@-bash --init-file $(ETC)/bash.rc -i
