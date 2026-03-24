@@ -1,24 +1,23 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "ezr"
 version = "0.1.0"
-description = "Lightweight AI/SE tools: Bayes, trees, clustering, SA"
-readme = "README.md"
+description = "Explainable multi-objective optimization"
+authors = [{name = "Tim Menzies", email = "timm@ieee.org"}]
 license = {text = "MIT"}
-authors = [{name="Tim Menzies", email="timm@ieee.org"}]
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = []
 
-[project.scripts]
-ezrbayes  = "ezr.bayes:main"
-ezrtree   = "ezr.tree:main"
-ezrsa     = "ezr.sa:main"
-ezrkmeans = "ezr.kmeans:main"
-ezrprep   = "ezr.prep:main"
-ezrtext   = "ezr.textmine:main"
+[project.optional-dependencies]
+test = ["pytest"]
 
-[tool.hatch.build.targets.wheel]
-packages = ["ezr"]
+[project.scripts]
+ezr = "ezeg:cli"
+
+[tool.setuptools]
+py-modules = ["ezr", "ezeg"]
+
+
