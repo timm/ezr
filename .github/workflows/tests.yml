@@ -1,12 +1,21 @@
 name: tests
 on: [push, pull_request]
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: gits/timm/ezr
+      - uses: actions/checkout@v4
+        with:
+          repository: timm/moot
+          path: gits/moot
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: "3.14"
       - run: pip install pytest
-      - run: pytest ezeg.py
+      - working-directory: gits/timm/ezr
+        run: pytest ezeg.py
