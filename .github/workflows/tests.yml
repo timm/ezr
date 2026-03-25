@@ -12,4 +12,4 @@ jobs:
           python-version: "3.14"
       - run: git clone --depth 1 https://github.com/timm/moot $HOME/gits/moot
       - run: pip install pytest
-      - run: pytest ezeg.py
+      - run: pytest ezeg.py -v
