@@ -5,7 +5,7 @@
 ![Deps 0](https://img.shields.io/badge/Deps-0-green?logo=checkmarx&logoColor=white&labelColor=00C853&color=006B29)
 ![LOC 300](https://img.shields.io/badge/LOC-300-yellow?logo=codecov&logoColor=white&labelColor=FDE047&color=C3A700)
 ![License](https://img.shields.io/badge/©_2026-timm-black?logo=github&logoColor=white&labelColor=24292e&color=000000&link=http://timm.fyi)
-![tests](https://github.com/timm/ezr/actions/workflows/tests.yml/badge.svg)
+[![tests](https://github.com/timm/ezr/actions/workflows/tests.yml/badge.svg)](https://github.com/timm/ezr/actions)
 
 
 # EZR(1) - Explainable Multi-Objective Optimization
