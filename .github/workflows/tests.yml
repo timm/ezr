@@ -7,15 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: gits/timm/ezr
-      - uses: actions/checkout@v4
-        with:
-          repository: timm/moot
-          path: gits/moot
       - uses: actions/setup-python@v5
         with:
           python-version: "3.14"
+      - run: git clone --depth 1 https://github.com/timm/moot $HOME/gits/moot
       - run: pip install pytest
-      - working-directory: gits/timm/ezr
-        run: pytest ezeg.py
+      - run: pytest ezeg.py
