@@ -3,20 +3,21 @@
 # (c) 2026 Tim Menzies, timm@ieee.org, MIT license   
 """
 Options:
-  --seed=1              set random number seed      
-  --p=2                 distance (1=Manhattan, 2=Euclidean)
-  --learn.leaf=3        examples per leaf in a tree      
-  --learn.budget=50     number of rows to evaluate      
-  --learn.check=5       number of guesses to check      
-  --learn.start=4       initial number of labels
-  --bayes.m=2           m-estimate for Naive Bayes
-  --bayes.k=1           k-estimate (Laplace smoothing) for Naive Bayes
-  --few=512             max number of unlabelled rows to evaluate in active learning
-  --stats.cliffs=0.195  threshold for Cliff's Delta      
-  --stats.conf=1.36     confidence coefficient for KS test
-  --stats.eps=0.35      margin of error multiplier      
-  --show.show=30        display width/padding for trees      
-  --show.decimals=2     number of decimals for floats      
+
+    --seed=1              set random number seed         
+    --p=2                 distance (1=Manhattan, 2=Euclidean)   
+    --learn.leaf=3        examples per leaf in a tree         
+    --learn.budget=50     number of rows to evaluate         
+    --learn.check=5       number of guesses to check         
+    --learn.start=4       initial number of labels   
+    --bayes.m=2           m-estimate for Naive Bayes   
+    --bayes.k=1           k-estimate (Laplace smoothing) for Naive Bayes   
+    --few=512             max number of unlabelled rows to evaluate in active learning   
+    --stats.cliffs=0.195  threshold for Cliff's Delta         
+    --stats.conf=1.36     confidence coefficient for KS test   
+    --stats.eps=0.35      margin of error multiplier         
+     --show.show=30        display width/padding for trees         
+    --show.decimals=2     number of decimals for floats         
 """
 from __future__ import annotations
 from time import perf_counter_ns as now
@@ -28,18 +29,20 @@ from typing import Any, Iterable, Callable
 from types import SimpleNamespace as S
 
 # Naming conventions:
-# - `i`   : self
-# - `j`   : iterator variable
-# - `c`   : any column (Num or Sym)
-# - `d`   : Data (rows + summarized columns)
-# - `ds`  : Datas (list of Data objects)
-# - `r`   : row (a single list of values)
-# - `rs`  : rows (a list of lists)
-# - `x`   : an x-column specifically (independent)
-# - `y`   : a y-column specifically (dependent)
-# - `t`   : Tree node
-# - `txt` : string
+#   
+#     i   : self   
+#     j   : iterator variable   
+#     c   : any column (Num or Sym)   
+#     d   : Data (rows + summarized columns)   
+#     ds  : Datas (list of Data objects)   
+#     r   : row (a single list of values)   
+#     rs  : rows (a list of lists)   
+#     x   : an x-column specifically (independent)   
+#     y   : a y-column specifically (dependent)   
+#     t   : Tree node   
+#     txt : string   
 
+# ----  Types ----
 type Qty   = int | float
 type Atom  = str | bool | Qty
 type Row   = list[Atom]
@@ -470,5 +473,7 @@ def acquire(d, score=acquireWithBayes, label=lambda x:x) -> (Rows,callable):
   return lab, fn
 
 # ---- 8. Start Up ----
+# Ready,set, go.
+
 the = S()
 for k, v in re.findall(r"([\w.]+)=(\S+)", __doc__): nest(the, k, thing(v))
