@@ -224,7 +224,7 @@ def test_test(file:str=egopt1):
   outs, win = Num("win"), wins(d0)
   for _ in range(20):
     d, d_train, test_rows = ready(d0)
-    t = treeGrow(d_train, d_train.rows)
+    t = treeGrow(d_train, acquire(d_train)[0].rows)
     guess = sorted(test_rows, key=lambda r: mid(treeLeaf(t, r).ynum))
     top = min(guess[:the.learn.check], key=lambda r: disty(d_train, r))
     add(outs, win(top))

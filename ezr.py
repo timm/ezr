@@ -12,7 +12,7 @@ Options:
     --learn.start=4       initial number of labels   
     --bayes.m=2           m-estimate for Naive Bayes   
     --bayes.k=1           k-estimate (Laplace smoothing) for Naive Bayes   
-    --few=512             max number of unlabelled rows to evaluate in active learning   
+    --few=128             max number of unlabelled rows to evaluate in active learning   
     --stats.cliffs=0.195  threshold for Cliff's Delta         
     --stats.conf=1.36     confidence coefficient for KS test   
     --stats.eps=0.35      margin of error multiplier         

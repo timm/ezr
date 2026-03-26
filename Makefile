@@ -26,11 +26,11 @@ sh: ## demo of my shell
 install: ok ## install related repos to $HOME/gits
 
 ok: $(HOME)/gits/moot ## set up baseline
-	@-chmod +x $(GIT_ROOT)/ezr/*.py
+	@-chmod +x $(GIT_ROOT)/*.py
 
 $(HOME)/gits/moot: ## get the data
-	mkdir -p $@
-	git clone http://tiny.cc/moot $@
+	mkdir -p $(dir $@)
+	[ -d $@/.git ] || git clone http://tiny.cc/moot $@
 
 push: ## save to cloud
 	@read -p "Reason? " msg; git commit -am "$$msg"; git push; git status
@@ -57,16 +57,15 @@ stats: ## generate stats
 	@bash $(ETC)/stats.sh $(HOME)/gits/moot/optimize
 
 # Test runner targets
-~/tmp/ez_acq.log: ok ## run ez_acq tests
-	@$(RUN_TEST) $@ acquire_class.py "-B $(B) --compare"
-	@sort -n $@ | cut -d, -f 1 | fmt
-
-run: ## generic run target
-	@$(RUN_TEST) /dev/null tree.py "-B $(B) --$(todo)" "$(files)"
-	@sort -n $@ | cut -d, -f 1 | fmt -85
+~/tmp/ezr_acq.log: ok ## run ez_acq tests
+	@mkdir -p ~/tmp
+	@time ls -r $(HOME)/gits/moot/optimize/*/*.csv | \
+	  xargs -P 24 -n 1 -I{} sh -c 'python3 -B ezeg.py --test "{}"' | \
+	  tee $@
+	@sort -n $@ | cut -d, -f 1 | fmt -80
 
 ~/tmp/runs.log: ## run random test loop
-	@bash $(ETC)/runs.sh > $@
+	bash $(ETC)/runs.sh > $@
 
 Html := $(GIT_ROOT)/docs
 
