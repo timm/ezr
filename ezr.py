@@ -446,7 +446,8 @@ def acquire(d, score=acquireWithBayes, label=lambda x:x) -> (Rows,callable):
   """Using rows labelled so far, pick what unlabelled to label next."""
   rows = d.rows[:]
   shuffle(rows)
-  lab,unlab = clone(d,rows[:the.learn.start]), rows[the.learn.start:][:the.few]
+  lab   = clone(d,rows[:the.learn.start])
+  unlab = rows[the.learn.start:][:the.few]
   lab.rows.sort(key=lambda r: disty(d, label(r)))
   n = sqrt(len(lab.rows))
   best,rest = clone(d,lab.rows[:int(n)]), clone(d,lab.rows[int(n):])
@@ -456,8 +457,8 @@ def acquire(d, score=acquireWithBayes, label=lambda x:x) -> (Rows,callable):
     for j in range(len(unlab)):  # scan at most one full cycle
       idx = (cursor + j) % len(unlab)  # calculate circular offset safely
       if fn(unlab[idx]) < 0:
-        add(lab, 
-          add(best, 
+        add(best, 
+          add(lab, 
             label(
               unlab.pop(idx))))
         if len(best.rows) > sqrt(len(lab.rows)):

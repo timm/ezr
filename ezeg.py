@@ -267,7 +267,6 @@ def test_acquire(file:str=egopt1):
     n       = len(d.rows)//2
     test    = d.rows[n:] 
     train   = d.rows[:n][:the.few]
-    any     = train[:the.learn.budget]
     lab1    = train[:the.learn.budget]
     lab2, _ = acquire(clone(d,train))
     lab3, _ = acquire(clone(d,train),acquireWithCentroid)
