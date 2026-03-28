@@ -224,7 +224,7 @@ def test_test(file:str=egopt1):
   outs, win = Num("win"), wins(d0)
   for _ in range(20):
     d, d_train, test_rows = ready(d0)
-    t = treeGrow(d_train, acquire(d_train)[0].rows)
+    t = treeGrow(d_train, acquire(d_train).rows)
     guess = sorted(test_rows, key=lambda r: mid(treeLeaf(t, r).ynum))
     top = min(guess[:the.learn.check], key=lambda r: disty(d_train, r))
     add(outs, win(top))
@@ -261,6 +261,22 @@ def test_acquire(file:str=egopt1):
   d = Data(csv(file))
   W = wins(d)
   Y = lambda r:disty(d,r)
+  n = len(d.rows)//2
+  out = Num()
+  for _ in range(20):
+    random.shuffle(d.rows)
+    test = d.rows[n:] 
+    traind = acquire( clone(d, d.rows[:n][:the.few]))
+    tree  = treeGrow(traind, traind.rows)
+    guess = sorted(test, key=lambda r: mid(treeLeaf(tree,r).ynum))
+    add(out, W(min(guess[:the.learn.check],key=Y)))
+  print(int(out.mu), int(out.sd))
+
+def test_acquire3(file:str=egopt1):
+  """Test active learning with Bayes and centroid acquisition."""
+  d = Data(csv(file))
+  W = wins(d)
+  Y = lambda r:disty(d,r)
   out = {}
   for _ in range(20):
     random.shuffle(d.rows)
@@ -268,8 +284,8 @@ def test_acquire(file:str=egopt1):
     test    = d.rows[n:] 
     train   = d.rows[:n][:the.few]
     lab1    = train[:the.learn.budget]
-    lab2, _ = acquire(clone(d,train))
-    lab3, _ = acquire(clone(d,train),acquireWithCentroid)
+    lab2 = acquire(clone(d,train))
+    lab3 = acquire(clone(d,train),acquireWithCentroid)
     for how,lab in (("rand",lab1),("bayes",lab2.rows),("near",lab3.rows)):
        d2    = clone(d,lab)
        tree  = treeGrow(d2, d2.rows)
@@ -277,6 +293,6 @@ def test_acquire(file:str=egopt1):
        out[how] = out.get(how) or Num()
        add(out[how], W(sorted(guess[:the.learn.check],key=Y)[0]))
   for how,num in out.items(): print(int(mid(num)),how, end=" ")
-  print(" budget ",the.learn.budget)
+  print(the.learn.budget,"budget")
 
 if __name__ == "__main__": cli()

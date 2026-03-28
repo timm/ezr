@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ezr"
-version = "0.9.1"
+version = "0.9.2"
 readme = "README.md"
 description = "Explainable multi-objective optimization"
 authors = [{name = "Tim Menzies", email = "timm@ieee.org"}]
@@ -21,4 +21,5 @@ ezr = "ezeg:cli"
 [tool.setuptools]
 py-modules = ["ezr", "ezeg"]
 
-
+[project.urls]
+Changelog = "https://github.com/timm/ezr/blob/main/CHANGELOG.md"

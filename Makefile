@@ -14,6 +14,12 @@ cYELLOW:= '\033[1;33m'
 help: ## show help
 	@gawk -f $(ETC)/help.awk $(MAKEFILE_LIST) 
 
+push2pypi: ## push to PyPi
+	pip install build twine
+	python3 -B -m build
+	twine upload dist/*
+	rm -rf dist build *.egg-info
+
 pyclean: ## remove python temporaries
 	cd $(GIT_ROOT); find . -type d -name __pycache__ -exec rm -rf {} +
 	cd $(GIT_ROOT); find . -type d -name .pytest_cache -exec rm -rf {} +

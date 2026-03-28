@@ -154,7 +154,7 @@ def norm(c: Num, v: Qty) -> float:
   """Normalize numeric values using a logistic function."""
   if v == "?": return v
   z = (v - c.mu) / (c.sd+1e-32)
-  z = max(c.mu - 3*c.sd, min(c.mu + 3*c.sd, z))
+  z = max(-3, min(3, z))
   return 1/(1 + exp(-1.7*z))
 
 def pick(it: Any) -> Any:
@@ -213,7 +213,7 @@ def wins(d: Data) -> Callable:
   """Return a function that scores rows based on distance to heaven."""
   ds = [disty(d, r) for r in d.rows]
   lo, med = min(ds), sorted(ds)[len(ds)//2]
-  return lambda r: int(100*(1 - ((disty(d,r)-lo) / (med-lo+1e-32))))
+  return lambda r: int(100*(1 - (disty(d,r) - lo) / (med - lo + 1e-32)))
 
 def ready(file: Any) -> tuple[Data, Data, Rows]:
   """Load, safely shuffle, and split data into train/test sets."""
@@ -327,10 +327,8 @@ def treeGrow(d: Data, rs: Rows) -> Tree:
   """Recursively grow a decision tree to minimize Y-distance variance."""
   t = Tree(d, rs)
   if len(rs) >= 2 * the.learn.leaf:
-    splits = (
-      treeSplit(d, c, cut, rs) 
-      for c in t.d.cols.xs for cut in treeCuts(c, rs)
-    )
+    splits = (treeSplit(d, c, cut, rs) 
+                 for c in t.d.cols.xs for cut in treeCuts(c, rs))
     if valid := [s for s in splits if min(len(s[3]), len(s[4])) >= the.learn.leaf]:
       _, t.col, t.cut, left, right = min(valid, key=lambda x: x[0])
       t.left, t.right = treeGrow(d, left), treeGrow(d, right)
@@ -442,13 +440,13 @@ def acquireWithCentroid(d: Data, best: Data, rest: Data, r: Row) -> float:
   """Negative means closer to best. Sorting ascending = closest first."""
   return distx(d, r, mids(best)) - distx(d, r, mids(rest))
 
-def acquire(d, score=acquireWithBayes, label=lambda x:x) -> (Rows,callable):
+def acquire(d, score=acquireWithBayes, label=lambda _,r:r) -> (Rows,callable):
   """Using rows labelled so far, pick what unlabelled to label next."""
   rows = d.rows[:]
   shuffle(rows)
-  lab   = clone(d,rows[:the.learn.start])
+  lab   = clone(d, rows[:the.learn.start])
   unlab = rows[the.learn.start:][:the.few]
-  lab.rows.sort(key=lambda r: disty(d, label(r)))
+  lab.rows.sort(key=lambda r: disty(lab, label(d,r)))
   n = sqrt(len(lab.rows))
   best,rest = clone(d,lab.rows[:int(n)]), clone(d,lab.rows[int(n):])
   cursor = 0
@@ -457,9 +455,9 @@ def acquire(d, score=acquireWithBayes, label=lambda x:x) -> (Rows,callable):
     for j in range(len(unlab)):  # scan at most one full cycle
       idx = (cursor + j) % len(unlab)  # calculate circular offset safely
       if fn(unlab[idx]) < 0:
-        add(best, 
-          add(lab, 
-            label(
+        add(lab, 
+          add(best, 
+            label(d,
               unlab.pop(idx))))
         if len(best.rows) > sqrt(len(lab.rows)):
           best.rows.sort(key=lambda r: disty(lab,r))
@@ -471,7 +469,7 @@ def acquire(d, score=acquireWithBayes, label=lambda x:x) -> (Rows,callable):
     else:
       break  # stop outer for loop if a full pass finds nothing
   lab.rows.sort(key=lambda r: disty(lab,r))
-  return lab, fn
+  return lab
 
 # ---- 8. Start Up ----
 # Ready,set, go.
