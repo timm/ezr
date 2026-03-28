@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.9.3] — 2026-03-28
+
+### Added
+- Section 8 (`1+1 optimization`) in `ezr.py`, introducing a generic
+  `oneplus1` search loop framework
+- Simulated Annealing (`sa`) and Local Search (`ls`) optimization
+  algorithms
+- Optimization helper functions: `picks()`, `nearest()`, `last()`,
+  and `oracleNearest()`
+- Section 9 (`Search`) in `ezeg.py` containing tests for the new
+  optimization algorithms: `test_sa()`, `test_ls()`, `test_compare()`
+
+### Changed
+- `the.seed`: 31451 → 1
+- `pick()` how has optional second arg for prior value. Used when
+  mutating around existing numeric values.
+
+
 ## [0.9.2] — 2026-03-27
 
 ### Changed

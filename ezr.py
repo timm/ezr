@@ -133,10 +133,10 @@ class Sym:
 def summarize(c: Col, v: Any, w: int = 1) -> Any:
   """Update column statistics incrementally with value `v`, weight `w`."""
   if v == "?": return v
-  c.n += w
   if Sym == type(c): c.has[v] = w + c.has.get(v, 0)
   elif w < 0 and c.n <= 2: c.n = c.mu = c.m2 = c.sd = 0
   else:
+    c.n += w
     delta = v - c.mu
     c.mu += w * delta / c.n
     c.m2 += w * delta * (v - c.mu)
@@ -148,7 +148,9 @@ def mid(c: Col) -> Atom:
 
 def spread(c: Col) -> float:
   """Return variability (standard deviation for Num, entropy for Sym)."""
-  return c.sd if Num==type(c) else -sum(v/c.n * log2(v/c.n) for v in c.has.values())
+  if Num==type(c): return c.sd
+  n = sum(c.has.values())
+  return  -sum(v/n * log2(v/n) for v in c.has.values())
 
 def norm(c: Num, v: Qty) -> float:
   """Normalize numeric values using a logistic function."""
@@ -157,15 +159,18 @@ def norm(c: Num, v: Qty) -> float:
   z = max(-3, min(3, z))
   return 1/(1 + exp(-1.7*z))
 
-def pick(it: Any) -> Any:
-  """Randomly sample a value from a distribution."""
+def pick(it: Any, v: Any = None) -> Any:
+  """Sample from distribution. If v given, mutate around it."""
   if Sym == type(it): return pick(it.has)
-  if Num == type(it): 
-    lo, hi = it.mu - 3*it.sd, it.mu + 3*it.sd 
-    return max(lo, min(hi, it.mu + it.sd * 2 * (rand()+rand()+rand()-1.5)))
-  n = sum(it.values()) * rand()
-  for k, v in it.items():
-    if (n := n - v) <= 0: return k
+  if Num == type(it):
+    center = v if v is not None and v != "?" else it.mu
+    lo, hi = it.mu - 3*it.sd, it.mu + 3*it.sd
+    new = center + it.sd*2*(rand()+rand()+rand() - 1.5)
+    return lo + (new - lo) % (hi - lo + 1e-32)
+  if dict == type(it):
+    n = sum(it.values()) * rand()
+    for k, v in it.items():
+      if (n := n - v) <= 0: return k
 
 # ---- 2. Data (Tables) ----
 class Data:
@@ -471,8 +476,68 @@ def acquire(d, score=acquireWithBayes, label=lambda _,r:r) -> (Rows,callable):
   lab.rows.sort(key=lambda r: disty(lab,r))
   return lab
 
-# ---- 8. Start Up ----
-# Ready,set, go.
+# ---- 8. 1+1 optimization ----
+def picks(d: Data, r: Row, n: int = 1) -> Row:
+  """Copy row, mutate n random x-columns around current vals."""
+  s = r[:]
+  for c in sample(d.cols.xs, min(n, len(d.cols.xs))):
+    s[c.at] = pick(c, s[c.at])
+  return s
+
+def nearest(d: Data, r: Row, rs: Rows = None) -> Row:
+  """Find row in rs closest to r on x-columns."""
+  return min(rs or d.rows, key=lambda r2: distx(d, r, r2))
+
+def last(gen) -> Any:
+  """Return final value from a generator."""
+  v = None
+  for v in gen: pass
+  return v
+
+def oneplus1(d: Data, mutate: Callable,
+             accept: Callable, oracle: Callable,
+             budget: int = 1000, restart: int = 0):
+  """(1+1) search: mutate, score via oracle, accept/reject."""
+  h, best, best_e = 0, None, 1E32
+  s, e, imp = choice(d.rows)[:], 1E32, 0
+  while h < budget:
+    for sn in mutate(s):
+      h += 1
+      en = oracle(sn)
+      if accept(e, en, h, budget): s, e = sn, en
+      if en < best_e:
+        best, best_e, imp = sn[:], en, h
+        yield h, best_e, best
+      if restart and h - imp > restart:
+        s, e, imp = choice(d.rows)[:], 1E32, h
+        break
+
+def oracleNearest(d: Data, r: Row) -> float:
+  """Score row: copy y-vals from nearest, return disty."""
+  near = nearest(d, r)
+  for c in d.cols.ys: r[c.at] = near[c.at]
+  return disty(d, r)
+
+def sa(d: Data, oracle: Callable, restarts: int = 0,
+       m: float = 0.5, budget: int = 1000):
+  """Simulated annealing: Boltzmann accept, multi-col mutate."""
+  n = max(1, int(m * len(d.cols.xs)))
+  def accept(e, en, h, b): return en<e or rand()<exp((e-en)/(1-h/b+1E-32))
+  def mutate(s): yield picks(d, s, n)
+  return oneplus1(d, mutate, accept, oracle, budget, restarts)
+
+def ls(d: Data, oracle: Callable, restarts: int = 100,
+       p: float = 0.5, tries: int = 20,
+       budget: int = 1000):
+  """Local search: greedy accept, single-col neighborhood."""
+  def accept(e, en, *_): return en < e
+  def mutate(s):
+    c = choice(d.cols.xs)
+    for _ in range(tries if rand() < p else 1):
+      s = s[:]; s[c.at] = pick(c, s[c.at]); yield s
+  return oneplus1(d, mutate, accept, oracle, budget, restarts)
+ 
+# ---- Ready,set, go. ----
 
 the = S()
 for k, v in re.findall(r"([\w.]+)=(\S+)", __doc__): nest(the, k, thing(v))

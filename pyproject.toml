@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ezr"
-version = "0.9.2"
+version = "0.9.3"
 readme = "README.md"
 description = "Explainable multi-objective optimization"
 authors = [{name = "Tim Menzies", email = "timm@ieee.org"}]

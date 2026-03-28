@@ -295,4 +295,49 @@ def test_acquire3(file:str=egopt1):
   for how,num in out.items(): print(int(mid(num)),how, end=" ")
   print(the.learn.budget,"budget")
 
+# ---- 9. Search ----
+def test_sa(file:str=egopt1):
+  """Demo simulated annealing on sample data."""
+  d0 = Data(csv(file))
+  shuffle(d0.rows)
+  known = clone(d0, d0.rows[:50])
+  search = clone(d0, d0.rows[50:])
+  oracle = lambda r: oracleNearest(known, r)
+  print(f"{'evals':>6} {'energy':>7}")
+  for h, e, row in sa(search, oracle):
+    print(f"  {h:4}   {o(e):>5}")
+
+def test_ls(file:str=egopt1):
+  """Demo local search on sample data."""
+  d0 = Data(csv(file))
+  shuffle(d0.rows)
+  known = clone(d0, d0.rows[:50])
+  search = clone(d0, d0.rows[50:])
+  oracle = lambda r: oracleNearest(known, r)
+  print(f"{'evals':>6} {'energy':>7}")
+  for h, e, row in ls(search, oracle):
+    print(f"  {h:4}   {o(e):>5}")
+
+def test_compare(file:str=egopt1):
+  """Compare sa, ls, ls-noRestart, sa+restart (x20)."""
+  d0 = Data(csv(file))
+  W = wins(d0)
+  out = {}
+  for _ in range(20):
+    shuffle(d0.rows)
+    known = clone(d0, d0.rows[:50])
+    search = clone(d0, d0.rows[50:])
+    oracle = lambda r: oracleNearest(known, r)
+    for name, fn in [
+        ("sa-r", lambda d: sa(d, oracle)),
+        ("ls+r", lambda d: ls(d, oracle)),
+        ("ls-r", lambda d: ls(d, oracle, restarts=0)),
+        ("sa+r", lambda d: sa(d, oracle, restarts=100))]:
+      _, _, r = last(fn(search))
+      if name not in out: out[name] = Num(name)
+      add(out[name], W(r))
+  for k, v in sorted(out.items()):
+    print(f"  {k:5} {o(mid(v)):>5} +/- {o(spread(v))}")
+   
+# ---- Go? -----
 if __name__ == "__main__": cli()
