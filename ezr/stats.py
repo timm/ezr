@@ -56,10 +56,15 @@ def same(x:list[Qty], y:list[Qty],Ks=0.95,Delta="smed") -> bool:
   
   def _ks():
     "Return max distance between cdf."
-    xs = sorted(x + y)
-    fx = [sum(a <= v for a in x)/n for v in xs]
-    fy = [sum(a <= v for a in y)/m for v in xs]
-    return max(abs(v1 - v2) for v1, v2 in zip(fx, fy))
+    i = j = 0
+    d_max = 0
+    while i < n and j < m:
+      if x[i] <= y[j]: i += 1
+      else:            j += 1
+      d_max = max(d_max, abs(i/n - j/m))
+    while i < n: i += 1; d_max = max(d_max, abs(i/n - j/m))
+    while j < m: j += 1; d_max = max(d_max, abs(i/n - j/m))
+    return d_max
 
   ks    = {0.1:1.22, 0.05:1.36, 0.01:1.63}[round(1 - Ks,2)]
   cliffs= {'small':0.11,'smed':0.195,'medium':0.28,'large':0.43}[Delta]
