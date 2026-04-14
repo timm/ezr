@@ -268,7 +268,7 @@ def likelier(_, best:Data, rest:Data, x:Data) -> Row:
   def _fn(row):
     b,r = e**likes(best,row,nall,2), e**likes(rest,row,nall,2)
     if the.acq=="bore": return b*b/(r+1e-32)
-    return (b + r*q) / abs(b*q - r + 1e-32)
+    return (b + r*q) / (abs(b*q - r) + 1e-32)
   first, *lst = sorted(x.rows[:the.Few*2], key=_fn, reverse=True)
   x.rows = lst[:the.Few] + x.rows[the.Few*2:] + lst[the.Few:] 
   return first

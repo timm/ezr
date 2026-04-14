@@ -81,9 +81,9 @@ def eg__tree():
   n    = len(data.rows)//2
   train, holdout= data.rows[:n], data.rows[n:]
   tree = Tree(clone(data, likely(D(train))))
-  treeShow(tree)
-  print(int(best(sorted(holdout, 
-                        key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check])))
+  treeShow(data, tree)
+  print(int(best(sorted(holdout,
+                        key=lambda row: treeLeaf(tree,row).mu)[:the.Check])))
 
 # def eg_ezr():
 #   data = Data(csv(the.file))
@@ -103,7 +103,7 @@ def funs(*lst):
   def sway1( _, t,T):                   return so(d,T, distFastermap(D(t), sway2=False))
   def sway2( _, t,T):                   return so(d,T, distFastermap(D(t), sway2=True))
   def xploit(_, t,T): the.acq="xploit"; return so(d,T, likely(D(t)))
-  def xplor( _, t,T): the.acq="xplore"; return so(d,T, likely(D(t)))
+  def xplor( _, t,T): the.acq="xplor" ; return so(d,T, likely(D(t)))
   rxs= dict(adapt=adapt, all=all, bore=bore, check=check, rand=rand, 
             kpp=kpp, near=near, sway1=sway1, sway2=sway2,
             xploit=xploit, xplor=xplor)
