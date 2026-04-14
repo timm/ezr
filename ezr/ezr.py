@@ -214,7 +214,7 @@ def like(i:o, v:Any, prior=0) -> float :
     return math.log(max(tmp, 1e-32))
   else:
     ## Next Line added to resolve cases where i.sd == 0
-    if i.sd == 0: return 0 if v == i.mu else 1E-32
+    if i.sd == 0: return 0 if v == i.mu else math.log(1E-32)
     
     var = i.sd * i.sd + 1E-32
     log_nom = -1 * (v - i.mu) ** 2 / (2 * var)
