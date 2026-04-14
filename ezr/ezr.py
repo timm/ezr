@@ -284,19 +284,22 @@ def treeSelects(row:Row, op:str, at:int, y:Atom) -> bool:
   ## Adding Next line to support binary splits
   if op == "!="          : return x != y
 
-def Tree(data, rows=None, Y=None, Klass=Num, how=None):
+def Tree(data, rows=None, Y=None, Klass=Num, how=None, _ycache=None):
   "Create tree from list of lists"
   rows = rows or data.rows
   Y    = Y or (lambda row: disty(data,row))
-  tree = o(rows=rows, how=how, kids=[], 
-           mu=mid(adds(Y(r) for r in rows)))
+  if _ycache is None:
+    _ycache = {id(r): Y(r) for r in rows}
+  Yc   = lambda r: _ycache.get(id(r), Y(r))
+  tree = o(rows=rows, how=how, kids=[],
+           mu=mid(adds(Yc(r) for r in rows)))
   if len(rows) >= the.leaf:
-    spread, cuts = min(treeCuts(c,rows,Y,Klass) for c in data.cols.x)
+    spread, cuts = min(treeCuts(c,rows,Yc,Klass) for c in data.cols.x)
     if spread < big:
       for cut in cuts:
         subset = [r for r in rows if treeSelects(r, *cut)]
         if the.leaf <= len(subset) < len(rows):
-          tree.kids += [Tree(data, subset, Y, Klass, cut)]
+          tree.kids += [Tree(data, subset, Y, Klass, cut, _ycache)]
   return tree
 
 def treeCuts(col, rows, Y:callable, Klass:callable):
