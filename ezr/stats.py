@@ -50,8 +50,8 @@ def same(x:list[Qty], y:list[Qty],Ks=0.95,Delta="smed") -> bool:
 
   def _cliffs():
     "How frequently are x items are gt,lt than y items?"
-    gt = sum(a > b for a in x for b in y)
-    lt = sum(a < b for a in x for b in y)
+    gt = sum(bisect.bisect_left(y, a) for a in x)
+    lt = sum(m - bisect.bisect_right(y, a) for a in x)
     return abs(gt - lt) / (n * m)
   
   def _ks():
