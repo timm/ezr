@@ -74,15 +74,24 @@ def top(rxs:dict[str,list[Qty]],
                reverse=reverse)
   while len(its) > 1:
     vals = [v for _, _, _, v in its]
-    mu = sum(l12 := sum(vals, [])) / len(l12)
-    cut, sc, left, right = 0, 0, [], []
+    l12  = [x for vs in vals for x in vs]
+    total, total_n = sum(l12), len(l12)
+    mu   = total / total_n
+    cut, sc = 0, 0
+    run_sum, run_n = 0, 0
     for i in range(1, len(its)):
-      l1, l2 = sum(vals[:i], []), sum(vals[i:], [])
-      m1, m2 = sum(l1)/len(l1), sum(l2)/len(l2)
-      s = (len(l1)*(m1-mu)**2 + len(l2)*(m2-mu)**2) / len(l12)
+      run_sum += sum(vals[i-1])
+      run_n   += len(vals[i-1])
+      m1 = run_sum / run_n
+      m2 = (total - run_sum) / (total_n - run_n)
+      s  = (run_n*(m1-mu)**2 + (total_n-run_n)*(m2-mu)**2) / total_n
       if sc < s and abs(m1 - m2) > eps:
-        sc, cut, left, right = s, i, l1, l2
-    if not (cut > 0 and not same(left,right,Ks=Ks,Delta=Delta)): break
+        sc, cut = s, i
+    if cut > 0:
+      left  = [x for vs in vals[:cut] for x in vs]
+      right = [x for vs in vals[cut:] for x in vs]
+      if same(left,right,Ks=Ks,Delta=Delta): break
+    else: break
     its = its[:cut]
   return {k for _, _, k, _ in its}
 
