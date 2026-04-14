@@ -75,7 +75,7 @@ def clone(data:Data, rows=None) -> o:
 def adds(src, it=None) -> o:
   "Add multiple items to a summarizer"
   it = it or Num()
-  [add(it,x) for x in src]
+  for x in src: add(it,x)
   return it
 
 def sub(x:o, v:Any, zap=False) -> Any: 
@@ -100,7 +100,7 @@ def add(x: o, v:Any, inc=1, zap=False) -> Any:
     x.mid = None
     if inc > 0: x.rows += [v]
     elif zap: x.rows.remove(v) # slow for long rows
-    [add(col, v[col.at], inc) for col in x.cols.all]
+    for col in x.cols.all: add(col, v[col.at], inc)
   return v
 
 # ## Misc data functions ----------------------------------------------
@@ -312,7 +312,7 @@ def _symCuts(at, xys, Y, Klass) -> (float, list[Op]):
         #  left, right = Klass(), Klass()
         left, right = Sym(), Sym()
 
-        [add(left if x == val else right, y) for x, y in xys]
+        for x, y in xys: add(left if x == val else right, y)
         if left.n >= the.leaf and right.n >= the.leaf:
             now = (left.n * div(left) + right.n * div(right)) / (left.n + right.n)
             if now < spread:
@@ -323,7 +323,7 @@ def _symCuts(at, xys, Y, Klass) -> (float, list[Op]):
 def _numCuts(at,xys,Y,Klass) -> (float, list[Op]):
   "Cuts for numeric columns."
   spread, cuts, left, right = big, [], Klass(), Klass()
-  [add(right,y) for _, y in xys]
+  for _, y in xys: add(right,y)
   for i, (x, y) in enumerate(xys[:-1]):
     add(left, sub(right, y))
     if x != xys[i+1][0]:
