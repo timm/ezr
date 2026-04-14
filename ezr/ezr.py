@@ -309,8 +309,7 @@ def _symCuts(at, xys, Y, Klass) -> (float, list[Op]):
     unique_vals = set(x for x, _ in xys)
     spread, cuts = big, []
     for val in unique_vals:
-        #  left, right = Klass(), Klass()
-        left, right = Sym(), Sym()
+        left, right = Klass(), Klass()
 
         [add(left if x == val else right, y) for x, y in xys]
         if left.n >= the.leaf and right.n >= the.leaf:
