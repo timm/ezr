@@ -202,7 +202,8 @@ def distFastermap(data,rows=None, sway2=True):
     n   = len(rest)//2
     raw = raw[:n] if Y(east) < Y(west) else raw[n:]
     if sway2 and len(raw) < 2:
-      raw = shuffle([r for r in rows if r not in out.rows])
+      seen = set(id(r) for r in out.rows)
+      raw = shuffle([r for r in rows if id(r) not in seen])
   return sorted(out.rows, key=Y)
 
 # ## Likelihood -------------------------------------------------------
