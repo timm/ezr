@@ -64,8 +64,8 @@ def Cols(names : list[str]) -> o:
 def Data(src) -> o:
   "Create data structure from source rows"
   src = iter(src)
-  return adds(src, o(it=Data, n=0, mid=None, rows=[], kids=[], 
-                     ys=None, cols=Cols(next(src)))) 
+  return adds(src, o(it=Data, n=0, mid=None, rows=[],
+                     cols=Cols(next(src))))
 
 def clone(data:Data, rows=None) -> o:
   "Create new Data with same columns but different rows"
@@ -117,12 +117,8 @@ def mid(col: o) -> Atom:
   "Get central tendency of one column"
   return max(col.has, key=col.has.get) if col.it is Sym else col.mu
 
-def divs(data:Data) -> float:
-  "Return the central tendency for each column."
-  return [div(col) for col in data.cols.all]
-
 def div(col:o) -> float:
-  "Return the central tendnacy for one column."
+  "Return the diversity/spread for one column."
   if col.it is Num: return col.sd
   vs = col.has.values()
   N  = sum(vs)
@@ -221,7 +217,7 @@ def like(i:o, v:Any, prior=0) -> float :
     log_denom = 0.5 * math.log(2 * math.pi * var)
     return log_nom - log_denom
 
-def likes(data:Data, row:Row, nall=100, nh=2) -> float:
+def likes(data:Data, row:Row, nall=100) -> float:
   "How much does this DATA like row?"
   prior = data.n / (nall + 1e-32)
   log_prior = math.log(max(prior, 1e-32))
@@ -231,6 +227,7 @@ def likes(data:Data, row:Row, nall=100, nh=2) -> float:
 # ## Active Learning --------------------------------------------------
 def likely(data:Data, rows=None) -> list[Row]:
   "Find an 'x' most likely to be best. Add to xy. Repeat."
+  assert the.acq in ("near","xploit","xplor","bore","adapt"), f"bad acq: {the.acq}"
   rows = rows or data.rows
   x   = clone(data, shuffle(rows[:]))
   xy, best, rest = clone(data), clone(data), clone(data)
@@ -266,7 +263,7 @@ def likelier(_, best:Data, rest:Data, x:Data) -> Row:
   p = nall/the.Budget
   q = {'xploit':0, 'xplor':1}.get(the.acq, 1-p)
   def _fn(row):
-    b,r = e**likes(best,row,nall,2), e**likes(rest,row,nall,2)
+    b,r = e**likes(best,row,nall), e**likes(rest,row,nall)
     if the.acq=="bore": return b*b/(r+1e-32)
     return (b + r*q) / abs(b*q - r + 1e-32)
   first, *lst = sorted(x.rows[:the.Few*2], key=_fn, reverse=True)
@@ -364,10 +361,6 @@ def treeShow(data,tree,win=None):
                            key=lambda k: -n[k]))
 
 # ## Misc Utils ------------------------------------------------------
-def fyi(s, end=""):
-  "write the standard error (defaults to no new line)"
-  print(s, file=sys.stderr, flush=True, end=end)
-
 def coerce(s:str) -> Atom:
   "coerce a string to int, float, bool, or trimmed string"
   for fn in [int,float]:

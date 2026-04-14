@@ -85,9 +85,6 @@ def eg__tree():
   print(int(best(sorted(holdout, 
                         key=lambda row: treeLeaf(tree,row).ys.mu)[:the.Check])))
 
-# def eg_ezr():
-#   data = Data(csv(the.file))
-#   def near(b,data1): the.acq="near"; the.Budget=b; return likely(clone(data,)
 
 def funs(*lst):
   "Example function demonstrating the optimization workflow"
