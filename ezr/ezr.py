@@ -225,7 +225,7 @@ def likes(data:Data, row:Row, nall=100, nh=2) -> float:
   "How much does this DATA like row?"
   prior = data.n / (nall + 1e-32)
   log_prior = math.log(max(prior, 1e-32))
-  tmp = [like(c, row[c.at]) for c in data.cols.x if row[c.at] != "?"]
+  tmp = [like(c, row[c.at], prior) for c in data.cols.x if row[c.at] != "?"]
   return log_prior + sum(tmp)    
 
 # ## Active Learning --------------------------------------------------
