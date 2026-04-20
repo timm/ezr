@@ -16,8 +16,13 @@ Options:
     --stats.cliffs=0.195  threshold for Cliff's Delta         
     --stats.conf=1.36     confidence coefficient for KS test   
     --stats.eps=0.35      margin of error multiplier         
-     --show.show=30        display width/padding for trees         
+    --show.show=30        display width/padding for trees         
     --show.decimals=2     number of decimals for floats         
+    --textmine.norm=0     CNB weight normalization (0/1)
+    --textmine.yes=20     positive samples for text mining
+    --textmine.no=20      negative samples for text mining
+    --textmine.top=100    top TF-IDF features to keep
+    --textmine.valid=20   repeats for statistical testing
 """
 from __future__ import annotations
 from time import perf_counter_ns as now

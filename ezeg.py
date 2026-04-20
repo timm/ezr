@@ -38,6 +38,7 @@ Run all tests:
 """
 from ezr import *
 import ezr
+import textmine as tm
 try:
   import pytest
   @pytest.fixture(autouse=True)
@@ -339,5 +340,59 @@ def test_compare(file:str=egopt1):
   for k, v in sorted(out.items()):
     print(f"  {k:5} {o(mid(v)):>5} +/- {o(spread(v))}")
    
+# ---- 10. Text mining -----
+egtxt1 = Path.home() / "gits/moot/optimize/misc/auto93.csv"
+
+def test_cnb_like(file:str=egtxt1):
+  """Show CNB scores for first 5 rows."""
+  data = Data(csv(str(file))); ws = tm.cnb(data)
+  rows = [["want", "got", "score"]]
+  for r in data.rows[:5]:
+    got = tm._best(ws, data, r)
+    sc = max(tm.cnbLikes(ws, data, r, k) for k in ws)
+    rows.append([r[data.cols.klass.at], got, round(sc, 2)])
+  tm._align(rows)
+
+def test_cnb_sweep(file:str=egtxt1):
+  """Vary sample size: 10, 20, 40."""
+  for y in [10, 20, 40]:
+    the.textmine.yes = the.textmine.no = y
+    tm.text_mining(str(file))
+
+def test_cnb_data(file:str=egtxt1):
+  """Random baseline evaluation."""
+  return tm.text_mining(str(file))
+
+def test_cnb_active(file:str=egtxt1):
+  """Active learning: warm start then acquire to budget."""
+  return tm.active(str(file))
+
+def test_tokenize(file:str=egtxt1):
+  """Tokenize a text-mining CSV."""
+  assert (p := tm.tokenize(str(file))), "crash in test_tokenize"
+  print(f"{len(p.docs)} docs")
+  for d in p.docs[:3]: print(d.words[:8])
+
+def test_nostop(file:str=egtxt1):
+  """Stop word removal demo."""
+  p = tm.tokenize(str(file)); b = p.docs[0].words[:12][:]
+  assert tm.nostop(p), "crash in test_nostop"
+  gone = [w for w in b if w not in p.docs[0].words]
+  print(f"removed: {gone}")
+  print(f"before:  {b}")
+  print(f"after:   {p.docs[0].words[:12]}")
+
+def test_stem(file:str=egtxt1):
+  """Stemming demo."""
+  p = tm.nostop(tm.tokenize(str(file))); b = p.docs[0].words[:8][:]
+  assert tm.stem(p), "crash in test_stem"
+  for a, b1 in zip(b, p.docs[0].words[:8]):
+    print(f"{a} -> {b1}")
+
+def test_tfidf(file:str=egtxt1):
+  """TF-IDF top features."""
+  assert (p := tm.prepare(str(file))), "crash in test_tfidf"
+  tm._align([[w, round(s, 2)] for w, s in p.top[:20]])
+
 # ---- Go? -----
 if __name__ == "__main__": cli()
