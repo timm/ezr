@@ -38,6 +38,7 @@ Run all tests:
 """
 from ezr import *
 import ezr
+import textmine as tm
 try:
   import pytest
   @pytest.fixture(autouse=True)
@@ -339,5 +340,66 @@ def test_compare(file:str=egopt1):
   for k, v in sorted(out.items()):
     print(f"  {k:5} {o(mid(v)):>5} +/- {o(spread(v))}")
    
+# ---- 10. Text mining -----
+egcnb = Path.home() / "gits/moot/text_mining/reading/processed/Hall.csv"
+egtxt = Path.home() / "gits/moot/text_mining/reading/Hall.csv"
+
+def _need(f, *cols) -> str:
+  """Return str(f) if file exists with required header cols, else skip (pytest) / fail."""
+  p, msg = Path(f), None
+  if not p.exists(): msg = f"missing {f}"
+  elif cols and not all(c in next(tm._csv(str(p))) for c in cols):
+    msg = f"{f} missing one of {cols}"
+  if msg and "pytest" in globals(): pytest.skip(msg)
+  if msg: raise AssertionError(msg)
+  return str(p)
+
+def test_cnb_like(file:str=egcnb):
+  """Show CNB scores for first 5 rows."""
+  data = Data(csv(_need(file, "klass!"))); ws = tm.cnb(data)
+  rows = [["want", "got", "score"]]
+  for r in data.rows[:5]:
+    sc = max(tm.cnbLikes(ws, data, r, k) for k in ws)
+    rows.append([r[data.cols.klass.at], tm._best(ws, data, r), round(sc, 2)])
+  tm._align(rows)
+
+def test_cnb_sweep(file:str=egcnb):
+  """Vary sample size: 10, 20, 40."""
+  f = _need(file, "klass!")
+  for y in [10, 20, 40]:
+    the.textmine.yes = the.textmine.no = y; tm.text_mining(f)
+
+def test_cnb_data(file:str=egcnb):
+  """Random baseline evaluation."""
+  return tm.text_mining(_need(file, "klass!"))
+
+def test_cnb_active(file:str=egcnb):
+  """Active learning: warm start then acquire to budget."""
+  return tm.active(_need(file, "klass!"))
+
+def test_tokenize(file:str=egtxt):
+  """Tokenize a text-mining CSV."""
+  p = tm.tokenize(_need(file, "abstract", "label"))
+  print(f"{len(p.docs)} docs")
+  for d in p.docs[:3]: print(d.words[:8])
+
+def test_nostop(file:str=egtxt):
+  """Stop word removal demo."""
+  p = tm.tokenize(_need(file, "abstract", "label")); b = p.docs[0].words[:12][:]
+  tm.nostop(p)
+  print(f"removed: {[w for w in b if w not in p.docs[0].words]}")
+  print(f"before:  {b}\nafter:   {p.docs[0].words[:12]}")
+
+def test_stem(file:str=egtxt):
+  """Stemming demo."""
+  p = tm.nostop(tm.tokenize(_need(file, "abstract", "label")))
+  b = p.docs[0].words[:8][:]; tm.stem(p)
+  for a, b1 in zip(b, p.docs[0].words[:8]): print(f"{a} -> {b1}")
+
+def test_tfidf(file:str=egtxt):
+  """TF-IDF top features."""
+  p = tm.prepare(_need(file, "abstract", "label"))
+  tm._align([[w, round(s, 2)] for w, s in p.top[:20]])
+
 # ---- Go? -----
 if __name__ == "__main__": cli()
