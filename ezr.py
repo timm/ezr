@@ -445,36 +445,35 @@ def acquireWithCentroid(d: Data, best: Data, rest: Data, r: Row) -> float:
   """Negative means closer to best. Sorting ascending = closest first."""
   return distx(d, r, mids(best)) - distx(d, r, mids(rest))
 
-def acquire(d, score=acquireWithBayes, label=lambda _,r:r) -> (Rows,callable):
-  """Using rows labelled so far, pick what unlabelled to label next."""
+def rebalance(best, rest, lab):
+  """Cap best at sqrt(|lab|); evict its worst-disty row into rest."""
+  if len(best.rows) > sqrt(len(lab.rows)):
+    best.rows.sort(key=lambda r: disty(lab, r))
+    add(rest, sub(best, best.rows[-1]))
+
+def warm_start(d, rows, label):
+  """Label first `start` rows; split by disty: top sqrt = best, rest = rest."""
+  lab = clone(d, rows[:the.learn.start])
+  lab.rows.sort(key=lambda r: disty(lab, label(d, r)))
+  n = int(sqrt(len(lab.rows)))
+  return lab, clone(d, lab.rows[:n]), clone(d, lab.rows[n:])
+
+def active(d, score=acquireWithBayes, label=lambda _,r:r):
+  """Single-pass active learning. Returns `lab` (Data of labeled rows)."""
   rows = d.rows[:]
   shuffle(rows)
-  lab   = clone(d, rows[:the.learn.start])
-  unlab = rows[the.learn.start:][:the.few]
-  lab.rows.sort(key=lambda r: disty(lab, label(d,r)))
-  n = sqrt(len(lab.rows))
-  best,rest = clone(d,lab.rows[:int(n)]), clone(d,lab.rows[int(n):])
-  cursor = 0
-  fn = lambda r: score(lab, best, rest, r)
-  for _ in range(the.learn.budget):
-    for j in range(len(unlab)):  # scan at most one full cycle
-      idx = (cursor + j) % len(unlab)  # calculate circular offset safely
-      if fn(unlab[idx]) < 0:
-        add(lab, 
-          add(best, 
-            label(d,
-              unlab.pop(idx))))
-        if len(best.rows) > sqrt(len(lab.rows)):
-          best.rows.sort(key=lambda r: disty(lab,r))
-          add(rest, 
-            sub(best, 
-              best.rows[-1]))
-        cursor = idx  # resume from the shifted position next cycle
-        break
-    else:
-      break  # stop outer for loop if a full pass finds nothing
-  lab.rows.sort(key=lambda r: disty(lab,r))
+  lab, best, rest = warm_start(d, rows, label)
+  pool = rows[the.learn.start:][:the.few]
+  cap = the.learn.start + the.learn.budget
+  for r in pool:
+    if len(lab.rows) >= cap: break
+    if score(lab, best, rest, r) < 0:
+      add(lab, add(best, label(d, r)))
+      rebalance(best, rest, lab)
+  lab.rows.sort(key=lambda r: disty(lab, r))
   return lab
+
+acquire = active  # backward-compat alias
 
 # ---- 8. 1+1 optimization ----
 def picks(d: Data, r: Row, n: int = 1) -> Row:
