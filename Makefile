@@ -61,11 +61,11 @@ CSVS = ls -r $(HOME)/gits/moot/optimize/*/*.csv | xargs -P 24 -I{} sh -c
 
 ~/tmp/ezr_acq.log: ok ## run ez_acq tests
 	@mkdir -p ~/tmp
-	@time $(CSVS) 'python3 -B ezeg.py --test "{}"' | tee $@
-	@sort -n $@ | cut -d, -f 1 | fmt -80
+	@$(CSVS) 'python3 -B ezeg.py --acquire "{}"' | tee $@
+	@sort -n $@ | cut -d, -f 1 | fmt -78
 
 ~/tmp/runs.log: ## run random test loop
-	bash $(ETC)/runs.sh > $@
+	bash $(ETC)/runs.sh |tee  $@
 
 Html := $(GIT_ROOT)/docs
 

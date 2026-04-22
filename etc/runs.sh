@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
-# Usage: ./runs.sh
+# Usage: ./etc/runs.sh
+# 1000 random runs: random file, random budget (10..150), random check (1..10)
 
-for i in $(seq 1 100); do
-  C=$(( RANDOM % 4 + 3 ))
-  B=$(( RANDOM % 76 + 25 ))
-  
-  # Note: This explicitly calls 'make', so it relies on the Makefile
-  # being present in the current working directory.
-  num=$(make -B C=$C B=$B ~/tmp/ez_test.log | grep OUT)
-  
-  echo "$C $B $num"
+FILES=($(find "$HOME/gits/moot/optimize" -name "*.csv" -type f))
+N=${#FILES[@]}
+
+for i in $(seq 1 10000); do
+  F=${FILES[$(( RANDOM % N ))]}
+  B=$(( RANDOM % 141 + 10 ))
+  C=$(( RANDOM % 10 + 1 ))
+  echo -n ":i $i :budget $B :check $C "
+  echo -n "$(python3 -B ezeg.py --learn.budget $B --learn.check $C --acquire "$F")"
+  echo " :file $(basename $F)"
 done

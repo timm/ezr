@@ -14,7 +14,7 @@ Command-line actions:
   --see   file          show tree (rung 1)   
   --act   file          test vs leaf (rung 2)   
   --imagine file        what-if (rung 3)   
-  --test  file          train/predict/score pipeline   
+  --acquire file        train/predict/score pipeline
   --cluster file        clustering benchmark table
 
 Input is CSV. Header (row 1) defines column roles:   
@@ -219,17 +219,19 @@ def test_plan(file:str=egopt1):
   for dy, score, diff in sorted(treePlan(t, here)):
     print(f"  {o(score):>6} (dy={o(dy)}) if {', '.join(diff)}")
 
-def test_test(file:str=egopt1):
+def test_acquire(file:str=egopt1):
   """Run full train/predict/score pipeline to optimize metrics."""
   d0 = Data(csv(file))
-  outs, win = Num("win"), wins(d0)
+  train_w, test_w, win = Num(), Num(), wins(d0)
   for _ in range(20):
     d, d_train, test_rows = ready(d0)
-    t = treeGrow(d_train, acquire(d_train).rows)
+    lab = acquire(d_train)
+    t = treeGrow(d_train, lab.rows)
     guess = sorted(test_rows, key=lambda r: mid(treeLeaf(t, r).ynum))
-    top = min(guess[:the.learn.check], key=lambda r: disty(d_train, r))
-    add(outs, win(top))
-  print(int(mid(outs)))
+    add(test_w,  win(min(guess[:the.learn.check], key=lambda r: disty(d_train, r))))
+    add(train_w, win(min(lab.rows,                key=lambda r: disty(d_train, r))))
+  print(f":train_wins_mu {int(mid(train_w))} :train_wins_sd {int(spread(train_w))} "
+        f":test_wins_mu {int(mid(test_w))} :test_wins_sd {int(spread(test_w))}")
 
 # ---- 7. Clustering ----
 def test_cluster(file:str=egopt1):
@@ -257,22 +259,6 @@ def test_cluster(file:str=egopt1):
   table(results, w=12)
 
 # ----- 8. Active learning -----
-def test_acquire(file:str=egopt1):
-  """Test active learning with Bayes and centroid acquisition."""
-  d = Data(csv(file))
-  W = wins(d)
-  Y = lambda r:disty(d,r)
-  n = len(d.rows)//2
-  out = Num()
-  for _ in range(20):
-    random.shuffle(d.rows)
-    test = d.rows[n:] 
-    traind = acquire( clone(d, d.rows[:n][:the.few]))
-    tree  = treeGrow(traind, traind.rows)
-    guess = sorted(test, key=lambda r: mid(treeLeaf(tree,r).ynum))
-    add(out, W(min(guess[:the.learn.check],key=Y)))
-  print(int(out.mu), int(out.sd))
-
 def test_acquire3(file:str=egopt1):
   """Test active learning with Bayes and centroid acquisition."""
   d = Data(csv(file))

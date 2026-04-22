@@ -229,8 +229,8 @@ def ready(file: Any) -> tuple[Data, Data, Rows]:
   """Load, safely shuffle, and split data into train/test sets."""
   d = file if Data == type(file) else Data(csv(file))
   random.shuffle(d.rows)
-  n = len(d.rows) // 2
-  return d, clone(d, d.rows[:n][:the.learn.budget]), d.rows[n:]
+  half = len(d.rows) // 2
+  return d, clone(d, d.rows[:half][:the.few]), d.rows[half:]
 
 # ---- 3, Bayes ----
 def like(c: Col, v: Any, prior) -> float:
