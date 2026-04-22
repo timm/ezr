@@ -65,7 +65,7 @@ CSVS = ls -r $(HOME)/gits/moot/optimize/*/*.csv | xargs -P 24 -I{} sh -c
 	@sort -n $@ | cut -d, -f 1 | fmt -78
 
 ~/tmp/runs.log: ## run random test loop
-	bash $(ETC)/runs.sh |tee  $@
+	bash $(ETC)/runs.sh >> $@
 
 Html := $(GIT_ROOT)/docs
 
