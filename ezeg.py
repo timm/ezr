@@ -49,6 +49,131 @@ egclass1=Path.home() / "gits/moot/classify/soybean.csv"
 egclass2=Path.home() / "gits/moot/classify/diabetes.csv"
 egopt1=  Path.home() / "gits/moot/optimize/misc/auto93.csv"
 
+# ---- Evaluation helpers ----
+def wins(d: Data) -> Callable:
+  """Score rows by distance to heaven."""
+  ds = [disty(d, r) for r in d.rows]
+  lo, med = min(ds), sorted(ds)[len(ds)//2]
+  return lambda r: int(100*(1 - (disty(d,r)-lo
+                     ) / (med-lo + 1e-32)))
+
+def ready(file: Any) -> tuple:
+  """Shuffle, split data into train/test."""
+  d = (file if Data==type(file)
+       else Data(csv(file)))
+  random.shuffle(d.rows)
+  half = len(d.rows) // 2
+  return (d, clone(d, d.rows[:half][:the.few]),
+             d.rows[half:])
+
+def confused(cf: dict) -> list[S]:
+  """Confusion stats, all metrics as int %."""
+  klasses = sorted(set(cf.keys()).union(
+    {g for w in cf.values()
+     for g in w.keys()}))
+  total = sum(cf[w][g]
+              for w in cf for g in cf[w])
+  p = lambda y,z: int(100*y/(z or 1e-32))
+  out = []
+  for c in klasses:
+    tp = cf.get(c, {}).get(c, 0)
+    fn = sum(cf.get(c, {}).values()) - tp
+    fp = sum(cf.get(w, {}).get(c, 0)
+             for w in cf if w != c)
+    tn = total - tp - fn - fp
+    pd, pr = p(tp,tp+fn), p(tp,fp+tp)
+    sp = p(tn, tn+fp)
+    out.append(S(tp=tp, fn=fn, fp=fp, tn=tn,
+      pd=pd, pr=pr,
+      f1=int(2*pd*pr/(pd+pr+1e-32)),
+      g=int(2*pd*sp/(pd+sp+1e-32)),
+      acc=p(tp+tn, total), label="  "+c))
+  return out
+
+# ---- Clustering ----
+def kmeans(d, rs=None, k=10, n=10,
+           cents=None) -> Datas:
+  """Cluster rows into k groups."""
+  rs, out = rs or d.rows, []
+  cents = cents or choices(rs, k=k)
+  for _ in range(n):
+    out = [clone(d) for _ in cents]
+    for r in rs:
+      add(out[min(range(len(cents)),
+        key=lambda j:distx(d,cents[j],r))],r)
+    cents = [mids(kid)
+             for kid in out if kid.rows]
+  return out
+
+def kpp(d,rs=None,k=10,few=256) -> Rows:
+  """k-means++ centroid selection."""
+  rs = rs or d.rows
+  out = [choice(rs)]
+  while len(out) < k:
+    t = sample(rs, min(few, len(rs)))
+    ws = {i: min(distx(d,t[i],c)**2
+                 for c in out)
+          for i in range(len(t))}
+    out.append(t[pick(ws)])
+  return out
+
+def half(d, rs, few=20) -> tuple:
+  """Divide rows by two extreme points."""
+  t = sample(rs, min(few, len(rs)))
+  gap, east, west = max(
+    ((distx(d,r1,r2),r1,r2)
+     for r1 in t for r2 in t),
+    key=lambda z: z[0])
+  proj = lambda r: (
+    distx(d,r,east)**2 + gap**2 -
+    distx(d,r,west)**2) / (2*gap+1e-32)
+  rs = sorted(rs, key=proj)
+  n = len(rs) // 2
+  return (rs[:n], rs[n:],
+          east, west, gap, proj(rs[n]))
+
+def rhalf(d, rs=None, k=10,
+          stop=None, few=20) -> Datas:
+  """Recursively halve into clusters."""
+  rs = rs if rs is not None else d.rows
+  stop = stop or 20
+  if len(rs) <= 2*stop:
+    return [clone(d, rs)]
+  l,r,east,west,gap,cut = half(d, rs, few)
+  return (rhalf(d, l, k, stop, few) +
+          rhalf(d, r, k, stop, few))
+
+def neighbors(d, r1, ds,
+              near=1, fast=False) -> Rows:
+  """Find nearest rows or centroid."""
+  c = min(ds,
+    key=lambda c: distx(d, r1, mids(c)))
+  return ([mids(c)] if fast else
+    sorted(c.rows,
+      key=lambda r2:distx(d,r1,r2))[:near])
+
+def clustering(d0, build,
+               near=1, fast=False):
+  """Benchmark clustering algorithms."""
+  t_build,t_apply,err,repeats = 0,0,0,10
+  for _ in range(repeats):
+    d, train, test = ready(d0)
+    predict = lambda rs: (
+      sum(disty(train,r) for r in rs)
+      / len(rs) if rs else 0)
+    t_1 = now()
+    ds = build(train)
+    t_2 = now()
+    t_build += t_2 - t_1
+    for r in test:
+      near_rs = neighbors(train, r, ds,
+                  near=near, fast=fast)
+      err += abs(disty(d,r)
+               - predict(near_rs))/len(test)
+    t_apply += now() - t_2
+  return [f"{x/repeats:>7.2f}"
+    for x in [t_build/1e6,t_apply/1e6,err]]
+
 # ---- 0. Utilities ----
 def test_o():
   """Test string formatting of various data types."""
@@ -199,6 +324,12 @@ def test_tree(file:str=egopt1):
   _, d_train, _ = ready(file)
   treeShow(treeGrow(d_train, d_train.rows))
 
+def test_see(file:str=egopt1):
+    """Show tree built from active-learned examples."""
+    _, d_train, _ = ready(file)
+    lab = acquire(d_train)
+    treeShow(treeGrow(d_train, lab.rows))
+
 def test_funny(file:str=egopt1):
   """Test Rung 2: Run test rows down the tree to flag anomalies."""
   d, d_train, test = ready(file)
@@ -283,6 +414,36 @@ def test_acquire3(file:str=egopt1):
   print(the.learn.budget,"budget")
 
 # ---- 9. Search ----
+def last(gen) -> Any:
+  """Final value from generator."""
+  v = None
+  for v in gen: pass
+  return v
+
+def sa(d, oracle, restarts=0,
+       m=0.5, budget=1000):
+  """Simulated annealing."""
+  n = max(1, int(m * len(d.cols.xs)))
+  def accept(e, en, h, b):
+    return en<e or rand()<exp(
+             (e-en)/(1-h/b+1E-32))
+  def mutate(s): yield picks(d, s, n)
+  return oneplus1(d, mutate, accept,
+                  oracle, budget, restarts)
+
+def ls(d, oracle, restarts=100,
+       p=0.5, tries=20, budget=1000):
+  """Local search."""
+  def accept(e, en, *_): return en < e
+  def mutate(s):
+    c = choice(d.cols.xs)
+    for _ in range(tries if rand()<p else 1):
+      s = s[:]
+      s[c.at] = pick(c, s[c.at])
+      yield s
+  return oneplus1(d, mutate, accept,
+                  oracle, budget, restarts)
+
 def test_sa(file:str=egopt1):
   """Demo simulated annealing on sample data."""
   d0 = Data(csv(file))
