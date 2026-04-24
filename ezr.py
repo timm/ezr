@@ -31,17 +31,18 @@ from pathlib import Path
 from random import random as rand
 from random import choices,choice,sample,shuffle
 from math import log, log2, exp, sqrt, pi
-from typing import Any, Iterable, Callable
+from typing import Any
 from types import SimpleNamespace as S
 
 # Naming conventions:
 #   i:self  j:iterator  c:Col  d:Data
-#   ds:Datas  r:row  rs:rows
+#   ds:Datas  r:row  rs:rows  v:value  w:weight
 #   x:independent  y:dependent  t:Tree
+#   n,m:int  s:str  xs,ys:lists
 
 isa = isinstance
 
-# ---- Types ----
+# ---- Types ----
 type Qty   = int | float
 type Atom  = str | bool | Qty
 type Row   = list[Atom]
@@ -52,46 +53,46 @@ type Tree  = Any
 type Datas = list[Data]
 
 # ---- 1. Columns ----
-def Col(txt: str = "", a: int = 0) -> Col:
+def Col(txt="", a=0):
   """Num or Sym column based on name case."""
   return (Num if txt[0].isupper()
           else Sym)(txt, a)
 
 class Num:
   """Summarizes a stream of numbers."""
-  def __init__(i, txt: str="", a: int=0):
+  def __init__(i, txt="", a=0):
     i.txt, i.at, i.n = txt, a, 0
     i.mu, i.m2, i.sd = 0, 0, 0
     i.heaven = txt[-1:] != "-"
 
 class Sym:
   """Summarizes a stream of symbols."""
-  def __init__(i, txt: str="", a: int=0):
+  def __init__(i, txt="", a=0):
     i.txt, i.at, i.n, i.has = txt, a, 0, {}
 
-def mid(c: Col) -> Atom:
+def mid(c):
   """Central tendency (mean or mode)."""
   return c.mu if Num==type(c) else max(
                    c.has, key=c.has.get)
 
-def spread(c: Col) -> float:
+def spread(c):
   """Variability (sd or entropy)."""
   if Num==type(c): return c.sd
   n = sum(c.has.values())
   return -sum(v/n*log2(v/n)
               for v in c.has.values())
 
-def norm(c: Num, v: Qty) -> float:
+def norm(c, v):
   """Normalize via logistic function."""
   if v == "?": return v
   z = (v - c.mu) / (c.sd+1e-32)
   z = max(-3, min(3, z))
   return 1/(1 + exp(-1.7*z))
 
-# ---- 2. Data (Tables) ----
+# ---- 2. Data (Tables) ----
 class Data:
   """Rows + summarized columns."""
-  def __init__(i, src: Iterable = None):
+  def __init__(i, src=None):
     src = iter(src or {})
     i.rows = []
     i.cols = Cols(next(src))
@@ -100,7 +101,7 @@ class Data:
 
 class Cols:
   """Organize Num/Sym columns from headers."""
-  def __init__(i, names: list[str]):
+  def __init__(i, names):
     i.names = names
     i.all = [Col(s,j)
              for j,s in enumerate(names)]
@@ -111,15 +112,15 @@ class Cols:
     i.ys = [c for c in i.all
              if c.txt[-1] in "+-!"]
 
-def clone(d: Data, rs: list=None) -> Data:
+def clone(d, rs=None):
   """Clone structure, optionally add rows."""
   return adds(rs or [], Data([d.cols.names]))
 
-def sub(it: Any, v: Any) -> Any:
+def sub(it, v):
   """Remove value/row (add with w=-1)."""
   return add(it, v, -1)
 
-def add(it, v: Any, w: int = 1) -> Any:
+def add(it, v, w=1):
   """Add value/row to Data,Cols,Num,Sym."""
   if Data is type(it):
     it._centroid = None
@@ -142,39 +143,39 @@ def add(it, v: Any, w: int = 1) -> Any:
                if it.n > 1 else 0)
   return v
 
-def mids(d: Data) -> list[Atom]:
+def mids(d):
   """Centroid of all columns."""
   d._centroid = d._centroid or [
     mid(c) for c in d.cols.all]
   return d._centroid
 
-def adds(src: Iterable, it: Any = None):
+def adds(src, it=None):
   """Add multiple items to target."""
   it = it or Num()
   [add(it, v) for v in (src or [])]
   return it
 
-# ---- 3. Distance ----
-def minkowski(items: Iterable[Qty]) -> float:
+# ---- 3. Distance ----
+def minkowski(items):
   """Minkowski distance (param: the.p)."""
   tot, n = 0, 1e-32
   for item in items:
     tot, n = tot + item**the.p, n + 1
   return (tot/n) ** (1/the.p)
 
-def disty(d: Data, r: Row) -> float:
+def disty(d, r):
   """Distance to heaven on Y vars."""
   return minkowski(
     abs(norm(c,r[c.at]) - c.heaven)
     for c in d.cols.ys)
 
-def distx(d:Data, r1:Row, r2:Row) -> float:
+def distx(d, r1, r2):
   """Distance between rows on X vars."""
   return minkowski(
     aha(c, r1[c.at], r2[c.at])
     for c in d.cols.xs)
 
-def aha(c: Col, u: Any, v: Any) -> float:
+def aha(c, u, v):
   """Distance between two values."""
   if u == v == "?": return 1
   if Sym == type(c): return u != v
@@ -183,13 +184,13 @@ def aha(c: Col, u: Any, v: Any) -> float:
   v = v if v!="?" else (0 if u>0.5 else 1)
   return abs(u - v)
 
-def nearest(d, r, rs=None) -> Row:
+def nearest(d, r, rs=None):
   """Closest row on x-columns."""
   return min(rs or d.rows,
     key=lambda r2: distx(d, r, r2))
 
 # ---- 4. Bayes ----
-def like(c: Col, v: Any, prior) -> float:
+def like(c, v, prior):
   """How much a column likes a value."""
   if type(c) == Sym:
     return (c.has.get(v,0) +
@@ -199,7 +200,7 @@ def like(c: Col, v: Any, prior) -> float:
   return (1/sqrt(2*pi*sd*sd)
           ) * exp(-((v-c.mu)**2)/(2*sd*sd))
 
-def likes(d, r, n_rows, n_klasses) -> float:
+def likes(d, r, n_rows, n_klasses):
   """Log likelihood of row r given data d."""
   prior = (len(d.rows)+the.bayes.m
            ) / (n_rows+the.bayes.m*n_klasses)
@@ -208,7 +209,7 @@ def likes(d, r, n_rows, n_klasses) -> float:
   return log(prior) + sum(log(v)
                           for v in ls if v>0)
 
-def classify(src: Iterable, wait=10) -> dict:
+def classify(src, wait=10):
   """Test then train: classify before update."""
   src = iter(src)
   h,cf,all = {}, Confuse(), Data([next(src)])
@@ -222,34 +223,34 @@ def classify(src: Iterable, wait=10) -> dict:
     add(all, add(h[want], r))
   return cf
 
-def Confuse() -> dict:
+def Confuse():
   """Empty confusion matrix."""
   return {}
 
-def confuse(cf: dict, want, got) -> Any:
+def confuse(cf, want, got):
   """Track a prediction."""
   cf[want] = cf.get(want) or {}
   cf[want][got] = cf[want].get(got, 0) + 1
   return got
 
-# ---- 5. Trees ----
+# ---- 5. Trees ----
 class Tree:
   """Decision tree node."""
-  def __init__(i, d: Data, rs: Rows):
+  def __init__(i, d, rs):
     i.d = clone(d, rs)
     i.ynum = adds(
       (disty(d,r) for r in rs), Num())
     i.col, i.cut = None, 0
     i.left, i.right = None, None
 
-def treeCuts(c: Col, rs: Rows):
+def treeCuts(c, rs):
   """Possible split points for a column."""
   vs = [r[c.at] for r in rs if r[c.at]!="?"]
   if not vs: return []
   return (set(vs) if Sym == type(c)
           else [sorted(vs)[len(vs)//2]])
 
-def treeSplit(d, c, cut, rs) -> tuple:
+def treeSplit(d, c, cut, rs):
   """Evaluate split on column c at cut."""
   l_rs, r_rs = [], []
   l_num, r_num = Num(), Num()
@@ -263,7 +264,7 @@ def treeSplit(d, c, cut, rs) -> tuple:
           r_num.n*spread(r_num),
           c, cut, l_rs, r_rs)
 
-def treeGrow(d: Data, rs: Rows) -> Tree:
+def treeGrow(d, rs):
   """Grow tree to minimize Y-variance."""
   t = Tree(d, rs)
   if len(rs) >= 2 * the.learn.leaf:
@@ -279,7 +280,7 @@ def treeGrow(d: Data, rs: Rows) -> Tree:
       t.right = treeGrow(d, right)
   return t
 
-def treeLeaf(t: Tree, r: Row) -> Tree:
+def treeLeaf(t, r):
   """Find leaf node for row."""
   if not t.left: return t
   v = r[t.col.at]
@@ -302,7 +303,7 @@ def treeNodes(t,lvl=0,col=None,op="",cut=None):
       if k: yield from treeNodes(
               k, lvl+1, t.col, s, t.cut)
 
-def treeShow(t: Tree) -> None:
+def treeShow(t):
   """Print tree structure."""
   for t1,lvl,col,op,cut in treeNodes(t):
     p = f"{col.txt} {op} {o(cut)}" \
@@ -313,7 +314,7 @@ def treeShow(t: Tree) -> None:
           f",{o(mid(t1.ynum)):>4}"
           f" ,({t1.ynum.n:3}), {o(g)}")
 
-def treePlan(t: Tree, here: Tree):
+def treePlan(t, here):
   """Plans to improve from current leaf."""
   eps = the.stats.eps * spread(t.ynum)
   for there, _, _, _, _ in treeNodes(t):
@@ -328,7 +329,7 @@ def treePlan(t: Tree, here: Tree):
       if diff:
         yield dy, mid(there.ynum), diff
 
-# ---- 6. Active learning ----
+# ---- 6. Active learning ----
 def acquireWithBayes(d, best, rest, r):
   """Score: rest - best likelihood."""
   n = len(best.rows) + len(rest.rows)
@@ -375,8 +376,8 @@ def acquire(d, score=acquireWithCentroid,
   lab.rows.sort(key=lambda r: disty(lab, r))
   return lab
 
-# ---- 7. 1+1 optimization ----
-def picks(d, r, n=1) -> Row:
+# ---- 7. 1+1 optimization ----
+def picks(d, r, n=1):
   """Mutate n random x-columns."""
   s = r[:]
   for c in sample(d.cols.xs,
@@ -403,14 +404,14 @@ def oneplus1(d, mutate, accept, oracle,
         e, imp = 1E32, h
         break
 
-def oracleNearest(d, r) -> float:
+def oracleNearest(d, r):
   """Score: copy y-vals from nearest."""
   near = nearest(d, r)
   for c in d.cols.ys: r[c.at] = near[c.at]
   return disty(d, r)
 
 # ---- 8. Stats ----
-def same(xs:list, ys:list, eps:float) -> bool:
+def same(xs, ys, eps):
   """Are two lists statistically same?"""
   xs, ys = sorted(xs), sorted(ys)
   n, m = len(xs), len(ys)
@@ -426,7 +427,7 @@ def same(xs:list, ys:list, eps:float) -> bool:
   return max(max(map(ks,xs)),max(map(ks,ys))
     ) <= the.stats.conf * ((n+m)/(n*m))**.5
 
-def bestRanks(d: dict) -> dict:
+def bestRanks(d):
   """Group treatments tied for best."""
   items = sorted(d.items(), key=lambda kv:
     sorted(kv[1])[len(kv[1])//2])
@@ -439,8 +440,8 @@ def bestRanks(d: dict) -> dict:
     else: break
   return best
 
-# ---- 9. Utilities ----
-def o(x: Any) -> str:
+# ---- 9. Utilities ----
+def o(x):
   """Recursive format. Sorts dicts."""
   if isa(x,float):
     return f"{x:.{the.show.decimals}f}"
@@ -454,7 +455,7 @@ def o(x: Any) -> str:
     return x.__class__.__name__+o(x.__dict__)
   return str(x)
 
-def table(lst: list, w: int = 10) -> None:
+def table(lst, w=10):
   """Print list of dicts as aligned table."""
   if not lst: return
   ds = [x if type(x) is dict
@@ -466,7 +467,7 @@ def table(lst: list, w: int = 10) -> None:
     print("".join(
        f"{str(d.get(k,'')):>{w}}" for k in ks))
 
-def thing(txt: str) -> Atom:
+def thing(txt):
   """Coerce string to number or bool."""
   txt = txt.strip()
   b = lambda s: {"true":1,"false":0}.get(
@@ -475,15 +476,14 @@ def thing(txt: str) -> Atom:
     try: return f(txt)
     except ValueError: pass
 
-def nest(t: Any, k: str, v: Any) -> None:
+def nest(t, k, v):
   """Set value in nested namespace."""
   for x in (ks := k.split("."))[:-1]:
     t = t.__dict__.setdefault(x, S())
   setattr(t, ks[-1], v)
 
-def csv(f: str, clean: Callable = lambda s:
-          s.partition("#")[0].split(",")
-        ) -> Iterable:
+def csv(f, clean=lambda s:
+          s.partition("#")[0].split(",")):
   """Yield typed rows from a CSV file."""
   with open(f, encoding="utf-8") as file:
     for s in file:
@@ -491,7 +491,7 @@ def csv(f: str, clean: Callable = lambda s:
       if any(x.strip() for x in r):
         yield [thing(x) for x in r]
 
-def pick(it: Any, v: Any = None) -> Any:
+def pick(it, v=None):
   """Sample from distribution."""
   if Sym == type(it): return pick(it.has)
   if Num == type(it):
