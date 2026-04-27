@@ -125,8 +125,7 @@ def add(it, v, w=1):
   if Data is type(it):
     it._centroid = None
     add(it.cols, v, w)
-    (it.rows.append if w > 0
-     else it.rows.remove)(v)
+    (it.rows.append if w > 0 else it.rows.remove)(v)
   elif Cols is type(it):
     [add(c, v[c.at], w) for c in it.all]
   elif v != "?":
@@ -354,11 +353,9 @@ def warm_start(d, rows, label):
 def rebalance(best, rest, lab):
   """Cap best at sqrt(|lab|); evict worst."""
   if len(best.rows) > sqrt(len(lab.rows)):
-    best.rows.sort(
-      key=lambda r: disty(lab, r))
-    add(rest.cols, sub(best.cols,
-          (r := best.rows.pop())))
-    rest.rows.append(r)
+    best.rows.sort(key=lambda r: disty(lab, r))
+    add(rest.cols, sub(best.cols, best.rows[-1]))
+    rest.rows.append(best.rows.pop())
 
 def acquire(d, score=acquireWithCentroid,
             label=lambda _,r:r):
