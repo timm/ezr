@@ -47,7 +47,7 @@ def generate_heatmap(df, value_col, out_path):
 
     X_grid, Y_grid = np.meshgrid(np.arange(blurred_data.shape[1]) + 0.5,
                                  np.arange(blurred_data.shape[0]) + 0.5)
-    contours = ax.contour(X_grid, Y_grid, blurred_data, levels=[60, 70, 80, 90],
+    contours = ax.contour(X_grid, Y_grid, blurred_data, levels=[60, 75, 85, 95],
                           colors='black', alpha=0.9, linewidths=1.5)
     ax.clabel(contours, inline=True, fontsize=11, fmt='%1.0f', colors='black')
 
