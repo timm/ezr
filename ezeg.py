@@ -51,11 +51,16 @@ egopt1=  Path.home() / "gits/moot/optimize/misc/auto93.csv"
 
 # ---- Evaluation helpers ----
 def wins(d: Data) -> Callable:
-  """Score rows by distance to heaven."""
+  """Score rows by distance to heaven.
+  Clamp d2h within lo+0.35*sd to lo (statistically = reference optimal)."""
   ds = [disty(d, r) for r in d.rows]
   lo, med = min(ds), sorted(ds)[len(ds)//2]
-  return lambda r: int(100*(1 - (disty(d,r)-lo
-                     ) / (med-lo + 1e-32)))
+  thresh = lo + 0.35 * spread(adds(ds, Num()))
+  def f(r):
+    x = disty(d, r)
+    if x < thresh: x = lo
+    return int(100*(1 - (x-lo)/(med-lo + 1e-32)))
+  return f
 
 def ready(file: Any) -> tuple:
   """Shuffle, split data into train/test."""
@@ -351,18 +356,20 @@ def test_plan(file:str=egopt1):
     print(f"  {o(score):>6} (dy={o(dy)}) if {', '.join(diff)}")
 
 def test_acquire(file:str=egopt1):
-  """Run full train/predict/score pipeline to optimize metrics."""
+  """Run full train/predict/score pipeline to optimize metrics.
+  win1: same procedure on labelled (top-check by d2h, then best by d2h).
+  win2: top-check by tree prediction on test, then best by actual d2h."""
   d0 = Data(csv(file))
-  train_w, test_w, win = Num(), Num(), wins(d0)
+  w1, w2, win = Num(), Num(), wins(d0)
   for _ in range(20):
     d, d_train, test_rows = ready(d0)
     lab = acquire(d_train)
     t = treeGrow(d_train, lab.rows)
     guess = sorted(test_rows, key=lambda r: mid(treeLeaf(t, r).ynum))
-    add(test_w,  win(min(guess[:the.learn.check], key=lambda r: disty(d_train, r))))
-    add(train_w, win(min(lab.rows,                key=lambda r: disty(d_train, r))))
-  print(f":train_wins_mu {int(mid(train_w))} :train_wins_sd {int(spread(train_w))} "
-        f":test_wins_mu {int(mid(test_w))} :test_wins_sd {int(spread(test_w))}")
+    add(w1, win(min(lab.rows[:the.learn.check], key=lambda r: disty(d_train, r))))
+    add(w2, win(min(guess[:the.learn.check],    key=lambda r: disty(d_train, r))))
+  print(f":budget {the.learn.budget} :check {the.learn.check} "
+        f":train {int(mid(w1))} :test {int(mid(w2))}")
 
 # ---- 7. Clustering ----
 def test_cluster(file:str=egopt1):

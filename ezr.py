@@ -31,7 +31,7 @@ from pathlib import Path
 from random import random as rand
 from random import choices,choice,sample,shuffle
 from math import log, log2, exp, sqrt, pi
-from typing import Any
+from typing import Any,Iterable,Callable
 from types import SimpleNamespace as S
 
 # Naming conventions:

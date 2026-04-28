@@ -1,22 +1,18 @@
 #!/usr/bin/env bash
 # Usage: ./etc/runs.sh [N] [JOBS]
-# Random acquire runs. Parallel via temp files.
+# Saturated parallel pool: keeps JOBS workers busy via `wait -n`.
 
 FILES=($(find "$HOME/gits/moot/optimize" -name "*.csv" -type f))
-N=${#FILES[@]}
-TMP=$(mktemp -d)
-echo "$TMP" >&2
-trap "cat $TMP/*; rm -rf $TMP" EXIT
+NF=${#FILES[@]}
+JOBS=${2:-10}
 
-for i in $(seq 1 ${1:-10000}); do
-  F=${FILES[$(( RANDOM % N ))]}
+for i in $(seq 1 ${1:-100000}); do
+  while (( $(jobs -rp | wc -l) >= JOBS )); do wait -n; done
+  F=${FILES[$(( RANDOM % NF ))]}
   B=$(( RANDOM % 141 + 10 ))
   C=$(( RANDOM % 10 + 1 ))
-  ( printf ":budget %d :check %d " "$B" "$C"
-    python3 -B ezeg.py --learn.budget $B --learn.check $C --acquire "$F" | tr -d '\n'
-    printf " :file %s\n" "$(basename "$F")"
-  ) > "$TMP/$(printf '%05d' $i)" &
-  (( i % ${2:-10} == 0 )) && wait
+  ( out=$(python3 -B ezeg.py --learn.budget $B --learn.check $C --acquire "$F" | tr -d '\n')
+    printf '%s :file %s\n' "$out" "$(basename "$F")"
+  ) &
 done
 wait
-# /var/folders/78/8f0j3pln705clvktr3m1w8jc0000gp/T/tmp.01hwI6sdlJ

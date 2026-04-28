@@ -64,8 +64,9 @@ CSVS = ls -r $(HOME)/gits/moot/optimize/*/*.csv | xargs -P 24 -I{} sh -c
 	@$(CSVS) 'python3 -B ezeg.py --acquire "{}"' | tee $@
 	@sort -n $@ | cut -d, -f 1 | fmt -78
 
-~/tmp/runs.log: ## run random test loop
-	bash $(ETC)/runs.sh >> $@
+runs: ## run random test loop
+	@mkdir -p ~/tmp
+	bash $(ETC)/runs.sh | tee ~/tmp/runs.log
 
 Html := $(GIT_ROOT)/docs
 
