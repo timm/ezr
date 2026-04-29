@@ -40,7 +40,8 @@ def generate_heatmap(df, value_col, out_path):
     x_labels = [int(col) if int(col) % 2 == 0 else '' for col in blurred_df.columns]
     y_labels = [int(idx) if int(idx) % 10 == 0 else '' for idx in blurred_df.index]
     ax = sns.heatmap(blurred_df, cmap='viridis', annot=False,
-                     xticklabels=x_labels, yticklabels=y_labels)
+                     xticklabels=x_labels, yticklabels=y_labels,
+                     vmin=0, vmax=100)
     cbar = ax.collections[0].colorbar
     cbar.ax.tick_params(labelsize=10)
     cbar.set_label(value_col.capitalize(), size=12, weight='bold')
