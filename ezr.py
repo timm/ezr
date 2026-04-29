@@ -35,10 +35,10 @@ from typing import Any,Iterable,Callable
 from types import SimpleNamespace as S
 
 # Naming conventions:
-#   i:self  j:iterator  c:Col  d:Data
-#   ds:Datas  r:row  rs:rows  v:value  w:weight
-#   x:independent  y:dependent  t:Tree
-#   n,m:int  s:str  xs,ys:lists
+#   i:self  j:iterator  col:Col  data:Data
+#   datas:Datas  row:row  rs:rows  v:value  w:weight
+#   x:independent  y:dependent  tree:Tree
+#   n,m:int  txt:str  xs,ys:lists
 
 isa = isinstance
 
@@ -70,22 +70,22 @@ class Sym:
   def __init__(i, txt="", a=0):
     i.txt, i.at, i.n, i.has = txt, a, 0, {}
 
-def mid(c):
+def mid(col):
   """Central tendency (mean or mode)."""
-  return c.mu if Num==type(c) else max(
-                   c.has, key=c.has.get)
+  return col.mu if Num==type(col) else max(
+                   col.has, key=col.has.get)
 
-def spread(c):
+def spread(col):
   """Variability (sd or entropy)."""
-  if Num==type(c): return c.sd
-  n = sum(c.has.values())
+  if Num==type(col): return col.sd
+  n = sum(col.has.values())
   return -sum(v/n*log2(v/n)
-              for v in c.has.values())
+              for v in col.has.values())
 
-def norm(c, v):
+def norm(num, v):
   """Normalize via logistic function."""
   if v == "?": return v
-  z = (v - c.mu) / (c.sd+1e-32)
+  z = (v - num.mu) / (num.sd+1e-32)
   z = max(-3, min(3, z))
   return 1/(1 + exp(-1.7*z))
 
@@ -103,18 +103,18 @@ class Cols:
   """Organize Num/Sym columns from headers."""
   def __init__(i, names):
     i.names = names
-    i.all = [Col(s,j)
-             for j,s in enumerate(names)]
-    i.klass = next((c for c in i.all
-                     if c.txt[-1]=="!"), None)
-    i.xs = [c for c in i.all
-             if c.txt[-1] not in "+-!X"]
-    i.ys = [c for c in i.all
-             if c.txt[-1] in "+-!"]
+    i.all = [Col(txt,j)
+             for j,txt in enumerate(names)]
+    i.klass = next((col for col in i.all
+                     if col.txt[-1]=="!"), None)
+    i.xs = [col for col in i.all
+             if col.txt[-1] not in "+-!X"]
+    i.ys = [col for col in i.all
+             if col.txt[-1] in "+-!"]
 
-def clone(d, rs=None):
+def clone(data, rows=None):
   """Clone structure, optionally add rows."""
-  return adds(rs or [], Data([d.cols.names]))
+  return adds(rows or [], Data([data.cols.names]))
 
 def sub(it, v):
   """Remove value/row (add with w=-1)."""
@@ -127,7 +127,7 @@ def add(it, v, w=1):
     add(it.cols, v, w)
     (it.rows.append if w > 0 else it.rows.remove)(v)
   elif Cols is type(it):
-    [add(c, v[c.at], w) for c in it.all]
+    [add(col, v[col.at], w) for col in it.all]
   elif v != "?":
     if Sym == type(it):
       it.has[v] = w + it.has.get(v, 0)
@@ -142,11 +142,11 @@ def add(it, v, w=1):
                if it.n > 1 else 0)
   return v
 
-def mids(d):
+def mids(data):
   """Centroid of all columns."""
-  d._centroid = d._centroid or [
-    mid(c) for c in d.cols.all]
-  return d._centroid
+  data._centroid = data._centroid or [
+    mid(col) for col in data.cols.all]
+  return data._centroid
 
 def adds(src, it=None):
   """Add multiple items to target."""
@@ -162,231 +162,232 @@ def minkowski(items):
     tot, n = tot + item**the.p, n + 1
   return (tot/n) ** (1/the.p)
 
-def disty(d, r):
+def disty(data, row):
   """Distance to heaven on Y vars."""
   return minkowski(
-    abs(norm(c,r[c.at]) - c.heaven)
-    for c in d.cols.ys)
+    abs(norm(col,row[col.at]) - col.heaven)
+    for col in data.cols.ys)
 
-def distx(d, r1, r2):
+def distx(data, r1, r2):
   """Distance between rows on X vars."""
   return minkowski(
-    aha(c, r1[c.at], r2[c.at])
-    for c in d.cols.xs)
+    aha(col, r1[col.at], r2[col.at])
+    for col in data.cols.xs)
 
-def aha(c, u, v):
+def aha(col, u, v):
   """Distance between two values."""
   if u == v == "?": return 1
-  if Sym == type(c): return u != v
-  u, v = norm(c, u), norm(c, v)
+  if Sym == type(col): return u != v
+  u, v = norm(col, u), norm(col, v)
   u = u if u!="?" else (0 if v>0.5 else 1)
   v = v if v!="?" else (0 if u>0.5 else 1)
   return abs(u - v)
 
-def nearest(d, r, rs=None):
+def nearest(data, row, rows=None):
   """Closest row on x-columns."""
-  return min(rs or d.rows,
-    key=lambda r2: distx(d, r, r2))
+  return min(rows or data.rows,
+    key=lambda r2: distx(data, row, r2))
 
 # ---- 4. Bayes ----
-def like(c, v, prior):
+def like(col, v, prior):
   """How much a column likes a value."""
-  if type(c) == Sym:
-    return (c.has.get(v,0) +
+  if type(col) == Sym:
+    return (col.has.get(v,0) +
             the.bayes.k*prior
-            ) / (c.n + the.bayes.k)
-  sd = c.sd + 1e-32
+            ) / (col.n + the.bayes.k)
+  sd = col.sd + 1e-32
   return (1/sqrt(2*pi*sd*sd)
-          ) * exp(-((v-c.mu)**2)/(2*sd*sd))
+          ) * exp(-((v-col.mu)**2)/(2*sd*sd))
 
-def likes(d, r, n_rows, n_klasses):
-  """Log likelihood of row r given data d."""
-  prior = (len(d.rows)+the.bayes.m
+def likes(data, row, n_rows, n_klasses):
+  """Log likelihood of row given data."""
+  prior = (len(data.rows)+the.bayes.m
            ) / (n_rows+the.bayes.m*n_klasses)
-  ls = [like(c,v,prior) for c in d.cols.xs
-        if (v:=r[c.at])!="?"]
+  ls = [like(col,v,prior) for col in data.cols.xs
+        if (v:=row[col.at])!="?"]
   return log(prior) + sum(log(v)
                           for v in ls if v>0)
 
 def classify(src, wait=10):
   """Test then train: classify before update."""
   src = iter(src)
-  h,cf,all = {}, Confuse(), Data([next(src)])
-  for n, r in enumerate(src):
-    want = r[all.cols.klass.at]
+  h,cf,all = {}, None, Data([next(src)])
+  for n, row in enumerate(src):
+    want = row[all.cols.klass.at]
     if n >= wait:
-      confuse(cf, want, max(h,
+      cf = dinc(want, max(h,
         key=lambda kl: likes(
-          h[kl],r,len(all.rows),len(h))))
+          h[kl],row,len(all.rows),len(h))),cf)
     if want not in h: h[want] = clone(all)
-    add(all, add(h[want], r))
+    add(all, add(h[want], row))
   return cf
-
-def Confuse():
-  """Empty confusion matrix."""
-  return {}
-
-def confuse(cf, want, got):
-  """Track a prediction."""
-  cf[want] = cf.get(want) or {}
-  cf[want][got] = cf[want].get(got, 0) + 1
-  return got
 
 # ---- 5. Trees ----
 class Tree:
   """Decision tree node."""
-  def __init__(i, d, rs):
-    i.d = clone(d, rs)
+  def __init__(i, data, rows):
+    i.d = clone(data, rows)
     i.ynum = adds(
-      (disty(d,r) for r in rs), Num())
+      (disty(data,row) for row in rows), Num())
     i.col, i.cut = None, 0
     i.left, i.right = None, None
 
-def treeCuts(c, rs):
+def treeCuts(col, rows):
   """Possible split points for a column."""
-  vs = [r[c.at] for r in rs if r[c.at]!="?"]
+  vs = [row[col.at] for row in rows
+        if row[col.at]!="?"]
   if not vs: return []
-  return (set(vs) if Sym == type(c)
+  return (set(vs) if Sym == type(col)
           else [sorted(vs)[len(vs)//2]])
 
-def treeSplit(d, c, cut, rs):
-  """Evaluate split on column c at cut."""
-  l_rs, r_rs = [], []
+def treeSplit(data, col, cut, rows):
+  """Evaluate split on col at cut."""
+  l_rows, r_rows = [], []
   l_num, r_num = Num(), Num()
-  for r in rs:
-    v = r[c.at]
-    go = v=="?" or (v==cut if Sym==type(c)
+  for row in rows:
+    v = row[col.at]
+    go = v=="?" or (v==cut if Sym==type(col)
                     else v <= cut)
-    (l_rs if go else r_rs).append(r)
-    add(l_num if go else r_num, disty(d,r))
+    (l_rows if go else r_rows).append(row)
+    add(l_num if go else r_num,
+        disty(data,row))
   return (l_num.n*spread(l_num) +
           r_num.n*spread(r_num),
-          c, cut, l_rs, r_rs)
+          col, cut, l_rows, r_rows)
 
-def treeGrow(d, rs):
+def treeGrow(data, rows):
   """Grow tree to minimize Y-variance."""
-  t = Tree(d, rs)
-  if len(rs) >= 2 * the.learn.leaf:
-    splits = (treeSplit(d, c, cut, rs)
-              for c in t.d.cols.xs
-              for cut in treeCuts(c, rs))
+  tree = Tree(data, rows)
+  if len(rows) >= 2 * the.learn.leaf:
+    splits = (treeSplit(data, col, cut, rows)
+              for col in tree.d.cols.xs
+              for cut in treeCuts(col, rows))
     if valid := [s for s in splits
         if min(len(s[3]),len(s[4]))
            >= the.learn.leaf]:
-      _, t.col, t.cut, left, right = min(
+      _, tree.col, tree.cut, left, right = min(
         valid, key=lambda x: x[0])
-      t.left  = treeGrow(d, left)
-      t.right = treeGrow(d, right)
-  return t
+      tree.left  = treeGrow(data, left)
+      tree.right = treeGrow(data, right)
+  return tree
 
-def treeLeaf(t, r):
+def treeLeaf(tree, row):
   """Find leaf node for row."""
-  if not t.left: return t
-  v = r[t.col.at]
-  go = ((v!="?" and v<=t.cut)
-        if Num == type(t.col)
-        else (v!="?" and v==t.cut))
+  if not tree.left: return tree
+  v = row[tree.col.at]
+  go = ((v!="?" and v<=tree.cut)
+        if Num == type(tree.col)
+        else (v!="?" and v==tree.cut))
   return treeLeaf(
-    t.left if go else t.right, r)
+    tree.left if go else tree.right, row)
 
-def treeNodes(t,lvl=0,col=None,op="",cut=None):
+def treeNodes(tree,lvl=0,col=None,
+              op="",cut=None):
   """Yield all nodes (depth-first)."""
-  yield t, lvl, col, op, cut
-  if t.col:
-    ops = (("<=",">") if Num == type(t.col)
+  yield tree, lvl, col, op, cut
+  if tree.col:
+    ops = (("<=",">")
+           if Num == type(tree.col)
            else ("==","!="))
     kids = sorted(
-      [(t.left,ops[0]), (t.right,ops[1])],
+      [(tree.left,ops[0]),
+       (tree.right,ops[1])],
       key=lambda z: mid(z[0].ynum))
-    for k, s in kids:
+    for k, txt in kids:
       if k: yield from treeNodes(
-              k, lvl+1, t.col, s, t.cut)
+              k, lvl+1, tree.col,
+              txt, tree.cut)
 
-def treeShow(t):
+def treeShow(tree):
   """Print tree structure."""
-  for t1,lvl,col,op,cut in treeNodes(t):
+  for t1,lvl,col,op,cut in treeNodes(tree):
     p = f"{col.txt} {op} {o(cut)}" \
         if col else ""
     if lvl > 0: p = "|   "*(lvl-1) + p
-    g = {c.txt:mid(c) for c in t1.d.cols.ys}
+    g = {col.txt:mid(col)
+         for col in t1.d.cols.ys}
     print(f"{p:<{the.show.show}}"
           f",{o(mid(t1.ynum)):>4}"
           f" ,({t1.ynum.n:3}), {o(g)}")
 
-def treePlan(t, here):
+def treePlan(tree, here):
   """Plans to improve from current leaf."""
-  eps = the.stats.eps * spread(t.ynum)
-  for there, _, _, _, _ in treeNodes(t):
+  eps = the.stats.eps * spread(tree.ynum)
+  for there, _, _, _, _ in treeNodes(tree):
     if there.col is None and \
        (dy := mid(here.ynum) -
               mid(there.ynum)) > eps:
-      diff = [f"{c.txt}={o(mid(c))}"
-              for c,h in zip(
+      diff = [f"{col.txt}={o(mid(col))}"
+              for col,h in zip(
                 there.d.cols.xs,
                 here.d.cols.xs)
-              if mid(c) != mid(h)]
+              if mid(col) != mid(h)]
       if diff:
         yield dy, mid(there.ynum), diff
 
 # ---- 6. Active learning ----
-def acquireWithBayes(d, best, rest, r):
+def acquireWithBayes(data, best, rest, row):
   """Score: rest - best likelihood."""
   n = len(best.rows) + len(rest.rows)
-  return (likes(rest, r, n, 2) -
-          likes(best, r, n, 2))
+  return (likes(rest, row, n, 2) -
+          likes(best, row, n, 2))
 
-def acquireWithCentroid(d, best, rest, r):
+def acquireWithCentroid(data, best, rest, row):
   """Score: dist(best) - dist(rest)."""
-  return (distx(d, r, mids(best)) -
-          distx(d, r, mids(rest)))
+  return (distx(data, row, mids(best)) -
+          distx(data, row, mids(rest)))
 
-def warm_start(d, rows, label):
+def warm_start(data, rows, label):
   """Init lab/best/rest from start rows."""
-  lab = clone(d, rows[:the.learn.start])
-  lab.rows.sort(key=lambda r:
-    disty(lab, label(d, r)))
+  lab = clone(data, rows[:the.learn.start])
+  lab.rows.sort(key=lambda row:
+    disty(lab, label(data, row)))
   n = int(sqrt(len(lab.rows)))
-  return (lab, clone(d, lab.rows[:n]),
-          clone(d, lab.rows[n:]),
+  return (lab, clone(data, lab.rows[:n]),
+          clone(data, lab.rows[n:]),
           rows[the.learn.start:])
 
 def rebalance(best, rest, lab):
   """Cap best at sqrt(|lab|); evict worst."""
   if len(best.rows) > sqrt(len(lab.rows)):
-    best.rows.sort(key=lambda r: disty(lab, r))
-    add(rest.cols, sub(best.cols, best.rows[-1]))
+    best.rows.sort(
+      key=lambda row: disty(lab, row))
+    add(rest.cols, sub(best.cols,
+                       best.rows[-1]))
     rest.rows.append(best.rows.pop())
 
-def acquire(d, score=acquireWithCentroid,
-            label=lambda _,r:r):
+def acquire(data, score=acquireWithCentroid,
+            label=lambda _,row:row):
   """Active learning. Returns labeled Data."""
-  rows = d.rows[:]
+  rows = data.rows[:]
   shuffle(rows)
   lab, best, rest, unlab = warm_start(
-    d, rows[:the.few], label)
+    data, rows[:the.few], label)
   for _ in range(the.learn.budget):
     if not unlab: break
     pick, *unlab = sorted(unlab,
-      key=lambda r:score(lab,best,rest,r))
-    add(lab, add(best, label(d, pick)))
+      key=lambda row:
+        score(lab,best,rest,row))
+    add(lab, add(best, label(data, pick)))
     rebalance(best, rest, lab)
-  lab.rows.sort(key=lambda r: disty(lab, r))
+  lab.rows.sort(
+    key=lambda row: disty(lab, row))
   return lab
 
 # ---- 7. 1+1 optimization ----
-def picks(d, r, n=1):
+def picks(data, row, n=1):
   """Mutate n random x-columns."""
-  s = r[:]
-  for c in sample(d.cols.xs,
-                  min(n, len(d.cols.xs))):
-    s[c.at] = pick(c, s[c.at])
+  s = row[:]
+  for col in sample(data.cols.xs,
+                    min(n, len(data.cols.xs))):
+    s[col.at] = pick(col, s[col.at])
   return s
 
-def oneplus1(d, mutate, accept, oracle,
+def oneplus1(data, mutate, accept, oracle,
              budget=1000, restart=0):
   """(1+1) search: mutate, score, accept."""
   h, best, best_e = 0, None, 1E32
-  s, e, imp = choice(d.rows)[:], 1E32, 0
+  s, e, imp = choice(data.rows)[:], 1E32, 0
   while h < budget:
     for sn in mutate(s):
       h += 1
@@ -397,15 +398,16 @@ def oneplus1(d, mutate, accept, oracle,
         best, best_e, imp = sn[:], en, h
         yield h, best_e, best
       if restart and h - imp > restart:
-        s = choice(d.rows)[:]
+        s = choice(data.rows)[:]
         e, imp = 1E32, h
         break
 
-def oracleNearest(d, r):
+def oracleNearest(data, row):
   """Score: copy y-vals from nearest."""
-  near = nearest(d, r)
-  for c in d.cols.ys: r[c.at] = near[c.at]
-  return disty(d, r)
+  near = nearest(data, row)
+  for col in data.cols.ys:
+    row[col.at] = near[col.at]
+  return disty(data, row)
 
 # ---- 8. Stats ----
 def same(xs, ys, eps):
@@ -438,25 +440,32 @@ def bestRanks(d):
   return best
 
 # ---- 9. Utilities ----
+def dinc(k1, k2, b4=None):
+  """Increment nested dict counter."""
+  b4 = b4 or {}
+  b4[k1] = b4.get(k1) or {}
+  b4[k1][k2] = b4[k1].get(k2, 0) + 1
+  return b4
+
 def o(x):
   """Recursive format. Sorts dicts."""
-  if isa(x,float):
-    return f"{x:.{the.show.decimals}f}"
-  if isa(x,dict):
-    return "{"+", ".join(f"{k}={o(v)}"
-      for k,v in sorted(x.items()))+"}"
-  if isa(x,list):
-    return "{"+", ".join(map(o, x))+"}"
-  if isa(x, S): return "S" + o(x.__dict__)
+  if isa(x,float): 
+      return f"{x:.{the.show.decimals}f}"
+  if isa(x,dict): 
+      return "{"+", ".join(f"{k}={o(v)}"
+                   for k,v in sorted(x.items()))+"}"
+  if isa(x,list): 
+      return "{"+", ".join(map(o, x))+"}"
+  if isa(x, S): 
+      return "S" + o(x.__dict__)
   if hasattr(x, "__dict__"):
-    return x.__class__.__name__+o(x.__dict__)
+       return x.__class__.__name__+o(x.__dict__)
   return str(x)
 
 def table(lst, w=10):
   """Print list of dicts as aligned table."""
   if not lst: return
-  ds = [x if type(x) is dict
-        else x.__dict__ for x in lst]
+  ds = [x if type(x) is dict else x.__dict__ for x in lst]
   ks = list(ds[0].keys())
   print("".join(f"{str(k):>{w}}" for k in ks))
   print("-" * (len(ks) * w))
@@ -479,14 +488,14 @@ def nest(t, k, v):
     t = t.__dict__.setdefault(x, S())
   setattr(t, ks[-1], v)
 
-def csv(f, clean=lambda s:
-          s.partition("#")[0].split(",")):
+def csv(f, clean=lambda txt:
+          txt.partition("#")[0].split(",")):
   """Yield typed rows from a CSV file."""
   with open(f, encoding="utf-8") as file:
-    for s in file:
-      r = clean(s)
-      if any(x.strip() for x in r):
-        yield [thing(x) for x in r]
+    for txt in file:
+      row = clean(txt)
+      if any(x.strip() for x in row):
+        yield [thing(x) for x in row]
 
 def pick(it, v=None):
   """Sample from distribution."""
