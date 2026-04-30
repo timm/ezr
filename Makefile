@@ -48,7 +48,7 @@ lint: $f.py ## Lint python file x.py using `make lint f=x`
 ~/tmp/%.pdf: %.py $(MAKEFILE_LIST) ## .py ==> .pdf
 	@mkdir -p ~/tmp
 	@echo "pdf-ing $@ ... "
-	@a2ps -Br --quiet --landscape --lines-per-page=80 --line-numbers=1  \
+	@a2ps -Br --quiet --landscape --chars-per-line=60 --line-numbers=1  \
 	          --borders=no --pro=color --columns=3 -M letter -o - $< \
 						| ps2pdf - $@
 	@open $@
