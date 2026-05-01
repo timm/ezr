@@ -50,18 +50,6 @@ egclass2=Path.home() / "gits/moot/classify/diabetes.csv"
 egopt1=  Path.home() / "gits/moot/optimize/misc/auto93.csv"
 
 # ---- Evaluation helpers ----
-def wins(d: Data) -> Callable:
-  """Score rows by distance to heaven.
-  Clamp d2h within lo+0.35*sd to lo (statistically = reference optimal)."""
-  ds = [disty(d, r) for r in d.rows]
-  lo, med = min(ds), sorted(ds)[len(ds)//2]
-  thresh = lo + 0.35 * spread(adds(ds, Num()))
-  def f(r):
-    x = disty(d, r)
-    if x < thresh: x = lo
-    return int(100*(1 - (x-lo)/(med-lo + 1e-32)))
-  return f
-
 def ready(file: Any) -> tuple:
   """Shuffle, split data into train/test."""
   d = (file if Data==type(file)

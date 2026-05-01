@@ -33,8 +33,8 @@ ok: $(HOME)/gits/moot ## set up baseline
 	@-chmod +x $(GIT_ROOT)/*.py
 
 $(HOME)/gits/moot: ## get the data
-	mkdir -p $(dir $@)
-	[ -d $@/.git ] || git clone http://tiny.cc/moot $@
+	@mkdir -p $(dir $@)
+	@[ -d $@/.git ] || git clone http://tiny.cc/moot $@
 
 push: ## save to cloud
 	@read -p "Reason? " msg; git commit -am "$$msg"; git push; git status
@@ -57,12 +57,12 @@ stats: ## generate stats
 	@bash $(ETC)/stats.sh $(HOME)/gits/moot/optimize
 
 # Test runner targets
-CSVS = ls -r $(HOME)/gits/moot/optimize/*/*.csv | xargs -P 24 -I{} sh -c
+CSVS = ls $(HOME)/gits/moot/optimize/*/*.csv | sort -R | xargs -P 24 -I{} sh -c
 
 ~/tmp/ezr_acq.log: ok ## run ez_acq tests
 	@mkdir -p ~/tmp
 	@$(CSVS) 'python3 -B ezeg.py --acquire "{}"' | tee $@
-	@sort -n $@ | cut -d, -f 1 | fmt -78
+	@cut -d \  -f 8 $@ |sort -n  |  fmt -71
 
 runs: ## run random test loop
 	@mkdir -p ~/tmp

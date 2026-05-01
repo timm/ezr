@@ -124,27 +124,28 @@ def clone(data, rows=None):
 
 def sub(it, v):
   """Remove value/row (add with w=-1)."""
-  return add(it, v, -1)
+  return add(it, v, w=-1)
 
 def add(it, v, w=1):
   """Add value/row to Data,Cols,Num,Sym."""
   if Data is type(it):
-    it._centroid=None; add(it.cols,v,w)
+    it._centroid=None
+    add(it.cols,v,w)
     if w>0: it.rows.append(v)
     else  : it.rows.remove(v)
   elif Cols is type(it):
     [add(col, v[col.at], w) for col in it.all]
-  elif v != "?":
+  elif v != "?":  # skip "don't know" values
     if Sym == type(it):
       it.has[v] = w + it.has.get(v, 0)
     elif w < 0 and it.n <= 2:
       it.n=it.mu=it.m2=it.sd=0
     else:
-      it.n += w
-      delta = v - it.mu
+      it.n  += w
+      delta  = v - it.mu
       it.mu += w * delta / it.n
       it.m2 += w * delta * (v - it.mu)
-      it.sd=(max(0,it.m2)/(it.n-1))**.5 if it.n>1 else 0
+      it.sd  = sqrt(max(0,it.m2)/(it.n-1)) if it.n>1 else 0
   return v
 
 def mids(data):
@@ -163,23 +164,21 @@ def adds(src, it=None):
 #  | \  o   _  _|_   _.  ._    _   _
 #  |_/  |  _>   |_  (_|  | |  (_  (/_
 
-def minkowski(items):
-  """Minkowski distance (param: the.p)."""
+def minkowski(items, p=2):
+  """Minkowski distance."""
   tot, n = 0, 1e-32
-  for item in items:
-    tot, n = tot + item**the.p, n + 1
-  return (tot/n) ** (1/the.p)
+  for item in items: tot,n = tot + item**p,n + 1
+  return (tot/n) ** (1/p)
 
 def disty(data, row):
   """Distance to heaven on Y vars."""
-  return minkowski(
-    abs(norm(y,row[y.at])-y.heaven)
-    for y in data.cols.ys)
+  return minkowski((abs(norm(y,row[y.at])-y.heaven)
+                    for y in data.cols.ys), the.p)
 
 def distx(data, r1, r2):
   """Distance between rows on X vars."""
-  return minkowski(
-    aha(x,r1[x.at],r2[x.at]) for x in data.cols.xs)
+  return minkowski((aha(x,r1[x.at],r2[x.at]) 
+                    for x in data.cols.xs), the.p)
 
 def aha(col, u, v):
   """Distance between two values."""
@@ -194,6 +193,18 @@ def nearest(data, row, rows=None):
   """Closest row on x-columns."""
   return min(rows or data.rows,
     key=lambda r2: distx(data, row, r2))
+
+def wins(data):
+  """Score rows by distance to heaven.
+  Clamp d2h within lo+0.35*sd to lo."""
+  ys = sorted(disty(data, row) for row in data.rows)
+  ten = len(ys)//10
+  lo,med,sd = ys[0], ys[5*ten], (ys[9*ten] - ys[ten])/2.56
+  def f(row):
+    x = disty(data, row)
+    if x < lo + 0.35*sd: x = lo
+    return max(-100, int(100*(1 - (x-lo)/(med-lo + 1e-32))))
+  return f
 
 #   _
 #  |_)   _.       _    _
@@ -344,15 +355,17 @@ def warm_start(data, rows, label):
   lab.rows.sort(
     key=lambda row:disty(lab,label(data,row)))
   n = int(sqrt(len(lab.rows)))
-  return (lab,clone(data,lab.rows[:n]),
-    clone(data,lab.rows[n:]),rows[the.learn.start:])
+  return (lab,
+          clone(data,lab.rows[:n]),
+          clone(data,lab.rows[n:]),
+          rows[the.learn.start:])
 
-def rebalance(best, rest, lab):
+def dont_let_Best_grow_too_big(best, rest, lab):
   """Cap best at sqrt(|lab|); evict worst."""
   if len(best.rows) > sqrt(len(lab.rows)):
-    best.rows.sort(key=lambda r:disty(lab,r))
-    add(rest.cols,sub(best.cols, best.rows[-1]))
-    rest.rows.append(best.rows.pop())
+    best.rows.sort(key=lambda row:disty(lab,row))
+    rest.rows.append(
+      add(rest.cols, sub(best.cols, best.rows.pop())))
 
 def acquire(data, score=acquireWithCentroid,
             label=lambda _,row:row):
@@ -366,7 +379,7 @@ def acquire(data, score=acquireWithCentroid,
     if not unlab: break
     pick, *unlab = sorted(unlab, key=fn)
     add(lab, add(best, label(data, pick)))
-    rebalance(best, rest, lab)
+    dont_let_Best_grow_too_big(best, rest, lab)
   lab.rows.sort(key=lambda r:disty(lab,r))
   return lab
 
@@ -476,9 +489,9 @@ def table(lst, w=10):
 
 def thing(txt):
   """Coerce string to number or bool."""
-  txt = txt.strip()
-  b=lambda s:{"true":1,"false":0}.get(s.lower(),s)
-  for f in [int, float, b]:
+  def bool(s): return {"true":1,"false":0}.get(s.lower(),s)
+  txt = txt.strip() 
+  for f in [int, float,bool]:
     try: return f(txt)
     except ValueError: pass
 
