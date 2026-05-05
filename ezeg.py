@@ -480,6 +480,7 @@ def test_compare(file:str=egopt1):
       _, _, r = last(fn(search))
       if name not in out: out[name] = Num(name)
       add(out[name], W(r))
+  print("\n",file)
   for k, v in sorted(out.items()):
     print(f"  {k:5} {o(mid(v)):>5} +/- {o(spread(v))}")
    
