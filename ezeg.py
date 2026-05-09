@@ -348,7 +348,8 @@ def test_acquire(file:str=egopt1):
   win1: same procedure on labelled (top-check by d2h, then best by d2h).
   win2: top-check by tree prediction on test, then best by actual d2h."""
   d0 = Data(csv(file))
-  w1, w2, win = Num(), Num(), wins(d0)
+  w1, w2n = Num(), Num()
+  win = wins(d0)
   for _ in range(20):
     d, d_train, test_rows = ready(d0)
     lab = acquire(d_train)
@@ -493,6 +494,7 @@ def test_compare(file:str=egopt1):
       _, _, r = last(fn(search))
       if name not in out: out[name] = Num(name)
       add(out[name], W(r))
+  print("\n",file)
   for k, v in sorted(out.items()):
     print(f"  {k:5} {o(mid(v)):>5} +/- {o(spread(v))}")
    
