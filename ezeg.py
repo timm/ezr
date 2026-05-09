@@ -359,6 +359,20 @@ def test_acquire(file:str=egopt1):
   print(f":budget {the.learn.budget} :check {the.learn.check} "
         f":train {int(mid(w1))} :test {int(mid(w2))}")
 
+def test_acquire1(file:str=egopt1):
+  """Run full train/predict/score pipeline to optimize metrics.
+  win1: same procedure on labelled (top-check by d2h, then best by d2h).
+  win2: top-check by tree prediction on test, then best by actual d2h."""
+  d0 = Data(csv(file))
+  w1, w2, win = Num(), Num(), wins(d0)
+  d, d_train, test_rows = ready(d0)
+  lab = acquire(d_train)
+  t = treeGrow(d_train, lab.rows)
+  treeShow(t)
+  guess = sorted(test_rows, key=lambda r: mid(treeLeaf(t, r).ynum))
+  add(w1, win(min(lab.rows[:the.learn.check], key=lambda r: disty(d_train, r))))
+  add(w2, win(min(guess[:the.learn.check],    key=lambda r: disty(d_train, r))))
+
 # ---- 7. Clustering ----
 def test_cluster(file:str=egopt1):
   """Run clustering benchmark table comparing baseline, kmeans, and rhalf."""
