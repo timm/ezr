@@ -11,7 +11,7 @@ for i in $(seq 1 ${1:-100000}); do
   F=${FILES[$(( RANDOM % NF ))]}
   B=$(( RANDOM % 141 + 10 ))
   C=$(( RANDOM % 10 + 1 ))
-  ( out=$(python3 -B ezeg.py --learn.budget $B --learn.check $C --acquire "$F" | tr -d '\n')
+  ( out=$(python3 -B cli.py --learn.budget=$B --learn.check=$C acquire "$F" | tr -d '\n')
     printf '%s :file %s\n' "$out" "$(basename "$F")"
   ) &
 done

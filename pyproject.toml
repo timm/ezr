@@ -16,10 +16,10 @@ dependencies = []
 test = ["pytest"]
 
 [project.scripts]
-ezr = "ezeg:cli"
+ezr = "cli:main"
 
 [tool.setuptools]
-py-modules = ["ezr", "ezeg", "textmine"]
+py-modules = ["ezr", "cli", "classify", "tree", "cluster", "search", "acquire", "textmine", "stats"]
 
 [project.urls]
 Changelog = "https://github.com/timm/ezr/blob/main/CHANGELOG.md"

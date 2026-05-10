@@ -80,16 +80,17 @@ graph TD
   end
 
   subgraph Apps["apps (single-purpose)"]
-    classify["classify.py<br/>~30 LOC"]
-    tree["tree.py<br/>~110 LOC"]
-    cluster["cluster.py<br/>~90 LOC"]
-    search["search.py<br/>~90 LOC"]
-    acquire["acquire.py<br/>~50 LOC"]
-    textmine["textmine.py<br/>~210 LOC"]
-    stats["stats.py<br/>~60 LOC"]
+    classify["classify.py<br/>34 LOC"]
+    tree["tree.py<br/>93 LOC"]
+    cluster["cluster.py<br/>67 LOC"]
+    search["search.py<br/>94 LOC"]
+    acquire["acquire.py<br/>59 LOC"]
+    textmine["textmine.py<br/>208 LOC"]
+    stats["stats.py<br/>56 LOC"]
+    cli["cli.py<br/>55 LOC"]
   end
 
-  core[("ezr.py<br/>core primitives<br/>~220 LOC")]
+  core[("ezr.py<br/>core primitives<br/>330 LOC")]
 
   classify --> core
   tree --> core
@@ -119,8 +120,8 @@ graph TD
 Star network: every arrow points down to `ezr.py`. No sideways arrows
 between apps. Tests fan in to the apps they exercise.
 
-Total app+core ≈ 860 LOC (excluding tests). Tests redistribute the
-old `ezeg.py` (~695 LOC of demos) into per-app pytest files.
+Total app+core+cli = 996 LOC (excluding tests). Tests in `tests/`
+discover via pytest: 42 tests across 8 files, all assert.
 
 ## INSTALLATION
 
