@@ -1,0 +1,7 @@
+[MASTER]
+# Specify a configuration file.
+#rcfile=
+
+[MESSAGES CONTROL]
+# Disable the message, report, category or checker with the given id(s).
+disable=C0103,C0104,C0105,C0115,C0116,C0303,C0321,C0410,C3001,E0213,R1735,W0106,W0201,W0311

@@ -1,74 +1,81 @@
-SHELL     := bash
-MAKEFLAGS += --warn-undefined-variables
-.SILENT:
-.ONESHELL:
+# ==============================================================================
+# eZR.ai - Minimal Task Runner
+# ==============================================================================
 
-LOUD = \033[1;34m#
-HIGH = \033[1;33m#
-SOFT = \033[0m#
+SHELL := /bin/bash
+GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
+ETC := $(GIT_ROOT)/etc
+RUN_TEST := bash $(ETC)/run_tests.sh
 
-Top=$(shell git rev-parse --show-toplevel)
-Tmp ?= $(HOME)/tmp 
-Data=$(Top)/../moot/optimize
+CLS    := '\033[H\033[J'
+cRESET := '\033[0m'
+cYELLOW:= '\033[1;33m'
 
-help: ## show help.
-	@gawk '\
-		BEGIN {FS = ":.*?##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\ntargets:\n"}  \
-    /^[a-z0-9A-Z_%\.\/-]+:.*?##/ {printf("  \033[36m%-10s\033[0m %s\n", $$1, $$2) | "sort" } \
-	' $(MAKEFILE_LIST)
+help: ## show help
+	@gawk -f $(ETC)/help.awk $(MAKEFILE_LIST) 
 
-pull: ## update from main
-	git pull
+push2pypi: ## push to PyPi
+	pip install build twine
+	python3 -B -m build
+	twine upload dist/*
+	rm -rf dist build *.egg-info
 
-push: ## commit to main
-	echo -en "$(LOUD)Why this push? $(SOFT)" 
-	read x ; git commit -am "$$x" ;  git push
-	git status
+pyclean: ## remove python temporaries
+	@find $(GIT_ROOT) -type d \( -name __pycache__ -o -name .pytest_cache -o -name "*.egg-info" \) -exec rm -rf {} +
 
-sh: ## run custom shell
-	clear; tput setaf 3; cat $(Top)/etc/hi.txt; tput sgr0
-	$(Top)/etc/bash.rc
+sh: ## demo of my shell
+	@-echo -e $(CLS)$(cYELLOW); figlet -W -f slant eZR.ai; echo -e $(cRESET)
+	@-bash --init-file $(ETC)/bash.rc -i
 
-setup: ## initial setup - clone moot data
-	[ -d $(Data) ] || git clone http://github.com/timm/moot $(Top)/../moot
+install: ok ## install related repos to $HOME/gits
 
-install: ## install in development mode (when ready)
-	pip install -e .
+ok: $(HOME)/gits/moot ## set up baseline
+	@-chmod +x $(GIT_ROOT)/*.py
 
-clean:  ## find and delete any __pycache__ dirs
-	files="$$(find $(Top) -name __pycache__ -type d)"; \
-	for f in $$files; do rm -rf "$$f"; done
+$(HOME)/gits/moot: ## get the data
+	@mkdir -p $(dir $@)
+	@[ -d $@/.git ] || git clone http://tiny.cc/moot $@
 
-show: ## regenerate index.html from ezr.py
-	cd $(Top); $(MAKE) -B docs/index.html
+push: ## save to cloud
+	@read -p "Reason? " msg; git commit -am "$$msg"; git push; git status
 
-docs/index.html : docs/ezr.html   ; cp $^ $@
-docs/%.py       : $(Top)/ezr/%.py ; gawk -f $(Top)/etc/pycco0.awk $^ > $@
-docs/%.html     : docs/%.py       
-	pycco -d $(Top)/docs $^
-	echo 'p {text-align:right;} pre {font-size:small;}' >> $(Top)/docs/pycco.css
-	echo 'h2 {border-top: #CCC solid 1px;}'            >> $(Top)/docs/pycco.css
+ghReset: # GH esotericia
+	git remote set-url origin https://timmenzies@github.com/timmenzies/ez.git
 
-~/tmp/dist.log:  ## run ezrtest on many files
-	$(MAKE) todo=dist files="$(Top)/../moot/optimize/*/*.csv" run | tee $@ 
+lint: $f.py ## Lint python file x.py using `make lint f=x`
+	@pylint --rcfile=$(ETC)/pylintrc $f.py
 
-~/tmp/dist2.log:  ## run ezrtest on many files
-	$(MAKE) todo=dist2 files="$(Top)/../moot/optimize/*/*.csv" run | tee $@ 
-
-~/tmp/dist3.log:  ## run ezrtest on many files
-	$(MAKE) todo=dist3 files="$(Top)/../moot/optimize/*/*.csv" run | tee $@ 
-
-run:
+~/tmp/%.pdf: %.py $(MAKEFILE_LIST) ## .py ==> .pdf
 	@mkdir -p ~/tmp
-	time ls -r $(files) \
-	  | xargs -P 24 -n 1 -I{} sh -c 'cd $(Top)/ezr; python3 -B ezrtest.py -f "{}" --$(todo)'
+	@echo "pdf-ing $@ ... "
+	@a2ps -Br --quiet --landscape --chars-per-line=60 --line-numbers=1  \
+	          --borders=no --pro=color --columns=3 -M letter -o - $< \
+						| ps2pdf - $@
+	@open $@
 
-csvs:
-	cd $(Top); $(foreach d, $(wildcard ../moot/optimize/*/*.csv), \
-	                        python3 -m ezr -f $d;)
+stats: ## generate stats
+	@bash $(ETC)/stats.sh $(HOME)/gits/moot/optimize
 
-eg1: ## run init tests
-	cd $(Top)/ezr; python3 -B ezrtest.py -f $(Data)/misc/auto93.csv --tree
+# Test runner targets
+CSVS = ls $(HOME)/gits/moot/optimize/*/*.csv | sort -R | xargs -P 24 -I{} sh -c
 
-eg2: ## run init tests
-	cd $(Top)/ezr; python3 -B ezrtest.py -f $(Data)/misc/auto93.csv --all
+~/tmp/ezr_acq.log: ok ## run ez_acq tests
+	@mkdir -p ~/tmp
+	@$(CSVS) 'python3 -B cli.py acquire "{}"' | tee $@
+	@cut -d \  -f 8 $@ |sort -n  |  fmt -71
+
+runs: ## run random test loop
+	@mkdir -p ~/tmp
+	bash $(ETC)/runs.sh | tee ~/tmp/runs.log
+
+Html := $(GIT_ROOT)/docs
+
+docs: $(Html)/ezr.html $(Html)/ezr.pdf
+
+$(Html)/%.html: %.py
+	@mkdir -p $(Html)
+	@awk -f $(ETC)/py.awk $< > $(Html)/$<
+	@cd $(Html) && pycco -d . $<
+	@cat $(ETC)/custom.css >> $(Html)/pycco.css
+	@awk -v HEADER=$(ETC)/header.html -f $(ETC)/html.awk $@ > $@.tmp && mv $@.tmp $@
+	@rm $(Html)/$<

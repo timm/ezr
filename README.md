@@ -1,266 +1,328 @@
-[![DOI](https://zenodo.org/badge/750626390.svg)](https://doi.org/10.5281/zenodo.11183058)
-[![Purpose](https://img.shields.io/badge/purpose-XAI%20%7C%20Optimization-purple?logo=target&logoColor=white)](https://github.com/timm/ezr)
-[![Python](https://img.shields.io/badge/language-Python-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green?logo=open-source-initiative&logoColor=white)](https://github.com/timm/ezr/blob/main/LICENSE)
-[![Docs](https://img.shields.io/badge/docs-online-orange?logo=readthedocs&logoColor=white)](https://timm.github.io/ezr/)
-[![GitHub](https://img.shields.io/badge/github-repo-black?logo=github&logoColor=white)](https://github.com/timm/ezr)
+![Python 3.14](https://img.shields.io/badge/Python-3.14-blue?logo=python&logoColor=white&labelColor=1D4ED8&color=0A2A7A)
+![Purpose XAI](https://img.shields.io/badge/Purpose-XAI-orange?logo=openai&logoColor=white&labelColor=FB8C00&color=A85A00)
+![Goal Multi-Obj](https://img.shields.io/badge/Goal-Multi--Obj-purple?logo=target&logoColor=white&labelColor=C026D3&color=6D1780)
+![Teaching](https://img.shields.io/badge/Teaching-CSC591-red?logo=graduationcap&logoColor=white&labelColor=DC2626&color=7F1D1D)
+![Deps 0](https://img.shields.io/badge/Deps-0-green?logo=checkmarx&logoColor=white&labelColor=00C853&color=006B29)
+![LOC 600](https://img.shields.io/badge/LOC-600-yellow?logo=codecov&logoColor=white&labelColor=FDE047&color=C3A700)
+![License](https://img.shields.io/badge/©_2026-timm-black?logo=github&logoColor=white&labelColor=24292e&color=000000&link=http://timm.fyi)
+[![tests](https://github.com/timm/ezr/actions/workflows/tests.yml/badge.svg)](https://github.com/timm/ezr/tree/26mar)
 
 
+# EZR(1) - Explainable Multi-Objective Optimization
 
-# ezr
+## NAME
 
-ezr.py: lightweight incremental explanations for multi-objective optimization   
+**ezr** — explainable multi-objective optimization via decision trees,
+clustering, Naive Bayes, and active learning
 
-Code support for [Case for Compact AI](https://github.com/timm/ezr/blob/main/docs/case4compactAI.pdf)
+## SYNOPSIS
 
-```
-@article{menzies2025compact,
-  title={The Case for Compact AI},
-  author={Menzies, Tim},
-  journal={Communications of the ACM},
-  year={2025},
-  month={March},
-  volume={68},
-  number={3},
-  publisher={ACM},
-  url={https://cacm.acm.org/opinion/the-case-for-compact-ai/},
-  note={Opinion}
-}
-```
+    ezr APP [OPTIONS] [FILE]
+    python -m ezr.<app> [OPTIONS] [FILE]
+    pytest tests/ [-v] [-k PATTERN]
 
-## Motivation
+## DESCRIPTION
 
-**The Labeling Problem:** In optimization, choices are easy to spot 
-but consequences are slow to measure. You can scan hundreds of 
-configurations in minutes, but evaluating their real-world performance 
-may require hours or days of testing. Hence:
+**ezr** is a lightweight toolkit for multi-objective optimization
+and explainable AI. It summarizes CSV data into Num/Sym columns,
+builds decision trees that minimize distance to ideal outcomes,
+clusters rows via k-means or recursive halving, and supports
+active learning with Naive Bayes or centroid-based acquisition.
 
-> We need to reason more using less data.
-
-**Questioning "Bigger is Better":** Recent research shows only 5% of 
-software engineering papers using LLMs consider simpler alternatives - 
-a major methodological oversight [^llm]. UCL researchers found SVM+TF-IDF 
-methods outperformed "Big AI" by 100x in speed with greater accuracy 
-for effort estimation [^uci]. Hence:
-
-> We need to enourage the use of faster methods that encourage more exploration of alternatives.
-
-[^llm]: Hou, X. et al. Large language models for SE: A systematic literature review. TOSEM 33, 8 (Sept. 2024).
-
-[^uci]: Tawosi, V., Moussa, R., and Sarro, F. Agile effort estimation: Have we solved the problem yet? IEEE Trans SE 49, 4 (2023), 2677–2697.
-
-ezr embraces **"funneling"** - the principle that despite internal 
-complexity, software behavior converges to few outcomes, enabling 
-simpler reasoning [^funnels]. Where LLMs require planetary-scale computation and 
-specialized hardware, ezr achieves state-of-the-art results through 
-smarter questioning on standard laptops.
-
-[^funnels]: Menzies, T., Owen, D., and Richardson, J. The strangest thing about software. Computer 40, 1 (2007).
-
-This approach fosters **human-AI partnership**: unlike opaque LLMs, 
-ezr's small labeled sets and tiny regression trees offer explainable, 
-auditable reasoning that humans can understand and guide.
-
-## Installation
-
-**Option 1: Install via pip**
-
-```bash
-pip install ezr
-```
-
-**Option 2: Download directly**
-
-```bash
-# Download the single file
-curl -O https://raw.githubusercontent.com/timm/ezr/main/ezr/ezr.py
-python ezr.py -h
-```
-
-**Data repository (for examples):**
-
-```bash
-git clone http://github.com/timm/moot
-```
-
-## Quick Start
-
-```bash
-ezr -f data.csv
-```
-
-## Usage
-
-Command line tool for generating decision rules from CSV data.
-
-```bash
-ezr -f path/to/your/data.csv
-```
-
-## Examples
-
-```bash
-# Using data from moot repository
-ezr -f ~/gits/timm/moot/optimize/misc/auto93.csv
-```
-
-**Output:**
-
-```
- #rows  win
-    17   29    if Volume <= 98
-     9   40    |  if Volume > 90
-     6   41    |  |  if origin == 2
-     3   50    |  |  |  if Model > 72;
-     3   31    |  |  |  if Model <= 72;
-```
-
-## Output Format
-
-- `|`: Hierarchical rule structure (nested conditions)
-- `#rows`: Number of data rows matching the rule
-- `win`: Performance percentage for that branch. 
-
-If the mean and optional [^ref] score seen
-   in the input data are $\mu$ and $o$. and if the optimizer outputs a row with score $x$,
-   then the win is how close we get to best the optimal, normalized but the distance means to optimal; i.e.
-
-$$win = 100 \left(1- \frac{x-o}{\mu-o}\right)$$
-
-[^ref]: More precesiely, our "optimals" are rally "reference optimals"; i.e. the best value
-seen so far. For most of our test data, the actual optimal setting may be unknowable.
-
-Notes:
-
-- We normalize it in this way so we can compace results across differernt data sets. 
-- We use `100*(1-` so that we can report the win as a percentage, with _larger_ wins being _better_. 
+**ezr** is an experiment in "how low can you go?". i.e. how little
+data do you need for effective AI. THe code using active learning
+to label a small number of (say) 50 informative examples. These are
+used to build a regression tree which, in turn, is used to sort the
+unlabelled test data. Repeated studies show that by labelling the
+first (say) 5 examples, then the selected row optimzies as well or
+better than the conclusions mae by state of the art optimizers SMAC
+(which runs two orders of magnitice slower than **ezr**).
 
 
-## Performance
+Input is CSV. The header row defines column roles:
 
-ezr delivers strong optimization results from remarkably small 
-labeling budgets:
+    [A-Z]*    Numeric (e.g. "Age")
+    [a-z]*    Symbolic (e.g. "job")
+    [A-Z]*+   Maximize goal (e.g. "Pay+")
+    [A-Z]*-   Minimize goal (e.g. "Cost-")
+    [a-z]*!   Class label (e.g. "sick!")
+    *X        Ignored (e.g. "idX")
+    ?         Missing value (in data rows, not header)
 
-- **12 samples**: 60% of optimal
-- **25 samples**: 74% of optimal  
-- **50 samples**: 90% of optimal
+The codebase is a small core plus a handful of single-purpose
+app files, each living on top of `ezr.py`:
 
-Tested on 118 datasets spanning software configuration, cloud tuning, 
-project health, feature models, process modeling, analytics, finance, 
-healthcare, reinforcement learning, sales, testing, and text mining.
+- **ezr.py** — core primitives (Num/Sym columns, Data, csv,
+  distance, like/likes, mid/spread, pick, extrapolate, wins, the)
+- **classify.py** — Naive Bayes (incremental test-then-train)
+- **tree.py** — decision/regression trees, treeShow, treePlan
+- **cluster.py** — kmeans, kmeans++, rhalf
+- **search.py** — sa, ls, de, oneplus1, oracleNearest
+- **acquire.py** — active learning (Bayes + centroid acquisition)
+- **textmine.py** — tokenize, stem, tfidf, CNB, active CNB
+- **stats.py** — sames, cliffs, confused
+- **tests/** — pytest test suite, one file per app
 
-**Speed:** Typical runtimes under 100ms. Large datasets (128 
-attributes, 100,000 rows) process in ~3 seconds.
+Apps depend only on `ezr.py` (star topology, no app-to-app imports).
+Tests live outside the package and import core + the app under test.
 
-## Algorithm Pseudocode
+```mermaid
+graph TD
+  subgraph Tests["tests/ (pytest)"]
+    T_core[test_core.py]
+    T_classify[test_classify.py]
+    T_tree[test_tree.py]
+    T_cluster[test_cluster.py]
+    T_search[test_search.py]
+    T_acquire[test_acquire.py]
+    T_textmine[test_textmine.py]
+    T_stats[test_stats.py]
+  end
 
-ezr follows an **A,B,C pattern**:
-- **A=Any**: Start with 4 randomly labeled examples (minimum for 
-  best/rest split)
-- **B=Budget**: Label up to B total examples using elite search
-- **C=Check**: Test top 5 predictions, return best result
+  subgraph Apps["apps (single-purpose)"]
+    classify["classify.py<br/>34 LOC"]
+    tree["tree.py<br/>93 LOC"]
+    cluster["cluster.py<br/>67 LOC"]
+    search["search.py<br/>94 LOC"]
+    acquire["acquire.py<br/>59 LOC"]
+    textmine["textmine.py<br/>208 LOC"]
+    stats["stats.py<br/>56 LOC"]
+    cli["cli.py<br/>55 LOC"]
+  end
 
-```
-function ezr_main(data, A=4, B=25):
-    1. Split data into train/test, hide y-values in train
-    2. Label A random examples, sort by distance-to-heaven
-    3. Split into √A "best" examples, rest in "rest" 
-    4. While budget < B:
-       a. Find unlabeled row closest to "best" centroid
-       b. Label it, add to "best" if promising
-       c. Maintain |best| ≤ √|labeled| (demote worst to "rest")
-    5. Build decision tree from labeled examples
-    6. Sort test set, examine top C=5, return best
+  core[("ezr.py<br/>core primitives<br/>330 LOC")]
 
-function distance_to_heaven(goals):
-    # Normalize goals to [0,1], with heaven = 0 for minimize, 1 for maximize
-    return euclidean_distance(normalized_goals, heaven) / √2
+  classify --> core
+  tree --> core
+  cluster --> core
+  search --> core
+  acquire --> core
+  textmine --> core
+  stats --> core
 
-function win_percentage(found, best_known, average):
-    return 100 * (1 - (found - best_known) / (average - best_known))
+  T_core --> core
+  T_classify --> classify
+  T_tree --> tree
+  T_cluster --> cluster
+  T_search --> search
+  T_acquire --> acquire
+  T_textmine --> textmine
+  T_stats --> stats
+
+  classDef coreStyle fill:#1D4ED8,color:#fff,stroke:#0A2A7A,stroke-width:2px
+  classDef appStyle fill:#FB8C00,color:#fff,stroke:#A85A00
+  classDef testStyle fill:#00C853,color:#fff,stroke:#006B29
+  class core coreStyle
+  class classify,tree,cluster,search,acquire,textmine,stats appStyle
+  class T_core,T_classify,T_tree,T_cluster,T_search,T_acquire,T_textmine,T_stats testStyle
 ```
 
-**Key insight:** Elite sampling with √N keeps "best" set small and 
-focused, while greedy search toward "best" centroid avoids expensive 
-exploration/exploitation calculations.
+Star network: every arrow points down to `ezr.py`. No sideways arrows
+between apps. Tests fan in to the apps they exercise.
 
-## License
+Total app+core+cli = 996 LOC (excluding tests). Tests in `tests/`
+discover via pytest: 42 tests across 8 files, all assert.
 
-BSD-2-Clause
+## INSTALLATION
 
-## Background
+### Option A: Install as a package
 
-Traditional multi-objective optimization faces a critical challenge: 
-the labeling problem. While identifying potential configurations is 
-straightforward, evaluating their real-world performance is expensive 
-and time-consuming. This creates a fundamental bottleneck in 
-optimization workflows.
+    git clone http://github.com/timm/ezr
+    cd ezr
+    pip install -e .
 
-**The Case for Simplicity:** Research by Adams et al. [^adams] demonstrates 
-that humans systematically overlook subtractive changes, preferring 
-to add complexity rather than remove it (4:1 ratio). This cognitive 
-bias affects AI research, where teams often pursue elaborate 
-reinforcement learning and active learning approaches without first 
-testing simpler alternatives. One such team lost two years exploring 
-complex acquisition functions that yielded minimal improvements over 
-basic methods.
+This creates the global `ezr` command. Edits to any
+core or app file take effect immediately.
 
-[^adams]: Adams, G.S., Converse, B.A., Hales, A.H. et al. People systematically overlook subtractive changes. Nature 592, 258–261 (2021). https://doi.org/10.1038/s41586-021-03380-y
+    ezr --help
+    ezr tree auto93.csv
+    ezr classify diabetes.csv
+    ezr search de auto93.csv --budget=256
 
-ezr embraces the "Less, but Better" philosophy, proving that 
-sophisticated optimization results can emerge from remarkably simple 
-algorithms. By focusing on elite sampling (maintaining √N best 
-examples) and greedy search toward promising centroids, ezr 
-eliminates the need for complex exploration/exploitation balancing, 
-Parzen windows, or multi-generational evolutionary approaches.
+To uninstall:
 
-**Data Efficiency:** Historical logs are error-prone, expert labeling 
-is slow and expensive, and automated labeling can be misleading. ezr's 
-minimal labeling approach makes expert evaluation feasible - 25 
-carefully chosen evaluations can achieve 74% of optimal performance, 
-making human-in-the-loop optimization practical even for busy domain 
-experts.
+    pip uninstall ezr
 
-The tool generates hierarchical rules that partition solution spaces 
-based on performance characteristics, showing both coverage (#rows) 
-and expected improvement (win %) for each decision branch. This makes 
-optimization results interpretable and actionable for stakeholders.
+### Option B: Run from the directory
 
-## Coding Notes
+    git clone http://github.com/timm/ezr
+    cd ezr
+    python -m ezr.cli --help
+    python -m ezr.tree auto93.csv
 
-ezr consists of just ~400 lines of Python (no pandas or sklearn) 
-organized into three main files:
+No installation required. Just needs Python 3.12+.
 
-### ezr.py (Core Algorithm)  
-Elite greedy search implementation with incremental updates. Maintains 
-separate "best" and "rest" populations using √N elite sampling rule. 
-Implements two acquisition functions:
+### Sample data
 
-- **nearer**: Greedy distance-based selection - finds unlabeled rows 
-  closer to "best" centroid than "rest" centroid
-- **likelier**: Adaptive acquisition with multiple modes (xploit, 
-  xplor, bore, adapt) using Bayesian likelihood scoring between 
-  best vs rest populations
+    mkdir -p $HOME/gits
+    git clone http://github.com/timm/moot $HOME/gits/moot
 
-Uses Welford's method for incremental statistics and distance-to-heaven 
-scoring for multi-objective ranking. Tree building generates 
-interpretable rules via recursive partitioning with minimal leaf sizes.
-Contains data structures (Sym/Num columns) and CSV parser. The main 
-`likely()` function orchestrates the A,B,C pattern.
+## COMMANDS
 
-### ezrtest.py
-Unit tests and example functions demonstrating ezr's capabilities. 
-Includes test cases for data loading, distance calculations, tree 
-building, and optimization workflows. Examples can be run directly 
-from command line using the eg_* function pattern.
+Each subcommand dispatches to a single app:
 
-### stats.py
-Statistical utilities for comparing treatments and ranking results. 
-Implements significance testing, effect size calculations, and 
-ranking algorithms used in the experimental evaluation framework.
-Handles the statistical analysis needed for comparing different
-acquisition functions and optimization approaches.
+    ezr classify FILE       NB + decision tree + ZeroR baseline
+    ezr tree FILE           Grow regression tree (Rung 1: association)
+    ezr tree --funny FILE   Flag rows where leaf disagrees with truth (Rung 2)
+    ezr tree --plan FILE    Counterfactual plans for the worst row (Rung 3)
+    ezr cluster FILE        Run clustering benchmark (kmeans, kpp, rhalf)
+    ezr search sa FILE      Simulated annealing
+    ezr search ls FILE      Local search
+    ezr search de FILE      Differential evolution (NP=30)
+    ezr search compare FILE Compare sa vs ls vs de
+    ezr acquire FILE        Active learning train/predict/score pipeline
+    ezr textmine FILE       CNB text classification
 
-**Key Design Principle**: Incremental updates throughout - statistics, 
-populations, and centroids are maintained incrementally rather than 
-recomputed, enabling sub-second runtimes even on large datasets.
+## OPTIONS
+
+Options update the global configuration. Use `--key=value` syntax.
+
+### Learning & Trees
+
+    --learn.leaf=3      Minimum examples per leaf
+    --learn.budget=50   Number of rows to evaluate
+    --learn.check=5     Number of guesses to check
+    --learn.start=4     Initial number of labels
+
+### Distance & Bayes
+
+    --p=2               Distance metric (1=Manhattan, 2=Euclidean)
+    --bayes.m=2         m-estimate for Naive Bayes
+    --bayes.k=1         k-estimate (Laplace smoothing)
+    --few=512           Max unlabelled rows in active learning
+
+### Statistics
+
+    --stats.cliffs=0.195  Cliff's Delta threshold
+    --stats.conf=1.36     KS test confidence coefficient
+    --stats.eps=0.35      Margin of error multiplier
+
+### Display
+
+    --seed=1            Random number seed
+    --show.show=30      Tree display width
+    --show.decimals=2   Decimal places for floats
+
+Options and commands can be interleaved. Options apply to
+all subsequent commands:
+
+    ezr --seed=42 --learn.budget=30 --test auto93.csv --see auto93.csv
+
+## TESTING
+
+### Run all tests
+
+    pip install pytest
+    pytest tests/ -v
+
+### Run a single test file
+
+    pytest tests/test_tree.py -v
+
+### Run a single test by name
+
+    pytest tests/ -k test_classify
+
+### Test files (one per app)
+
+    tests/test_core.py      Num, Sym, csv, Data, Cols, distx, disty, mid, spread,
+                            entropy, pick, picks, extrapolate, addsub, thing, nest, the
+    tests/test_classify.py  NB vs Tree vs ZeroR (90/10 split, 20 reps, asserts > ZeroR)
+    tests/test_tree.py      tree, see, funny (Rung 2), plan (Rung 3)
+    tests/test_cluster.py   kmeans, kpp, rhalf benchmarks
+    tests/test_search.py    sa, ls, de (asserts final energy < initial)
+    tests/test_acquire.py   acquire, acquire1, acquire3 (asserts wins > random)
+    tests/test_textmine.py  cnb_like, cnb_sweep, cnb_data, cnb_active,
+                            tokenize, nostop, stem, tfidf
+    tests/test_stats.py     sames, cliffs, confused
+
+## LIBRARY USAGE
+
+**ezr.py** exports everything needed to use the toolkit
+programmatically:
+```python
+from ezr import *
+
+d = Data(csv("auto93.csv"))
+win = wins(d)
+t = treeGrow(d, d.rows)
+treeShow(t)
+
+for r in sorted(d.rows, key=lambda r: disty(d, r))[:5]:
+    print(win(r), r)
+```
+
+This generates the following where _D_ is distance to heaven (lower values are better),
+_n_ is the number of examples in that branch, and _goals_ shows the rows in that branch.
+
+```
+$ ezr --tree ~/gits/moot/optimize/misc/auto93.csv
+                               D       N     Goals
+                               ====  =====   =====
+                              ,0.66 ,( 50), {Acc+=15.51, Lbs-=2888.64, Mpg+=24.60}
+Clndrs <= 5                   ,0.61 ,( 26), {Acc+=16.43, Lbs-=2204.46, Mpg+=30.38}
+|   Volume <= 98              ,0.59 ,( 14), {Acc+=17.15, Lbs-=2024.64, Mpg+=33.57}
+|   |   Volume <= 91          ,0.59 ,(  9), {Acc+=17.09, Lbs-=1927.67, Mpg+=35.56}
+|   |   |   origin != 3       ,0.58 ,(  4), {Acc+=17.35, Lbs-=1908.00, Mpg+=37.50}
+|   |   |   origin == 3       ,0.59 ,(  5), {Acc+=16.88, Lbs-=1943.40, Mpg+=34.00}
+|   |   Volume > 91           ,0.60 ,(  5), {Acc+=17.26, Lbs-=2199.20, Mpg+=30.00}
+|   Volume > 98               ,0.64 ,( 12), {Acc+=15.58, Lbs-=2414.25, Mpg+=26.67}
+|   |   origin != 2           ,0.61 ,(  5), {Acc+=15.64, Lbs-=2344.00, Mpg+=30.00}
+|   |   origin == 2           ,0.66 ,(  7), {Acc+=15.54, Lbs-=2464.43, Mpg+=24.29}
+Clndrs > 5                    ,0.72 ,( 24), {Acc+=14.52, Lbs-=3629.83, Mpg+=18.33}
+|   origin != 1               ,0.63 ,(  3), {Acc+=14.93, Lbs-=3000.00, Mpg+=26.67}
+|   origin == 1               ,0.73 ,( 21), {Acc+=14.46, Lbs-=3719.81, Mpg+=17.14}
+|   |   Volume <= 302         ,0.71 ,( 12), {Acc+=15.88, Lbs-=3385.92, Mpg+=19.17}
+|   |   |   Clndrs <= 6       ,0.71 ,(  8), {Acc+=16.94, Lbs-=3308.25, Mpg+=20.00}
+|   |   |   |   Model <= 75   ,0.71 ,(  5), {Acc+=16.20, Lbs-=3219.40, Mpg+=20.00}
+|   |   |   |   Model > 75    ,0.71 ,(  3), {Acc+=18.17, Lbs-=3456.33, Mpg+=20.00}
+|   |   |   Clndrs > 6        ,0.73 ,(  4), {Acc+=13.77, Lbs-=3541.25, Mpg+=17.50}
+|   |   Volume > 302          ,0.75 ,(  9), {Acc+=12.57, Lbs-=4165.00, Mpg+=14.44}
+|   |   |   Model > 73        ,0.71 ,(  3), {Acc+=13.37, Lbs-=4171.33, Mpg+=20.00}
+|   |   |   Model <= 73       ,0.76 ,(  6), {Acc+=12.17, Lbs-=4161.83, Mpg+=11.67}
+```
+
+
+
+Key exports — **core (`ezr.py`)**: `Data`, `Num`, `Sym`, `Col`, `Cols`,
+`adds`, `add`, `sub`, `clone`, `mid`, `spread`, `mode`, `entropy`,
+`norm`, `distx`, `disty`, `nearest`, `like`, `likes`, `wins`,
+`pick`, `picks`, `extrapolate`, `csv`, `o`, `table`, `nest`, `thing`, `the`.
+
+**Apps**:
+- `tree.py`: `Tree`, `treeGrow`, `treeCuts`, `treeSplit`, `treeLeaf`,
+  `treeNodes`, `treeShow`, `treePlan`
+- `classify.py`: `classify` (incremental NB)
+- `cluster.py`: `kmeans`, `kpp`, `rhalf`
+- `search.py`: `oneplus1`, `sa`, `ls`, `de`, `oracleNearest`
+- `acquire.py`: `acquire`, `warm_start`, `acquireWithBayes`, `acquireWithCentroid`
+- `stats.py`: `sames`, `cliffs`, `confused`, `dinc`
+- `textmine.py`: `tokenize`, `nostop`, `stem`, `tfidf`, `cnb`, `cnbLikes`,
+  `text_mining`, `active`
+
+## FILES
+
+    ezr/
+      ezr.py          Core primitives (~200 LOC)
+      classify.py     Incremental Naive Bayes
+      tree.py         Regression and decision trees, plans, anomalies
+      cluster.py      kmeans, kmeans++, rhalf
+      search.py       sa, ls, de, oneplus1
+      acquire.py      Active learning (Bayes + centroid)
+      textmine.py     Tokenize, stem, tfidf, CNB
+      stats.py        sames, cliffs, confused
+      cli.py          Subcommand dispatcher
+    tests/            One test_<app>.py per app, plus conftest.py
+    pyproject.toml    Package config (ezr binary entry, version, deps)
+    README.md         This file
+    CHANGELOG.md      Release notes
+    LICENSE.md        MIT
+
+## AUTHOR
+
+Tim Menzies <timm@ieee.org>, 2026. MIT License.
+
+## SEE ALSO
+
+- Repository: http://github.com/timm/ezr
+- Sample data: http://github.com/timm/moot

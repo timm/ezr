@@ -1,33 +1,65 @@
-#!/bin/bash
-# Essential shell config
+## vim: set ft=bash :
+GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 
-# If executed (not sourced), start bash with this as init file
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    exec bash --init-file "${BASH_SOURCE[0]}" -i
+# aliases
+tree() { command tree -C "$@"; }
+ls()   { command ls --color "$@"; }
+grep() { command grep --color=auto "$@"; }
+col()  { command column -s, -t "$@"; }
+tmux() { command tmux -u -f $GIT_ROOT/etc/tmux.rc; }
+vi()   { command nvim -u $GIT_ROOT/etc/nviminit.lua "$@"; }
+eza()  { command eza --icons=always "$@"; }
+
+# environment
+export EDITOR="$(command -v nano)"
+export BASH_SILENCE_DEPRECATION_WARNING=1
+export HISTSIZE=10000
+export HISTFILESIZE=20000
+
+# bash-only history behavior
+if [ -n "$BASH_VERSION" ]; then
+  export HISTCONTROL=ignoredups:erasedups
 fi
 
-# Core setup
-Here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-Xdir="$(basename "$(dirname "$Here")")"
-export BASH_SILENCE_DEPRECATION_WARNING=1
-export PATH="$Here:$PATH"
+# zsh-only history behavior
+if [ -n "$ZSH_VERSION" ]; then
+  setopt HIST_IGNORE_ALL_DUPS
+  setopt HIST_REDUCE_BLANKS
+fi
 
-# Colors & prompt
-bold=$(tput bold) col0=$(tput sgr0) col1=$(tput setaf 6) col2=$(tput setaf 3)
-branch() { git branch 2>/dev/null | awk '/^\*/ {print $2}'; }
-PROMPT_COMMAND='PS1="👀 ${bold}${col1}${Xdir}${col0} ${col1}$(basename "$(dirname "$PWD")")/$(basename "$PWD")${col0} ${col2}$(branch)${col0} ▶ "'
+hi() { # usage: command | hi 7 10 12
+  gawk -v cols="$*" '
+    BEGIN { split(cols, tmp, " ");
+            for (i in tmp) lite[tmp[i]] = i + 30 }
+          { for (i in lite) {
+              col = i < 0 ? NF + i + 1 : i
+              $col = "\033[1;"lite[i]"m" $col "\033[0m" } 
+            print $0; }'
+}
 
-# Essential aliases
-alias ..='cd ..' c='clear' Q='exit'
-alias l='ls -lh' la='ls -la' t='tree -L 1' ls="\ls --color"
-alias gs='git status -sb' ga='git add .' gc='git commit -m' gp='git push' gl='git log --oneline --graph --decorate'
-alias vi="nvim -u '$Here/init.lua'" h='history'
-alias reload="source '$Here/bash.rc' && echo ✅"
+# git helpers (portable)
+branch() {
+  git branch 2>/dev/null | awk '/^\*/ {print $2}'
+}
 
-plot() { gnuplot -p -e 'plot "-"'; }
+dirty() {
+  [[ -n $(git status -s 2>/dev/null) ]] && echo "*"
+}
 
-# Mega useful extras
-alias grep='grep --color=auto' less='less -R'
-alias ports='lsof -i -P -n | grep LISTEN'
-alias myip='curl -s ipinfo.io/ip'
-mkcd() { mkdir -p "$1" && cd "$1"; }
+# Leave these as raw escape codes
+bold=$(tput bold)
+col0=$(tput sgr0)
+col1=$(tput setaf 6)
+col2=$(tput setaf 3)
+
+# Wrap the variables inline using \[ and \]
+_prompt_string='🧩\[${bold}${col1}\]$(basename "$(dirname "$PWD")")/$(basename "$PWD")\[${col0}\] \[${col2}\]$(branch)$(dirty)\[${col0}\] ▶ '
+
+if [ -n "$ZSH_VERSION" ]; then
+  setopt PROMPT_SUBST
+  PROMPT="$_prompt_string"
+else
+  PROMPT_COMMAND='PS1="'"$_prompt_string"'"'
+fi
+
+[ -n "$1" ] && "$@"

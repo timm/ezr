@@ -1,0 +1,37 @@
+/* 1. Fonts and Basic Styling */
+body, div.docs, p {
+  font-family: Optima, Candara, "Noto Sans", sans-serif !important;
+  font-size: 15px; color: #333;
+}
+pre, code, .code { font-family: "JetBrains Mono", "Fira Code", monospace; }
+
+/* 2. GAP KILLER: Remove Pycco's default top padding/margins */
+#container { margin-top: 0 !important; }
+div.docs, div.code { padding-top: 10px !important; }
+
+/* 3. The "Hugging" Text */
+div.docs, div.docs p {
+  text-align: right !important; padding-right: 35px !important;
+}
+
+/* 4. Left-Anchored Headers */
+div.docs h1, div.docs h2, div.docs h3 {
+  text-align: left !important; border-bottom: 1px solid #eee;
+  width: 100%; display: block; margin-top: 40px;
+}
+
+/* 5. Special case: First H1 should have almost no top margin */
+div.docs h1:first-child, div.section:first-child h1 {
+  margin-top: 5px !important;
+}
+div.docs h3 { border-bottom: none; color: #555; }
+
+/* 6. LHS Code Blocks */
+div.docs pre {
+  text-align: left !important; margin: 20px 0 !important;
+  font-size: 0.75em !important; background: #fdfdfd; padding: 15px;
+  border: 1px solid #eee; border-left: 4px solid #7D9029;
+}
+div.section.intro div.docs, div.section.intro div.docs p {
+  text-align: left !important;
+}
