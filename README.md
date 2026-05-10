@@ -3,7 +3,7 @@
 ![Goal Multi-Obj](https://img.shields.io/badge/Goal-Multi--Obj-purple?logo=target&logoColor=white&labelColor=C026D3&color=6D1780)
 ![Teaching](https://img.shields.io/badge/Teaching-CSC591-red?logo=graduationcap&logoColor=white&labelColor=DC2626&color=7F1D1D)
 ![Deps 0](https://img.shields.io/badge/Deps-0-green?logo=checkmarx&logoColor=white&labelColor=00C853&color=006B29)
-![LOC 300](https://img.shields.io/badge/LOC-300-yellow?logo=codecov&logoColor=white&labelColor=FDE047&color=C3A700)
+![LOC 600](https://img.shields.io/badge/LOC-600-yellow?logo=codecov&logoColor=white&labelColor=FDE047&color=C3A700)
 ![License](https://img.shields.io/badge/©_2026-timm-black?logo=github&logoColor=white&labelColor=24292e&color=000000&link=http://timm.fyi)
 [![tests](https://github.com/timm/ezr/actions/workflows/tests.yml/badge.svg)](https://github.com/timm/ezr/tree/26mar)
 
@@ -17,9 +17,9 @@ clustering, Naive Bayes, and active learning
 
 ## SYNOPSIS
 
-    ezr [OPTIONS] COMMAND [FILE]
-    python ezeg.py [OPTIONS] COMMAND [FILE]
-    pytest ezeg.py [-v] [-k PATTERN]
+    ezr APP [OPTIONS] [FILE]
+    python -m ezr.<app> [OPTIONS] [FILE]
+    pytest tests/ [-v] [-k PATTERN]
 
 ## DESCRIPTION
 
@@ -49,11 +49,78 @@ Input is CSV. The header row defines column roles:
     *X        Ignored (e.g. "idX")
     ?         Missing value (in data rows, not header)
 
-The codebase is two files:
+The codebase is a small core plus a handful of single-purpose
+app files, each living on top of `ezr.py`:
 
-- **ezr.py** — the library (columns, data, distance, trees,
-  clustering, Bayes, active learning, stats)
-- **ezeg.py** — the CLI driver and all test/demo functions
+- **ezr.py** — core primitives (Num/Sym columns, Data, csv,
+  distance, like/likes, mid/spread, pick, extrapolate, wins, the)
+- **classify.py** — Naive Bayes (incremental test-then-train)
+- **tree.py** — decision/regression trees, treeShow, treePlan
+- **cluster.py** — kmeans, kmeans++, rhalf
+- **search.py** — sa, ls, de, oneplus1, oracleNearest
+- **acquire.py** — active learning (Bayes + centroid acquisition)
+- **textmine.py** — tokenize, stem, tfidf, CNB, active CNB
+- **stats.py** — sames, cliffs, confused
+- **tests/** — pytest test suite, one file per app
+
+Apps depend only on `ezr.py` (star topology, no app-to-app imports).
+Tests live outside the package and import core + the app under test.
+
+```mermaid
+graph TD
+  subgraph Tests["tests/ (pytest)"]
+    T_core[test_core.py]
+    T_classify[test_classify.py]
+    T_tree[test_tree.py]
+    T_cluster[test_cluster.py]
+    T_search[test_search.py]
+    T_acquire[test_acquire.py]
+    T_textmine[test_textmine.py]
+    T_stats[test_stats.py]
+  end
+
+  subgraph Apps["apps (single-purpose)"]
+    classify["classify.py<br/>~30 LOC"]
+    tree["tree.py<br/>~110 LOC"]
+    cluster["cluster.py<br/>~90 LOC"]
+    search["search.py<br/>~90 LOC"]
+    acquire["acquire.py<br/>~50 LOC"]
+    textmine["textmine.py<br/>~210 LOC"]
+    stats["stats.py<br/>~60 LOC"]
+  end
+
+  core[("ezr.py<br/>core primitives<br/>~220 LOC")]
+
+  classify --> core
+  tree --> core
+  cluster --> core
+  search --> core
+  acquire --> core
+  textmine --> core
+  stats --> core
+
+  T_core --> core
+  T_classify --> classify
+  T_tree --> tree
+  T_cluster --> cluster
+  T_search --> search
+  T_acquire --> acquire
+  T_textmine --> textmine
+  T_stats --> stats
+
+  classDef coreStyle fill:#1D4ED8,color:#fff,stroke:#0A2A7A,stroke-width:2px
+  classDef appStyle fill:#FB8C00,color:#fff,stroke:#A85A00
+  classDef testStyle fill:#00C853,color:#fff,stroke:#006B29
+  class core coreStyle
+  class classify,tree,cluster,search,acquire,textmine,stats appStyle
+  class T_core,T_classify,T_tree,T_cluster,T_search,T_acquire,T_textmine,T_stats testStyle
+```
+
+Star network: every arrow points down to `ezr.py`. No sideways arrows
+between apps. Tests fan in to the apps they exercise.
+
+Total app+core ≈ 860 LOC (excluding tests). Tests redistribute the
+old `ezeg.py` (~695 LOC of demos) into per-app pytest files.
 
 ## INSTALLATION
 
@@ -63,12 +130,13 @@ The codebase is two files:
     cd ezr
     pip install -e .
 
-This creates the global `ezr` command. Edits to `ezr.py`
-and `ezeg.py` take effect immediately.
+This creates the global `ezr` command. Edits to any
+core or app file take effect immediately.
 
-    ezr --h
-    ezr --see auto93.csv
-    ezr --seed=42 --test auto93.csv
+    ezr --help
+    ezr tree auto93.csv
+    ezr classify diabetes.csv
+    ezr search de auto93.csv --budget=256
 
 To uninstall:
 
@@ -78,8 +146,8 @@ To uninstall:
 
     git clone http://github.com/timm/ezr
     cd ezr
-    python ezeg.py --h
-    python ezeg.py --see auto93.csv
+    python -m ezr.cli --help
+    python -m ezr.tree auto93.csv
 
 No installation required. Just needs Python 3.12+.
 
@@ -90,16 +158,19 @@ No installation required. Just needs Python 3.12+.
 
 ## COMMANDS
 
-    --h                 Show help text
-    --list              List all available demos and tests
-    --egs FILE          Run all demos sequentially on FILE
-    --see FILE          Show grown decision tree (Rung 1: association)
-    --funny FILE        Test rows against tree leaves, flag anomalies (Rung 2)
-    --plan FILE         Generate counterfactual plans (Rung 3: what-if)
-    --test FILE         Run full train/predict/score pipeline
-    --classify FILE     Run incremental Naive Bayes classification
-    --cluster FILE      Run clustering benchmark table
-    --acquire FILE      Compare active learning strategies
+Each subcommand dispatches to a single app:
+
+    ezr classify FILE       NB + decision tree + ZeroR baseline
+    ezr tree FILE           Grow regression tree (Rung 1: association)
+    ezr tree --funny FILE   Flag rows where leaf disagrees with truth (Rung 2)
+    ezr tree --plan FILE    Counterfactual plans for the worst row (Rung 3)
+    ezr cluster FILE        Run clustering benchmark (kmeans, kpp, rhalf)
+    ezr search sa FILE      Simulated annealing
+    ezr search ls FILE      Local search
+    ezr search de FILE      Differential evolution (NP=30)
+    ezr search compare FILE Compare sa vs ls vs de
+    ezr acquire FILE        Active learning train/predict/score pipeline
+    ezr textmine FILE       CNB text classification
 
 ## OPTIONS
 
@@ -138,45 +209,31 @@ all subsequent commands:
 
 ## TESTING
 
-### Run all tests with pytest
+### Run all tests
 
     pip install pytest
-    pytest ezeg.py -v
+    pytest tests/ -v
 
-### Run a single test
+### Run a single test file
 
-    pytest ezeg.py -k test_num
+    pytest tests/test_tree.py -v
 
-### Run all demos via the CLI
+### Run a single test by name
 
-    ezr --egs auto93.csv
+    pytest tests/ -k test_classify
 
-### Available test functions
+### Test files (one per app)
 
-    test_o          String formatting
-    test_table      Tabular output
-    test_thing      Type coercion
-    test_nest       Nested namespace setting
-    test_csv        CSV reading
-    test_h          Help text
-    test_the        Config parsing
-    test_list       List all demos
-    test_egs        Run all demos
-    test_num        Num column statistics
-    test_sym        Sym column entropy
-    test_pick       Random sampling from distributions
-    test_cols       Column extraction logic
-    test_data       Data object population
-    test_addsub     Incremental add/subtract rows
-    test_classify   Naive Bayes classification
-    test_distx      Independent variable distance
-    test_disty      Dependent variable distance
-    test_tree       Decision tree (Rung 1)
-    test_funny      Anomaly detection (Rung 2)
-    test_plan       Counterfactual plans (Rung 3)
-    test_test       Train/predict/score pipeline
-    test_cluster    Clustering benchmarks
-    test_acquire    Active learning comparison
+    tests/test_core.py      Num, Sym, csv, Data, Cols, distx, disty, mid, spread,
+                            entropy, pick, picks, extrapolate, addsub, thing, nest, the
+    tests/test_classify.py  NB vs Tree vs ZeroR (90/10 split, 20 reps, asserts > ZeroR)
+    tests/test_tree.py      tree, see, funny (Rung 2), plan (Rung 3)
+    tests/test_cluster.py   kmeans, kpp, rhalf benchmarks
+    tests/test_search.py    sa, ls, de (asserts final energy < initial)
+    tests/test_acquire.py   acquire, acquire1, acquire3 (asserts wins > random)
+    tests/test_textmine.py  cnb_like, cnb_sweep, cnb_data, cnb_active,
+                            tokenize, nostop, stem, tfidf
+    tests/test_stats.py     sames, cliffs, confused
 
 ## LIBRARY USAGE
 
@@ -226,18 +283,39 @@ Clndrs > 5                    ,0.72 ,( 24), {Acc+=14.52, Lbs-=3629.83, Mpg+=18.3
 
 
 
-Key exports: `Data`, `Num`, `Sym`, `Cols`, `Tree`,
-`adds`, `clone`, `mid`, `spread`, `norm`, `disty`, `distx`,
-`treeGrow`, `treeLeaf`, `treeShow`, `treePlan`,
-`kmeans`, `kpp`, `rhalf`, `half`,
-`like`, `likes`, `classify`, `acquire`,
-`wins`, `ready`, `csv`, `o`, `table`, `the`.
+Key exports — **core (`ezr.py`)**: `Data`, `Num`, `Sym`, `Col`, `Cols`,
+`adds`, `add`, `sub`, `clone`, `mid`, `spread`, `mode`, `entropy`,
+`norm`, `distx`, `disty`, `nearest`, `like`, `likes`, `wins`,
+`pick`, `picks`, `extrapolate`, `csv`, `o`, `table`, `nest`, `thing`, `the`.
+
+**Apps**:
+- `tree.py`: `Tree`, `treeGrow`, `treeCuts`, `treeSplit`, `treeLeaf`,
+  `treeNodes`, `treeShow`, `treePlan`
+- `classify.py`: `classify` (incremental NB)
+- `cluster.py`: `kmeans`, `kpp`, `rhalf`
+- `search.py`: `oneplus1`, `sa`, `ls`, `de`, `oracleNearest`
+- `acquire.py`: `acquire`, `warm_start`, `acquireWithBayes`, `acquireWithCentroid`
+- `stats.py`: `sames`, `cliffs`, `confused`, `dinc`
+- `textmine.py`: `tokenize`, `nostop`, `stem`, `tfidf`, `cnb`, `cnbLikes`,
+  `text_mining`, `active`
 
 ## FILES
 
-    ezr.py          Library (columns, data, trees, clustering, Bayes, stats)
-    ezeg.py         CLI driver, demos, and test functions
-    pyproject.toml  Package configuration
+    ezr/
+      ezr.py          Core primitives (~200 LOC)
+      classify.py     Incremental Naive Bayes
+      tree.py         Regression and decision trees, plans, anomalies
+      cluster.py      kmeans, kmeans++, rhalf
+      search.py       sa, ls, de, oneplus1
+      acquire.py      Active learning (Bayes + centroid)
+      textmine.py     Tokenize, stem, tfidf, CNB
+      stats.py        sames, cliffs, confused
+      cli.py          Subcommand dispatcher
+    tests/            One test_<app>.py per app, plus conftest.py
+    pyproject.toml    Package config (ezr binary entry, version, deps)
+    README.md         This file
+    CHANGELOG.md      Release notes
+    LICENSE.md        MIT
 
 ## AUTHOR
 

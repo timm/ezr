@@ -137,6 +137,7 @@ def add(it, v, w=1):
     [add(col, v[col.at], w) for col in it.all]
   elif v != "?":  # skip "don't know" values
     if Sym == type(it):
+      it.n += w
       it.has[v] = w + it.has.get(v, 0)
     elif w < 0 and it.n <= 2:
       it.n=it.mu=it.m2=it.sd=0
@@ -247,35 +248,36 @@ def classify(src, wait=10):
 
 class Tree:
   """Decision tree node."""
-  def __init__(i, data, rows):
+  def __init__(i, data, rows, klass=None, y=Num):
+    klass = klass or (lambda r: disty(data, r))
     i.d = clone(data, rows)
-    i.ynum=adds((disty(data,row) for row in rows),Num())
+    i.ynum = adds((klass(row) for row in rows), y())
     i.col,i.cut = None,0
     i.left=i.right=None
 
 def treeCuts(col, rows):
   """Possible split points for a column."""
-  vs=[row[col.at] for row in rows if row[col.at]!="?"]
-  if not vs: return []
-  return (set(vs) if Sym == type(col)
-          else [sorted(vs)[len(vs)//2]])
+  if Sym == type(col): return list(col.has.keys())
+  vs = [row[col.at] for row in rows if row[col.at] != "?"]
+  return [sorted(vs)[len(vs)//2]] if vs else []
 
-def treeSplit(data, col, cut, rows):
+def treeSplit(data, col, cut, rows, klass=None, y=Num):
   """Evaluate split on col at cut."""
-  l_rows,r_rows,l_num,r_num=[],[],Num(),Num()
+  klass = klass or (lambda r: disty(data, r))
+  l_rows,r_rows,l_y,r_y=[],[],y(),y()
   for row in rows:
     v = row[col.at]
     go=v=="?" or (v==cut if Sym==type(col) else v<=cut)
     (l_rows if go else r_rows).append(row)
-    add(l_num if go else r_num,disty(data,row))
-  s=l_num.n*spread(l_num)+r_num.n*spread(r_num)
+    add(l_y if go else r_y, klass(row))
+  s=l_y.n*spread(l_y)+r_y.n*spread(r_y)
   return s,col,cut,l_rows,r_rows
 
-def treeGrow(data, rows):
-  """Grow tree to minimize Y-variance."""
-  tree = Tree(data, rows)
+def treeGrow(data, rows, klass=None, y=Num):
+  """Grow tree to minimize Y-variance (or entropy if y=Sym)."""
+  tree = Tree(data, rows, klass, y)
   if len(rows) >= 2 * the.learn.leaf:
-    splits = (treeSplit(data, col, cut, rows)
+    splits = (treeSplit(data, col, cut, rows, klass, y)
               for col in tree.d.cols.xs
               for cut in treeCuts(col, rows))
     if valid := [s for s in splits
@@ -283,8 +285,8 @@ def treeGrow(data, rows):
            >= the.learn.leaf]:
       _, tree.col, tree.cut, left, right = min(
         valid, key=lambda x: x[0])
-      tree.left  = treeGrow(data, left)
-      tree.right = treeGrow(data, right)
+      tree.left  = treeGrow(data, left, klass, y)
+      tree.right = treeGrow(data, right, klass, y)
   return tree
 
 #  ___
@@ -395,6 +397,47 @@ def picks(data, row, n=1):
     min(n,len(data.cols.xs))):
     s[col.at] = pick(col, s[col.at])
   return s
+
+def extrapolate(cols, a, b, c, F=0.5):
+  """DE blend over given cols: new = a + F*(b-c).
+  Num: arithmetic clipped to mu+/-4sd. Sym: prob-F pick of b else a. ?: take a.
+  Untouched cols inherit from a (caller fills via label fn for DE search,
+  or passes cols.all for full data generation)."""
+  out = a[:]
+  for col in cols:
+    va, vb, vc = a[col.at], b[col.at], c[col.at]
+    if va == "?":
+      out[col.at] = "?"
+    elif Num == type(col):
+      if vb == "?" or vc == "?":
+        out[col.at] = va
+      else:
+        v = va + F * (vb - vc)
+        lo, hi = col.mu - 4*col.sd, col.mu + 4*col.sd
+        out[col.at] = max(lo, min(hi, v))
+    else:
+      out[col.at] = vb if (vb != "?" and rand() < F) else va
+  return out
+
+def de(data, oracle, budget=1000, NP=30, F=0.5):
+  """Differential evolution (DE/rand/1). Population NP, blend F.
+  Yields (evals, best_energy, best_row) on each improvement."""
+  pop = [r[:] for r in sample(data.rows, min(NP, len(data.rows)))]
+  es  = [oracle(r) for r in pop]
+  h   = len(pop)
+  best_i = min(range(len(pop)), key=lambda j: es[j])
+  yield h, es[best_i], pop[best_i][:]
+  while h < budget:
+    for i in range(len(pop)):
+      if h >= budget: break
+      a_i, b_i, c_i = sample([j for j in range(len(pop)) if j != i], 3)
+      trial = extrapolate(data.cols.xs, pop[a_i], pop[b_i], pop[c_i], F)
+      en = oracle(trial); h += 1
+      if en < es[i]:
+        pop[i], es[i] = trial, en
+        if en < es[best_i]:
+          best_i = i
+          yield h, en, trial[:]
 
 def oneplus1(data, mutate, accept, oracle,
              budget=1000, restart=0):

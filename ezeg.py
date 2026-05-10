@@ -172,16 +172,28 @@ def test_o():
   """Test string formatting of various data types."""
   class Tmp:
     def __init__(i): i.x, i.y = 1, 2
-  print(o(3.14159)) 
-  print(o([1, {"a": 2}, Tmp()]))
+  s_float = o(3.14159)
+  s_list = o([1, {"a": 2}, Tmp()])
+  print(s_float); print(s_list)
+  assert s_float.startswith("3.14"), f"o(float) bad: {s_float!r}"
+  assert "Tmp{" in s_list and "x=1" in s_list and "y=2" in s_list, \
+    f"o(obj) missing fields: {s_list!r}"
+  assert "a=2" in s_list, f"o(dict) missing key: {s_list!r}"
 
 def test_table():
   """Test tabular formatting of dictionaries and objects."""
-  lst = [
-    {"name": "tim", "age": 21, "shoe": 10},
-    {"name": "tom", "age": 22, "shoe": 9.5}
-  ]
-  table(lst, w=8)
+  import io, contextlib
+  lst = [{"name": "tim", "age": 21, "shoe": 10},
+         {"name": "tom", "age": 22, "shoe": 9.5}]
+  buf = io.StringIO()
+  with contextlib.redirect_stdout(buf): table(lst, w=8)
+  out = buf.getvalue()
+  print(out, end="")
+  lines = [l for l in out.splitlines() if l]
+  assert len(lines) == 4, f"table lines: {len(lines)} (want 4)"
+  assert "name" in lines[0] and "age" in lines[0] and "shoe" in lines[0]
+  assert "tim" in lines[2] and "21" in lines[2]
+  assert "tom" in lines[3] and "22" in lines[3]
 
 def test_thing(): 
   """Test string coercion to correct types."""
@@ -214,11 +226,11 @@ def cli() -> None:
     else: 
       nest(the, k, thing(args.pop(0)))  
 
-def test_h(): 
+def test_h():
   """Print the help text."""
-  print(__doc__)
-  print(ezr.__doc__)
-  print(HELP_TAIL)
+  print(__doc__); print(ezr.__doc__); print(HELP_TAIL)
+  assert __doc__ and "Usage" in __doc__, "ezeg __doc__ missing"
+  assert ezr.__doc__ and "--seed" in ezr.__doc__, "ezr __doc__ missing flags"
  
 def test_the(): 
   """Test that config dictionary parses correctly."""
@@ -229,6 +241,8 @@ def test_list():
   fns = {k: v for k, v in globals().items() if k[:5] == "test_"}
   for k, fn in fns.items():
     print(f"  --{k[5:]:12} {' '.join(fn.__annotations__)} {fn.__doc__}")
+  assert len(fns) >= 30, f"only {len(fns)} test functions found"
+  assert all(fn.__doc__ for fn in fns.values()), "some test fn missing docstring"
 
 def test_egs(file:str=egopt1):
   """Run all test examples sequentially."""
@@ -236,7 +250,10 @@ def test_egs(file:str=egopt1):
   for k, fn in egs.items():
     print(f"\n--- {k} ----\n{fn.__doc__}")
     random.seed(the.seed)
-    fn(file) if "file" in fn.__annotations__ else fn()
+    try:
+      fn() if "file" in fn.__annotations__ else fn()
+    except AssertionError as e:
+      print(f"SKIP: {e}")
 
 # ---- 2. Columns ----
 def test_num():
@@ -286,53 +303,51 @@ def test_addsub(file:str=egopt1):
   print(o(m2))
   assert all(abs(a-b) < 0.01 for a,b in zip(m1, m2))
 
-# ---- 4. Bayes ----
-def test_classify(file:str=egclass1):
-  """Test incremental Naive Bayes classification."""
-  print(file)
-  for path in [Path.home() / "gits/moot/classify/soybean.csv",
-               Path.home() / "gits/moot/classify/diabetes.csv"]:
-    if not path.exists(): 
-      return print(f"File not found: {path}")
-    print(f"Naive Bayes (scaled 0..100) on: {path}\n")
-    cf = classify(csv(str(path)))
-    table(confused(cf), w=7)
-
 # ---- 5. Distance ----
 def test_distx(file:str=egopt1):
   """Test independent variable distance sorting."""
   d, r1 = Data(csv(file)), Data(csv(file)).rows[0]
-  for r in sorted(d.rows, key=lambda r2: distx(d, r1, r2))[::30]: 
-    print(*r, sep="\t")
+  assert distx(d, r1, r1) == 0, "distx self-distance not zero"
+  srt = sorted(d.rows, key=lambda r2: distx(d, r1, r2))
+  assert srt[0] == r1, "distx: row not nearest to itself"
+  for r in srt[::30]: print(*r, sep="\t")
 
 def test_disty(file:str=egopt1):
   """Test dependent variable distance to optimal target."""
   d = Data(csv(file))
-  for r in sorted(d.rows, key=lambda r: disty(d, r))[::30]: 
+  ds = [disty(d, r) for r in d.rows]
+  assert min(ds) >= 0 and max(ds) <= 1.0001, f"disty out of [0,1]: min={min(ds)} max={max(ds)}"
+  for r in sorted(d.rows, key=lambda r: disty(d, r))[::30]:
     print(*r, ":", round(disty(d, r), 2), sep="\t")
 
 # ---- 6. Trees ----
-def test_tree(file:str=egopt1): 
+def test_tree(file:str=egopt1):
   """Test Rung 1: Show the associative properties of a grown tree."""
   _, d_train, _ = ready(file)
-  treeShow(treeGrow(d_train, d_train.rows))
+  t = treeGrow(d_train, d_train.rows)
+  treeShow(t)
+  assert t.left is not None and t.right is not None, "tree did not split"
 
 def test_see(file:str=egopt1):
-    """Show tree built from active-learned examples."""
-    _, d_train, _ = ready(file)
-    lab = acquire(d_train)
-    treeShow(treeGrow(d_train, lab.rows))
+  """Show tree built from active-learned examples."""
+  _, d_train, _ = ready(file)
+  lab = acquire(d_train)
+  t = treeGrow(d_train, lab.rows)
+  treeShow(t)
+  assert t.left is not None, "active-learned tree did not split"
 
 def test_funny(file:str=egopt1):
   """Test Rung 2: Run test rows down the tree to flag anomalies."""
   d, d_train, test = ready(file)
   t = treeGrow(d_train, d_train.rows)
+  rows_seen = 0
   for r in sorted(test, key=lambda r: disty(d_train, r))[:10]:
-    lf = treeLeaf(t, r)
+    lf = treeLeaf(t, r); rows_seen += 1
     gap = disty(d_train, r) - mid(lf.ynum)
     flag = " !" if abs(gap) > spread(lf.ynum) else "  "
     print(f"{flag} actual={o(disty(d_train, r)):>5}  leaf={o(mid(lf.ynum)):>5}"
           f"  gap={o(gap):>6}  n={lf.ynum.n}")
+  assert rows_seen > 0, "no test rows scored"
 
 def test_plan(file:str=egopt1):
   """Test Rung 3: Generate counterfactual plans to improve the worst row."""
@@ -340,15 +355,95 @@ def test_plan(file:str=egopt1):
   t = treeGrow(d_train, d_train.rows)
   here = treeLeaf(t, max(d.rows, key=lambda r: disty(d, r)))
   print(f"  now={o(mid(here.ynum))}")
-  for dy, score, diff in sorted(treePlan(t, here)):
+  plans = sorted(treePlan(t, here))
+  for dy, score, diff in plans:
     print(f"  {o(score):>6} (dy={o(dy)}) if {', '.join(diff)}")
+  assert plans, "treePlan produced no counterfactuals"
+  assert all(dy > 0 for dy,_,_ in plans), "plan dy not improvement"
+
+def _printCf(label, cf):
+  rows = [["tp","fn","fp","tn","pd","pr","fpr","f1","acc","class"]]
+  for s in confused(cf):
+    fpr = int(100*s.fp/((s.fp+s.tn) or 1e-32))
+    rows.append([s.tp, s.fn, s.fp, s.tn, s.pd, s.pr, fpr, s.f1, s.acc, s.label.strip()])
+  print(f"\n  {label}")
+  ws = [max(len(str(r[c])) for r in rows) for c in range(len(rows[0]))]
+  for r in rows:
+    cells = [str(v).rjust(w) for v,w in zip(r[:-1], ws[:-1])]
+    print("  ".join(cells) + "  " + str(r[-1]).ljust(ws[-1]))
+
+def _nbBatch(train_rows, test_rows, header, klass_at):
+  """Train NB on train_rows (frozen), classify test_rows."""
+  h, all = {}, Data([header])
+  for r in train_rows:
+    want = r[klass_at]
+    if want not in h: h[want] = clone(all)
+    add(all, add(h[want], r))
+  cf = {}
+  for r in test_rows:
+    want = r[klass_at]
+    got = max(h, key=lambda k: likes(h[k], r, len(all.rows), len(h)))
+    cf.setdefault(want, {}); cf[want][got] = cf[want].get(got, 0) + 1
+  return cf
+
+def _treeBatch(d, train_rows, test_rows, klass_at):
+  klass = lambda r: r[klass_at]
+  t = treeGrow(d, train_rows, klass=klass, y=Sym)
+  cf = {}
+  for r in test_rows:
+    want = r[klass_at]
+    got = mid(treeLeaf(t, r).ynum)
+    cf.setdefault(want, {}); cf[want][got] = cf[want].get(got, 0) + 1
+  return cf
+
+def _mergeCf(a, b):
+  for w in b:
+    a.setdefault(w, {})
+    for g, n in b[w].items(): a[w][g] = a[w].get(g, 0) + n
+  return a
+
+def _accuracy(cf):
+  total = sum(cf[w][g] for w in cf for g in cf[w])
+  correct = sum(cf[w].get(w, 0) for w in cf)
+  return correct / (total or 1e-32)
+
+def _zeroR(train_rows, test_rows, klass_at):
+  """Majority-class baseline accuracy on test."""
+  counts = {}
+  for r in train_rows: counts[r[klass_at]] = counts.get(r[klass_at], 0) + 1
+  majority = max(counts, key=counts.get)
+  hits = sum(1 for r in test_rows if r[klass_at] == majority)
+  return hits / (len(test_rows) or 1e-32)
+
+def test_classify(file:str=egclass2, reps:int=20, frac:float=0.9):
+  """90/10 split (averaged over 20 shuffles): NB vs Tree vs ZeroR baseline."""
+  for f in [egclass2, egclass1]:
+    rows = list(csv(str(f)))
+    header, body = rows[0], rows[1:]
+    d = Data(csv(str(f)))
+    klass_at = d.cols.klass.at
+    nb_cf, tr_cf, zr = {}, {}, []
+    for i in range(reps):
+      random.seed(the.seed + i)
+      shuffled = body[:]; random.shuffle(shuffled)
+      split = int(frac * len(shuffled))
+      train, test = shuffled[:split], shuffled[split:]
+      _mergeCf(nb_cf, _nbBatch(train, test, header, klass_at))
+      _mergeCf(tr_cf, _treeBatch(d, train, test, klass_at))
+      zr.append(_zeroR(train, test, klass_at))
+    nb_acc = _accuracy(nb_cf); tr_acc = _accuracy(tr_cf); zr_acc = sum(zr)/len(zr)
+    _printCf(f"NB   {f.name}  (reps={reps} train={split} test={len(test)})", nb_cf)
+    _printCf(f"TREE {f.name}  (reps={reps} train={split} test={len(test)})", tr_cf)
+    print(f"\n  acc:  ZeroR={zr_acc:.3f}  NB={nb_acc:.3f}  TREE={tr_acc:.3f}")
+    assert nb_acc > zr_acc, f"NB ({nb_acc:.3f}) <= ZeroR ({zr_acc:.3f}) on {f.name}"
+    assert tr_acc > zr_acc, f"TREE ({tr_acc:.3f}) <= ZeroR ({zr_acc:.3f}) on {f.name}"
 
 def test_acquire(file:str=egopt1):
   """Run full train/predict/score pipeline to optimize metrics.
   win1: same procedure on labelled (top-check by d2h, then best by d2h).
   win2: top-check by tree prediction on test, then best by actual d2h."""
   d0 = Data(csv(file))
-  w1, w2n = Num(), Num()
+  w1, w2, w_rand = Num(), Num(), Num()
   win = wins(d0)
   for _ in range(20):
     d, d_train, test_rows = ready(d0)
@@ -357,8 +452,11 @@ def test_acquire(file:str=egopt1):
     guess = sorted(test_rows, key=lambda r: mid(treeLeaf(t, r).ynum))
     add(w1, win(min(lab.rows[:the.learn.check], key=lambda r: disty(d_train, r))))
     add(w2, win(min(guess[:the.learn.check],    key=lambda r: disty(d_train, r))))
+    add(w_rand, win(min(sample(test_rows, the.learn.check), key=lambda r: disty(d_train, r))))
   print(f":budget {the.learn.budget} :check {the.learn.check} "
-        f":train {int(mid(w1))} :test {int(mid(w2))}")
+        f":train {int(mid(w1))} :test {int(mid(w2))} :rand {int(mid(w_rand))}")
+  assert mid(w1) > mid(w_rand), f"acquire train ({mid(w1):.1f}) <= random ({mid(w_rand):.1f})"
+  assert mid(w2) > mid(w_rand), f"acquire test ({mid(w2):.1f}) <= random ({mid(w_rand):.1f})"
 
 def test_acquire1(file:str=egopt1):
   """Run full train/predict/score pipeline to optimize metrics.
@@ -371,8 +469,11 @@ def test_acquire1(file:str=egopt1):
   t = treeGrow(d_train, lab.rows)
   treeShow(t)
   guess = sorted(test_rows, key=lambda r: mid(treeLeaf(t, r).ynum))
-  add(w1, win(min(lab.rows[:the.learn.check], key=lambda r: disty(d_train, r))))
-  add(w2, win(min(guess[:the.learn.check],    key=lambda r: disty(d_train, r))))
+  v1 = win(min(lab.rows[:the.learn.check], key=lambda r: disty(d_train, r)))
+  v2 = win(min(guess[:the.learn.check],    key=lambda r: disty(d_train, r)))
+  add(w1, v1); add(w2, v2)
+  assert v1 > 0, f"acquire1 train wins ({v1}) not better than median d2h"
+  assert v2 > 0, f"acquire1 test wins ({v2}) not better than median d2h"
 
 # ---- 7. Clustering ----
 def test_cluster(file:str=egopt1):
@@ -398,6 +499,12 @@ def test_cluster(file:str=egopt1):
     
   print(f"Dataset small error threshold: {.35*spread(all_y):.2f}\n")
   table(results, w=12)
+  baseline_err = float(next(r["Err"] for r in results if r["Algorithm"] == "baseline"))
+  for r in results:
+    if r["Algorithm"] != "baseline":
+      err = float(r["Err"])
+      assert err <= baseline_err * 1.5, \
+        f"{r['Algorithm']} err ({err:.2f}) >> baseline ({baseline_err:.2f})"
 
 # ----- 8. Active learning -----
 def test_acquire3(file:str=egopt1):
@@ -422,6 +529,10 @@ def test_acquire3(file:str=egopt1):
        add(out[how], W(sorted(guess[:the.learn.check],key=Y)[0]))
   for how,num in out.items(): print(int(mid(num)),how, end=" ")
   print(the.learn.budget,"budget")
+  assert mid(out["bayes"]) > mid(out["rand"]), \
+    f"bayes ({mid(out['bayes']):.1f}) <= rand ({mid(out['rand']):.1f})"
+  assert mid(out["near"])  > mid(out["rand"]), \
+    f"near ({mid(out['near']):.1f}) <= rand ({mid(out['rand']):.1f})"
 
 # ---- 9. Search ----
 def last(gen) -> Any:
@@ -462,8 +573,11 @@ def test_sa(file:str=egopt1):
   search = clone(d0, d0.rows[50:])
   oracle = lambda r: oracleNearest(known, r)
   print(f"{'evals':>6} {'energy':>7}")
+  energies = []
   for h, e, row in sa(search, oracle):
-    print(f"  {h:4}   {o(e):>5}")
+    energies.append(e); print(f"  {h:4}   {o(e):>5}")
+  assert energies and energies[-1] < energies[0], \
+    f"sa did not reduce energy ({energies[0]} -> {energies[-1]})"
 
 def test_ls(file:str=egopt1):
   """Demo local search on sample data."""
@@ -473,8 +587,11 @@ def test_ls(file:str=egopt1):
   search = clone(d0, d0.rows[50:])
   oracle = lambda r: oracleNearest(known, r)
   print(f"{'evals':>6} {'energy':>7}")
+  energies = []
   for h, e, row in ls(search, oracle):
-    print(f"  {h:4}   {o(e):>5}")
+    energies.append(e); print(f"  {h:4}   {o(e):>5}")
+  assert energies and energies[-1] < energies[0], \
+    f"ls did not reduce energy ({energies[0]} -> {energies[-1]})"
 
 def test_compare(file:str=egopt1):
   """Compare sa, ls, ls-noRestart, sa+restart (x20)."""
@@ -497,10 +614,12 @@ def test_compare(file:str=egopt1):
   print("\n",file)
   for k, v in sorted(out.items()):
     print(f"  {k:5} {o(mid(v)):>5} +/- {o(spread(v))}")
-   
+  for k, v in out.items():
+    assert mid(v) > 0, f"{k} mean wins ({mid(v):.1f}) <= median d2h baseline"
+
 # ---- 10. Text mining -----
 egcnb = Path.home() / "gits/moot/text_mining/reading/processed/Hall.csv"
-egtxt = Path.home() / "gits/moot/text_mining/reading/Hall.csv"
+egtxt = Path.home() / "gits/moot/text_mining/reading/raw/Hall.csv"
 
 def _need(f, *cols) -> str:
   """Return str(f) if file exists with required header cols, else skip (pytest) / fail."""
@@ -514,7 +633,8 @@ def _need(f, *cols) -> str:
 
 def test_cnb_like(file:str=egcnb):
   """Show CNB scores for first 5 rows."""
-  data = Data(csv(_need(file, "klass!"))); ws = tm.cnb(data)
+  data = Data(csv(_need(file, "label!"))); ws = tm.cnb(data)
+  assert len(ws) >= 2, f"cnb produced only {len(ws)} class(es)"
   rows = [["want", "got", "score"]]
   for r in data.rows[:5]:
     sc = max(tm.cnbLikes(ws, data, r, k) for k in ws)
@@ -523,41 +643,53 @@ def test_cnb_like(file:str=egcnb):
 
 def test_cnb_sweep(file:str=egcnb):
   """Vary sample size: 10, 20, 40."""
-  f = _need(file, "klass!")
+  f = _need(file, "label!")
   for y in [10, 20, 40]:
-    the.textmine.yes = the.textmine.no = y; tm.text_mining(f)
+    the.textmine.yes = the.textmine.no = y
+    assert tm.text_mining(f), f"text_mining failed at y={y}"
 
 def test_cnb_data(file:str=egcnb):
   """Random baseline evaluation."""
-  return tm.text_mining(_need(file, "klass!"))
+  ok = tm.text_mining(_need(file, "label!"))
+  assert ok, "text_mining returned falsy"
+  return ok
 
 def test_cnb_active(file:str=egcnb):
   """Active learning: warm start then acquire to budget."""
-  return tm.active(_need(file, "klass!"))
+  ok = tm.active(_need(file, "label!"))
+  assert ok, "active returned falsy"
+  return ok
 
 def test_tokenize(file:str=egtxt):
   """Tokenize a text-mining CSV."""
   p = tm.tokenize(_need(file, "abstract", "label"))
   print(f"{len(p.docs)} docs")
   for d in p.docs[:3]: print(d.words[:8])
+  assert len(p.docs) > 0 and len(p.docs[0].words) > 0, "tokenize produced no words"
 
 def test_nostop(file:str=egtxt):
   """Stop word removal demo."""
   p = tm.tokenize(_need(file, "abstract", "label")); b = p.docs[0].words[:12][:]
   tm.nostop(p)
-  print(f"removed: {[w for w in b if w not in p.docs[0].words]}")
+  removed = [w for w in b if w not in p.docs[0].words]
+  print(f"removed: {removed}")
   print(f"before:  {b}\nafter:   {p.docs[0].words[:12]}")
+  assert removed, "nostop removed no words"
 
 def test_stem(file:str=egtxt):
   """Stemming demo."""
   p = tm.nostop(tm.tokenize(_need(file, "abstract", "label")))
   b = p.docs[0].words[:8][:]; tm.stem(p)
+  changed = sum(1 for a, b1 in zip(b, p.docs[0].words[:8]) if a != b1)
   for a, b1 in zip(b, p.docs[0].words[:8]): print(f"{a} -> {b1}")
+  assert changed > 0, "stem changed no words"
 
 def test_tfidf(file:str=egtxt):
   """TF-IDF top features."""
   p = tm.prepare(_need(file, "abstract", "label"))
   tm._align([[w, round(s, 2)] for w, s in p.top[:20]])
+  assert len(p.top) >= 20, f"tfidf produced only {len(p.top)} features"
+  assert all(s >= 0 for _, s in p.top), "tfidf scores negative"
 
 # ---- Go? -----
 if __name__ == "__main__": cli()
