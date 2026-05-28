@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.9.4] — 2026-05-27
+
+### Changed
+- Collapsed star-topology layout into two files: `ezr.py` (library)
+  and `cli.py` (CLI dispatch + demos/tests). All apps inlined.
+
+### Removed
+- Modules `classify.py`, `tree.py`, `cluster.py`, `search.py`,
+  `acquire.py`, `textmine.py`, `stats.py` (merged into `ezr.py`).
+- `tests/` directory (pytest scaffolding). Tests now live in
+  `cli.py` as `eg_test_*` functions, invoked via `ezr test_<name>`
+  or `ezr test_all`.
+- `rebalance()` renamed from `dont_let_Best_grow_too_big()`.
+
+### Added
+- `ezr.py` section banners for each app (Stats, Tree, Cluster,
+  Classify, Search, Acquire, Textmine).
+- `cli.py` self-describing dispatcher: `ezr --list` shows all
+  `eg_*` commands with one-line docs.
+- `eg_test_all`: runs every `eg_test_*` and reports pass/fail count.
+
+
 ## [0.9.3] — 2026-03-28
 
 ### Added

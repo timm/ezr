@@ -12,14 +12,11 @@ license = {text = "MIT"}
 requires-python = ">=3.12"
 dependencies = []
 
-[project.optional-dependencies]
-test = ["pytest"]
-
 [project.scripts]
 ezr = "cli:main"
 
 [tool.setuptools]
-py-modules = ["ezr", "cli", "classify", "tree", "cluster", "search", "acquire", "textmine", "stats"]
+py-modules = ["ezr", "cli"]
 
 [project.urls]
 Changelog = "https://github.com/timm/ezr/blob/main/CHANGELOG.md"
