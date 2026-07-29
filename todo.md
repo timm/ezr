@@ -122,3 +122,64 @@ sentimental promotions.
 | Multi-file structure  | code2 (kernel/spoke) |
 | Nested config         | code2 (when needed)  |
 | Width                 | 65 (printable)       |
+
+## Tiny metaheuristics (from Brownlee/Luke TOC survey)
+
+Context: surveyed "Clever Algorithms" (Brownlee 2011, 45 algos)
+and "Essentials of Metaheuristics" (Luke 2013). Core canon (~20
+algos) in both; neither covers surrogate/Bayesian optimization --
+the gap ezr lives in. Luke ch.9 (LEM, model-fitting-by-
+classification) is basically `acquire`'s best/rest loop.
+
+Already have: sa, de, oneplus1 (1+1 ES), ls (hill climb),
+acquire (~LEM active learning).
+
+### Candidates, ranked by fit (est LOC given kernel primitives)
+
+- [ ] UMDA (~15): adds() elite rows into clone, sample each col
+      from mid/spread. Cols ARE the distribution model.
+- [ ] Cross-Entropy Method (~15): UMDA + elite fraction +
+      smoothing. Near-duplicate.
+- [ ] PBIL (~20): per-col prob vector nudged toward best row.
+- [ ] Iterated Local Search (~10): wrap ls, perturb via one
+      extrapolate kick, accept rule.
+- [ ] (mu+lambda) ES (~15): generalize oneplus1; keep mu best by
+      disty, spawn lambda.
+- [ ] Memetic (~10): de/ga step then ls polish.
+- [ ] CLONALG (~20): clone best, mutate rate ~ rank. Silly
+      metaphor, tiny code.
+- [ ] LVQ (~15): nearest + nudge centroid; kmeans cents exist.
+- [ ] GA (~25): tournament by disty, per-col uniform crossover.
+- [ ] Fitness sharing (~10): penalize disty by distx crowding.
+- [ ] Island model (~15): k pops, swap best occasionally.
+
+Best bang: UMDA/CEM/PBIL trio (~40 LOC total). Fills EDA gap;
+directly comparable to acquire -- both "learn distribution of
+good rows, sample it". Natural xaiplus experiment.
+
+Poor fit / big: GP, grammatical evolution, LCS/XCS, ACO (wants
+graphs not tables), BOA, backprop. NSGA-II questionable: disty
+distance-to-heaven already collapses multi-objective.
+
+### Soft tabu = Bayes over the visited (~10 LOC)
+
+Reframe: tabu list -> `seen = clone(data)` of visited rows;
+reject candidate when likes(seen, new, ...) too high ("been
+near here"). Closer to guided local search / frequency memory
+than strict tabu, but smoother. Aspiration = keep best-so-far
+check. Warm up ~10 rows before enforcing jail (likes noisy on
+tiny seen; like() divides by sd).
+
+Fading (forget old tabus) via sub() -- retraction already in
+kernel:
+
+- FIFO: `if len(seen.rows) > tenure: sub(seen, seen.rows.pop(0))`
+  = classic tenure, sharp horizon.
+- Random: low prob, `sub(seen, seen.rows.pop(randrange(...)))`
+  = exponential decay; same math as ACO pheromone evaporation.
+- Stable size, soft: fade prob = len(seen.rows)/cap.
+
+Only sub rows actually in seen.rows (else Num mu/m2 corrupt).
+
+Unification: tabu, tenure, ACO evaporation all collapse to one
+idea -- a Bayes model you add fresh sins to, sub old sins from.
