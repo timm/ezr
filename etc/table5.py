@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Reproduce Table 5 of arXiv:2606.03640 (Can AI be Easy?).
 Four treatments (ls/sa, restart on/off) x 20 MOOT benchmarks,
-20 repeats each, budget=1000 oracle calls, scored by ezr's
+100 repeats each, budget=1000 oracle calls, scored by ezr's
 wins() (Eq 1 of the paper) both with and without the 0.35*sd
 clamp (reviewer M5). Protocol per section 5.2: shuffle rows,
 50 rows -> surrogate oracle, search the rest. Emits plain and
@@ -39,7 +39,7 @@ def one(name):
          "x": len(d0.cols.xs), "y": len(d0.cols.ys)}
   for t, fn, r in TREATS:
     scores, raw = [], []
-    for rep in range(20):
+    for rep in range(100):
       random.seed(rep + 1)
       rows = d0.rows[:]
       random.shuffle(rows)
