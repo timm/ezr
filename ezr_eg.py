@@ -49,6 +49,10 @@ def nearest(tbl, row, rows): # [3]
 # Two customizations: ls [3] accepts only improvements (and
 # restarts when stuck); sa [4] is simulated annealing, which
 # sometimes accepts worse solutions, less so as time runs out.
+# de [6] is differential evolution: build a candidate by
+# interpolating [5] between three population members (per
+# column, a + f*(b-c), applied with probability cr); keep the
+# candidate if it beats the member it challenges.
 def pick(col, v=None): # [1] sample a plausible value
   if type(col) is Sym:
     return random.choices(list(col), col.values())[0]
@@ -92,6 +96,27 @@ def sa(tbl, oracle, m=0.5): # [4] 1983 simulated annealing
         s2[at] = pick(tbl.cols[at], s2[at])
     yield tuple(s2)
   return oneplus1(tbl, mutate, accept, oracle)
+
+def interpolate(col, a, b, c, f=0.5): # [5] DE crossover term
+  if type(col) is Sym or "?" in (a, b, c):
+    return random.choice([a, b, c])
+  return a + f*(b - c)
+
+def de(tbl, oracle, np=20, cr=0.9): # [6] storn+price 1997
+  pop = random.sample(tbl.rows, np)
+  es = [oracle(s) for s in pop]
+  h = np
+  while h < the.budget:
+    for i, s in enumerate(pop):
+      if h >= the.budget: break
+      a, b, c = random.sample(pop, 3)
+      sn = list(s)
+      for at in tbl.x:
+        if random.random() < cr:
+          sn[at] = interpolate(tbl.cols[at], a[at], b[at], c[at])
+      en = oracle(tuple(sn)); h += 1
+      if en < es[i]: pop[i], es[i] = tuple(sn), en
+  return pop[es.index(min(es))]
 
 
 #-- bayes -------------------------------------------------
@@ -220,7 +245,7 @@ def test_optimize():
   known = clone(tbl, random.sample(tbl.rows, 50))
   def oracle(r):
     return ydist(tbl, nearest(tbl, r, known.rows))
-  for what in [sa, ls]:
+  for what in [sa, ls, de]:
     random.seed(the.Seed)
     got = nearest(tbl, what(tbl, oracle), known.rows)
     print(f"{what.__name__:<3} win {round(win(got))}")
