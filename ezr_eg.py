@@ -3,31 +3,19 @@
 ezr_eg.py: more demos for ezr.py (clustering, optimizers)
 (c) 2026 Tim Menzies <timm@ieee.org> MIT license
 
-Options:
-
-  -budget=1000  optimize: max oracle calls
-  -restart=100  ls: retry after this many no-improvements
-  -K=10         kmeans: clusters
-  -N=10         kmeans: iterations
-  -k=1          bayes: rare klass hack
-  -m=2          bayes: rare evidence hack
-  -Repeats=30   klass: number of train/test splits
-  -Klass=$MOOT/classify/diabetes.csv  classify demo data
+Options: see ezr.py (all settings live in one place).
 """
-import random, re, sys
+import random, sys
 from ezr import *
-
-for k, v in re.findall(r"(\w+)=(\S+)", __doc__ or ""):
-  the[k] = the._defaults[k] = atom(v)
 
 
 #-- cluster -----------------------------------------------
+
 # Group rows by x-distance, no labels needed. kmeans [1]
 # loops: send each row to its nearest centroid, then recompute
 # centroids. kpp [2] picks better starting seeds: each new
 # seed is chosen with probability proportional to its distance
 # from the seeds picked so far. nearest [3] is 1-nn lookup.
-
 def kmeans(tbl, rows): # [1]
   cents = random.sample(rows, the.K)
   for _ in range(the.N):
@@ -53,6 +41,7 @@ def nearest(tbl, row, rows): # [3]
 
 
 #-- optimize ----------------------------------------------
+
 # Search for good rows without labelling everything. pick [1]
 # samples a plausible value for one column. oneplus1 [2] is
 # the 1+1 evolution strategy: mutate the current solution,
@@ -60,7 +49,6 @@ def nearest(tbl, row, rows): # [3]
 # Two customizations: ls [3] accepts only improvements (and
 # restarts when stuck); sa [4] is simulated annealing, which
 # sometimes accepts worse solutions, less so as time runs out.
-
 def pick(col, v=None): # [1] sample a plausible value
   if type(col) is Sym:
     return random.choices(list(col), col.values())[0]
@@ -107,13 +95,13 @@ def sa(tbl, oracle, m=0.5): # [4] 1983 simulated annealing
 
 
 #-- bayes -------------------------------------------------
+
 # Naive Bayes, used two ways: to pick which row to label next
 # (bayes [4], acquireBayes [5]) and to classify (next
 # section). like [1] scores one value against one column;
 # likes [2] adds the logs of those scores across a row's x
 # columns; liked [3] asks several tables "who most likes this
 # row?".
-
 def like(col, v, prior=0): # [1] P(v | col)
   if type(col) is Sym:
     return ((col.get(v, 0) + the.m * prior)
@@ -140,13 +128,13 @@ def acquireBayes(tbl, cap=None): # [5] label most-likely-best
 
 
 #-- classify ----------------------------------------------
+
 # The optimizer's parts, reused for classification. confuse
 # [1] turns (got, want) pairs into per-class accuracy, recall
 # (pd), false alarm (pf) and precision. fitTree [2] and
 # fitBayes [3] are rival classifiers built from ezr.py's trees
 # and this file's bayes. _klass [4] races fits over the same
 # train/test splits, printing one confusion report per fit.
-
 def confuse(pairs): # [1] (got, want)s --> per-klass scores
   out = {}
   for got, want in pairs:
@@ -199,10 +187,10 @@ def _klass(*fits): # [4] each fit(tbl, rows, y) --> predictor
 
 
 #-- start-up ----------------------------------------------
+
 # Demos, run from the shell: "ezr_eg --kmeans", or "--all"
 # for everything. "-Key val" flags (from the options above or
 # ezr.py's) may precede any demo; settings reset after each.
-
 def test_help():
   "Show usage, settings, demos"
   print(__doc__, "Demos:\n",

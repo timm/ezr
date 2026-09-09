@@ -78,7 +78,15 @@
   -Few=128         max train rows     
   -Leaf=4          tree: min rows in any leaf     
   -Check=5         holdout: top picks to label
+  -k=1             bayes: rare klass hack
+  -m=2             bayes: rare evidence hack
+  -K=10            kmeans: clusters
+  -N=10            kmeans: iterations
+  -budget=1000     optimize: max oracle calls
+  -restart=100     ls: retry after this many no-improves
+  -Repeats=30      klass: number of train/test splits
   -Seed=1234567891 random number seed
+  -Klass=$MOOT/classify/diabetes.csv  classify demo data
   -File=$MOOT/optimize/misc/auto93.csv
 </code></pre>
     </div>
