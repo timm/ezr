@@ -1,0 +1,13 @@
+Add missing comments to ezr_eg.py (and ezr.py if any def there
+lacks one). House style, matching existing comments in ezr.py:
+
+- Each top-level "def" line may carry one short trailing
+  "# comment": lowercase, under ~45 chars, no final period,
+  saying what the function returns or why it exists.
+- For any def missing such a comment, add one. If a def line
+  is too long to fit a trailing comment under 66 chars total,
+  put the comment on its own line directly above the def.
+- Do NOT change any code, names, or existing comments. Only
+  add comments. Keep every line under 66 characters.
+- Do not commit. When done, print a one-line summary per file
+  of how many comments were added.

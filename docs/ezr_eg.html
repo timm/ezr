@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>ezr_eg.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<div class="custom-header" style="background:#f8f9fa; padding:12px 30px;
+  border-bottom:1px solid #ddd; font-family:Optima, Candara, sans-serif;
+  display: flex; justify-content: space-between; align-items: center;
+  overflow-x: auto; white-space: nowrap;">
+  <div style="font-size: 1.05em; font-weight: 500; display: flex; gap: 20px;
+    flex-shrink: 0; white-space: nowrap;">
+    <a href="index.html"
+      style="text-decoration:none; color:#0366d6; display: flex;
+      align-items: center; gap: 5px;">
+      <i class="fa-solid fa-house"></i> Home
+    </a>
+    <a href="ezr.html"
+      style="text-decoration:none; color:#0366d6; display: flex;
+      align-items: center; gap: 5px;">
+      <i class="fa-solid fa-file-code"></i> ezr.py
+    </a>
+    <a href="ezr_eg.html"
+      style="text-decoration:none; color:#0366d6; display: flex;
+      align-items: center; gap: 5px;">
+      <i class="fa-solid fa-flask"></i> ezr_eg.py
+    </a>
+    <a href="https://github.com/timm/ezr" target="_blank"
+      style="text-decoration:none; color:#0366d6; display: flex;
+      align-items: center; gap: 5px;">
+      <i class="fa-brands fa-github"></i> GitHub
+      <i class="fa-solid fa-arrow-up-right-from-square"
+        style="font-size:0.7em;"></i>
+    </a>
+    <a href="https://github.com/timm/ezr/issues" target="_blank"
+      style="text-decoration:none; color:#0366d6; display: flex;
+      align-items: center; gap: 5px;">
+      <i class="fa-solid fa-circle-exclamation"></i> Issues
+      <i class="fa-solid fa-arrow-up-right-from-square"
+        style="font-size:0.7em;"></i>
+    </a>
+  </div>
+  <div style="display: flex; gap: 10px; align-items: center; flex-shrink: 0;
+    margin-left: 20px;">
+    <img style="height:22px;" alt="Python"
+      src="https://img.shields.io/badge/python-3.12+-3776ab.svg?style=flat-square&logo=python&logoColor=white">
+    <img style="height:22px;" alt="XAI"
+      src="https://img.shields.io/badge/topic-XAI-purple.svg?style=flat-square">
+    <a href="https://opensource.org/licenses/MIT" target="_blank"
+      style="display:flex; align-items:center;">
+      <img style="height:22px; border:none;" alt="MIT"
+        src="https://img.shields.io/badge/license-MIT-green.svg?style=flat-square">
+    </a>
+  </div>
+</div>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section intro'>
+    <div class='docs'><h1>ezr_eg.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section intro' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>ezr_eg.py: more demos for ezr.py (clustering, optimizers)
+(c) 2026 Tim Menzies <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#116;&#105;&#109;&#109;&#64;&#105;&#101;&#101;&#101;&#46;&#111;&#114;&#103;">&#116;&#105;&#109;&#109;&#64;&#105;&#101;&#101;&#101;&#46;&#111;&#114;&#103;</a> MIT license</p>
+<p>Options:</p>
+<p>-budget=1000  optimize: max oracle calls
+  -restart=100  ls: retry after this many no-improvements
+  -K=10         kmeans: clusters
+  -N=10         kmeans: iterations
+  -k=1          bayes: rare klass hack
+  -m=2          bayes: rare evidence hack
+  -Repeats=30   klass: number of train/test splits
+  -Klass=$MOOT/classify/diabetes.csv  classify demo data</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span><span class="o">,</span> <span class="nn">re</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">ezr</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\w+)=(\S+)&quot;</span><span class="p">,</span> <span class="vm">__doc__</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+  <span class="n">the</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">the</span><span class="o">.</span><span class="n">_defaults</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">atom</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <h4>cluster</h4>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <p>Group rows by x-distance, no labels needed. kmeans [1]
+loops: send each row to its nearest centroid, then recompute
+centroids. kpp [2] picks better starting seeds: each new
+seed is chosen with probability proportional to its distance
+from the seeds picked so far. nearest [3] is 1-nn lookup.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">kmeans</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span> <span class="c1"># [1]</span>
+  <span class="n">cents</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">the</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">N</span><span class="p">):</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="p">[</span><span class="n">clone</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">cents</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+      <span class="n">j</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cents</span><span class="p">)),</span>
+              <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="n">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">cents</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+      <span class="n">addRow</span><span class="p">(</span><span class="n">ds</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">r</span><span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ds</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">rows</span><span class="p">]</span>
+    <span class="n">cents</span> <span class="o">=</span> <span class="p">[</span><span class="n">mids</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">]</span>
+  <span class="k">return</span> <span class="n">ds</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">kpp</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">few</span><span class="o">=</span><span class="mi">256</span><span class="p">):</span> <span class="c1"># [2] kmeans++ seeds</span>
+  <span class="n">rows</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">few</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)))</span>
+  <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">rows</span><span class="p">)]</span>
+  <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">k</span> <span class="ow">or</span> <span class="n">the</span><span class="o">.</span><span class="n">K</span><span class="p">):</span>
+    <span class="n">ws</span> <span class="o">=</span> <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">out</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">ws</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+  <span class="k">return</span> <span class="n">out</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">nearest</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span> <span class="c1"># [3]</span>
+  <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">row</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <h4>optimize</h4>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <p>Search for good rows without labelling everything. pick [1]
+samples a plausible value for one column. oneplus1 [2] is
+the 1+1 evolution strategy: mutate the current solution,
+keep the mutant if accepted, remember the best ever seen.
+Two customizations: ls [3] accepts only improvements (and
+restarts when stuck); sa [4] is simulated annealing, which
+sometimes accepts worse solutions, less so as time runs out.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">pick</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span> <span class="c1"># [1] sample a plausible value</span>
+  <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Sym</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">col</span><span class="p">),</span> <span class="n">col</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+  <span class="n">mu</span> <span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">v</span> <span class="o">==</span> <span class="s2">&quot;?&quot;</span> <span class="k">else</span> <span class="n">v</span>
+  <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">3</span><span class="o">*</span><span class="n">sd</span><span class="p">(</span><span class="n">col</span><span class="p">),</span> <span class="n">col</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">3</span><span class="o">*</span><span class="n">sd</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+  <span class="n">new</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">+</span> <span class="n">sd</span><span class="p">(</span><span class="n">col</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+                        <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">-</span> <span class="mf">1.5</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">lo</span> <span class="o">+</span> <span class="p">(</span><span class="n">new</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span> <span class="o">+</span> <span class="mf">1e-32</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">oneplus1</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">mutate</span><span class="p">,</span> <span class="n">accept</span><span class="p">,</span> <span class="n">oracle</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span> <span class="c1"># [2]</span>
+  <span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">imp</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">be</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">1e32</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">1e32</span>
+  <span class="n">s</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span>
+  <span class="k">while</span> <span class="n">h</span> <span class="o">&lt;</span> <span class="n">the</span><span class="o">.</span><span class="n">budget</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">sn</span> <span class="ow">in</span> <span class="n">mutate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+      <span class="n">h</span> <span class="o">+=</span> <span class="mi">1</span>
+      <span class="n">en</span> <span class="o">=</span> <span class="n">oracle</span><span class="p">(</span><span class="n">sn</span><span class="p">)</span>
+      <span class="k">if</span> <span class="n">accept</span><span class="p">(</span><span class="n">en</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">the</span><span class="o">.</span><span class="n">budget</span><span class="p">):</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">sn</span><span class="p">,</span> <span class="n">en</span>
+      <span class="k">if</span> <span class="n">en</span> <span class="o">&lt;</span> <span class="n">be</span><span class="p">:</span> <span class="n">best</span><span class="p">,</span> <span class="n">be</span><span class="p">,</span> <span class="n">imp</span> <span class="o">=</span> <span class="n">sn</span><span class="p">,</span> <span class="n">en</span><span class="p">,</span> <span class="n">h</span>
+      <span class="k">if</span> <span class="n">restart</span> <span class="ow">and</span> <span class="n">h</span> <span class="o">-</span> <span class="n">imp</span> <span class="o">&gt;</span> <span class="n">restart</span><span class="p">:</span>
+        <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">),</span> <span class="mf">1e32</span>
+      <span class="k">if</span> <span class="n">h</span> <span class="o">&gt;=</span> <span class="n">the</span><span class="o">.</span><span class="n">budget</span><span class="p">:</span> <span class="k">break</span>
+  <span class="k">return</span> <span class="n">best</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">mutate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="n">at</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tries</span><span class="p">):</span>
+      <span class="n">s2</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="n">s2</span><span class="p">[</span><span class="n">at</span><span class="p">]</span> <span class="o">=</span> <span class="n">pick</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="n">at</span><span class="p">],</span> <span class="n">s</span><span class="p">[</span><span class="n">at</span><span class="p">])</span>
+      <span class="k">yield</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">oneplus1</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">mutate</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">en</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">:</span> <span class="n">en</span> <span class="o">&lt;</span> <span class="n">e</span><span class="p">,</span>
+                  <span class="n">oracle</span><span class="p">,</span> <span class="n">the</span><span class="o">.</span><span class="n">restart</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">accept</span><span class="p">(</span><span class="n">en</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">en</span> <span class="o">&lt;</span> <span class="n">e</span> <span class="ow">or</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">exp</span><span class="p">(</span>
+      <span class="p">(</span><span class="n">e</span> <span class="o">-</span> <span class="n">en</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">h</span><span class="o">/</span><span class="n">b</span> <span class="o">+</span> <span class="mf">1e-32</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">mutate</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="n">s2</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">x</span><span class="p">:</span>
+      <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">m</span><span class="p">:</span>
+        <span class="n">s2</span><span class="p">[</span><span class="n">at</span><span class="p">]</span> <span class="o">=</span> <span class="n">pick</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="n">at</span><span class="p">],</span> <span class="n">s2</span><span class="p">[</span><span class="n">at</span><span class="p">])</span>
+    <span class="k">yield</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">s2</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">oneplus1</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">mutate</span><span class="p">,</span> <span class="n">accept</span><span class="p">,</span> <span class="n">oracle</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <h4>bayes</h4>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      <p>Naive Bayes, used two ways: to pick which row to label next
+(bayes [4], acquireBayes [5]) and to classify (next
+section). like [1] scores one value against one column;
+likes [2] adds the logs of those scores across a row&rsquo;s x
+columns; liked [3] asks several tables &ldquo;who most likes this
+row?&rdquo;.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">like</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span> <span class="c1"># [1] P(v | col)</span>
+  <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Sym</span><span class="p">:</span>
+    <span class="k">return</span> <span class="p">((</span><span class="n">col</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">the</span><span class="o">.</span><span class="n">m</span> <span class="o">*</span> <span class="n">prior</span><span class="p">)</span>
+            <span class="o">/</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="o">+</span> <span class="n">the</span><span class="o">.</span><span class="n">m</span> <span class="o">+</span> <span class="mf">1e-32</span><span class="p">))</span>
+  <span class="n">s</span> <span class="o">=</span> <span class="n">sd</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-32</span>
+  <span class="k">return</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">v</span><span class="o">-</span><span class="n">col</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">s</span><span class="o">*</span><span class="n">s</span><span class="p">))</span> <span class="o">/</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="n">s</span><span class="o">*</span><span class="n">s</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">likes</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">nall</span><span class="p">,</span> <span class="n">nh</span><span class="p">):</span> <span class="c1"># [2] log P(tbl|row), unscaled</span>
+  <span class="n">prior</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span> <span class="o">+</span> <span class="n">the</span><span class="o">.</span><span class="n">k</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nall</span> <span class="o">+</span> <span class="n">the</span><span class="o">.</span><span class="n">k</span> <span class="o">*</span> <span class="n">nh</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">log</span><span class="p">(</span><span class="n">prior</span><span class="p">)</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span>
+    <span class="n">log</span><span class="p">(</span><span class="mf">1e-32</span> <span class="o">+</span> <span class="n">like</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="n">at</span><span class="p">],</span> <span class="n">v</span><span class="p">,</span> <span class="n">prior</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">x</span> <span class="k">if</span> <span class="p">(</span><span class="n">v</span> <span class="o">:=</span> <span class="n">row</span><span class="p">[</span><span class="n">at</span><span class="p">])</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">liked</span><span class="p">(</span><span class="n">tbls</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span> <span class="c1"># [3] most likely of several tables</span>
+  <span class="n">n</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tbls</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+  <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">tbls</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span><span class="n">likes</span><span class="p">(</span><span class="n">tbls</span><span class="p">[</span><span class="n">k</span><span class="p">],</span><span class="n">row</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">tbls</span><span class="p">)))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-18'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-18'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">bayes</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">rest</span><span class="p">):</span> <span class="c1"># [4] most likely best</span>
+  <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">best</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">rest</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span>
+  <span class="k">return</span> <span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="n">likes</span><span class="p">(</span><span class="n">best</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">likes</span><span class="p">(</span><span class="n">rest</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-19'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">acquireBayes</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span> <span class="c1"># [5] label most-likely-best</span>
+  <span class="k">return</span> <span class="n">acquire</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">cap</span><span class="p">,</span> <span class="n">bayes</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-20'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-20'>#</a>
+      </div>
+      <h4>classify</h4>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-21'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-21'>#</a>
+      </div>
+      <p>The optimizer&rsquo;s parts, reused for classification. confuse
+[1] turns (got, want) pairs into per-class accuracy, recall
+(pd), false alarm (pf) and precision. fitTree [2] and
+fitBayes [3] are rival classifiers built from ezr.py&rsquo;s trees
+and this file&rsquo;s bayes. _klass [4] races fits over the same
+train/test splits, printing one confusion report per fit.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-22'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-22'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">confuse</span><span class="p">(</span><span class="n">pairs</span><span class="p">):</span> <span class="c1"># [1] (got, want)s --&gt; per-klass scores</span>
+  <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="k">for</span> <span class="n">got</span><span class="p">,</span> <span class="n">want</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="n">got</span><span class="p">,</span> <span class="n">want</span><span class="p">]:</span>
+      <span class="n">out</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">or</span> <span class="n">o</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">tp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">got</span> <span class="o">==</span> <span class="n">want</span><span class="p">:</span> <span class="n">out</span><span class="p">[</span><span class="n">want</span><span class="p">]</span><span class="o">.</span><span class="n">tp</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>           <span class="n">out</span><span class="p">[</span><span class="n">want</span><span class="p">]</span><span class="o">.</span><span class="n">fn</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">out</span><span class="p">[</span><span class="n">got</span><span class="p">]</span><span class="o">.</span><span class="n">fp</span> <span class="o">+=</span> <span class="mi">1</span>
+  <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">out</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">tn</span>   <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span> <span class="o">-</span> <span class="n">c</span><span class="o">.</span><span class="n">tp</span> <span class="o">-</span> <span class="n">c</span><span class="o">.</span><span class="n">fn</span> <span class="o">-</span> <span class="n">c</span><span class="o">.</span><span class="n">fp</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">acc</span>  <span class="o">=</span> <span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">tp</span> <span class="o">+</span> <span class="n">c</span><span class="o">.</span><span class="n">tn</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">pd</span>   <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">tp</span> <span class="o">+</span> <span class="n">c</span><span class="o">.</span><span class="n">fn</span> <span class="o">+</span> <span class="mf">1e-32</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">pf</span>   <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">fp</span> <span class="o">/</span> <span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">fp</span> <span class="o">+</span> <span class="n">c</span><span class="o">.</span><span class="n">tn</span> <span class="o">+</span> <span class="mf">1e-32</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">prec</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">tp</span> <span class="o">+</span> <span class="n">c</span><span class="o">.</span><span class="n">fp</span> <span class="o">+</span> <span class="mf">1e-32</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">out</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-23'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-23'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">fitTree</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span> <span class="c1"># [2] sqrt-sized leaves</span>
+  <span class="n">the</span><span class="o">.</span><span class="n">Leaf</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)))</span>
+  <span class="n">tt</span> <span class="o">=</span> <span class="n">tree</span><span class="p">(</span><span class="n">clone</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">),</span> <span class="n">rows</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+  <span class="k">return</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">leaf</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="n">r</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-24'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-24'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">fitBayes</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span> <span class="c1"># [3] one table per class</span>
+  <span class="n">tbls</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">y</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tbls</span><span class="p">:</span> <span class="n">tbls</span><span class="p">[</span><span class="n">y</span><span class="p">(</span><span class="n">r</span><span class="p">)]</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span>
+    <span class="n">addRow</span><span class="p">(</span><span class="n">tbls</span><span class="p">[</span><span class="n">y</span><span class="p">(</span><span class="n">r</span><span class="p">)],</span> <span class="n">r</span><span class="p">)</span>
+  <span class="k">return</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">liked</span><span class="p">(</span><span class="n">tbls</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-25'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-25'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_klass</span><span class="p">(</span><span class="o">*</span><span class="n">fits</span><span class="p">):</span> <span class="c1"># [4] each fit(tbl, rows, y) --&gt; predictor</span>
+  <span class="n">tbl</span> <span class="o">=</span> <span class="n">Tbl</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Klass</span><span class="p">))</span>
+  <span class="n">y</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="n">tbl</span><span class="o">.</span><span class="n">klass</span><span class="p">]</span>
+  <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+  <span class="n">splits</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Repeats</span><span class="p">)]</span> <span class="c1"># same splits, all fits</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-26'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-26'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">one</span><span class="p">(</span><span class="n">fit</span><span class="p">):</span>
+    <span class="n">accs</span><span class="p">,</span> <span class="n">pairs</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">rows</span> <span class="ow">in</span> <span class="n">splits</span><span class="p">:</span>
+      <span class="n">got</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">[:</span><span class="n">n</span><span class="p">],</span> <span class="n">y</span><span class="p">)</span>
+      <span class="n">now</span> <span class="o">=</span> <span class="p">[(</span><span class="n">got</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="n">y</span><span class="p">(</span><span class="n">r</span><span class="p">))</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">[</span><span class="n">n</span><span class="p">:]]</span>
+      <span class="n">pairs</span> <span class="o">+=</span> <span class="n">now</span>
+      <span class="n">accs</span> <span class="o">+=</span> <span class="p">[</span><span class="nb">sum</span><span class="p">(</span><span class="n">g</span> <span class="o">==</span> <span class="n">w</span> <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">now</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">now</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">confuse</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+      <span class="n">pc</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">v</span><span class="p">)</span>
+      <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">fit</span><span class="o">.</span><span class="vm">__name__</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pc</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">acc</span><span class="p">)</span><span class="si">:</span><span class="s2">&gt;3</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pc</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">pd</span><span class="p">)</span><span class="si">:</span><span class="s2">&gt;3</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">pc</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">pf</span><span class="p">)</span><span class="si">:</span><span class="s2">&gt;3</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pc</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">prec</span><span class="p">)</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">tbl</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="n">tbl</span><span class="o">.</span><span class="n">klass</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">l</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">c</span><span class="o">.</span><span class="n">l</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">accs</span>
+  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;rx&#39;</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;acc&#39;</span><span class="si">:</span><span class="s2">&gt;3</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;pd&#39;</span><span class="si">:</span><span class="s2">&gt;3</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;pf&#39;</span><span class="si">:</span><span class="s2">&gt;3</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="s1">&#39;prec&#39;</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;n&#39;</span><span class="si">:</span><span class="s2">&gt;6</span><span class="si">}</span><span class="s2">  class&quot;</span><span class="p">)</span>
+  <span class="k">return</span> <span class="p">[</span><span class="n">one</span><span class="p">(</span><span class="n">fit</span><span class="p">)</span> <span class="k">for</span> <span class="n">fit</span> <span class="ow">in</span> <span class="n">fits</span><span class="p">]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-27'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-27'>#</a>
+      </div>
+      <h4>start-up</h4>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-28'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-28'>#</a>
+      </div>
+      <p>Demos, run from the shell: &ldquo;ezr_eg &ndash;kmeans&rdquo;, or &ldquo;&ndash;all&rdquo;
+for everything. &ldquo;-Key val&rdquo; flags (from the options above or
+ezr.py&rsquo;s) may precede any demo; settings reset after each.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-29'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-29'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">test_help</span><span class="p">():</span>
+  <span class="s2">&quot;Show usage, settings, demos&quot;</span>
+  <span class="nb">print</span><span class="p">(</span><span class="vm">__doc__</span><span class="p">,</span> <span class="s2">&quot;Demos:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;  --</span><span class="si">{</span><span class="n">k</span><span class="p">[</span><span class="mi">5</span><span class="p">:]</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="vm">__doc__</span><span class="si">}</span><span class="s2">&quot;</span>
+          <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;test_&quot;</span><span class="p">],</span>
+        <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-30'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-30'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">test_kmeans</span><span class="p">():</span>
+  <span class="s2">&quot;Cluster the.File; per cluster: n rows, mean ydist&quot;</span>
+  <span class="n">tbl</span> <span class="o">=</span> <span class="n">Tbl</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">File</span><span class="p">))</span>
+  <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">kmeans</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">),</span>
+                  <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">ymu</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">rows</span><span class="p">)):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">ymu</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="o">.</span><span class="n">rows</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-31'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-31'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">test_kpp</span><span class="p">():</span>
+  <span class="s2">&quot;kmeans++ seeds spread wider than random picks&quot;</span>
+  <span class="n">tbl</span> <span class="o">=</span> <span class="n">Tbl</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">File</span><span class="p">))</span>
+  <span class="n">far</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">cents</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span>
+    <span class="n">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">cents</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">cents</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;random </span><span class="si">{</span><span class="n">far</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span><span class="w"> </span><span class="n">the</span><span class="o">.</span><span class="n">K</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot; kpp </span><span class="si">{</span><span class="n">far</span><span class="p">(</span><span class="n">kpp</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span><span class="w"> </span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-32'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-32'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">test_optimize</span><span class="p">():</span>
+  <span class="s2">&quot;SA vs local search, nearest-neighbor oracle, wins&quot;</span>
+  <span class="n">tbl</span> <span class="o">=</span> <span class="n">Tbl</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">File</span><span class="p">))</span>
+  <span class="n">win</span> <span class="o">=</span> <span class="n">wins</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span>
+  <span class="n">known</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="mi">50</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-33'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-33'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">oracle</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ydist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">nearest</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">known</span><span class="o">.</span><span class="n">rows</span><span class="p">))</span>
+  <span class="k">for</span> <span class="n">what</span> <span class="ow">in</span> <span class="p">[</span><span class="n">sa</span><span class="p">,</span> <span class="n">ls</span><span class="p">]:</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Seed</span><span class="p">)</span>
+    <span class="n">got</span> <span class="o">=</span> <span class="n">nearest</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">what</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">oracle</span><span class="p">),</span> <span class="n">known</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">what</span><span class="o">.</span><span class="vm">__name__</span><span class="si">:</span><span class="s2">&lt;3</span><span class="si">}</span><span class="s2"> win </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">win</span><span class="p">(</span><span class="n">got</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-34'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-34'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">test_acquires</span><span class="p">():</span>
+  <span class="s2">&quot;Centroid vs bayes acquisition: 20 holdouts each&quot;</span>
+  <span class="n">tbl</span> <span class="o">=</span> <span class="n">Tbl</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">File</span><span class="p">))</span>
+  <span class="n">win</span> <span class="o">=</span> <span class="n">wins</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span>
+  <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="p">[</span><span class="n">acquire</span><span class="p">,</span> <span class="n">acquireBayes</span><span class="p">]:</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Seed</span><span class="p">)</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
+      <span class="n">rows</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">))</span>
+      <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+      <span class="n">tr</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">[:</span><span class="n">n</span><span class="p">][:</span><span class="n">the</span><span class="o">.</span><span class="n">Few</span><span class="p">])</span>
+      <span class="n">tt</span> <span class="o">=</span> <span class="n">tree</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">fn</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">the</span><span class="o">.</span><span class="n">Stop</span> <span class="o">-</span> <span class="n">the</span><span class="o">.</span><span class="n">Check</span><span class="p">))</span>
+      <span class="n">top</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="n">n</span><span class="p">:],</span>
+                   <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">leaf</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="n">r</span><span class="p">)[</span><span class="mi">2</span><span class="p">])[:</span><span class="n">the</span><span class="o">.</span><span class="n">Check</span><span class="p">]</span>
+      <span class="n">mu</span> <span class="o">+=</span> <span class="n">win</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">top</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">ydist</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">r</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">fn</span><span class="o">.</span><span class="vm">__name__</span><span class="si">:</span><span class="s2">&lt;13</span><span class="si">}</span><span class="s2"> win </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">mu</span><span class="o">/</span><span class="mi">20</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-35'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-35'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">test_klass</span><span class="p">():</span>
+  <span class="s2">&quot;Tree vs bayes, same splits: confusions, then same?&quot;</span>
+  <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">_klass</span><span class="p">(</span><span class="n">fitTree</span><span class="p">,</span> <span class="n">fitBayes</span><span class="p">)</span>
+  <span class="n">x</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">adds</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">adds</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">fitTree </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="n">sd</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot; fitBayes </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="n">sd</span><span class="p">(</span><span class="n">z</span><span class="p">))</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot; delta </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot; : </span><span class="si">{</span><span class="s1">&#39;same&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">same</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="n">eps</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;different&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-36'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-36'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">test_all</span><span class="p">():</span>
+  <span class="s2">&quot;Run every demo; exit code counts the crashes&quot;</span>
+  <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"># </span><span class="si">{</span><span class="n">k</span><span class="p">[</span><span class="mi">5</span><span class="p">:]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">run</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+               <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+               <span class="k">if</span> <span class="n">k</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;test_&quot;</span> <span class="ow">and</span> <span class="n">f</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">test_all</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section intro' id='section-37'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-37'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">main</span><span class="p">():</span> <span class="c1"># pip entry point</span>
+  <span class="n">cli</span><span class="p">(</span><span class="n">the</span><span class="p">,</span> <span class="nb">globals</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="ow">or</span> <span class="p">[</span><span class="s2">&quot;--help&quot;</span><span class="p">])</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span> <span class="n">main</span><span class="p">()</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>

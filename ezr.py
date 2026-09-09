@@ -10,13 +10,17 @@ Options:
       -Stop=50         acquire: total labelling budget     
       -Few=128         max train rows     
       -Leaf=4          tree: min rows in any leaf     
-      -Check=5         holdout: top picks to label     
-      -k=1             bayes: rare klass hack     
-      -m=2             bayes: rare evidence hack     
-      -Repeats=30      klass: number of train/test splits     
-      -Seed=1234567891 random number seed     
-      -Klass=$MOOT/classify/diabetes.csv  classify demo data     
-      -File=$MOOT/optimize/misc/auto93.csv     
+      -Check=5         holdout: top picks to label
+      -k=1             bayes: rare klass hack
+      -m=2             bayes: rare evidence hack
+      -K=10            kmeans: clusters
+      -N=10            kmeans: iterations
+      -budget=1000     optimize: max oracle calls
+      -restart=100     ls: retry after this many no-improves
+      -Repeats=30      klass: number of train/test splits
+      -Seed=1234567891 random number seed
+      -Klass=$MOOT/classify/diabetes.csv  classify demo data
+      -File=$MOOT/optimize/misc/auto93.csv
 
 """
 
@@ -162,41 +166,6 @@ def acquire(tbl, cap=None, score=None): # pop() the top scorer
     label(tbl, best, rest, todo.pop())
   return best.rows + rest.rows
 
-
-#-- bayes -------------------------------------------------
-def like(col, v, prior=0): # P(v | col)
-  if type(col) is Sym:
-    return ((col.get(v, 0) + the.m * prior)
-            / (size(col) + the.m + 1e-32))
-  s = sd(col) + 1e-32
-  return exp(-(v-col[1])**2 / (2*s*s)) / sqrt(2*pi*s*s)
-
-def likes(tbl, row, nall, nh): # log P(tbl | row), unscaled
-  prior = (len(tbl.rows) + the.k) / (nall + the.k * nh)
-  return log(prior) + sum(
-    log(1e-32 + like(tbl.cols[at], v, prior))
-    for at in tbl.x if (v := row[at]) != "?")
-
-def liked(tbls, row): # most likely of several tables
-  n = sum(len(t.rows) for t in tbls.values())
-  return max(tbls, key=lambda k:likes(tbls[k],row,n,len(tbls)))
-
-def confuse(pairs): # (got, want)s --> per-klass scores
-  out = {}
-  for got, want in pairs:
-    for x in [got, want]:
-      out[x] = out.get(x) or o(l=x, tp=0, fp=0, fn=0)
-    if got == want: out[want].tp += 1
-    else:           out[want].fn += 1; out[got].fp += 1
-  for c in out.values():
-    c.tn   = len(pairs) - c.tp - c.fn - c.fp
-    c.acc  = (c.tp + c.tn) / len(pairs)
-    c.pd   = c.tp / (c.tp + c.fn + 1e-32)
-    c.pf   = c.fp / (c.fp + c.tn + 1e-32)
-    c.prec = c.tp / (c.tp + c.fp + 1e-32)
-  return out
-
-
 #-- tree --------------------------------------------------
 # Node = [edge, n, ymu, ymids, go, kid, kid]
 def xpect(a, b): # sizes are >= the.Leaf, so no zero guard
@@ -387,50 +356,6 @@ def test_holdout():
   win = wins(tbl)
   mu = sum(win(holdout(tbl)) for _ in range(20)) / 20
   print(f"win {round(mu)}")
-
-def _klass(*fits): # each fit(tbl, rows, y) --> predictor(row)
-  tbl = Tbl(csv(the.Klass))
-  y = lambda r: r[tbl.klass]
-  n = len(tbl.rows) // 2
-  splits = [random.sample(tbl.rows, len(tbl.rows))
-            for _ in range(the.Repeats)] # same splits, all fits
-  def one(fit):
-    accs, pairs = [], []
-    for rows in splits:
-      got = fit(tbl, rows[:n], y)
-      now = [(got(r), y(r)) for r in rows[n:]]
-      pairs += now
-      accs += [sum(g == w for g, w in now) / len(now)]
-    for c in confuse(pairs).values():
-      pc = lambda v: round(100 * v)
-      print(f"{fit.__name__:<10} {pc(c.acc):>3} {pc(c.pd):>3}"
-            f" {pc(c.pf):>3} {pc(c.prec):>4}"
-            f" {tbl.cols[tbl.klass].get(c.l, 0):>6}  {c.l}")
-    return accs
-  print(f"{'rx':<10} {'acc':>3} {'pd':>3} {'pf':>3}"
-        f" {'prec':>4} {'n':>6}  class")
-  return [one(fit) for fit in fits]
-
-def fitTree(tbl, rows, y): # sqrt-sized leaves
-  the.Leaf = int(sqrt(len(rows)))
-  tt = tree(clone(tbl, rows), rows, y=y)
-  return lambda r: leaf(tt, r)[2]
-
-def fitBayes(tbl, rows, y):
-  tbls = {}
-  for r in rows:
-    if y(r) not in tbls: tbls[y(r)] = clone(tbl)
-    addRow(tbls[y(r)], r)
-  return lambda r: liked(tbls, r)
-
-def test_klass():
-  "Tree vs bayes, same splits: confusions, then same?"
-  a, b = _klass(fitTree, fitBayes)
-  x, z = adds(a), adds(b)
-  print(f"\nfitTree {round(100*x[1])} ({round(100*sd(x))})"
-        f" fitBayes {round(100*z[1])} ({round(100*sd(z))})"
-        f" delta {round(100*abs(x[1] - z[1]))}"
-        f" : {'same' if same(a, b, eps=0.01) else 'different'}")
 
 def test_same():
   "Stats tests tell noise from signal"
