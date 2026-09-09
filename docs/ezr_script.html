@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ezr: y3_script</title>
+<title>ezr: ezr_script</title>
 <meta name="theme-color" content="#d6d2ca" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1f1e1c" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap">
@@ -18,19 +18,18 @@
 <h2>Easier AI</h2>
 <h3>explainable multi-objective active learning, in a few hundred lines</h3>
 <p class="f">Menzies &middot; 2026<br>
-<a href="https://github.com/timm">github.com/timm</a> &middot;
-y1.py (structured) &middot; y2.py (naked structs)</p>
+<a href="https://github.com/timm/ezr">github.com/timm/ezr</a></p>
 <p class="f">
-<a href="index.html">0 start</a> &middot;
-<a href="data.html">1 data</a> &middot;
-<a href="dist.html">2 distance</a> &middot;
-<a href="acquire.html">3 acquire</a> &middot;
-<a href="tree.html">4 tree</a> &middot;
-<a href="eval.html">5 eval</a> &middot;
-<a href="maths.html">&#9733; maths</a></p>
+<a href="index.html">index</a> &middot;
+<a href="ezr_map.html">map</a> &middot;
+<a href="ezr_py.html">python</a> &middot;
+<a href="ezr_math.html">maths</a> &middot;
+<a href="ezr_ai.html">ai</a> &middot;
+<a href="ezr_se.html">se</a> &middot;
+<a href="ezr_script.html">scripting</a></p>
 </center>
-<h2 id="script-file-patterns-in-y3.py">Script-file patterns in
-y3.py</h2>
+<h2 id="script-file-patterns-in-ezr.py">Script-file patterns in
+ezr.py</h2>
 <p>How to organize one Python file so config, tests, docs and CLI stay
 in sync forever. Fifteen patterns, plus the one idea underneath them
 all.</p>
@@ -80,7 +79,7 @@ needs no plugin.</p>
 dependency order</h3>
 <p>Config, then primitives, then composites, then tests, then the main
 guard. Every name is defined before it is referenced, reading top-down;
-the call graph in <a href="y3_map.html">y3_map</a> shows the layers.</p>
+the call graph in <a href="ezr_map.html">ezr_map</a> shows the layers.</p>
 <h3 id="main-guard-keeps-it-importable">8. Main guard keeps it
 importable</h3>
 <p>The same file is a script and a library: a harness can import the
@@ -99,14 +98,14 @@ Dependency-free is a feature you cannot retrofit.</p>
 <pre class="py"><code>import os, random, re, sys, traceback
 from math import exp, log, log2, pi, sqrt</code></pre>
 <h3 id="shebang-carries-flags">11. Shebang carries flags</h3>
-<p><code>./y3.py</code> just works, and <code>-B</code> never litters
+<p><code>./ezr.py</code> just works, and <code>-B</code> never litters
 <code>__pycache__</code>.</p>
 <pre class="py"><code>#!/usr/bin/env python3 -B</code></pre>
 <h3 id="the-arg-list-is-a-tiny-program">12. The arg list is a tiny
 program</h3>
 <p>Args evaluate left to right: set, run, set, run. No “config phase
 then command phase” — order is the power.</p>
-<pre class="sh"><code>./y3.py -Leaf 16 --klassTree -Leaf 4 --holdout</code></pre>
+<pre class="sh"><code>./ezr.py -Leaf 16 --klassTree -Leaf 4 --holdout</code></pre>
 <h3 id="unknown-args-warn-never-die">13. Unknown args warn, never
 die</h3>
 <p>A typo in flag three should not waste what flags one and two set
@@ -114,7 +113,7 @@ up.</p>
 <pre class="py"><code>else: print(f&quot;unknown arg: {s}&quot;)</code></pre>
 <h3 id="section-banners-are-a-greppable-toc">14. Section banners are a
 greppable TOC</h3>
-<p><code>grep '#--' y3.py</code> is the table of contents — and tools
+<p><code>grep '#--' ezr.py</code> is the table of contents — and tools
 (the pdf packer, the map generator) key off the same banners. Structure
 that is data.</p>
 <pre class="sh"><code>#-- structs -----------------------------------------------

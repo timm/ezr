@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ezr: y3_se</title>
+<title>ezr: ezr_se</title>
 <meta name="theme-color" content="#d6d2ca" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1f1e1c" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap">
@@ -18,19 +18,18 @@
 <h2>Easier AI</h2>
 <h3>explainable multi-objective active learning, in a few hundred lines</h3>
 <p class="f">Menzies &middot; 2026<br>
-<a href="https://github.com/timm">github.com/timm</a> &middot;
-y1.py (structured) &middot; y2.py (naked structs)</p>
+<a href="https://github.com/timm/ezr">github.com/timm/ezr</a></p>
 <p class="f">
-<a href="index.html">0 start</a> &middot;
-<a href="data.html">1 data</a> &middot;
-<a href="dist.html">2 distance</a> &middot;
-<a href="acquire.html">3 acquire</a> &middot;
-<a href="tree.html">4 tree</a> &middot;
-<a href="eval.html">5 eval</a> &middot;
-<a href="maths.html">&#9733; maths</a></p>
+<a href="index.html">index</a> &middot;
+<a href="ezr_map.html">map</a> &middot;
+<a href="ezr_py.html">python</a> &middot;
+<a href="ezr_math.html">maths</a> &middot;
+<a href="ezr_ai.html">ai</a> &middot;
+<a href="ezr_se.html">se</a> &middot;
+<a href="ezr_script.html">scripting</a></p>
 </center>
-<h2 id="se-ideas-in-y3.py">SE ideas in y3.py</h2>
-<p>Eleven software-engineering ideas hiding in y3.py, easiest first.
+<h2 id="se-ideas-in-ezr.py">SE ideas in ezr.py</h2>
+<p>Eleven software-engineering ideas hiding in ezr.py, easiest first.
 Each shown big (a real-world system) then small (this code).</p>
 <h3 id="single-source-of-truth">1. Single source of truth</h3>
 <p>State each fact once; derive every other appearance. Copies drift;
@@ -39,11 +38,11 @@ derivations cannot.</p>
 each third-party library exists exactly once, so ten thousand projects
 cannot disagree about what “protobuf” means. Lock files (package-lock,
 Cargo.lock) are the same idea shipped to everyone.</p>
-<p><strong>Small.</strong> y3’s docstring <em>is</em> its settings
+<p><strong>Small.</strong> ezr’s docstring <em>is</em> its settings
 <em>is</em> its help:</p>
 <pre class="py"><code>the = o(**{k: atom(v) for k,v in re.findall(pat, __doc__)})</code></pre>
 <h3 id="little-languages">2. Little languages</h3>
-<p>A ten-line notation can replace a thousand-line subsystem. y3 has
+<p>A ten-line notation can replace a thousand-line subsystem. ezr has
 three: column headers as schema, one regex as a config parser,
 <code>-Key val --demo</code> as a CLI grammar.</p>
 <p><strong>Big.</strong> SQL, regex, printf formats, Makefiles: each a
@@ -78,8 +77,8 @@ answer requests not yet imagined.</p>
 <p><strong>Big.</strong> Unix. Fifty years on, the pipe remains the most
 successful integration mechanism in computing — no schema negotiations,
 no SDK, just text between small programs.</p>
-<p><strong>Small.</strong> y3’s entire 127-dataset laboratory:</p>
-<pre class="sh"><code>ls */*.csv | xargs -P 10 -I{} python3 y3.py -File {} \
+<p><strong>Small.</strong> ezr’s entire 127-dataset laboratory:</p>
+<pre class="sh"><code>ls */*.csv | xargs -P 10 -I{} python3 ezr.py -File {} \
     --holdout | sort -n | fmt -60</code></pre>
 <h3 id="demos-as-tests-as-docs">6. Demos as tests as docs</h3>
 <p>One artifact, three jobs: <code>test_*</code> functions run the code
@@ -100,7 +99,7 @@ freezable.</p>
 test harness with 100% branch coverage plus fuzzing plus stored golden
 outputs; its authors rewrite internals freely because the masters will
 catch any drift.</p>
-<p><strong>Small.</strong> y1, y2, y3 were each proved output-identical
+<p><strong>Small.</strong> y1, y2, ezr were each proved output-identical
 over 127 datasets before being trusted:</p>
 <pre class="sh"><code>diff old.wins new.wins &amp;&amp; echo IDENTICAL</code></pre>
 <h3 id="polymorphism-without-classes">8. Polymorphism without
@@ -122,7 +121,7 @@ at three levels and says functions should “do one thing and fit on one
 or two screenfuls”, on the stated grounds that if you need more, you are
 lost. Google’s style guides make the same bet across millions of
 engineer-hours.</p>
-<p><strong>Small.</strong> The longest function in y3.py is
+<p><strong>Small.</strong> The longest function in ezr.py is
 <code>tree</code>, at 14 lines, and it is the whole learner.</p>
 <h3 id="fail-loud-exit-honest">10. Fail loud, exit honest</h3>
 <p>A crash is a gift: it names the line. Silent wrongness costs weeks.
@@ -145,7 +144,7 @@ parameter took down AWS S3, and much of the internet, for four hours in
 2017. Half the datasets in this site’s benchmarks (the SS-* files) are
 exactly this problem: find good settings for someone else’s
 software.</p>
-<p><strong>Small.</strong> Every y3 magic number lives in the docstring,
+<p><strong>Small.</strong> Every ezr magic number lives in the docstring,
 overridable from the shell — and tuning one of them (<code>Check</code>,
 labels reserved for verification) raised the 127-dataset median win by
 six points in an afternoon of sweeps.</p>

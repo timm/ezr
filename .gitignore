@@ -195,3 +195,7 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 _minted-*/
+*.aux
+*.out
+*.fls
+*.fdb_latexmk

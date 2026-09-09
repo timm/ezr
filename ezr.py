@@ -56,6 +56,13 @@ def csv(file):
 Num = lambda: (0, 0, 0) # n, mu, m2: all Welford keeps
 Sym = dict
 
+type Atom = str | bool | int | float
+type Col  = tuple[int, float, float] | dict # Num | Sym
+type Row  = tuple[Atom, ...]
+type Rows = list[Row]
+type Tbl  = o # rows:Rows, cols:{at:Col}, x:[at],
+              # y:{at:bool}, names:Row, klass:at|None
+
 def sd(col): return 0 if col[0] < 2 else sqrt(col[2]/(col[0]-1))
 
 def add(col, v, inc=1): # new Num, or updated Sym; inc=-1 undoes

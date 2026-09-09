@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ezr: y3_py</title>
+<title>ezr: ezr_py</title>
 <meta name="theme-color" content="#d6d2ca" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1f1e1c" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap">
@@ -18,49 +18,48 @@
 <h2>Easier AI</h2>
 <h3>explainable multi-objective active learning, in a few hundred lines</h3>
 <p class="f">Menzies &middot; 2026<br>
-<a href="https://github.com/timm">github.com/timm</a> &middot;
-y1.py (structured) &middot; y2.py (naked structs)</p>
+<a href="https://github.com/timm/ezr">github.com/timm/ezr</a></p>
 <p class="f">
-<a href="index.html">0 start</a> &middot;
-<a href="data.html">1 data</a> &middot;
-<a href="dist.html">2 distance</a> &middot;
-<a href="acquire.html">3 acquire</a> &middot;
-<a href="tree.html">4 tree</a> &middot;
-<a href="eval.html">5 eval</a> &middot;
-<a href="maths.html">&#9733; maths</a></p>
+<a href="index.html">index</a> &middot;
+<a href="ezr_map.html">map</a> &middot;
+<a href="ezr_py.html">python</a> &middot;
+<a href="ezr_math.html">maths</a> &middot;
+<a href="ezr_ai.html">ai</a> &middot;
+<a href="ezr_se.html">se</a> &middot;
+<a href="ezr_script.html">scripting</a></p>
 </center>
-<h2 id="python-idioms-in-y3.py">Python idioms in y3.py</h2>
-<p>Twelve idioms in y3.py that can puzzle newcomers, easiest first. Each
-gets a plain example, then the y3 usage.</p>
+<h2 id="python-idioms-in-ezr.py">Python idioms in ezr.py</h2>
+<p>Twelve idioms in ezr.py that can puzzle newcomers, easiest first. Each
+gets a plain example, then the ezr usage.</p>
 <h3 id="conditional-expressions">1. Conditional expressions</h3>
 <p>One-line if: <code>a if test else b</code> is a <em>value</em>, not a
 statement. Read it middle-out: test first, then left, then right.</p>
 <pre class="py"><code>grade = &quot;pass&quot; if mark &gt;= 50 else &quot;fail&quot;</code></pre>
-<p>y3 picks a column type off its name:</p>
+<p>ezr picks a column type off its name:</p>
 <pre class="py"><code>tbl.cols[at] = Num() if s[0].isupper() else Sym()</code></pre>
 <h3 id="chained-comparisons">2. Chained comparisons</h3>
 <p>Math notation works: <code>a &lt;= x &lt;= b</code> means
 <code>a &lt;= x and x &lt;= b</code>, and <code>x</code> is evaluated
 once.</p>
 <pre class="py"><code>if 0 &lt;= i &lt; len(lst): ...</code></pre>
-<p>y3 keeps both sides of a split big enough:</p>
+<p>ezr keeps both sides of a split big enough:</p>
 <pre class="py"><code>if the.Leaf &lt;= size(here) &lt;= len(xy) - the.Leaf:</code></pre>
 <h3 id="tuple-unpacking">3. Tuple unpacking</h3>
 <p>Assign several names at once from any sequence. Also swaps without a
 temp var.</p>
 <pre class="py"><code>lo, hi = hi, lo</code></pre>
-<p>y3 explodes a Num (a 3-tuple) into named parts:</p>
+<p>ezr explodes a Num (a 3-tuple) into named parts:</p>
 <pre class="py"><code>n, mu, m2 = c</code></pre>
 <h3 id="dict.get-with-a-default">4. dict.get with a default</h3>
 <p><code>d.get(k, 0)</code> reads a key that may be absent, giving 0
 instead of a crash. The standard counting idiom.</p>
 <pre class="py"><code>seen[word] = seen.get(word, 0) + 1</code></pre>
-<p>y3 counts symbols the same way:</p>
+<p>ezr counts symbols the same way:</p>
 <pre class="py"><code>c[v] = c.get(v, 0) + inc</code></pre>
 <h3 id="zip">5. zip</h3>
 <p>Walk two lists in lockstep; stops at the shorter one.</p>
 <pre class="py"><code>for name, score in zip(names, scores): ...</code></pre>
-<p>y3 pairs each row with its precomputed y value:</p>
+<p>ezr pairs each row with its precomputed y value:</p>
 <pre class="py"><code>xy = [(x, y) for r,y in zip(rows, ys) if (x := r[at]) != &quot;?&quot;]</code></pre>
 <h3 id="comprehensions-with-a-filter">6. Comprehensions with a
 filter</h3>
@@ -68,13 +67,13 @@ filter</h3>
 expression: map and filter fused. If it needs two lines of logic, use a
 loop instead.</p>
 <pre class="py"><code>evens = [x*x for x in range(20) if x % 2 == 0]</code></pre>
-<p>y3 (same line as above) both filters out <code>"?"</code> cells and
+<p>ezr (same line as above) both filters out <code>"?"</code> cells and
 builds (x, y) pairs in one pass.</p>
 <h3 id="the-walrus">7. The walrus <code>:=</code></h3>
 <p>Assign <em>inside</em> an expression, so you can test a value and
 keep it, without computing it twice.</p>
 <pre class="py"><code>if (m := re.match(pat, line)): print(m.group(1))</code></pre>
-<p>y3 names the cell while filtering on it:</p>
+<p>ezr names the cell while filtering on it:</p>
 <pre class="py"><code>... if (x := r[at]) != &quot;?&quot;</code></pre>
 <p>and keeps a score while comparing it:</p>
 <pre class="py"><code>if (s := xpect(here, there)) &lt; best[0]: best = (s, at, v)</code></pre>
@@ -83,7 +82,7 @@ keep it, without computing it twice.</p>
 pick between two of them.</p>
 <pre class="py"><code>op = max if bigger_better else min
 print(op(scores))</code></pre>
-<p>y3 dispatches on column type by choosing a function:</p>
+<p>ezr dispatches on column type by choosing a function:</p>
 <pre class="py"><code>what = cutNum if is_num(t.cols[at]) else cutSym
 for here, there, v in what(xy, acc): ...</code></pre>
 <h3 id="lambdas-as-sort-keys">9. Lambdas as sort keys</h3>
@@ -91,7 +90,7 @@ for here, there, v in what(xy, acc): ...</code></pre>
 <code>x</code>. A lambda is a tiny unnamed function, perfect for
 keys.</p>
 <pre class="py"><code>kids.sort(key=lambda k: k.age)</code></pre>
-<p>y3 orders unlabelled rows by “near best, far from rest”:</p>
+<p>ezr orders unlabelled rows by “near best, far from rest”:</p>
 <pre class="py"><code>todo.sort(key=lambda z: xdist(t, z, r) - xdist(t, z, b))</code></pre>
 <h3 id="default-arguments-and-the-none-trick">10. Default arguments, and
 the None trick</h3>
@@ -101,7 +100,7 @@ the None trick</h3>
 <code>or</code> would silently replace a fresh empty Sym with a Num.</p>
 <pre class="py"><code>def log(msg, out=None):
   out = out if out is not None else sys.stdout</code></pre>
-<p>y3’s stream accumulator:</p>
+<p>ezr’s stream accumulator:</p>
 <pre class="py"><code>def adds(lst, it=None):
   if it is None: it = Num()</code></pre>
 <h3 id="generators-and-yield">11. Generators and yield</h3>
@@ -111,7 +110,7 @@ loop over it like a list.</p>
 <pre class="py"><code>def evens():
   n = 0
   while True: yield n; n += 2</code></pre>
-<p>y3’s cut finders stream candidate splits one at a time, so the caller
+<p>ezr’s cut finders stream candidate splits one at a time, so the caller
 can score and discard them without building a list:</p>
 <pre class="py"><code>def cutNum(xy, acc):
   xy.sort()
@@ -125,7 +124,7 @@ dispatch table</h3>
 Looking up computed names turns naming conventions into machinery: every
 function called <code>test_xxx</code> is automatically a command.</p>
 <pre class="py"><code>def demo(name): globals()[&quot;demo_&quot; + name]()</code></pre>
-<p>y3’s CLI finds demos by name, defaulting to help:</p>
+<p>ezr’s CLI finds demos by name, defaulting to help:</p>
 <pre class="py"><code>if s[:2] == &quot;--&quot;: n += run(globals().get(&quot;test_&quot; + s[2:]))</code></pre>
 </body>
 </html>

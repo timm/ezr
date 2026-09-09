@@ -83,7 +83,7 @@ runs: ## run random test loop
 
 Html := $(GIT_ROOT)/docs
 
-docs: $(Html)/ezr.html $(Html)/ezr.pdf
+docs: $(Html)/ezr.html ~/tmp/ezr.pdf
 
 $(Html)/%.html: %.py
 	@mkdir -p $(Html)

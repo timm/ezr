@@ -1,4 +1,4 @@
-## Script-file patterns in y3.py
+## Script-file patterns in ezr.py
 
 How to organize one Python file so config, tests, docs and
 CLI stay in sync forever. Fifteen patterns, plus the one
@@ -80,7 +80,7 @@ sys.exit(n)
 Config, then primitives, then composites, then tests, then
 the main guard. Every name is defined before it is
 referenced, reading top-down; the call graph in
-[y3_map](y3_map.html) shows the layers.
+[ezr_map](ezr_map.html) shows the layers.
 
 ### 8. Main guard keeps it importable
 
@@ -114,7 +114,7 @@ from math import exp, log, log2, pi, sqrt
 
 ### 11. Shebang carries flags
 
-`./y3.py` just works, and `-B` never litters `__pycache__`.
+`./ezr.py` just works, and `-B` never litters `__pycache__`.
 
 ```py
 #!/usr/bin/env python3 -B
@@ -126,7 +126,7 @@ Args evaluate left to right: set, run, set, run. No
 "config phase then command phase" — order is the power.
 
 ```sh
-./y3.py -Leaf 16 --klassTree -Leaf 4 --holdout
+./ezr.py -Leaf 16 --klassTree -Leaf 4 --holdout
 ```
 
 ### 13. Unknown args warn, never die
@@ -140,7 +140,7 @@ else: print(f"unknown arg: {s}")
 
 ### 14. Section banners are a greppable TOC
 
-`grep '#--' y3.py` is the table of contents — and tools
+`grep '#--' ezr.py` is the table of contents — and tools
 (the pdf packer, the map generator) key off the same
 banners. Structure that is data.
 

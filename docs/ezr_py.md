@@ -1,7 +1,7 @@
-## Python idioms in y3.py
+## Python idioms in ezr.py
 
-Twelve idioms in y3.py that can puzzle newcomers, easiest
-first. Each gets a plain example, then the y3 usage.
+Twelve idioms in ezr.py that can puzzle newcomers, easiest
+first. Each gets a plain example, then the ezr usage.
 
 ### 1. Conditional expressions
 
@@ -13,7 +13,7 @@ right.
 grade = "pass" if mark >= 50 else "fail"
 ```
 
-y3 picks a column type off its name:
+ezr picks a column type off its name:
 
 ```py
 tbl.cols[at] = Num() if s[0].isupper() else Sym()
@@ -28,7 +28,7 @@ x <= b`, and `x` is evaluated once.
 if 0 <= i < len(lst): ...
 ```
 
-y3 keeps both sides of a split big enough:
+ezr keeps both sides of a split big enough:
 
 ```py
 if the.Leaf <= size(here) <= len(xy) - the.Leaf:
@@ -43,7 +43,7 @@ without a temp var.
 lo, hi = hi, lo
 ```
 
-y3 explodes a Num (a 3-tuple) into named parts:
+ezr explodes a Num (a 3-tuple) into named parts:
 
 ```py
 n, mu, m2 = c
@@ -58,7 +58,7 @@ instead of a crash. The standard counting idiom.
 seen[word] = seen.get(word, 0) + 1
 ```
 
-y3 counts symbols the same way:
+ezr counts symbols the same way:
 
 ```py
 c[v] = c.get(v, 0) + inc
@@ -72,7 +72,7 @@ Walk two lists in lockstep; stops at the shorter one.
 for name, score in zip(names, scores): ...
 ```
 
-y3 pairs each row with its precomputed y value:
+ezr pairs each row with its precomputed y value:
 
 ```py
 xy = [(x, y) for r,y in zip(rows, ys) if (x := r[at]) != "?"]
@@ -88,7 +88,7 @@ logic, use a loop instead.
 evens = [x*x for x in range(20) if x % 2 == 0]
 ```
 
-y3 (same line as above) both filters out `"?"` cells and
+ezr (same line as above) both filters out `"?"` cells and
 builds (x, y) pairs in one pass.
 
 ### 7. The walrus `:=`
@@ -100,7 +100,7 @@ keep it, without computing it twice.
 if (m := re.match(pat, line)): print(m.group(1))
 ```
 
-y3 names the cell while filtering on it:
+ezr names the cell while filtering on it:
 
 ```py
 ... if (x := r[at]) != "?"
@@ -122,7 +122,7 @@ op = max if bigger_better else min
 print(op(scores))
 ```
 
-y3 dispatches on column type by choosing a function:
+ezr dispatches on column type by choosing a function:
 
 ```py
 what = cutNum if is_num(t.cols[at]) else cutSym
@@ -138,7 +138,7 @@ is a tiny unnamed function, perfect for keys.
 kids.sort(key=lambda k: k.age)
 ```
 
-y3 orders unlabelled rows by "near best, far from rest":
+ezr orders unlabelled rows by "near best, far from rest":
 
 ```py
 todo.sort(key=lambda z: xdist(t, z, r) - xdist(t, z, b))
@@ -156,7 +156,7 @@ def log(msg, out=None):
   out = out if out is not None else sys.stdout
 ```
 
-y3's stream accumulator:
+ezr's stream accumulator:
 
 ```py
 def adds(lst, it=None):
@@ -175,7 +175,7 @@ def evens():
   while True: yield n; n += 2
 ```
 
-y3's cut finders stream candidate splits one at a time, so
+ezr's cut finders stream candidate splits one at a time, so
 the caller can score and discard them without building a
 list:
 
@@ -198,7 +198,7 @@ every function called `test_xxx` is automatically a command.
 def demo(name): globals()["demo_" + name]()
 ```
 
-y3's CLI finds demos by name, defaulting to help:
+ezr's CLI finds demos by name, defaulting to help:
 
 ```py
 if s[:2] == "--": n += run(globals().get("test_" + s[2:]))

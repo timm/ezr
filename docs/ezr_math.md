@@ -1,7 +1,7 @@
-## Maths idioms in y3.py
+## Maths idioms in ezr.py
 
-Ten pieces of maths in y3.py that can puzzle newcomers,
-easiest first. Each gets a plain statement, then the y3
+Ten pieces of maths in ezr.py that can puzzle newcomers,
+easiest first. Each gets a plain statement, then the ezr
 usage.
 
 ### 1. Mean and mode as "the middle"
@@ -15,7 +15,7 @@ mean = sum(xs) / len(xs)
 mode = max(counts, key=counts.get)
 ```
 
-y3's `mid` picks per type:
+ezr's `mid` picks per type:
 
 ```py
 def mid(c):
@@ -33,7 +33,7 @@ n += 1
 mu += (x - mu) / n
 ```
 
-y3's `add` does this, so a column summarizes a million rows
+ezr's `add` does this, so a column summarizes a million rows
 in three numbers.
 
 ### 3. Incremental variance (Welford, part 2)
@@ -47,7 +47,7 @@ list, no catastrophic cancellation.
 d = x - mu; mu += d/n; m2 += d*(x - mu)
 ```
 
-y3 derives sd on demand:
+ezr derives sd on demand:
 
 ```py
 def sd(c): return 0 if c[0] < 2 else (c[2]/(c[0]-1)) ** .5
@@ -56,7 +56,7 @@ def sd(c): return 0 if c[0] < 2 else (c[2]/(c[0]-1)) ** .5
 ### 4. Un-adding a number (reverse Welford)
 
 Run the same updates with a negative increment and a value
-leaves the summary. y3's sweeps use this to slide one value
+leaves the summary. ezr's sweeps use this to slide one value
 at a time from the "right" pile to the "left" pile.
 
 ```py
@@ -66,7 +66,7 @@ here, there = add(here, y), add(there, y, -1)
 ### 5. Z-scores, and clamping
 
 `z = (x - mu)/sd` measures "how many standard deviations
-from typical". Almost everything lies in -3..3, so y3 clamps
+from typical". Almost everything lies in -3..3, so ezr clamps
 there before squashing — one wild outlier should not crush
 everyone else onto a dot.
 
@@ -99,7 +99,7 @@ city-block distance; P=2 is Euclidean.
 d = (sum(abs(a-b)**P for a,b in zip(p1,p2)) / n) ** (1/P)
 ```
 
-y3 uses it twice: `xdist` between rows, and:
+ezr uses it twice: `xdist` between rows, and:
 
 ### 8. Distance to heaven
 
@@ -119,7 +119,7 @@ def ydist(t, row):
 
 How mixed-up is a set? For numbers, standard deviation. For
 symbols, entropy: `-sum(p * log2 p)` — 0 when all agree,
-larger the more evenly the votes split. y3's `div` unifies
+larger the more evenly the votes split. ezr's `div` unifies
 them, so tree-splitting code never asks which type it holds.
 
 ```py

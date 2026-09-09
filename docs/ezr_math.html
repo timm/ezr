@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ezr: y3_math</title>
+<title>ezr: ezr_math</title>
 <meta name="theme-color" content="#d6d2ca" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1f1e1c" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap">
@@ -18,20 +18,19 @@
 <h2>Easier AI</h2>
 <h3>explainable multi-objective active learning, in a few hundred lines</h3>
 <p class="f">Menzies &middot; 2026<br>
-<a href="https://github.com/timm">github.com/timm</a> &middot;
-y1.py (structured) &middot; y2.py (naked structs)</p>
+<a href="https://github.com/timm/ezr">github.com/timm/ezr</a></p>
 <p class="f">
-<a href="index.html">0 start</a> &middot;
-<a href="data.html">1 data</a> &middot;
-<a href="dist.html">2 distance</a> &middot;
-<a href="acquire.html">3 acquire</a> &middot;
-<a href="tree.html">4 tree</a> &middot;
-<a href="eval.html">5 eval</a> &middot;
-<a href="maths.html">&#9733; maths</a></p>
+<a href="index.html">index</a> &middot;
+<a href="ezr_map.html">map</a> &middot;
+<a href="ezr_py.html">python</a> &middot;
+<a href="ezr_math.html">maths</a> &middot;
+<a href="ezr_ai.html">ai</a> &middot;
+<a href="ezr_se.html">se</a> &middot;
+<a href="ezr_script.html">scripting</a></p>
 </center>
-<h2 id="maths-idioms-in-y3.py">Maths idioms in y3.py</h2>
-<p>Ten pieces of maths in y3.py that can puzzle newcomers, easiest
-first. Each gets a plain statement, then the y3 usage.</p>
+<h2 id="maths-idioms-in-ezr.py">Maths idioms in ezr.py</h2>
+<p>Ten pieces of maths in ezr.py that can puzzle newcomers, easiest
+first. Each gets a plain statement, then the ezr usage.</p>
 <h3 id="mean-and-mode-as-the-middle">1. Mean and mode as “the
 middle”</h3>
 <p>Numbers summarize to their mean; symbols, having no order, summarize
@@ -39,7 +38,7 @@ to their most common value (the mode). One idea — “typical member” — two
 formulas.</p>
 <pre class="py"><code>mean = sum(xs) / len(xs)
 mode = max(counts, key=counts.get)</code></pre>
-<p>y3’s <code>mid</code> picks per type:</p>
+<p>ezr’s <code>mid</code> picks per type:</p>
 <pre class="py"><code>def mid(c):
   return c[1] if is_num(c) else max(c, key=c.get)</code></pre>
 <h3 id="incremental-mean-welford-part-1">2. Incremental mean (Welford,
@@ -49,7 +48,7 @@ mean; each new value nudges the mean by its distance, scaled by the
 count.</p>
 <pre class="py"><code>n += 1
 mu += (x - mu) / n</code></pre>
-<p>y3’s <code>add</code> does this, so a column summarizes a million
+<p>ezr’s <code>add</code> does this, so a column summarizes a million
 rows in three numbers.</p>
 <h3 id="incremental-variance-welford-part-2">3. Incremental variance
 (Welford, part 2)</h3>
@@ -58,17 +57,17 @@ distances to the (moving) mean. Then variance is <code>m2/(n-1)</code>
 and the standard deviation is its square root. One pass, no stored list,
 no catastrophic cancellation.</p>
 <pre class="py"><code>d = x - mu; mu += d/n; m2 += d*(x - mu)</code></pre>
-<p>y3 derives sd on demand:</p>
+<p>ezr derives sd on demand:</p>
 <pre class="py"><code>def sd(c): return 0 if c[0] &lt; 2 else (c[2]/(c[0]-1)) ** .5</code></pre>
 <h3 id="un-adding-a-number-reverse-welford">4. Un-adding a number
 (reverse Welford)</h3>
 <p>Run the same updates with a negative increment and a value leaves the
-summary. y3’s sweeps use this to slide one value at a time from the
+summary. ezr’s sweeps use this to slide one value at a time from the
 “right” pile to the “left” pile.</p>
 <pre class="py"><code>here, there = add(here, y), add(there, y, -1)</code></pre>
 <h3 id="z-scores-and-clamping">5. Z-scores, and clamping</h3>
 <p><code>z = (x - mu)/sd</code> measures “how many standard deviations
-from typical”. Almost everything lies in -3..3, so y3 clamps there
+from typical”. Almost everything lies in -3..3, so ezr clamps there
 before squashing — one wild outlier should not crush everyone else onto
 a dot.</p>
 <pre class="py"><code>z = max(-3, min(3, (v - c[1]) / (1e-32 + sd(c))))</code></pre>
@@ -85,7 +84,7 @@ with wildly different units all speak the same 0..1 language.</p>
 to power P, then take the P-th root. P=1 is city-block distance; P=2 is
 Euclidean.</p>
 <pre class="py"><code>d = (sum(abs(a-b)**P for a,b in zip(p1,p2)) / n) ** (1/P)</code></pre>
-<p>y3 uses it twice: <code>xdist</code> between rows, and:</p>
+<p>ezr uses it twice: <code>xdist</code> between rows, and:</p>
 <h3 id="distance-to-heaven">8. Distance to heaven</h3>
 <p>Multi-objective scoring without weights-fiddling: normalize every
 goal to 0..1, imagine the ideal point (“heaven”: each goal at its best),
@@ -98,7 +97,7 @@ maximize use ideal 1, minimize use ideal 0.</p>
 entropy</h3>
 <p>How mixed-up is a set? For numbers, standard deviation. For symbols,
 entropy: <code>-sum(p * log2 p)</code> — 0 when all agree, larger the
-more evenly the votes split. y3’s <code>div</code> unifies them, so
+more evenly the votes split. ezr’s <code>div</code> unifies them, so
 tree-splitting code never asks which type it holds.</p>
 <pre class="py"><code>def div(c):
   if is_num(c): return sd(c)

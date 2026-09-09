@@ -1,6 +1,6 @@
-## AI ideas in y3.py
+## AI ideas in ezr.py
 
-Nine AI ideas hiding in y3.py, easiest first. Each shown big
+Nine AI ideas hiding in ezr.py, easiest first. Each shown big
 (a real-world system) then small (this code).
 
 ### 1. Labels are dear
@@ -14,7 +14,7 @@ label is minutes of a radiologist's time. Whole companies
 (Scale AI, Labelbox) exist only because labels are the
 expensive part of modern AI.
 
-**Small.** y3 reads 10,000 rows free, but calls `ydist` on
+**Small.** ezr reads 10,000 rows free, but calls `ydist` on
 at most `Stop=50` of them:
 
 ```py
@@ -38,7 +38,7 @@ generations).
 cost against noise; compiler flag selection trades speed
 against binary size against build time. NASA and the
 automotive industry run whole departments on multi-objective
-trade-off studies; y3's `-` and `+` headers are that idea in
+trade-off studies; ezr's `-` and `+` headers are that idea in
 two characters.
 
 **Small.**
@@ -143,7 +143,7 @@ label(tbl, best, rest, pop(tbl, best, rest, todo))
 ### 8. Baselines, and wins as regret
 
 Before trusting a clever method, race it against something
-dumb — say, "label N random rows, keep the best". y3's
+dumb — say, "label N random rows, keep the best". ezr's
 `wins` reports the complement of normalized regret: 100
 means "as good as best", 0 means "no better than average".
 

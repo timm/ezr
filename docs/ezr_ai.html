@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ezr: y3_ai</title>
+<title>ezr: ezr_ai</title>
 <meta name="theme-color" content="#d6d2ca" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1f1e1c" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap">
@@ -18,19 +18,18 @@
 <h2>Easier AI</h2>
 <h3>explainable multi-objective active learning, in a few hundred lines</h3>
 <p class="f">Menzies &middot; 2026<br>
-<a href="https://github.com/timm">github.com/timm</a> &middot;
-y1.py (structured) &middot; y2.py (naked structs)</p>
+<a href="https://github.com/timm/ezr">github.com/timm/ezr</a></p>
 <p class="f">
-<a href="index.html">0 start</a> &middot;
-<a href="data.html">1 data</a> &middot;
-<a href="dist.html">2 distance</a> &middot;
-<a href="acquire.html">3 acquire</a> &middot;
-<a href="tree.html">4 tree</a> &middot;
-<a href="eval.html">5 eval</a> &middot;
-<a href="maths.html">&#9733; maths</a></p>
+<a href="index.html">index</a> &middot;
+<a href="ezr_map.html">map</a> &middot;
+<a href="ezr_py.html">python</a> &middot;
+<a href="ezr_math.html">maths</a> &middot;
+<a href="ezr_ai.html">ai</a> &middot;
+<a href="ezr_se.html">se</a> &middot;
+<a href="ezr_script.html">scripting</a></p>
 </center>
-<h2 id="ai-ideas-in-y3.py">AI ideas in y3.py</h2>
-<p>Nine AI ideas hiding in y3.py, easiest first. Each shown big (a
+<h2 id="ai-ideas-in-ezr.py">AI ideas in ezr.py</h2>
+<p>Nine AI ideas hiding in ezr.py, easiest first. Each shown big (a
 real-world system) then small (this code).</p>
 <h3 id="labels-are-dear">1. Labels are dear</h3>
 <p>Reading a row costs nothing; knowing how <em>good</em> it is costs a
@@ -39,7 +38,7 @@ build, a test, an experiment. Budget the second thing.</p>
 years to label 14 million images. Medical imaging is worse: each label
 is minutes of a radiologist’s time. Whole companies (Scale AI, Labelbox)
 exist only because labels are the expensive part of modern AI.</p>
-<p><strong>Small.</strong> y3 reads 10,000 rows free, but calls
+<p><strong>Small.</strong> ezr reads 10,000 rows free, but calls
 <code>ydist</code> on at most <code>Stop=50</code> of them:</p>
 <pre class="py"><code>while todo and len(best.rows) + len(rest.rows) &lt; cap:</code></pre>
 <h3 id="many-goals-one-number-aggregation-functions">2. Many goals, one
@@ -55,7 +54,7 @@ whole populations for many generations).</p>
 <p><strong>Big.</strong> Aircraft design trades lift against weight
 against cost against noise; compiler flag selection trades speed against
 binary size against build time. NASA and the automotive industry run
-whole departments on multi-objective trade-off studies; y3’s
+whole departments on multi-objective trade-off studies; ezr’s
 <code>-</code> and <code>+</code> headers are that idea in two
 characters.</p>
 <p><strong>Small.</strong></p>
@@ -118,7 +117,7 @@ pick, repeat:</p>
 <h3 id="baselines-and-wins-as-regret">8. Baselines, and wins as
 regret</h3>
 <p>Before trusting a clever method, race it against something dumb —
-say, “label N random rows, keep the best”. y3’s <code>wins</code>
+say, “label N random rows, keep the best”. ezr’s <code>wins</code>
 reports the complement of normalized regret: 100 means “as good as
 best”, 0 means “no better than average”.</p>
 <p><strong>Big.</strong> The M forecasting competitions embarrassed

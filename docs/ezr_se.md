@@ -1,6 +1,6 @@
-## SE ideas in y3.py
+## SE ideas in ezr.py
 
-Eleven software-engineering ideas hiding in y3.py, easiest
+Eleven software-engineering ideas hiding in ezr.py, easiest
 first. Each shown big (a real-world system) then small
 (this code).
 
@@ -15,7 +15,7 @@ projects cannot disagree about what "protobuf" means. Lock
 files (package-lock, Cargo.lock) are the same idea shipped
 to everyone.
 
-**Small.** y3's docstring *is* its settings *is* its help:
+**Small.** ezr's docstring *is* its settings *is* its help:
 
 ```py
 the = o(**{k: atom(v) for k,v in re.findall(pat, __doc__)})
@@ -24,7 +24,7 @@ the = o(**{k: atom(v) for k,v in re.findall(pat, __doc__)})
 ### 2. Little languages
 
 A ten-line notation can replace a thousand-line subsystem.
-y3 has three: column headers as schema, one regex as a
+ezr has three: column headers as schema, one regex as a
 config parser, `-Key val --demo` as a CLI grammar.
 
 **Big.** SQL, regex, printf formats, Makefiles: each a tiny
@@ -80,10 +80,10 @@ tools to answer requests not yet imagined.
 successful integration mechanism in computing — no schema
 negotiations, no SDK, just text between small programs.
 
-**Small.** y3's entire 127-dataset laboratory:
+**Small.** ezr's entire 127-dataset laboratory:
 
 ```sh
-ls */*.csv | xargs -P 10 -I{} python3 y3.py -File {} \
+ls */*.csv | xargs -P 10 -I{} python3 ezr.py -File {} \
     --holdout | sort -n | fmt -60
 ```
 
@@ -116,7 +116,7 @@ harness with 100% branch coverage plus fuzzing plus stored
 golden outputs; its authors rewrite internals freely because
 the masters will catch any drift.
 
-**Small.** y1, y2, y3 were each proved output-identical over
+**Small.** y1, y2, ezr were each proved output-identical over
 127 datasets before being trusted:
 
 ```sh
@@ -152,7 +152,7 @@ on one or two screenfuls", on the stated grounds that if you
 need more, you are lost. Google's style guides make the same
 bet across millions of engineer-hours.
 
-**Small.** The longest function in y3.py is `tree`, at 14
+**Small.** The longest function in ezr.py is `tree`, at 14
 lines, and it is the whole learner.
 
 ### 10. Fail loud, exit honest
@@ -188,7 +188,7 @@ internet, for four hours in 2017. Half the datasets in this
 site's benchmarks (the SS-* files) are exactly this problem:
 find good settings for someone else's software.
 
-**Small.** Every y3 magic number lives in the docstring,
+**Small.** Every ezr magic number lives in the docstring,
 overridable from the shell — and tuning one of them
 (`Check`, labels reserved for verification) raised the
 127-dataset median win by six points in an afternoon of
