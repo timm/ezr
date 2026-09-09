@@ -109,3 +109,16 @@ pushpdf: tosem ## rebuild paper, commit it, push
 docs/ezr.html: ezr.py etc/lit.py ## literate page via pycco
 	@python3 -B etc/lit.py
 	@open $@
+
+Tuts := $(patsubst %.md,%.html,$(wildcard $(Html)/*.md))
+
+$(Html)/%.html: $(Html)/%.md $(ETC)/tut.html ## .md ==> .html tutorial
+	@echo "md-ing $@"
+	@pandoc -s --syntax-highlighting=none --template=$(ETC)/tut.html -M pagetitle=$* -o $@ $<
+
+update: docs/ezr.html $(Html)/ezr_eg.html $(Tuts) ## rebuild all html; commit; push
+	@read -p "Reason? " msg; git commit -am "$$msg"; git push; git status
+
+comments: ## claude adds missing comments; review diff, then "make update"
+	claude -p "$$(cat $(ETC)/prompt.txt)"
+	@git diff --stat

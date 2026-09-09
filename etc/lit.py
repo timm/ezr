@@ -15,14 +15,16 @@ rt = dict(atom="Atom", csv="Rows", sd="float", add="Col",
   show="None", cohen="bool", cliffs="bool", ks="bool",
   same="bool", wins="Callable[[Row],float]", holdout="Row",
   run="int", cli="None", main="None", _klass="list",
-  fitTree="Callable", fitBayes="Callable")
+  fitTree="Callable", fitBayes="Callable", say="str",
+  centroid="Callable[[Row],float]")
 pt = dict(tbl="Tbl", col="Col", row="Row", rows="Rows",
   v="Atom", lst="Iterable", s="str", file="str", at="int",
   best="Tbl", rest="Tbl", todo="Rows", nall="int", nh="int",
   tbls="dict[Atom,Tbl]", pairs="list[tuple[Atom,Atom]]",
   ys="list", acc="Callable", xy="list[tuple]", a="Atom",
   b="Atom", xs="list[float]", tr="Node", d="dict",
-  funs="dict", args="list[str]", fits="Callable")
+  funs="dict", args="list[str]", fits="Callable", x="Any",
+  score="Callable")
 over = {("xpect","a"): "Col", ("xpect","b"): "Col",
         ("cohen","ys"): "list[float]",
         ("cliffs","ys"): "list[float]",
@@ -53,7 +55,8 @@ fb = dict(
   wins="score rows 0..100: complement of regret",
   holdout="train on half; label only the tree's top picks",
   fitBayes="one table per class; predict the most likely",
-  cli="-Key val sets; --name runs; exit counts crashes")
+  cli="-Key val sets; --name runs; exit counts crashes",
+  say="round floats, hide _fields, recurse into dicts, lists")
 
 def sig(name, args):
   out = []
@@ -79,7 +82,7 @@ if len(q) == 2:
 src = lines
 out = []
 for i, line in enumerate(src):
-  bm = re.match(r"#-- (\w[\w, ]*?) *-+ *$", line)
+  bm = re.match(r"#-- (\w[-\w, ]*?) *-{2,} *$", line)
   m = re.match(r"def (\w+)\(([^)]*)\)(.*?)(#\s*(.*))?$", line)
   if bm:
     out += ["", "# ## " + bm.group(1)]

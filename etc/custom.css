@@ -1,10 +1,3 @@
-/* 1. Fonts and Basic Styling */
-body, div.docs, p {
-  font-family: Optima, Candara, "Noto Sans", sans-serif !important;
-  font-size: 15px; color: #333;
-}
-pre, code, .code { font-family: "JetBrains Mono", "Fira Code", monospace; }
-
 /* 2. GAP KILLER: Remove Pycco's default top padding/margins */
 #container { margin-top: 0 !important; }
 div.docs, div.code { padding-top: 10px !important; }

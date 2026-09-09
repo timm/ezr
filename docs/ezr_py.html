@@ -29,8 +29,8 @@
 <a href="ezr_script.html">scripting</a></p>
 </center>
 <h2 id="python-idioms-in-ezr.py">Python idioms in ezr.py</h2>
-<p>Twelve idioms in ezr.py that can puzzle newcomers, easiest first. Each
-gets a plain example, then the ezr usage.</p>
+<p>Twelve idioms in ezr.py that can puzzle newcomers, easiest first.
+Each gets a plain example, then the ezr usage.</p>
 <h3 id="conditional-expressions">1. Conditional expressions</h3>
 <p>One-line if: <code>a if test else b</code> is a <em>value</em>, not a
 statement. Read it middle-out: test first, then left, then right.</p>
@@ -110,8 +110,8 @@ loop over it like a list.</p>
 <pre class="py"><code>def evens():
   n = 0
   while True: yield n; n += 2</code></pre>
-<p>ezr’s cut finders stream candidate splits one at a time, so the caller
-can score and discard them without building a list:</p>
+<p>ezr’s cut finders stream candidate splits one at a time, so the
+caller can score and discard them without building a list:</p>
 <pre class="py"><code>def cutNum(xy, acc):
   xy.sort()
   here, there = acc(), adds((y for _, y in xy), acc())

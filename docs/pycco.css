@@ -188,13 +188,6 @@ body .vc { color: #19469D }                     /* Name.Variable.Class */
 body .vg { color: #19469D }                     /* Name.Variable.Global */
 body .vi { color: #19469D }                     /* Name.Variable.Instance */
 body .il { color: #666666 }                     /* Literal.Number.Integer.Long */
-/* 1. Fonts and Basic Styling */
-body, div.docs, p {
-  font-family: Optima, Candara, "Noto Sans", sans-serif !important;
-  font-size: 15px; color: #333;
-}
-pre, code, .code { font-family: "JetBrains Mono", "Fira Code", monospace; }
-
 /* 2. GAP KILLER: Remove Pycco's default top padding/margins */
 #container { margin-top: 0 !important; }
 div.docs, div.code { padding-top: 10px !important; }
@@ -225,5 +218,3 @@ div.docs pre {
 div.section.intro div.docs, div.section.intro div.docs p {
   text-align: left !important;
 }
-
-.docs p { text-align: justify; }

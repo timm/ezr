@@ -1,22 +1,23 @@
 #!/usr/bin/env python3 -B
 """
-ezr.py: minimal XAI for multi-objective reasoning  
-(c) 2026 Tim Menzies <timm@ieee.org> MIT license  
-  
-Options:  
-  
-  -P=2       minkowski coefficient  
-  -Start=4   acquire: initial random labels  
-  -Stop=50   acquire: total labelling budget  
-  -Few=128   max train rows  
-  -Leaf=4    tree: min rows in any leaf  
-  -Check=5   holdout: top picks to label  
-  -k=1       bayes: rare klass hack  
-  -m=2       bayes: rare evidence hack  
-  -Klass=$MOOT/classify/diabetes.csv  classify demo data  
-  -Repeats=30  klass: number of train/test splits  
-  -Seed=1234567891  random number seed  
-  -File=$MOOT/optimize/misc/auto93.csv  
+ezr.py: minimal XAI for multi-objective reasoning     
+(c) 2026 Tim Menzies <timm@ieee.org> MIT license     
+     
+Options:     
+     
+      -P=2             minkowski coefficient     
+      -Start=4         acquire: initial random labels     
+      -Stop=50         acquire: total labelling budget     
+      -Few=128         max train rows     
+      -Leaf=4          tree: min rows in any leaf     
+      -Check=5         holdout: top picks to label     
+      -k=1             bayes: rare klass hack     
+      -m=2             bayes: rare evidence hack     
+      -Repeats=30      klass: number of train/test splits     
+      -Seed=1234567891 random number seed     
+      -Klass=$MOOT/classify/diabetes.csv  classify demo data     
+      -File=$MOOT/optimize/misc/auto93.csv     
+
 """
 
 # pylint: disable=bad-indentation,invalid-name  
@@ -30,7 +31,10 @@ Options:
  
 import os, random, re, sys, traceback
 from math import exp, log, log2, pi, sqrt
-from types import SimpleNamespace as o
+
+# Used everywhere, defined late (see misc and start sections):
+# `o` (dicts with attribute access), `say` (pretty printer),
+# `the` (settings, parsed from this docstring).
 
 def atom(s,bools={'True': True, 'False': False}):
   try: return int(s)
@@ -39,10 +43,6 @@ def atom(s,bools={'True': True, 'False': False}):
     except ValueError:
       s = s.strip()
       return bools.get(s, s)
-
-pat = r"(\w+)=(\S+)"
-the = o(**{k: atom(v) for k,v in re.findall(pat, __doc__ or "")})
-defaults = o(**vars(the))
 
 def csv(file):
   file = file.replace("$MOOT", os.environ.get("MOOT")
@@ -89,6 +89,13 @@ def div(col): # Num: sd. Sym: entropy
   n = sum(col.values())
   return -sum(v/n * log2(v/n) for v in col.values() if v>0)
 
+def addRow(tbl, row=None, inc=1): # inc=-1 pops the last row
+  if inc > 0: tbl.rows.append(row)
+  else: row = tbl.rows.pop()
+  for at in tbl.cols:
+    tbl.cols[at] = add(tbl.cols[at], row[at], inc)
+  return row
+
 def Tbl(src):
   tbl = o(rows=[], cols={}, x=[], y={}, names=src[0], klass=None)
   for at, s in enumerate(tbl.names):
@@ -101,13 +108,6 @@ def Tbl(src):
   return tbl
 
 def clone(tbl, rows=[]): return Tbl([tbl.names] + rows)
-
-def addRow(tbl, row=None, inc=1): # inc=-1 pops the last row
-  if inc > 0: tbl.rows.append(row)
-  else: row = tbl.rows.pop()
-  for at in tbl.cols:
-    tbl.cols[at] = add(tbl.cols[at], row[at], inc)
-  return row
 
 
 #-- distance ----------------------------------------------
@@ -141,10 +141,9 @@ def ymids(tbl, rows):
   return [sum(r[at] for r in rows)/len(rows) for at in tbl.y]
 
 #-- acquire -----------------------------------------------
-def pop(tbl, best, rest, todo):
+def centroid(tbl, best, rest): # near best, far from rest
   b, r = mids(best), mids(rest)
-  todo.sort(key=lambda z: xdist(tbl, z, r) - xdist(tbl, z, b))
-  return todo.pop()
+  return lambda z: xdist(tbl, z, r) - xdist(tbl, z, b)
 
 def label(tbl, best, rest, row): # keep best pool near sqrt
   addRow(best, row)
@@ -152,13 +151,15 @@ def label(tbl, best, rest, row): # keep best pool near sqrt
   b, r = len(best.rows), len(rest.rows)
   if b > sqrt(1 + b + r): addRow(rest, addRow(best, inc=-1))
 
-def acquire(tbl, cap=None):
+def acquire(tbl, cap=None, score=None): # pop() the top scorer
+  score = score or centroid
   best, rest = clone(tbl), clone(tbl)
   todo = random.sample(tbl.rows, len(tbl.rows))[:the.Few]
   for _ in range(the.Start): label(tbl, best, rest, todo.pop())
   cap = cap or the.Stop
   while todo and len(best.rows) + len(rest.rows) < cap:
-    label(tbl, best, rest, pop(tbl, best, rest, todo))
+    todo.sort(key=score(tbl, best, rest))
+    label(tbl, best, rest, todo.pop())
   return best.rows + rest.rows
 
 
@@ -227,7 +228,7 @@ def cut(tbl, rows, ys, acc): # best (col, val) split
 def routing(tbl, at, v):
   s, c = tbl.names[at], tbl.cols[at]
   if type(c) is not Sym:
-    return (f"{s} <= {round(v,2)}", f"{s} > {round(v,2)}",
+    return (f"{s} <= {say(v)}", f"{s} > {say(v)}",
             lambda r: (c[1] if r[at] == "?" else r[at]) <= v)
   return (f"{s} = {v}", f"{s} != {v}",
           lambda r: (mid(c) if r[at] == "?" else r[at]) == v)
@@ -298,6 +299,19 @@ def same(xs, ys, eps=0): # indistinguishable, by all three
   xs, ys = sorted(xs), sorted(ys)
   return (cliffs(xs,ys) and ks(xs,ys) and cohen(xs,ys,eps=eps))
 
+#-- misc -------------------------------------------------
+def say(x, p=2):
+  if type(x) is float: x= f"{x:.{p}f}".rstrip("0").rstrip(".")
+  elif type(x) in (dict, o): x= "{" + ", ".join(
+    f"{k}: {say(x[k], p)}" for k in x if str(k)[0] != "_") + "}"
+  elif type(x) in (list,tuple):
+    x = "[" + ", ".join(say(v, p) for v in x) + "]"
+  return str(x)
+
+class o(dict):
+  __repr__ = say
+  __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
+
 #-- tests -------------------------------------------------
 def wins(tbl):
   ys = sorted(ydist(tbl, r) for r in tbl.rows)
@@ -327,13 +341,13 @@ def test_num():
   "Welford add matches textbook mean and sd"
   c = adds([2, 4, 4, 4, 5, 5, 7, 9])
   assert c[0] == 8 and c[1] == 5 and abs(sd(c)-2.138) < .01
-  print(f"mu {c[1]} sd {round(sd(c), 3)}")
+  print(f"mu {say(c[1])} sd {say(sd(c))}")
 
 def test_sym():
   "Syms count; mid is mode; div is entropy"
   c = adds("aabbbc", Sym())
   assert c["b"]==3 and mid(c)=="b" and abs(div(c)-1.459)<.01
-  print(f"mode {mid(c)} ent {round(div(c), 3)}")
+  print(f"mode {mid(c)} ent {say(div(c))}")
 
 def test_tbl():
   "Headers route columns to x, y, klass, or nowhere"
@@ -363,8 +377,8 @@ def test_tree():
   "Acquire, grow and show the.File's tree"
   tbl = Tbl(csv(the.File)); lab = acquire(tbl)
   print(f"{the.File} n={len(tbl.rows)}"
-        f" mid={round(ymu(tbl, tbl.rows), 3)}"
-        f" ezr={round(ydist(tbl, lab[0]), 3)}")
+        f" mid={say(ymu(tbl, tbl.rows))}"
+        f" ezr={say(ydist(tbl, lab[0]))}")
   show(tbl, tree(tbl, lab))
 
 def test_holdout():
@@ -426,18 +440,24 @@ def test_same():
   assert same(x, y) and not same(x, z)
   print(f"same {same(x, y)} diff {not same(x, z)}")
 
+
+# -- start ------------------------------------------------
+the = o(_defaults=o())
+for k, v in re.findall(r"(\w+)=(\S+)", __doc__ or ""):
+  the[k] = the._defaults[k] = atom(v)
+
+def run(f=None): # demos may mutate the; always clean up
+  random.seed(the.Seed)
+  try:              (f or test_help)()
+  except Exception: traceback.print_exc(); return 1
+  finally:          the.update(the._defaults)
+  return 0
+
 def test_all():
   "Run every demo; exit code counts the crashes"
   sys.exit(sum(print(f"\n# {k[5:]}") or run(f)
                for k, f in list(globals().items())
                if k[:5] == "test_" and f is not test_all))
-
-
-def run(f=None): # demos may mutate the; always clean up
-  try:              random.seed(the.Seed); (f or test_help)()
-  except Exception: traceback.print_exc(); return 1
-  finally:          vars(the).update(vars(defaults))
-  return 0
 
 def cli(d, funs, args, n=0):
   while args:
@@ -448,6 +468,6 @@ def cli(d, funs, args, n=0):
   sys.exit(n)
 
 def main(): # pip entry point
-  cli(vars(the), globals(), sys.argv[1:] or ["--help"])
+  cli(the, globals(), sys.argv[1:] or ["--help"])
 
 if __name__ == "__main__": main()

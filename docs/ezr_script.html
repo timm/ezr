@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="style.css">
 <script src="hl.js" defer></script>
 <script src="pop.js" defer></script>
-<style>pre, pre.py { font-size: clamp(8px, 2.2vw, 11px); }</style>
+<style>pre { font-size: clamp(8px, 2.2vw, 12px); }</style>
 </head>
 <body>
 <center>
@@ -79,7 +79,8 @@ needs no plugin.</p>
 dependency order</h3>
 <p>Config, then primitives, then composites, then tests, then the main
 guard. Every name is defined before it is referenced, reading top-down;
-the call graph in <a href="ezr_map.html">ezr_map</a> shows the layers.</p>
+the call graph in <a href="ezr_map.html">ezr_map</a> shows the
+layers.</p>
 <h3 id="main-guard-keeps-it-importable">8. Main guard keeps it
 importable</h3>
 <p>The same file is a script and a library: a harness can import the

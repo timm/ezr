@@ -13,9 +13,8 @@ Options:
 import random, re, sys
 from ezr import *
 
-vars(the).update({k: atom(v)
-                  for k, v in re.findall(pat, __doc__)})
-vars(defaults).update(vars(the))
+for k, v in re.findall(r"(\w+)=(\S+)", __doc__ or ""):
+  the[k] = the._defaults[k] = atom(v)
 
 
 #-- cluster -----------------------------------------------
@@ -90,17 +89,12 @@ def sa(tbl, oracle, m=0.5): # 1983 simulated annealing
 
 
 #-- acquire, bayesian -------------------------------------
+def bayes(tbl, best, rest): # most likely best
+  n = len(best.rows) + len(rest.rows)
+  return lambda z: likes(best, z, n, 2) - likes(rest, z, n, 2)
+
 def acquireBayes(tbl, cap=None): # label most-likely-best
-  best, rest = clone(tbl), clone(tbl)
-  todo = random.sample(tbl.rows, len(tbl.rows))[:the.Few]
-  for _ in range(the.Start): label(tbl, best, rest, todo.pop())
-  while todo and len(best.rows)+len(rest.rows) < (cap
-                                                  or the.Stop):
-    n = len(best.rows) + len(rest.rows)
-    todo.sort(key=lambda r: likes(best, r, n, 2)
-                          - likes(rest, r, n, 2))
-    label(tbl, best, rest, todo.pop())
-  return best.rows + rest.rows
+  return acquire(tbl, cap, bayes)
 
 
 #-- start-up ----------------------------------------------
@@ -162,6 +156,6 @@ def test_all():
                if k[:5] == "test_" and f is not test_all))
 
 def main(): # pip entry point
-  cli(vars(the), globals(), sys.argv[1:] or ["--help"])
+  cli(the, globals(), sys.argv[1:] or ["--help"])
 
 if __name__ == "__main__": main()
