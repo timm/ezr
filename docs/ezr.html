@@ -126,7 +126,7 @@ strings become ints, floats, bools, or stay strings</p>
     <span class="k">try</span><span class="p">:</span> <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
       <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-      <span class="k">return</span> <span class="n">bools</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span></pre></div>
+      <span class="k">return</span> <span class="n">bools</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">bools</span> <span class="k">else</span> <span class="n">s</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -791,15 +791,10 @@ round floats, hide _fields, recurse into dicts, lists</p>
         <a class='octothorpe' href='#section-42'>#</a>
       </div>
       <h2>tests</h2>
-<p><code>wins(tbl: Tbl) -&gt; Callable[[Row],float]</code><br />
-score rows 0..100: complement of regret</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">wins</span><span class="p">(</span><span class="n">tbl</span><span class="p">):</span>
-  <span class="n">ys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ydist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span>
-  <span class="n">lo</span><span class="p">,</span> <span class="n">b4</span> <span class="o">=</span> <span class="n">ys</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span>
-  <span class="k">return</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span>
-    <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">ydist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b4</span> <span class="o">-</span> <span class="n">lo</span> <span class="o">+</span> <span class="mf">1e-32</span><span class="p">))))</span></pre></div>
+      <div class="highlight"><pre><span class="n">mean</span>   <span class="o">=</span> <span class="k">lambda</span> <span class="n">ys</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span>
+<span class="n">median</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">ys</span><span class="p">:</span> <span class="n">ys</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -807,6 +802,23 @@ score rows 0..100: complement of regret</p>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-43'>#</a>
+      </div>
+      <p><code>wins(tbl: Tbl, b4=mean) -&gt; Callable[[Row],float]</code><br />
+b4 anchors win=0; best row anchors 100</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">wins</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">b4</span><span class="o">=</span><span class="n">mean</span><span class="p">):</span>
+  <span class="n">ys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ydist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span>
+  <span class="n">lo</span><span class="p">,</span> <span class="n">b4</span> <span class="o">=</span> <span class="n">ys</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">b4</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span>
+  <span class="k">return</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span>
+    <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">ydist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b4</span> <span class="o">-</span> <span class="n">lo</span> <span class="o">+</span> <span class="mf">1e-32</span><span class="p">))))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-44'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-44'>#</a>
       </div>
       <p><code>holdout(tbl: Tbl) -&gt; Row</code><br />
 train on half; label only the tree&rsquo;s top picks</p>
@@ -823,10 +835,10 @@ train on half; label only the tree&rsquo;s top picks</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-44'>
+  <div class='section' id='section-45'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-44'>#</a>
+        <a class='octothorpe' href='#section-45'>#</a>
       </div>
       <h2>start-up</h2>
 <p><code>test_help() -&gt; None</code><br />
@@ -842,10 +854,10 @@ Show usage, settings, demos</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-45'>
+  <div class='section' id='section-46'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-45'>#</a>
+        <a class='octothorpe' href='#section-46'>#</a>
       </div>
       <p><code>test_num() -&gt; None</code><br />
 Welford add matches textbook mean and sd</p>
@@ -859,10 +871,10 @@ Welford add matches textbook mean and sd</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-46'>
+  <div class='section' id='section-47'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-46'>#</a>
+        <a class='octothorpe' href='#section-47'>#</a>
       </div>
       <p><code>test_sym() -&gt; None</code><br />
 Syms count; mid is mode; div is entropy</p>
@@ -876,10 +888,10 @@ Syms count; mid is mode; div is entropy</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-47'>
+  <div class='section' id='section-48'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-47'>#</a>
+        <a class='octothorpe' href='#section-48'>#</a>
       </div>
       <p><code>test_tbl() -&gt; None</code><br />
 Headers route columns to x, y, klass, or nowhere</p>
@@ -894,10 +906,10 @@ Headers route columns to x, y, klass, or nowhere</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-48'>
+  <div class='section' id='section-49'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-48'>#</a>
+        <a class='octothorpe' href='#section-49'>#</a>
       </div>
       <p><code>test_cuts() -&gt; None</code><br />
 cut returns a legal, routable split</p>
@@ -915,10 +927,10 @@ cut returns a legal, routable split</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-49'>
+  <div class='section' id='section-50'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-49'>#</a>
+        <a class='octothorpe' href='#section-50'>#</a>
       </div>
       <p><code>test_wins() -&gt; None</code><br />
 wins grades the best row 100</p>
@@ -932,10 +944,10 @@ wins grades the best row 100</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-50'>
+  <div class='section' id='section-51'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-50'>#</a>
+        <a class='octothorpe' href='#section-51'>#</a>
       </div>
       <p><code>test_tree() -&gt; None</code><br />
 Acquire, grow and show the.File&rsquo;s tree</p>
@@ -951,10 +963,10 @@ Acquire, grow and show the.File&rsquo;s tree</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-51'>
+  <div class='section' id='section-52'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-51'>#</a>
+        <a class='octothorpe' href='#section-52'>#</a>
       </div>
       <p><code>test_holdout() -&gt; None</code><br />
 Mean win over 20 train/test holdouts</p>
@@ -969,10 +981,10 @@ Mean win over 20 train/test holdouts</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-52'>
+  <div class='section' id='section-53'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-52'>#</a>
+        <a class='octothorpe' href='#section-53'>#</a>
       </div>
       <p><code>test_same() -&gt; None</code><br />
 Stats tests tell noise from signal</p>
@@ -988,10 +1000,10 @@ Stats tests tell noise from signal</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-53'>
+  <div class='section' id='section-54'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-53'>#</a>
+        <a class='octothorpe' href='#section-54'>#</a>
       </div>
       <p>&ndash; start ------------------------------------------------</p>
     </div>
@@ -1002,10 +1014,10 @@ Stats tests tell noise from signal</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-54'>
+  <div class='section' id='section-55'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-54'>#</a>
+        <a class='octothorpe' href='#section-55'>#</a>
       </div>
       <p><code>run(f=None) -&gt; int</code><br />
 demos may mutate the; always clean up</p>
@@ -1020,10 +1032,10 @@ demos may mutate the; always clean up</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-55'>
+  <div class='section' id='section-56'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-55'>#</a>
+        <a class='octothorpe' href='#section-56'>#</a>
       </div>
       <p><code>test_all() -&gt; None</code><br />
 Run every demo; exit code counts the crashes</p>
@@ -1037,10 +1049,10 @@ Run every demo; exit code counts the crashes</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-56'>
+  <div class='section' id='section-57'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-56'>#</a>
+        <a class='octothorpe' href='#section-57'>#</a>
       </div>
       <p><code>cli(d: dict, funs: dict, args: list[str], n=0) -&gt; None</code><br />
 -Key val sets; &ndash;name runs; exit counts crashes</p>
@@ -1056,10 +1068,10 @@ Run every demo; exit code counts the crashes</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-57'>
+  <div class='section' id='section-58'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-57'>#</a>
+        <a class='octothorpe' href='#section-58'>#</a>
       </div>
       <p><code>main() -&gt; None</code><br />
 pip entry point</p>

@@ -118,8 +118,7 @@ def de(tbl, oracle, np=20, cr=0.9): # [6] storn+price 1997
       if en < es[i]: pop[i], es[i] = tuple(sn), en
   return pop[es.index(min(es))]
 
-
-#-- bayes -------------------------------------------------
+#-- bayes -------------------------------------------------
 
 # Naive Bayes, used two ways: to pick which row to label next
 # (bayes [4], acquireBayes [5]) and to classify (next
@@ -152,7 +151,6 @@ def bayes(tbl, best, rest): # [4] most likely best
 
 def acquireBayes(tbl, cap=None): # [5] label most-likely-best
   return acquire(tbl, cap, bayes)
-
 
 #-- classify ----------------------------------------------
 
@@ -212,8 +210,7 @@ def _klass(*fits): # [4] each fit(tbl, rows, y) --> predictor
         f" {'prec':>4} {'n':>6}  class")
   return [one(fit) for fit in fits]
 
-
-#-- start-up ----------------------------------------------
+#-- start-up ----------------------------------------------
 
 # Demos, run from the shell: "ezr_eg --kmeans", or "--all"
 # for everything. "-Key val" flags (from the options above or

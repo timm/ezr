@@ -46,7 +46,7 @@ def atom(s,bools={'True': True, 'False': False}):
     try: return float(s)
     except ValueError:
       s = s.strip()
-      return bools.get(s, s)
+      return bools[s] if s in bools else s
 
 def csv(file):
   file = file.replace("$MOOT", os.environ.get("MOOT")
@@ -284,9 +284,12 @@ class o(dict):
   __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
 
 #-- tests -------------------------------------------------
-def wins(tbl):
+mean   = lambda ys: sum(ys) / len(ys)
+median = lambda ys: ys[len(ys) // 2]
+
+def wins(tbl, b4=mean): # b4 anchors win=0; best row anchors 100
   ys = sorted(ydist(tbl, r) for r in tbl.rows)
-  lo, b4 = ys[0], sum(ys) / len(ys)
+  lo, b4 = ys[0], b4(ys)
   return lambda r: max(-100, min(100,
     100 * (1 - (ydist(tbl, r) - lo) / (b4 - lo + 1e-32))))
 
