@@ -5,7 +5,7 @@
 SHELL := /bin/bash
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 ETC := $(GIT_ROOT)/etc
-RUN_TEST := bash $(ETC)/run_tests.sh
+RUN_TEST := python3 -B ezr.py --all
 
 CLS    := '\033[H\033[J'
 cRESET := '\033[0m'
@@ -61,8 +61,8 @@ CSVS = ls $(HOME)/gits/moot/optimize/*/*.csv | sort -R | xargs -P 24 -I{} sh -c
 
 ~/tmp/ezr_acq.log: ok ## run ez_acq tests
 	@mkdir -p ~/tmp
-	@$(CSVS) 'python3 -B cli.py acquire "{}"' | tee $@
-	@cut -d \  -f 8 $@ |sort -n  |  fmt -71
+	@$(CSVS) 'python3 -B ezr.py -File "{}" --holdout' | tee $@
+	@cut -d \  -f 2 $@ | sort -n | fmt -71
 
 runs: ## run random test loop
 	@mkdir -p ~/tmp

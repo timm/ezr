@@ -4,19 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ezr"
-version = "0.9.4"
+version = "1.0.0"
 readme = "README.md"
 description = "Explainable multi-objective optimization"
 authors = [{name = "Tim Menzies", email = "timm@ieee.org"}]
 license = {text = "MIT"}
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 dependencies = []
 
 [project.scripts]
-ezr = "cli:main"
+ezr = "ezr:main"
+ezr-eg = "ezr_eg:main"
 
 [tool.setuptools]
-py-modules = ["ezr", "cli"]
+py-modules = ["ezr", "ezr_eg"]
 
 [project.urls]
 Changelog = "https://github.com/timm/ezr/blob/main/CHANGELOG.md"
