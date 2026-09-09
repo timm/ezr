@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ezr: y3_se</title>
+<meta name="theme-color" content="#d6d2ca" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1f1e1c" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<script src="hl.js" defer></script>
+<script src="pop.js" defer></script>
+<style>pre { font-size: clamp(8px, 2.2vw, 12px); }</style>
+</head>
+<body>
+<center>
+<h2>Easier AI</h2>
+<h3>explainable multi-objective active learning, in a few hundred lines</h3>
+<p class="f">Menzies &middot; 2026<br>
+<a href="https://github.com/timm">github.com/timm</a> &middot;
+y1.py (structured) &middot; y2.py (naked structs)</p>
+<p class="f">
+<a href="index.html">0 start</a> &middot;
+<a href="data.html">1 data</a> &middot;
+<a href="dist.html">2 distance</a> &middot;
+<a href="acquire.html">3 acquire</a> &middot;
+<a href="tree.html">4 tree</a> &middot;
+<a href="eval.html">5 eval</a> &middot;
+<a href="maths.html">&#9733; maths</a></p>
+</center>
+<h2 id="se-ideas-in-y3.py">SE ideas in y3.py</h2>
+<p>Eleven software-engineering ideas hiding in y3.py, easiest first.
+Each shown big (a real-world system) then small (this code).</p>
+<h3 id="single-source-of-truth">1. Single source of truth</h3>
+<p>State each fact once; derive every other appearance. Copies drift;
+derivations cannot.</p>
+<p><strong>Big.</strong> Google’s monorepo enforces a one-version rule:
+each third-party library exists exactly once, so ten thousand projects
+cannot disagree about what “protobuf” means. Lock files (package-lock,
+Cargo.lock) are the same idea shipped to everyone.</p>
+<p><strong>Small.</strong> y3’s docstring <em>is</em> its settings
+<em>is</em> its help:</p>
+<pre class="py"><code>the = o(**{k: atom(v) for k,v in re.findall(pat, __doc__)})</code></pre>
+<h3 id="little-languages">2. Little languages</h3>
+<p>A ten-line notation can replace a thousand-line subsystem. y3 has
+three: column headers as schema, one regex as a config parser,
+<code>-Key val --demo</code> as a CLI grammar.</p>
+<p><strong>Big.</strong> SQL, regex, printf formats, Makefiles: each a
+tiny language that outlived generations of the “real” languages around
+it. Bell Labs called this the highest form of reuse — reusing a
+<em>notation</em>.</p>
+<p><strong>Small.</strong></p>
+<pre class="py"><code>tbl.cols[at] = Num() if s[0].isupper() else Sym()</code></pre>
+<h3 id="convention-over-configuration">3. Convention over
+configuration</h3>
+<p>Let names carry meaning and the machinery configures itself.</p>
+<p><strong>Big.</strong> Ruby on Rails coined the phrase: put the model
+in app/models with the conventional name and everything wires itself.
+Maven, Next.js routing, and pytest’s own <code>test_</code> discovery
+all inherit the idea.</p>
+<p><strong>Small.</strong> Any function named <code>test_*</code> is
+automatically a demo, listed by help and callable from the shell:</p>
+<pre class="py"><code>if s[:2] == &quot;--&quot;: n += run(globals().get(&quot;test_&quot; + s[2:]))</code></pre>
+<h3 id="separation-of-concerns">4. Separation of concerns</h3>
+<p>Each layer knows as little as possible about its neighbors.</p>
+<p><strong>Big.</strong> LLVM’s whole design is one separation: front
+ends compile <em>to</em> an intermediate representation, back ends
+compile <em>from</em> it, and neither knows the other exists. That one
+boundary lets a new language reach twenty CPUs for free.</p>
+<p><strong>Small.</strong> By the time rows reach <code>tree</code>,
+nothing remembers whether they came from disk, a clone, or an acquire
+loop — they are just tuples.</p>
+<pre class="py"><code>def tree(tbl, rows, edge=&quot;&quot;, y=None):</code></pre>
+<h3 id="tools-not-products">5. Tools, not products</h3>
+<p>A product answers one request. A tool composes with other tools to
+answer requests not yet imagined.</p>
+<p><strong>Big.</strong> Unix. Fifty years on, the pipe remains the most
+successful integration mechanism in computing — no schema negotiations,
+no SDK, just text between small programs.</p>
+<p><strong>Small.</strong> y3’s entire 127-dataset laboratory:</p>
+<pre class="sh"><code>ls */*.csv | xargs -P 10 -I{} python3 y3.py -File {} \
+    --holdout | sort -n | fmt -60</code></pre>
+<h3 id="demos-as-tests-as-docs">6. Demos as tests as docs</h3>
+<p>One artifact, three jobs: <code>test_*</code> functions run the code
+(test), print worked examples (demo), and list themselves with
+docstrings under –help (docs).</p>
+<p><strong>Big.</strong> Rust compiles and runs the code examples inside
+its documentation; a doc that rots fails the build. Python’s doctest
+pioneered the same bargain: examples that lie are caught, so examples
+stay true.</p>
+<p><strong>Small.</strong></p>
+<pre class="py"><code>def test_holdout():
+  &quot;Mean win over 20 train/test holdouts&quot;</code></pre>
+<h3 id="golden-master-regression">7. Golden-master regression</h3>
+<p>When rewriting working code, freeze its outputs first; after each
+change, byte-compare. Seeded randomness makes even stochastic code
+freezable.</p>
+<p><strong>Big.</strong> SQLite ships to every phone on earth behind a
+test harness with 100% branch coverage plus fuzzing plus stored golden
+outputs; its authors rewrite internals freely because the masters will
+catch any drift.</p>
+<p><strong>Small.</strong> y1, y2, y3 were each proved output-identical
+over 127 datasets before being trusted:</p>
+<pre class="sh"><code>diff old.wins new.wins &amp;&amp; echo IDENTICAL</code></pre>
+<h3 id="polymorphism-without-classes">8. Polymorphism without
+classes</h3>
+<p>One type test plus functions-as-values buys what class hierarchies
+buy, without the hierarchy.</p>
+<p><strong>Big.</strong> The Linux kernel is object-oriented C: every
+filesystem fills a struct of function pointers (file_operations), and
+the VFS calls through it. Thirty years, hundreds of filesystems, no
+classes.</p>
+<p><strong>Small.</strong></p>
+<pre class="py"><code>what = cutNum if is_num(tbl.cols[at]) else cutSym</code></pre>
+<h3 id="small-everything">9. Small everything</h3>
+<p>Reading is the dominant cost of code. Size limits (65 columns here;
+14 lines in the longest function) are not asceticism — they are a bet
+that whatever cannot fit in one eyeful will hide bugs.</p>
+<p><strong>Big.</strong> The Linux kernel style guide caps indentation
+at three levels and says functions should “do one thing and fit on one
+or two screenfuls”, on the stated grounds that if you need more, you are
+lost. Google’s style guides make the same bet across millions of
+engineer-hours.</p>
+<p><strong>Small.</strong> The longest function in y3.py is
+<code>tree</code>, at 14 lines, and it is the whole learner.</p>
+<h3 id="fail-loud-exit-honest">10. Fail loud, exit honest</h3>
+<p>A crash is a gift: it names the line. Silent wrongness costs weeks.
+And report failure where machines can see it — the exit code.</p>
+<p><strong>Big.</strong> Erlang’s “let it crash” philosophy runs telecom
+switches at 99.9999999% availability: processes die loudly and
+supervisors restart them, instead of limping on corrupted state.</p>
+<p><strong>Small.</strong> <code>run</code> counts crashes;
+<code>cli</code> exits with the count, so a Makefile can gate on it:</p>
+<pre class="py"><code>sys.exit(n)</code></pre>
+<h3 id="configuration-is-a-feature">11. Configuration is a feature</h3>
+<p>Most systems ship dozens of knobs; most users touch none; many
+defaults are wrong. At minimum, expose every parameter and document it
+where users will look. Better: treat your own config as an optimization
+problem.</p>
+<p><strong>Big.</strong> Studies of Hadoop, MySQL and Apache found
+hundreds of parameters of which over 80% are rarely or never set, while
+misconfiguration rivals code bugs as an outage cause — a mistyped
+parameter took down AWS S3, and much of the internet, for four hours in
+2017. Half the datasets in this site’s benchmarks (the SS-* files) are
+exactly this problem: find good settings for someone else’s
+software.</p>
+<p><strong>Small.</strong> Every y3 magic number lives in the docstring,
+overridable from the shell — and tuning one of them (<code>Check</code>,
+labels reserved for verification) raised the 127-dataset median win by
+six points in an afternoon of sweeps.</p>
+<pre class="py"><code>  -Stop=50   acquire: total labelling budget
+  -Check=5   holdout: top picks to label</code></pre>
+</body>
+</html>

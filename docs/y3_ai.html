@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ezr: y3_ai</title>
+<meta name="theme-color" content="#d6d2ca" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1f1e1c" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<script src="hl.js" defer></script>
+<script src="pop.js" defer></script>
+<style>pre { font-size: clamp(8px, 2.2vw, 12px); }</style>
+</head>
+<body>
+<center>
+<h2>Easier AI</h2>
+<h3>explainable multi-objective active learning, in a few hundred lines</h3>
+<p class="f">Menzies &middot; 2026<br>
+<a href="https://github.com/timm">github.com/timm</a> &middot;
+y1.py (structured) &middot; y2.py (naked structs)</p>
+<p class="f">
+<a href="index.html">0 start</a> &middot;
+<a href="data.html">1 data</a> &middot;
+<a href="dist.html">2 distance</a> &middot;
+<a href="acquire.html">3 acquire</a> &middot;
+<a href="tree.html">4 tree</a> &middot;
+<a href="eval.html">5 eval</a> &middot;
+<a href="maths.html">&#9733; maths</a></p>
+</center>
+<h2 id="ai-ideas-in-y3.py">AI ideas in y3.py</h2>
+<p>Nine AI ideas hiding in y3.py, easiest first. Each shown big (a
+real-world system) then small (this code).</p>
+<h3 id="labels-are-dear">1. Labels are dear</h3>
+<p>Reading a row costs nothing; knowing how <em>good</em> it is costs a
+build, a test, an experiment. Budget the second thing.</p>
+<p><strong>Big.</strong> ImageNet took 49,000 crowd-workers over two
+years to label 14 million images. Medical imaging is worse: each label
+is minutes of a radiologist’s time. Whole companies (Scale AI, Labelbox)
+exist only because labels are the expensive part of modern AI.</p>
+<p><strong>Small.</strong> y3 reads 10,000 rows free, but calls
+<code>ydist</code> on at most <code>Stop=50</code> of them:</p>
+<pre class="py"><code>while todo and len(best.rows) + len(rest.rows) &lt; cap:</code></pre>
+<h3 id="many-goals-one-number-aggregation-functions">2. Many goals, one
+number (aggregation functions)</h3>
+<p>Real decisions juggle goals that fight each other. An <em>aggregation
+function</em> collapses them to one number: here, normalize each goal to
+0..1 and score a candidate by its distance to “heaven” (all goals at
+their best). The alternative is to skip aggregation and keep the
+<em>Pareto frontier</em> — every candidate no other candidate beats on
+all goals at once. Frontiers dodge the collapse but return a set, not an
+answer, and cost far more evaluations (NSGA-II-style optimizers run
+whole populations for many generations).</p>
+<p><strong>Big.</strong> Aircraft design trades lift against weight
+against cost against noise; compiler flag selection trades speed against
+binary size against build time. NASA and the automotive industry run
+whole departments on multi-objective trade-off studies; y3’s
+<code>-</code> and <code>+</code> headers are that idea in two
+characters.</p>
+<p><strong>Small.</strong></p>
+<pre class="py"><code>def ydist(tbl, row):
+  return (sum(abs(norm(tbl.cols[at], row[at]) - w) ** the.P
+             for at, w in tbl.y.items()) / len(tbl.y))**(1/the.P)</code></pre>
+<h3 id="discretization">3. Discretization</h3>
+<p>Continuous numbers usually matter only in bands. Finding the few cut
+points that predict something is half of learning.</p>
+<p><strong>Big.</strong> Medicine runs on discretizations: hypertension
+begins at 140/90; diabetes at HbA1c 6.5%; BMI has four bands. Each cut
+point compresses a continuous measurement into a decision — and choosing
+those cuts well or badly moves millions of diagnoses.</p>
+<p><strong>Small.</strong> <code>cutNum</code> sweeps sorted values,
+testing only the boundaries where the value actually changes:</p>
+<pre class="py"><code>if x != xy[i+1][0]: yield here, there, x</code></pre>
+<h3 id="trees-are-recursive-discretization">4. Trees are recursive
+discretization</h3>
+<p>One cut splits a space in two. Recurse on each half and the result is
+a decision tree: stacked discretizations, readable as rules.</p>
+<p><strong>Big.</strong> The Goldman criteria for chest pain — a tree of
+a handful of yes/no questions — triaged emergency-room patients as well
+as cardiologists did. Microsoft’s Kinect tracked your skeleton in real
+time with forests of decision trees. Trees survive because the model
+<em>is</em> the explanation.</p>
+<p><strong>Small.</strong></p>
+<pre class="py"><code>node += [go, tree(tbl, yes, e1, y), tree(tbl, no, e2, y)]</code></pre>
+<h3 id="traintest-separation">5. Train/test separation</h3>
+<p>A model that scores well on data it has seen proves only that it can
+memorize. Hold some data back; test there.</p>
+<p><strong>Big.</strong> Kaggle keeps a private leaderboard hidden until
+competition end precisely because teams overfit the public one; final
+standings routinely reshuffle when the held-out half speaks. Every drug
+trial’s endpoint is a train/test separation with lives attached.</p>
+<p><strong>Small.</strong></p>
+<pre class="py"><code>train, test = rows[:n][:the.Few], rows[n:]</code></pre>
+<h3 id="regularization-by-smallness">6. Regularization by smallness</h3>
+<p>Fitting the training data too well means fitting its noise.
+Forbidding detail — bigger leaves, shallower trees — often
+<em>improves</em> accuracy on new data.</p>
+<p><strong>Big.</strong> Gigerenzer’s “fast and frugal” studies found
+three-question trees matching or beating logistic models and expert
+doctors at predicting heart attacks. Credit scorecards are legally
+<em>required</em> to stay small enough to explain — and lose little
+accuracy for it.</p>
+<p><strong>Small.</strong> One line forbids slivers:</p>
+<pre class="py"><code>if the.Leaf &lt;= size(here) &lt;= len(xy) - the.Leaf:</code></pre>
+<h3 id="active-learning">7. Active learning</h3>
+<p>Passive learners label rows at random. Active learners spend each
+label where, given everything labeled so far, it will teach the
+most.</p>
+<p><strong>Big.</strong> Drug discovery screens libraries of millions of
+compounds but can only assay thousands: modern pipelines train on each
+batch of assays to choose the next batch. Berkeley’s A-Lab and
+self-driving “data engines” (label the frames the current model finds
+hardest) run the same loop at industrial scale.</p>
+<p><strong>Small.</strong> The whole acquire loop: label a few, model,
+pick, repeat:</p>
+<pre class="py"><code>label(tbl, best, rest, pop(tbl, best, rest, todo))</code></pre>
+<h3 id="baselines-and-wins-as-regret">8. Baselines, and wins as
+regret</h3>
+<p>Before trusting a clever method, race it against something dumb —
+say, “label N random rows, keep the best”. y3’s <code>wins</code>
+reports the complement of normalized regret: 100 means “as good as
+best”, 0 means “no better than average”.</p>
+<p><strong>Big.</strong> The M forecasting competitions embarrassed
+decades of methods: on thousands of series, the naive “tomorrow = today,
+adjusted for season” baseline beat most sophisticated entrants. A field
+that skips brutal baselines publishes noise.</p>
+<p><strong>Small.</strong></p>
+<pre class="py"><code>return lambda r: max(-100, min(100,
+  100 * (1 - (ydist(tbl, r) - lo) / (b4 - lo + 1e-32))))</code></pre>
+<h3 id="budget-accounting">9. Budget accounting</h3>
+<p>Every label must be counted — including the ones spent checking the
+model’s suggestions. Splitting one budget between learning and verifying
+is itself a design decision, and often verification labels earn
+more.</p>
+<p><strong>Big.</strong> Clinical trials are budget accounting made law:
+phases I–II learn (small n, exploratory), phase III verifies (large n,
+confirmatory), and regulators count every patient. In AutoML, papers now
+must report total compute — early neural-architecture searches quietly
+spent 2,000 GPU-days finding models that random search matched at a
+tenth the cost.</p>
+<p><strong>Small.</strong> Acquire gets what checking leaves behind:</p>
+<pre class="py"><code>tt = tree(tr, acquire(tr, the.Stop - the.Check))</code></pre>
+</body>
+</html>

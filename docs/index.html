@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ezr: docs</title>
+<meta name="theme-color" content="#d6d2ca" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1f1e1c" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<script src="hl.js" defer></script>
+<script src="pop.js" defer></script>
+<style>pre { font-size: clamp(8px, 2.2vw, 12px); }</style>
+</head>
+<body>
+<center>
+<h2>ezr</h2>
+<h3>minimal XAI for multi-objective reasoning</h3>
+<p class="f">Menzies &middot; 2026<br>
+<a href="https://github.com/timm/ezr">github.com/timm/ezr</a> &middot;
+<a href="https://arxiv.org/abs/2606.03640">the paper</a> &middot;
+<a href="https://github.com/timm/moot">the data</a></p>
+</center>
+
+<p>ezr labels a few rows, grows a tiny tree, and lets that
+tree explain the rest. Two files, no dependencies:
+<code>ezr.py</code> (the library and its demos) and
+<code>ezr_eg.py</code> (clustering and optimizer demos).
+Start with the map, then read whichever tutorial matches
+what puzzles you.</p>
+
+<h3>The code</h3>
+<ul>
+<li><a href="y3_map.html">Map</a> —
+    every section, signature, and the call graph;
+    regenerated from source, so it cannot rot.</li>
+</ul>
+
+<h3>Tutorials</h3>
+<ul>
+<li><a href="y3_py.html">Python idioms</a> —
+    twelve idioms that puzzle newcomers, easiest first.</li>
+<li><a href="y3_math.html">Maths idioms</a> —
+    Welford, z-scores, entropy, Minkowski: ten pieces of
+    maths, each in three lines.</li>
+<li><a href="y3_ai.html">AI ideas</a> —
+    nine big ideas (labels are dear, discretization,
+    active learning ...), real-world first, then the code.</li>
+<li><a href="y3_se.html">SE ideas</a> —
+    eleven software-engineering ideas hiding in tiny code
+    (SSOT, little languages, golden masters ...).</li>
+<li><a href="y3_script.html">Script patterns</a> —
+    how one file keeps config, tests, docs and CLI in sync
+    forever.</li>
+</ul>
+
+<h3>Try it</h3>
+<pre>
+pip install ezr
+ezr --help          # settings and demos
+ezr --tree          # label 50 rows, explain 398
+ezr-eg --optimize   # 1983 SA vs local search
+</pre>
+</body>
+</html>

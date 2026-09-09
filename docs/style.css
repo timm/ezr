@@ -1,0 +1,43 @@
+html { background: #d6d2ca; }
+body { max-width: 65ch; margin: 2em auto; padding: 0 1em; font-size: 14px; line-height: 1.45; color: #222; font-family: "Ubuntu Mono", "Courier New", monospace; }
+h1,h2,h3 { margin: 0.9em 0 0.3em; }
+p { margin: 0 0 0.8em; }
+a { color: #cc0000; text-decoration: none; }
+a:hover { text-decoration: underline; }
+pre, .box { background: #e5e1d8; border-radius: 8px; padding: 0.6em 0.8em; overflow-x: auto; }
+p.card { padding: 0.5em 0.8em; background: #e5e1d8; border-radius: 8px; }
+p.card b.q { color: #781e1e; }
+span.d { padding-left: 2em; display: block; }
+table { border-collapse: collapse; background: #e5e1d8; border-radius: 8px; }
+td, th { padding: 2px 8px; text-align: left; vertical-align: top; }
+img { max-width: 100%; border-radius: 8px; }
+img.fig { background: #fff; padding: 8px; box-sizing: border-box; display: block; margin: 0.5em auto; }
+p.cap { font-size: small; text-align: center; margin-top: 0.2em; }
+.thumbs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0.8em 0; }
+.thumbs a { display: block; }
+.thumbs img { background: #fff; padding: 4px; box-sizing: border-box; width: 100%; border: 1px solid #b8b4ac; }
+.thumbs span { display: block; font-size: small; text-align: center; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,.88); overflow: auto; z-index: 9; padding: 1.5em; cursor: zoom-out; }
+.overlay img { background: #fff; padding: 10px; border-radius: 8px; display: block; margin: 0 auto; width: min(95vw, 1000px); }
+hr { border: 0; border-top: 1px solid #b8b4ac; margin: 1.5em 0; }
+.f { font-size: small; }
+pre.py { font-size: 12px; line-height: 1.4; }
+pre .k { color: #cc0000; font-weight: bold; }
+pre .c { color: #8a8578; font-style: italic; }
+pre .n { color: #1a6a9a; }
+.combines { border-left: 4px solid #cc0000; padding: 0.5em 0.8em; background: #e5e1d8; border-radius: 8px; }
+.num { color: #cc0000; font-size: 1.1em; vertical-align: middle; margin-right: 0.15em; }
+@media (prefers-color-scheme: dark) {
+  html { background: #1f1e1c; }
+  body { color: #c8c4bc; }
+  p.card, pre, .box, table, .combines { background: #2b2a27; }
+  p.card b.q { color: #e06a5a; }
+  .num { color: #e06a5a; }
+  a { color: #e06a5a; }
+  hr { border-top-color: #4a4844; }
+  img { opacity: 0.9; }
+  img.fig { background: #fff; opacity: 1; }
+  pre .k { color: #e06a5a; }
+  pre .c { color: #7d7970; }
+  pre .n { color: #6aa5c8; }
+}

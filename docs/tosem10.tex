@@ -1,0 +1,391 @@
+\documentclass[acmsmall,nonacm]{acmart}
+\usepackage{minted}
+\newcommand{\vtiny}{\fontsize{5.3}{5.8}\selectfont}
+\renewcommand{\theFancyVerbLine}{%
+  \fontsize{4.0}{4.0}\selectfont\arabic{FancyVerbLine}}
+\newcommand{\blk}[2]{%
+  \inputminted[fontsize=\vtiny,linenos,stepnumber=5,
+    firstnumber=#2,xleftmargin=8pt,numbersep=5pt,
+    frame=leftline,framerule=0.3pt,framesep=3pt,
+    rulecolor=\color{black!25},breaklines]{python}{#1}}
+\usepackage{wrapfig,needspace}
+\makeatletter
+\newcommand{\wfclear}{\par
+  \ifnum\c@WF@wrappedlines>0
+    \null\vskip\c@WF@wrappedlines\baselineskip
+    \c@WF@wrappedlines\z@
+  \fi}
+\makeatother
+\newenvironment{codepage}[2]
+  {\needspace{#1}\def\capt{#2}%
+   \begin{wrapfigure}{R}{0.55\textwidth}}
+  {\captionof{listing}{\capt}\end{wrapfigure}
+   {\sloppy\prose\par}\wfclear\medskip}
+\title[ezr.py]{Can AI Be Small? A Complete, Explainable,
+Multi-Objective Toolkit in 444 Lines}
+\author{Tim Menzies}
+\affiliation{\institution{North Carolina State University}
+  \city{Raleigh}\country{USA}}
+\email{timm@ieee.org}
+\begin{document}
+\begin{abstract}
+Much recent commentary asserts that effective AI requires
+large models, large data, and large infrastructure. We offer
+a counter-example, at least for tabular software-engineering
+optimization tasks where independent attributes are cheap to
+read but dependent goals are expensive to measure. This
+paper presents, in its entirety, ezr.py: 444 lines of
+dependency-free Python implementing incremental column
+summaries, multi-objective distance, active learning,
+Naive Bayes classification, classification and regression
+trees, a confusion-matrix scorer, and the non-parametric
+statistics needed to check all of the above. On the 120+
+tasks of the MOOT repository, this code's active learner
+finds near-optimal rows after labelling around fifty
+examples, matching heavyweight optimizers that run orders
+of magnitude slower. Unusually, the paper's format matches
+its thesis: every line of the toolkit appears here, one
+conceptual unit per page, with commentary alongside. We
+argue that when a complete system fits in a paper's
+figures, reading code becomes a research method: the
+simplifications reported here were found not by adding
+machinery, but by deleting it.
+\end{abstract}
+\maketitle
+
+\section{Introduction}
+It is now routinely argued that humans no longer need to
+read or write code; that the era of hand-crafted software is
+ending; that AI is, by nature, big. Whatever the merits of
+those claims for perception or generation tasks, they are
+testable in at least one domain: tabular software-engineering
+optimization, where each row's independent attributes cost
+nothing to read, but each row's goals (runtimes, defect
+counts, build outcomes) cost a measurement. In that domain,
+this paper defends a simple thesis: \emph{the AI that
+matters fits on a page}---or, more precisely, on eight of
+them.
+
+The vehicle for that argument is ezr.py, a rewrite of our
+earlier EZR toolkit that emerged from a months-long exercise
+in deletion. Version by version (three complete rewrites,
+each verified output-identical on 120+ datasets before being
+trusted), classes collapsed into tuples and dicts, separate
+add/subtract/summarize routines collapsed into one update
+primitive, and separate learners collapsed into short
+questions asked of shared summaries. The result is 444
+lines, zero dependencies, in which:
+\begin{itemize}
+\item a \emph{Num} is a tuple $(n, \mu, m_2)$ and a
+  \emph{Sym} is a dict of counts (Listing~2);
+\item one primitive, add (whose inc=$-1$ undoes), maintains
+  both, so rows can move between summaries in constant time;
+\item active learning labels ${\sim}50$ of thousands of
+  rows, then a small tree ranks the rest (Listings~3, 5);
+\item Naive Bayes classification and its confusion-matrix
+  scoring share the same columns (Listing~4);
+\item effect-size and distribution statistics---Cliff's
+  delta, Kolmogorov--Smirnov, Cohen's $d$---check every
+  comparison the toolkit makes about itself (Listing~6).
+\end{itemize}
+
+Our contribution is not any single algorithm; all are
+decades old. It is the demonstration, in full, that they
+share so much structure that a complete, statistically
+self-checking, explainable toolkit needs less code than
+many papers' related-work sections. Prior work reported
+this quantitatively: active learning on these summaries
+matches state-of-the-art optimizers such as SMAC while
+running orders of magnitude faster, and the trees it grows
+explain themselves in under ten attributes even when
+thousands are available. This paper adds the qualitative
+case: we show every line, because at this size we can.
+
+The paper's format follows its content. Section 2 and
+onward present ezr.py one conceptual unit per page: the
+listing (left) with commentary (right). Line numbers are
+those of the released file (\url{github.com/timm/ezr};
+\texttt{pip install ezr}); nothing is elided. Data comes from the MOOT
+repository of multi-objective SE tasks. We close with the
+threats and the invitation: before deploying a heavyweight
+pipeline, run a small baseline---if the heavyweight cannot
+beat these eight pages, it is technical debt.
+
+\section{The Code}
+Each of the following pages is one conceptual unit of
+ezr.py. Read the listings in order and you have read the
+entire system; read the right-hand columns and you have
+read its design rationale. The units are: configuration;
+structs; distance and acquisition; Bayes; trees; reports
+and statistics; evaluation and demos; and the sixteen-line
+harness that replaces a test framework.
+\clearpage
+
+\def\prose{Every setting lives once, in the docstring, as
+\texttt{-Key=default} plus a comment. One regex turns that text
+into the global \texttt{the}; \texttt{--help} prints the same
+text. Config, help and documentation cannot drift, because they
+are one artifact.
+
+\texttt{atom} coerces strings once, at the border; everything
+downstream trusts its types. Its ordering is load-bearing: we
+tried a ``faster'' variant that returned only floats, and it was
+both slower (532 vs.\ 497 cpu-seconds over 120+ datasets---most
+cells are integers, so \texttt{int} succeeds first try either
+way) and wrong (settings such as \texttt{Few=128} became floats
+and crashed every slice that consumed them). A ``richer''
+variant that stripped and tested for booleans on every cell cost
+13\% of total runtime. The shipped compromise recognizes
+booleans only on the rare path, after both numeric parses fail:
+measured cost, under 3\%, in the noise.
+
+The \texttt{defaults} snapshot supports a contract used
+throughout: demos may mutate \texttt{the} freely, and the runner
+restores pristine settings afterwards, so no demo can leak into
+the next. The CSV reader is five lines: no dtype inference, no
+chunked reads, no NA conversion---pandas offers all that, and
+this paper needs none of it. The \texttt{\$MOOT} expansion means
+per-machine data without per-machine edits.}
+\begin{codepage}{370pt}{Configuration and input. The docstring is
+the single source of truth for all settings.}
+\blk{sec00.py}{1}
+\end{codepage}
+
+\def\prose{The whole substrate is two tiny types. A
+\texttt{Num} is a tuple $(n,\mu,m_2)$---all that Welford's
+algorithm needs to track a running mean and standard deviation,
+in one pass, without catastrophic cancellation. A \texttt{Sym}
+is a dict of counts. One primitive, \texttt{add}, updates
+either; called with \texttt{inc=-1} it \emph{undoes}. That
+symmetry is what makes data movement cheap everywhere else: the
+tree's cut sweeper slides values between summaries with one add
+each way, and the active learner demotes a row from its elite
+pool in constant time. There is no retraining step anywhere in
+this paper.
+
+Two traps are worth recording. \texttt{adds} guards with
+\texttt{if it is None}, not \texttt{it or Num()}: an empty
+\texttt{Sym()} is falsy, and the shorter idiom silently replaces
+a fresh symbol counter with a number summary. And code testing
+``is this the first column?'' must write \texttt{is not None},
+because column index zero is falsy too.
+
+\texttt{Tbl} routes columns by header convention: upper-case
+names are numeric; \texttt{+}/\texttt{-} suffixes mark goals to
+maximize or minimize; \texttt{!} marks a class column;
+\texttt{X} means ignore. Decisions made once, at header time,
+propagate everywhere---no re-parsing of names later. One type
+test (\texttt{type(col) is Sym}) plus functions-as-values buys
+what class hierarchies buy, without the hierarchy; the pattern
+is the same one the Linux kernel uses with structs of function
+pointers, thirty years and no classes.}
+\begin{codepage}{345pt}{Structs: Num, Sym, and the one update
+primitive that both builds and unbuilds them.}
+\blk{sec01.py}{54}
+\end{codepage}
+
+\def\prose{Numbers are normalized by a clamped z-score
+pushed through a logistic. The clamp (at $\pm3$ standard
+deviations) stops one outlier crushing everyone else onto a dot;
+the 1.7 in the logistic makes it approximate the normal CDF, so
+columns with wildly different units all speak the same $[0,1]$
+language. \texttt{ydist} then scores a row by Minkowski distance
+to ``heaven''---every goal at its best---and \texttt{xdist} is
+the same norm over independent columns, with missing values
+treated pessimistically (distance 1).
+
+On top of distance, twenty lines give active learning. Keep two
+pools: \emph{best} (sorted, elite) and \emph{rest}. Label next
+whichever unlabelled row is nearest best's centroid and farthest
+from rest's. After each label, if best has outgrown
+$\sqrt{1+b+r}$, demote its worst row. The \texttt{1+} is not
+decoration: it grants one row of hysteresis exactly when the
+pools are tiny and a one-row ``best'' would make the centroid
+pure noise. Deleting that single character shifted results on 76
+of 127 benchmark datasets and cost a median point.
+
+Budget honesty matters more than either. \texttt{acquire} takes
+a cap, and the evaluation harness passes
+\texttt{Stop$-$Check}---the labels reserved for checking the
+model's suggestions are counted against the same budget as the
+labels that built it. Instrumenting that honestly \emph{raised}
+the observed median (84 to 87): verification labels, spent on
+the model's top picks, out-earn acquisition labels.}
+\begin{codepage}{365pt}{Distance and acquisition: normalize,
+score against heaven, then label only the informative
+rows.}
+\blk{sec02.py}{103}
+\medskip
+\blk{sec03.py}{134}
+\end{codepage}
+
+\def\prose{Bayes in three functions: \texttt{like} is a
+smoothed frequency (Syms) or a Gaussian pdf (Nums);
+\texttt{likes} multiplies one row's evidence in log space, with
+an $m$-estimate on each column and a $k$-smoothed prior on class
+size; \texttt{liked} returns the most likely of several tables.
+Because \texttt{Num} and \texttt{Sym} columns are already fitted
+summaries, there is no separate training phase: \texttt{add}
+fits, \texttt{like} reads. A classifier is just a dict of
+per-class clones of the table, filled by \texttt{addRow}.
+
+\texttt{confuse} turns (got, want) pairs into per-class
+counts and then accuracy, recall (\emph{pd}), false alarm
+(\emph{pf}) and precision. Two details: entries are created
+lazily, on first sight of a class, which is safe only because
+true negatives are derived at the end
+($tn = n - tp - fn - fp$) rather than counted per pair; and
+classes never predicted and never wanted simply do not appear,
+which is correct---they would be all-$tn$ rows saying nothing.
+
+Reporting \emph{both} pd and pf is a methodological point, not
+a convenience. In our text-mining replication work, a
+recommended preprocessing step looked fine on recall alone and
+was exposed as counterproductive only when false alarm was
+measured beside it. Cheap tools make such re-checks cheap; this
+scorer is fourteen lines, and it grades every classifier
+comparison in this paper (Listing~7) on the same splits.}
+\begin{codepage}{255pt}{Naive Bayes and the confusion-matrix
+scorer.}
+\blk{sec04.py}{155}
+\end{codepage}
+
+\def\prose{Trees are recursive discretization.
+\texttt{cutNum} sweeps sorted (x,y) pairs, sliding each value
+from the right summary to the left with one \texttt{add} each
+way and yielding a candidate cut only where the x value actually
+changes. \texttt{cutSym} tries each symbol one-vs-rest with
+fresh accumulators. (We considered the classic Fisher trick of
+ordering symbols by mean y and cutting prefixes; for nominal
+attributes one-vs-rest reads better as a rule, and at
+active-learning sizes---tens of labelled rows---the asymptotic
+saving is irrelevant.) Splits are scored by size-weighted
+expected diversity: standard deviation for numbers, entropy for
+symbols.
+
+That accumulator choice is the whole classification story. The
+tree peeks at the type of its first y value: numeric y (distance
+to heaven) makes regression trees; symbolic y (a class column)
+makes classification trees. One line changes; the substrate does
+not. Missing values route by imputing the column's middle---mean
+for numbers, mode for symbols; the symbolic half of that
+symmetry was a late fix, and matters on datasets with missing
+nominals.
+
+One tuning note. \texttt{Leaf=4} is tuned for the active
+learner, which grows trees from ${\sim}45$ labelled rows. Grown
+passively from hundreds of rows, such trees overfit: on the
+diabetes data, accuracy rose from 0.69 to 0.75 simply by scaling
+the leaf minimum to $\sqrt{n}$. Small data and big data want
+different regularization, and one knob expresses both.}
+\begin{codepage}{395pt}{Trees: recursive discretization, one
+accumulator swap away from classification.}
+\blk{sec05.py}{189}
+\end{codepage}
+
+\def\prose{Reporting walks the tree, printing each leaf's
+distance-to-heaven, size, and per-goal centroids, with
+\texttt{+}/\texttt{-} marking the best and worst leaves. The
+display \emph{is} the model: a manager reading it is reading the
+actual decision boundary, not a post-hoc approximation of it,
+which is the property that lets tiny trees stand in for SHAP- or
+LIME-style explanation tools.
+
+The stats section holds the three checks used everywhere in
+this paper. Cliff's delta asks whether two samples' rank
+imbalance exceeds 0.197 (a ``small'' effect); the
+Kolmogorov--Smirnov statistic asks whether their distributions
+diverge beyond the 95\% line ($1.36\sqrt{(n+m)/nm}$); Cohen's
+$d$ asks whether the mean gap exceeds 0.35 pooled standard
+deviations, with an optional absolute floor (\texttt{eps}) for
+scales, like accuracy, where tiny differences are meaningless
+regardless of variance. \texttt{same} declares two result
+distributions indistinguishable only when all three agree.
+
+This conservatism is deliberate. Pre-registering an effect-size
+threshold and aggregating over twenty or more repeats rejects
+trivially small differences without running per-cell hypothesis
+tests across dozens of comparisons---the multiple-comparison
+correction problem never arises because the per-cell tests are
+never run. The whole apparatus is 26 lines, which is the reason
+it actually gets used: every claim of the form ``X beats Y''
+made by this toolkit's own demos passes through
+\texttt{same} first.}
+\begin{codepage}{330pt}{Reports and statistics: show the tree;
+ask if two treatments really differ.}
+\blk{sec06.py}{246}
+\medskip
+\blk{sec07.py}{264}
+\end{codepage}
+
+\def\prose{\texttt{wins} converts distance-to-heaven into
+the complement of normalized regret: 100 means ``found the best
+row in the table'', 0 means ``no better than the average row'',
+negative means worse than that. Normalizing this way lets one
+number compare treatments across a hundred datasets whose raw
+goal scales differ by orders of magnitude.
+
+\texttt{holdout} is the evaluation loop: shuffle; give the
+active learner half the rows (capped at \texttt{Few}) minus the
+\texttt{Check} labels reserved for verification; grow a tree
+from what it labelled; then, on the untouched half, label only
+the tree's top \texttt{Check} picks and keep the best. Twenty
+repeats, report the mean. Over the 120+ MOOT optimization
+tasks this loop scores a median win of 86--87, and the full
+sweep runs in about a minute of wall-clock time on a laptop
+(500 cpu-seconds at 10-way parallelism)---which is precisely
+what makes the re-checking culture of the previous page
+affordable.
+
+The first demos are worked examples of the substrate: Welford
+matching the textbook mean and standard deviation; the entropy
+of \texttt{aabbbc}; header routing sending columns to x, y,
+klass or nowhere; one legal, routable cut. Note that each demo
+prints its evidence (\texttt{mu 5.0 sd 2.138}), not
+``ok'': the demo teaches, the output is diffable, and a wrong
+number stays visible even when an assert is too loose.}
+\begin{codepage}{415pt}{Evaluation (wins, holdout) and the first
+demos.}
+\blk{sec08.py}{292}
+\medskip
+\blk{sec09.py}{308}
+\end{codepage}
+
+\def\prose{The larger demos. \texttt{test\_tree} grows and
+shows a tree on the optimization data; \texttt{test\_holdout}
+runs the twenty-repeat evaluation; \texttt{test\_klass} is a
+classifier bake-off in which tree and bayes see the \emph{same}
+thirty 50:50 splits (a paired design that removes split-to-split
+variance from the comparison), their pooled confusions are
+printed side by side, and the statistics of Listing~6 rule on
+the difference. On the diabetes data the verdict reads:
+bayes 75\% vs.\ tree 73\%, delta 2, \emph{different}. Naive
+Bayes degrades gracefully with less training data; trees
+fragment---exactly the regime distinction the \texttt{Leaf}
+note on Listing~5 predicts. \texttt{\_klass} owns the
+scaffolding; each classifier is a \texttt{fit} function
+returning a predictor, so adding a third contender is five
+lines.
+
+Below them, the harness. \texttt{run} seeds the random number
+generator before every demo, so any demo runs alone or in any
+order, and restores pristine settings in a \texttt{finally}
+(one trap: a \texttt{return} \emph{inside} finally would
+silently swallow the crash count---the \texttt{return 0} must
+sit outside). \texttt{cli} evaluates the argument list left to
+right: \texttt{-Key val} sets, \texttt{--name} runs, anything
+else warns and continues. The exit code counts crashes, so a
+Makefile gates on the suite with no framework. Any function
+named \texttt{test\_*} is a demo, a test, and a help entry all
+at once: conventions are load-bearing.}
+\begin{codepage}{560pt}{The larger demos and the harness:
+a statistically-checked bake-off, then sixteen lines that
+replace a test framework.}
+\blk{sec10.py}{352}
+\medskip
+\blk{sec11.py}{426}
+\end{codepage}
+
+
+
+\end{document}

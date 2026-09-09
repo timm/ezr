@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ezr: y3_script</title>
+<meta name="theme-color" content="#d6d2ca" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1f1e1c" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<script src="hl.js" defer></script>
+<script src="pop.js" defer></script>
+<style>pre, pre.py { font-size: clamp(8px, 2.2vw, 11px); }</style>
+</head>
+<body>
+<center>
+<h2>Easier AI</h2>
+<h3>explainable multi-objective active learning, in a few hundred lines</h3>
+<p class="f">Menzies &middot; 2026<br>
+<a href="https://github.com/timm">github.com/timm</a> &middot;
+y1.py (structured) &middot; y2.py (naked structs)</p>
+<p class="f">
+<a href="index.html">0 start</a> &middot;
+<a href="data.html">1 data</a> &middot;
+<a href="dist.html">2 distance</a> &middot;
+<a href="acquire.html">3 acquire</a> &middot;
+<a href="tree.html">4 tree</a> &middot;
+<a href="eval.html">5 eval</a> &middot;
+<a href="maths.html">&#9733; maths</a></p>
+</center>
+<h2 id="script-file-patterns-in-y3.py">Script-file patterns in
+y3.py</h2>
+<p>How to organize one Python file so config, tests, docs and CLI stay
+in sync forever. Fifteen patterns, plus the one idea underneath them
+all.</p>
+<h3 id="docstring-is-the-config-is-the-help">1. Docstring is the config
+is the help</h3>
+<p>State every option once, in <code>__doc__</code>, as
+<code>-Key=default</code> plus a comment. One regex births the settings;
+<code>--help</code> prints the same text. Three artifacts cannot drift,
+because they are one artifact.</p>
+<pre class="py"><code>pat = r&quot;(\w+)=(\S+)&quot;
+the = o(**{k: atom(v) for k,v in re.findall(pat, __doc__)})</code></pre>
+<h3 id="coerce-at-the-border">2. Coerce at the border</h3>
+<p><code>atom</code> turns strings into int, float, bool once, where
+data enters. Everything downstream trusts its types; no coercion
+sprinkled through the logic.</p>
+<pre class="py"><code>def atom(s, bools={&#39;True&#39;: True, &#39;False&#39;: False}):
+  try: return int(s)
+  except ValueError:
+    try: return float(s)
+    except ValueError:
+      s = s.strip()
+      return bools.get(s, s)</code></pre>
+<h3 id="cli-grammar-config-keys">3. CLI grammar = config keys</h3>
+<p><code>-Key val</code> writes straight into the settings dict. Adding
+a line to the docstring <em>is</em> adding the flag. No argparse table
+to keep in sync.</p>
+<pre class="py"><code>elif s[1:] in d: d[s[1:]] = atom(args.pop(0))</code></pre>
+<h3 id="tests-by-naming-convention">4. Tests by naming convention</h3>
+<p>Any <code>test_*</code> function is a demo: <code>--name</code> runs
+it, <code>--all</code> runs them all, <code>--help</code> lists each
+with its docstring. A <code>globals()</code> lookup is the whole test
+framework. Demos = tests = docs: one artifact again.</p>
+<pre class="py"><code>if s[:2] == &quot;--&quot;: n += run(funs.get(&quot;test_&quot; + s[2:]))</code></pre>
+<h3 id="reseed-per-test">5. Reseed per test</h3>
+<p><code>run</code> resets the random seed before every test, so
+stochastic code gives reproducible demos, and any test runs alone or in
+any order.</p>
+<pre class="py"><code>def run(f=None):
+  try: random.seed(the.Seed); (f or test_help)()
+  except Exception: traceback.print_exc(); return 1
+  return 0</code></pre>
+<h3 id="exit-code-crash-count">6. Exit code = crash count</h3>
+<p>Machines read the results. <code>make test</code> gates for free; CI
+needs no plugin.</p>
+<pre class="py"><code>sys.exit(n)</code></pre>
+<h3 id="file-layout-is-a-dependency-order">7. File layout is a
+dependency order</h3>
+<p>Config, then primitives, then composites, then tests, then the main
+guard. Every name is defined before it is referenced, reading top-down;
+the call graph in <a href="y3_map.html">y3_map</a> shows the layers.</p>
+<h3 id="main-guard-keeps-it-importable">8. Main guard keeps it
+importable</h3>
+<p>The same file is a script and a library: a harness can import the
+functions the shell runs.</p>
+<pre class="py"><code>if __name__ == &quot;__main__&quot;:
+  cli(vars(the), globals(), sys.argv[1:] or [&quot;--help&quot;])</code></pre>
+<h3 id="env-expansion-in-config-values">9. Env expansion in config
+values</h3>
+<p><code>$MOOT</code> in a path means per-machine data without
+per-machine edits.</p>
+<pre class="py"><code>file = file.replace(&quot;$MOOT&quot;, os.environ.get(&quot;MOOT&quot;)
+                    or os.path.expanduser(&quot;~/gits/moot&quot;), 1)</code></pre>
+<h3 id="stdlib-only">10. Stdlib only</h3>
+<p>Zero installs: the script runs on any Python, forever.
+Dependency-free is a feature you cannot retrofit.</p>
+<pre class="py"><code>import os, random, re, sys, traceback
+from math import exp, log, log2, pi, sqrt</code></pre>
+<h3 id="shebang-carries-flags">11. Shebang carries flags</h3>
+<p><code>./y3.py</code> just works, and <code>-B</code> never litters
+<code>__pycache__</code>.</p>
+<pre class="py"><code>#!/usr/bin/env python3 -B</code></pre>
+<h3 id="the-arg-list-is-a-tiny-program">12. The arg list is a tiny
+program</h3>
+<p>Args evaluate left to right: set, run, set, run. No “config phase
+then command phase” — order is the power.</p>
+<pre class="sh"><code>./y3.py -Leaf 16 --klassTree -Leaf 4 --holdout</code></pre>
+<h3 id="unknown-args-warn-never-die">13. Unknown args warn, never
+die</h3>
+<p>A typo in flag three should not waste what flags one and two set
+up.</p>
+<pre class="py"><code>else: print(f&quot;unknown arg: {s}&quot;)</code></pre>
+<h3 id="section-banners-are-a-greppable-toc">14. Section banners are a
+greppable TOC</h3>
+<p><code>grep '#--' y3.py</code> is the table of contents — and tools
+(the pdf packer, the map generator) key off the same banners. Structure
+that is data.</p>
+<pre class="sh"><code>#-- structs -----------------------------------------------
+#-- distance ----------------------------------------------
+#-- acquire -----------------------------------------------</code></pre>
+<h3 id="tests-print-evidence-not-ok">15. Tests print evidence, not
+“ok”</h3>
+<p><code>mu 5.0 sd 2.138</code> beats a green dot: the demo teaches, the
+output is diffable, and a wrong number stays visible even when an assert
+is too loose.</p>
+<pre class="py"><code>def test_num():
+  &quot;Welford add matches textbook mean and sd&quot;
+  c = adds([2, 4, 4, 4, 5, 5, 7, 9])
+  assert c[0] == 8 and c[1] == 5 and abs(sd(c)-2.138) &lt; .01
+  print(f&quot;mu {c[1]} sd {round(sd(c), 3)}&quot;)</code></pre>
+<h3 id="the-idea-underneath">The idea underneath</h3>
+<p>Patterns 1, 4 and 14 share a secret: <strong>conventions are
+load-bearing</strong>. A name — <code>test_</code>, an uppercase column
+header, a <code>#--</code> banner — is machinery, not decoration. That
+is how 360 lines is enough: every convention replaces a subsystem.</p>
+</body>
+</html>
