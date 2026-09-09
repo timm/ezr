@@ -105,3 +105,7 @@ tosem: ## rebuild docs/tosem10.pdf from ezr.py sections
 pushpdf: tosem ## rebuild paper, commit it, push
 	@git add docs/sec*.py docs/tosem10.pdf docs/tosem10.tex
 	@git commit -m "rebuild tosem pdf"; git push
+
+docs/ezr.html: ezr.py etc/lit.py ## literate page via pycco
+	@python3 -B etc/lit.py
+	@open $@

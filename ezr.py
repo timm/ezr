@@ -1,33 +1,33 @@
 #!/usr/bin/env python3 -B
 """
-ezr.py: minimal XAI for multi-objective reasoning
-(c) 2026 Tim Menzies <timm@ieee.org> MIT license
-
-Options:
-
-  -P=2       minkowski coefficient
-  -Start=4   acquire: initial random labels
-  -Stop=50   acquire: total labelling budget
-  -Few=128   max train rows
-  -Leaf=4    tree: min rows in any leaf
-  -Check=5   holdout: top picks to label
-  -k=1       bayes: rare klass hack
-  -m=2       bayes: rare evidence hack
-  -Klass=$MOOT/classify/diabetes.csv  classify demo data
-  -Repeats=30  klass: number of train/test splits
-  -Seed=1234567891  random number seed
-  -File=$MOOT/optimize/misc/auto93.csv
+ezr.py: minimal XAI for multi-objective reasoning  
+(c) 2026 Tim Menzies <timm@ieee.org> MIT license  
+  
+Options:  
+  
+  -P=2       minkowski coefficient  
+  -Start=4   acquire: initial random labels  
+  -Stop=50   acquire: total labelling budget  
+  -Few=128   max train rows  
+  -Leaf=4    tree: min rows in any leaf  
+  -Check=5   holdout: top picks to label  
+  -k=1       bayes: rare klass hack  
+  -m=2       bayes: rare evidence hack  
+  -Klass=$MOOT/classify/diabetes.csv  classify demo data  
+  -Repeats=30  klass: number of train/test splits  
+  -Seed=1234567891  random number seed  
+  -File=$MOOT/optimize/misc/auto93.csv  
 """
 
-# pylint: disable=bad-indentation,invalid-name
-# pylint: disable=missing-function-docstring
-# pylint: disable=multiple-statements,multiple-imports
-# pylint: disable=unnecessary-lambda-assignment
-# pylint: disable=inconsistent-return-statements
-# pylint: disable=dangerous-default-value
-# pylint: disable=broad-exception-caught
-# pylint: disable=unidiomatic-typecheck
-
+# pylint: disable=bad-indentation,invalid-name  
+# pylint: disable=missing-function-docstring  
+# pylint: disable=multiple-statements,multiple-imports  
+# pylint: disable=unnecessary-lambda-assignment  
+# pylint: disable=inconsistent-return-statements  
+# pylint: disable=dangerous-default-value  
+# pylint: disable=broad-exception-caught  
+# pylint: disable=unidiomatic-typecheck  
+ 
 import os, random, re, sys, traceback
 from math import exp, log, log2, pi, sqrt
 from types import SimpleNamespace as o
@@ -53,6 +53,7 @@ def csv(file):
 
 
 #-- structs -----------------------------------------------
+
 Num = lambda: (0, 0, 0) # n, mu, m2: all Welford keeps
 Sym = dict
 
@@ -62,6 +63,7 @@ type Row  = tuple[Atom, ...]
 type Rows = list[Row]
 type Tbl  = o # rows:Rows, cols:{at:Col}, x:[at],
               # y:{at:bool}, names:Row, klass:at|None
+type Node = list # [edge, n, mid, ymids, go, left, right]
 
 def sd(col): return 0 if col[0] < 2 else sqrt(col[2]/(col[0]-1))
 

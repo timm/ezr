@@ -1,0 +1,36 @@
+Rebuild docs/ezr.html as a pycco literate page. Steps:
+
+1. Read ezr.py (do NOT modify it). Write a transformed copy to
+   docs/ezr.py: for every top-level "def" line carrying a
+   trailing "# comment", move that comment to its own line
+   directly above the def; directly above that comment line add
+   another comment line holding just the call signature in
+   backticks. Example:
+
+       # `add(col: Col, v: Atom, inc=1) -> Col`
+       #
+       # new Num, or updated Sym; inc=-1 undoes
+       def add(col, v, inc=1):
+
+   Signatures carry parameter and return types inferred from
+   the `type` aliases at the top of ezr.py (Atom, Col, Row,
+   Rows, Tbl, Node) using the code's names-are-types
+   convention (tbl: Tbl, col: Col, rows: Rows ...). Params
+   with defaults keep the default and get no annotation. Put
+   an empty comment line between signature and comment
+   text. Defs with no
+   trailing comment still get the signature line. Turn section
+   banners like "#-- distance ----" into markdown headers
+   ("# ## distance"). Strip formfeed characters.
+2. Run: pycco -d docs docs/ezr.py    (writes docs/ezr.html).
+3. Post-process docs/ezr.html the way the old "make docs" did:
+   append etc/custom.css onto docs/pycco.css, and inject
+   etc/header.html just after <body>, replacing PROJECT with
+   ezr. Keep that header's look: light bar, GitHub and Issues
+   links with font-awesome icons, shields badges (python,
+   XAI, MIT).
+4. Append CSS so prose paragraphs in the docs column are
+   justified: .docs p { text-align: justify; }
+5. Delete the temporary docs/ezr.py. Leave ezr.py untouched.
+6. Open docs/ezr.html and report any def whose comment could
+   not be moved.
