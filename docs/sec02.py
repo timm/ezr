@@ -27,3 +27,4 @@ def ymu(tbl, rows):
 
 def ymids(tbl, rows):
   return [sum(r[at] for r in rows)/len(rows) for at in tbl.y]
+

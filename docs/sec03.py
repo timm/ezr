@@ -18,3 +18,4 @@ def acquire(tbl, cap=None):
   while todo and len(best.rows) + len(rest.rows) < cap:
     label(tbl, best, rest, pop(tbl, best, rest, todo))
   return best.rows + rest.rows
+

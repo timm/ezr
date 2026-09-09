@@ -45,12 +45,25 @@ ghReset: # GH esotericia
 lint: $f.py ## Lint python file x.py using `make lint f=x`
 	@pylint --rcfile=$(ETC)/pylintrc $f.py
 
-~/tmp/%.pdf: %.py $(MAKEFILE_LIST) ## .py ==> .pdf
+Font ?= 4.5 # pdf font size
+Cols ?= 3   # pdf columns
+LPC  ?= 120 # lines per pdf column; packs formfeed sections
+
+~/tmp/%.pdf: %.py $(MAKEFILE_LIST) ## .py ==> .pdf (Font= Cols= LPC=)
 	@mkdir -p ~/tmp
 	@echo "pdf-ing $@ ... "
-	@a2ps -Br --quiet --landscape --chars-per-line=60 --line-numbers=1  \
-	          --borders=no --pro=color --columns=3 -M letter -o - $< \
-						| ps2pdf - $@
+	@a2ps -Bj --quiet --landscape --line-numbers=1 \
+	   --highlight-level=heavy --borders=no --pro=color \
+	   --right-footer="" --left-footer="" \
+	   --pretty-print=python --footer="$< :: page %p." \
+	   -M letter --center-title="" \
+	   --font-size=$(Font) --columns $(Cols) -o - \
+	   <(awk -v C=$(LPC) 'BEGIN{RS="\f"; ORS=""} \
+	      {n=split($$0,L,"\n")-1; \
+	       if($$0==""){printf "\f"; pos=0; next} \
+	       if(NR>1 && pos>0 && pos+n>C){printf "\f"; pos=0} \
+	       printf "%s",$$0; pos+=n}' $<) \
+	 | ps2pdf - $@
 	@open $@
 
 stats: ## generate stats
@@ -79,3 +92,16 @@ $(Html)/%.html: %.py
 	@cat $(ETC)/custom.css >> $(Html)/pycco.css
 	@awk -v HEADER=$(ETC)/header.html -f $(ETC)/html.awk $@ > $@.tmp && mv $@.tmp $@
 	@rm $(Html)/$<
+
+tosem: ## rebuild docs/tosem10.pdf from ezr.py sections
+	@gawk 'BEGIN{RS="\f"} {sub(/^\n/,""); \
+	   printf "%s",$$0 > sprintf("docs/sec%02d.py",NR-1)}' ezr.py
+	@cd docs && \
+	  pdflatex -shell-escape -interaction=batchmode tosem10.tex >/dev/null 2>&1 && \
+	  pdflatex -shell-escape -interaction=batchmode tosem10.tex >/dev/null 2>&1
+	@pdfinfo docs/tosem10.pdf | grep Pages
+	@open docs/tosem10.pdf 2>/dev/null || true
+
+pushpdf: tosem ## rebuild paper, commit it, push
+	@git add docs/sec*.py docs/tosem10.pdf docs/tosem10.tex
+	@git commit -m "rebuild tosem pdf"; git push

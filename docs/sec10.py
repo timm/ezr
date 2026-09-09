@@ -70,3 +70,4 @@ def test_all():
   sys.exit(sum(print(f"\n# {k[5:]}") or run(f)
                for k, f in list(globals().items())
                if k[:5] == "test_" and f is not test_all))
+

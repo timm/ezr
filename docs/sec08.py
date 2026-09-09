@@ -13,3 +13,4 @@ def holdout(tbl):
   tt = tree(tr, acquire(tr, the.Stop - the.Check))
   top = sorted(test, key=lambda r: leaf(tt,r)[2])[:the.Check]
   return min(top, key=lambda r: ydist(tr, r))
+

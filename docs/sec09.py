@@ -40,3 +40,4 @@ def test_wins():
   t = Tbl(csv(the.File))
   w = wins(t)(min(t.rows, key=lambda r: ydist(t, r)))
   assert w == 100; print(f"best row wins {w}")
+

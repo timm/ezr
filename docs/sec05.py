@@ -53,3 +53,4 @@ def kids(n): return n[5:]
 def leaf(tr, row):
   while kids(tr): tr = tr[5] if tr[4](row) else tr[6]
   return tr
+

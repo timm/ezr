@@ -50,3 +50,4 @@ def csv(file):
   with open(file, encoding="utf-8") as f:
     return [tuple(atom(x) for x in line.split(","))
             for line in f if line.strip()]
+

@@ -24,3 +24,4 @@ def ks(xs, ys, a=1.36): # sorted in. 95% kolmogorov-smirnov
 def same(xs, ys, eps=0): # indistinguishable, by all three
   xs, ys = sorted(xs), sorted(ys)
   return (cliffs(xs,ys) and ks(xs,ys) and cohen(xs,ys,eps=eps))
+

@@ -45,3 +45,4 @@ def addRow(tbl, row=None, inc=1): # inc=-1 pops the last row
   for at in tbl.cols:
     tbl.cols[at] = add(tbl.cols[at], row[at], inc)
   return row
+

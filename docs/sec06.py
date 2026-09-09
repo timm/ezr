@@ -14,3 +14,4 @@ def show(tbl, tr):
            + "   " + (pre or "") + z[0]).rstrip())
     for k in kids(z): walk(k, "" if pre is None else pre+"|  ")
   walk(tr)
+

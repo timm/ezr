@@ -30,3 +30,4 @@ def confuse(pairs): # (got, want)s --> per-klass scores
     c.pf   = c.fp / (c.fp + c.tn + 1e-32)
     c.prec = c.tp / (c.tp + c.fp + 1e-32)
   return out
+
