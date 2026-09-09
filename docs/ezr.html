@@ -268,6 +268,7 @@ inc=-1 pops the last row</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">addRow</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">inc</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+  <span class="n">tbl</span><span class="o">.</span><span class="n">_mids</span> <span class="o">=</span> <span class="kc">None</span>
   <span class="k">if</span> <span class="n">inc</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> <span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
   <span class="k">else</span><span class="p">:</span> <span class="n">row</span> <span class="o">=</span> <span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
   <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">cols</span><span class="p">:</span>
@@ -286,7 +287,8 @@ header names route columns to x, y, klass, or skip</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">Tbl</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
-  <span class="n">tbl</span> <span class="o">=</span> <span class="n">o</span><span class="p">(</span><span class="n">rows</span><span class="o">=</span><span class="p">[],</span> <span class="n">cols</span><span class="o">=</span><span class="p">{},</span> <span class="n">x</span><span class="o">=</span><span class="p">[],</span> <span class="n">y</span><span class="o">=</span><span class="p">{},</span> <span class="n">names</span><span class="o">=</span><span class="n">src</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">klass</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+  <span class="n">tbl</span> <span class="o">=</span> <span class="n">o</span><span class="p">(</span><span class="n">rows</span><span class="o">=</span><span class="p">[],</span> <span class="n">cols</span><span class="o">=</span><span class="p">{},</span> <span class="n">x</span><span class="o">=</span><span class="p">[],</span> <span class="n">y</span><span class="o">=</span><span class="p">{},</span> <span class="n">names</span><span class="o">=</span><span class="n">src</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+          <span class="n">klass</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">_mids</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
   <span class="k">for</span> <span class="n">at</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">names</span><span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">):</span>
       <span class="n">tbl</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="n">at</span><span class="p">]</span> <span class="o">=</span> <span class="n">Num</span><span class="p">()</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isupper</span><span class="p">()</span> <span class="k">else</span> <span class="n">Sym</span><span class="p">()</span>
@@ -347,11 +349,12 @@ middle of a column: mean or mode</p>
         <a class='octothorpe' href='#section-16'>#</a>
       </div>
       <p><code>mids(tbl: Tbl) -&gt; dict[int,Atom]</code><br />
-centroid; only ever read over x columns</p>
+x centroid; cached until rows change</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">mids</span><span class="p">(</span><span class="n">tbl</span><span class="p">):</span>
-  <span class="k">return</span> <span class="p">{</span><span class="n">at</span><span class="p">:</span> <span class="n">mid</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="n">at</span><span class="p">])</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">x</span><span class="p">}</span></pre></div>
+  <span class="n">tbl</span><span class="o">.</span><span class="n">_mids</span> <span class="o">=</span> <span class="n">tbl</span><span class="o">.</span><span class="n">_mids</span> <span class="ow">or</span> <span class="p">{</span><span class="n">at</span><span class="p">:</span><span class="n">mid</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="n">at</span><span class="p">])</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">x</span><span class="p">}</span>
+  <span class="k">return</span> <span class="n">tbl</span><span class="o">.</span><span class="n">_mids</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -440,8 +443,8 @@ near best, far from rest</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">centroid</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">rest</span><span class="p">):</span>
-  <span class="n">b</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">mids</span><span class="p">(</span><span class="n">best</span><span class="p">),</span> <span class="n">mids</span><span class="p">(</span><span class="n">rest</span><span class="p">)</span>
-  <span class="k">return</span> <span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="n">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="n">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></pre></div>
+  <span class="k">return</span> <span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="p">(</span><span class="n">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">mids</span><span class="p">(</span><span class="n">rest</span><span class="p">))</span>
+                  <span class="o">-</span> <span class="n">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">mids</span><span class="p">(</span><span class="n">best</span><span class="p">)))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -467,12 +470,11 @@ keep best pool near sqrt</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-24'>#</a>
       </div>
-      <p><code>acquire(tbl: Tbl, cap=None, score=None) -&gt; Rows</code><br />
-pop() the top scorer</p>
+      <p><code>acquire(tbl: Tbl, cap=None, score=centroid) -&gt; Rows</code><br />
+pop the top scorer</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">acquire</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-  <span class="n">score</span> <span class="o">=</span> <span class="n">score</span> <span class="ow">or</span> <span class="n">centroid</span>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">acquire</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">score</span><span class="o">=</span><span class="n">centroid</span><span class="p">):</span>
   <span class="n">best</span><span class="p">,</span> <span class="n">rest</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">tbl</span><span class="p">),</span> <span class="n">clone</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span>
   <span class="n">todo</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">))[:</span><span class="n">the</span><span class="o">.</span><span class="n">Few</span><span class="p">]</span>
   <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Start</span><span class="p">):</span> <span class="n">label</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">rest</span><span class="p">,</span> <span class="n">todo</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>

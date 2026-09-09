@@ -94,6 +94,7 @@ def div(col): # Num: sd. Sym: entropy
   return -sum(v/n * log2(v/n) for v in col.values() if v>0)
 
 def addRow(tbl, row=None, inc=1): # inc=-1 pops the last row
+  tbl._mids = None
   if inc > 0: tbl.rows.append(row)
   else: row = tbl.rows.pop()
   for at in tbl.cols:
@@ -101,7 +102,8 @@ def addRow(tbl, row=None, inc=1): # inc=-1 pops the last row
   return row
 
 def Tbl(src):
-  tbl = o(rows=[], cols={}, x=[], y={}, names=src[0], klass=None)
+  tbl = o(rows=[], cols={}, x=[], y={}, names=src[0],
+          klass=None, _mids=None)
   for at, s in enumerate(tbl.names):
     if not s.endswith("X"):
       tbl.cols[at] = Num() if s[0].isupper() else Sym()
@@ -122,8 +124,9 @@ def norm(col, v):
 def mid(col):
   return max(col, key=col.get) if type(col) is Sym else col[1]
 
-def mids(tbl): # centroid; only ever read over x columns
-  return {at: mid(tbl.cols[at]) for at in tbl.x}
+def mids(tbl): # x centroid; cached until rows change
+  tbl._mids = tbl._mids or {at:mid(tbl.cols[at]) for at in tbl.x}
+  return tbl._mids
 
 def ydist(tbl, row):
   return (sum(abs(norm(tbl.cols[at], row[at]) - w) ** the.P
@@ -146,8 +149,8 @@ def ymids(tbl, rows):
 
 #-- acquire -----------------------------------------------
 def centroid(tbl, best, rest): # near best, far from rest
-  b, r = mids(best), mids(rest)
-  return lambda z: xdist(tbl, z, r) - xdist(tbl, z, b)
+  return lambda z: (xdist(tbl, z, mids(rest))
+                  - xdist(tbl, z, mids(best)))
 
 def label(tbl, best, rest, row): # keep best pool near sqrt
   addRow(best, row)
@@ -155,8 +158,7 @@ def label(tbl, best, rest, row): # keep best pool near sqrt
   b, r = len(best.rows), len(rest.rows)
   if b > sqrt(1 + b + r): addRow(rest, addRow(best, inc=-1))
 
-def acquire(tbl, cap=None, score=None): # pop() the top scorer
-  score = score or centroid
+def acquire(tbl, cap=None, score=centroid): # pop the top scorer
   best, rest = clone(tbl), clone(tbl)
   todo = random.sample(tbl.rows, len(tbl.rows))[:the.Few]
   for _ in range(the.Start): label(tbl, best, rest, todo.pop())

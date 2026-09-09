@@ -145,8 +145,10 @@ def liked(tbls, row): # [3] most likely of several tables
   return max(tbls, key=lambda k:likes(tbls[k],row,n,len(tbls)))
 
 def bayes(tbl, best, rest): # [4] most likely best
-  n = len(best.rows) + len(rest.rows)
-  return lambda z: likes(best, z, n, 2) - likes(rest, z, n, 2)
+  def score(z):
+    n = len(best.rows) + len(rest.rows)
+    return likes(best, z, n, 2) - likes(rest, z, n, 2)
+  return score
 
 def acquireBayes(tbl, cap=None): # [5] label most-likely-best
   return acquire(tbl, cap, bayes)

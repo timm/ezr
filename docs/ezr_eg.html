@@ -375,9 +375,10 @@ row?&rdquo;.</p>
       
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">bayes</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">rest</span><span class="p">):</span> <span class="c1"># [4] most likely best</span>
-  <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">best</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">rest</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span>
-  <span class="k">return</span> <span class="k">lambda</span> <span class="n">z</span><span class="p">:</span> <span class="n">likes</span><span class="p">(</span><span class="n">best</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">likes</span><span class="p">(</span><span class="n">rest</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre>  <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">best</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">rest</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">likes</span><span class="p">(</span><span class="n">best</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">likes</span><span class="p">(</span><span class="n">rest</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">score</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
