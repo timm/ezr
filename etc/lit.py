@@ -1,7 +1,7 @@
 """lit.py: ezr.py --> docs/ezr.html via pycco.
 Moves def-line comments above the def, adds typed signatures,
 turns #-- banners into h2, injects header, justifies prose."""
-import re, subprocess, os
+import ast, re, subprocess, os
 
 rt = dict(atom="Atom", csv="Rows", sd="float", add="Col",
   adds="Col", size="int", div="float", Tbl="Tbl", clone="Tbl",
@@ -67,52 +67,105 @@ def sig(name, args):
     out.append(f"{p}: {t}" if t else p)
   return ", ".join(out)
 
-raw = open("ezr.py").read().replace("\f", "")
-raw = re.sub(r"# pylint:[^\n]*\n", "", raw)
-lines = raw.split("\n")
-q = [i for i, l in enumerate(lines) if l.strip() == '"""'][:2]
-if len(q) == 2:
-  a, b = q
-  hdr = []
-  for l in lines[a+1:b]:
-    if l.startswith("  -"): hdr.append("#     " + l.strip())
-    elif not l.strip():     hdr.append("#")
-    else:                   hdr.append("# " + l)
-  lines = lines[:a] + hdr + lines[b+1:]
-src = lines
-out = []
-for i, line in enumerate(src):
-  bm = re.match(r"#-- (\w[-\w, ]*?) *-{2,} *$", line)
-  m = re.match(r"def (\w+)\(([^)]*)\)(.*?)(#\s*(.*))?$", line)
-  if bm:
-    out += ["", "# ## " + bm.group(1)]
-  elif line.startswith("def ") and m:
-    name, args, rest, _, cmt = m.groups()
-    r = rt.get(name,
-               "None" if name.startswith("test_") else "")
-    r = f" -> {r}" if r else ""
-    cmt = cmt.strip() if cmt else fb.get(name)
-    if not cmt and i+1 < len(src):
-      dm = re.match(r'\s+"(.*)"\s*$', src[i+1])
-      if dm: cmt = dm.group(1)
-    br = "  " if cmt else ""
-    out.append(f"# `{name}({sig(name, args)}){r}`{br}")
-    if cmt: out.append(f"# {cmt}")
-    out.append(f"def {name}({args}){rest.rstrip()}".rstrip())
-  else:
-    out.append(line)
-open("docs/ezr.py", "w").write("\n".join(out))
+def graph(py): # name -> (lineno, uses); reference-based
+  mod = ast.parse(open(py).read())
+  ds = {n.name: n.lineno for n in mod.body
+        if isinstance(n, ast.FunctionDef)}
+  us = {}
+  for n in mod.body:
+    if isinstance(n, ast.FunctionDef):
+      seen = []
+      for x in ast.walk(n):
+        if (isinstance(x, ast.Name)
+            and isinstance(x.ctx, ast.Load)
+            and x.id != n.name and x.id not in seen):
+          seen.append(x.id)
+      us[n.name] = seen
+  return ds, us
 
-subprocess.run(["pycco", "-d", "docs", "docs/ezr.py"],
-               check=True, capture_output=True)
-h = open("etc/header.html").read().replace("PROJECT", "ezr")
-s = open("docs/ezr.html").read()
-s = re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + "\n" + h,
-           s, count=1)
-open("docs/ezr.html", "w").write(s)
+def build(py):
+  stem = py[:-3]
+  ds, us = graph(py)
+  eds = graph("ezr.py")[0] if py != "ezr.py" else ds
+  local = lambda n: n in ds
+  known = lambda n: n in ds or n in eds
+  def link(n):
+    return (f"[`{n}`](#fn-{n})" if local(n) else
+            f"[`{n}`](ezr.html#fn-{n})")
+  cb = {}
+  for a, names in us.items():
+    for b in names:
+      if known(b): cb.setdefault(b, []).append(a)
+  raw = open(py).read().replace("\f", "")
+  raw = re.sub(r"# pylint:[^\n]*\n", "", raw)
+  lines = raw.split("\n")
+  q = [i for i,l in enumerate(lines) if l.strip() == '\'\'\''][:2]
+  q = q or [i for i,l in enumerate(lines)
+            if l.strip() == '"""'][:2]
+  if len(q) == 2:
+    a, b = q
+    hdr = []
+    for l in lines[a+1:b]:
+      if l.startswith("  -"): hdr.append("#     " + l.strip())
+      elif not l.strip():     hdr.append("#")
+      else:                   hdr.append("# " + l)
+    lines = lines[:a] + hdr + lines[b+1:]
+  src = lines
+  out = []
+  for i, line in enumerate(src):
+    bm = re.match(r"#-- (\w[-\w, ]*?) -{4,} *$", line)
+    m = re.match(r"def (\w+)\(([^)]*)\)(.*?)(#\s*(.*))?$", line)
+    if bm:
+      out += ["", "# ## " + bm.group(1), ""]
+    elif line.startswith("def ") and m:
+      name, args, rest, _, cmt = m.groups()
+      r = rt.get(name,
+                 "None" if name.startswith("test_") else "")
+      r = f" -> {r}" if r else ""
+      cmt = cmt.strip() if cmt else fb.get(name)
+      if not cmt and i+1 < len(src):
+        dm = re.match(r'\s+"(.*)"\s*$', src[i+1])
+        if dm: cmt = dm.group(1)
+      sigmd = f"`{name}({sig(name, args)}){r}`"
+      calls = [x for x in us.get(name, []) if known(x)]
+      parts = []
+      if calls:
+        parts.append("calls " +
+                     " ".join(link(x) for x in calls))
+      if cb.get(name):
+        parts.append("used by " +
+                     " ".join(link(x) for x in cb[name]))
+      tail = " &middot; ".join(parts)
+      br1 = "  " if (cmt or tail) else ""
+      out.append(f'# <a name="fn-{name}"></a>{sigmd}{br1}')
+      if cmt: out.append(f"# {cmt}" + ("  " if tail else ""))
+      if tail: out.append(f"# <small>{tail}</small>")
+      out.append(f"def {name}({args}){rest.rstrip()}".rstrip())
+    elif (re.match(r"\s+# ", line) and out
+          and "#" in out[-1]):
+      out[-1] += " " + line.strip()[1:].strip()
+    else:
+      out.append(line)
+  open(f"docs/{py}", "w").write("\n".join(out))
+  subprocess.run(["pycco", "-d", "docs", f"docs/{py}"],
+                 check=True, capture_output=True)
+  h = open("etc/header.html").read().replace("PROJECT", "ezr")
+  t = open(f"docs/{stem}.html").read()
+  t = re.sub(r"(<body[^>]*>)", lambda m: m.group(1)+"\n"+h,
+             t, count=1)
+  open(f"docs/{stem}.html", "w").write(t)
+  os.remove(f"docs/{py}")
+  print(f"docs/{stem}.html rebuilt")
+
+import sys
+for py in sys.argv[1:] or ["ezr.py", "ezr_eg.py"]:
+  build(py)
 css = open("docs/pycco.css").read()
 css += open("etc/custom.css").read()
-css += "\n.docs p { text-align: justify; }\n"
+css += """
+.docs p { text-align: justify; }
+.docs h2 { margin-bottom: 0.9em; }
+.docs a { text-decoration: none; }
+.docs a:hover { text-decoration: underline; }
+"""
 open("docs/pycco.css", "w").write(css)
-os.remove("docs/ezr.py")
-print("docs/ezr.html rebuilt")

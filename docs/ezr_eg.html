@@ -57,13 +57,14 @@
     </a>
   </div>
 </div>
+
 <div id='container'>
   <div id="background"></div>
-  <div class='section intro'>
+  <div class='section'>
     <div class='docs'><h1>ezr_eg.py</h1></div>
   </div>
   <div class='clearall'>
-  <div class='section intro' id='section-0'>
+  <div class='section' id='section-0'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-0'>#</a>
@@ -78,19 +79,19 @@
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-1'>
+  <div class='section' id='section-1'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-1'>#</a>
       </div>
-      <h4>cluster</h4>
+      <h2>cluster</h2>
     </div>
     <div class='code'>
       <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-2'>
+  <div class='section' id='section-2'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-2'>#</a>
@@ -99,10 +100,13 @@
 loops: send each row to its nearest centroid, then recompute
 centroids. kpp [2] picks better starting seeds: each new
 seed is chosen with probability proportional to its distance
-from the seeds picked so far. nearest [3] is 1-nn lookup.</p>
+from the seeds picked so far. nearest [3] is 1-nn lookup.
+<a name="fn-kmeans"></a><code>kmeans(tbl: Tbl, rows: Rows)</code><br />
+[1]<br />
+<small>calls <a href="ezr.html#fn-clone"><code>clone</code></a> <a href="ezr.html#fn-addRow"><code>addRow</code></a> <a href="ezr.html#fn-mids"><code>mids</code></a> <a href="ezr.html#fn-xdist"><code>xdist</code></a> &middot; used by <a href="#fn-test_kmeans"><code>test_kmeans</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">kmeans</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span> <span class="c1"># [1]</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">kmeans</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span>
   <span class="n">cents</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">the</span><span class="o">.</span><span class="n">K</span><span class="p">)</span>
   <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">N</span><span class="p">):</span>
     <span class="n">ds</span> <span class="o">=</span> <span class="p">[</span><span class="n">clone</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">cents</span><span class="p">]</span>
@@ -116,15 +120,17 @@ from the seeds picked so far. nearest [3] is 1-nn lookup.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-3'>
+  <div class='section' id='section-3'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-3'>#</a>
       </div>
-      
+      <p><a name="fn-kpp"></a><code>kpp(tbl: Tbl, rows: Rows, k=None, few=256)</code><br />
+[2] kmeans++ seeds<br />
+<small>calls <a href="ezr.html#fn-xdist"><code>xdist</code></a> &middot; used by <a href="#fn-test_kpp"><code>test_kpp</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">kpp</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">few</span><span class="o">=</span><span class="mi">256</span><span class="p">):</span> <span class="c1"># [2] kmeans++ seeds</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">kpp</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">few</span><span class="o">=</span><span class="mi">256</span><span class="p">):</span>
   <span class="n">rows</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">few</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)))</span>
   <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">rows</span><span class="p">)]</span>
   <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">k</span> <span class="ow">or</span> <span class="n">the</span><span class="o">.</span><span class="n">K</span><span class="p">):</span>
@@ -134,32 +140,34 @@ from the seeds picked so far. nearest [3] is 1-nn lookup.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-4'>
+  <div class='section' id='section-4'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-4'>#</a>
       </div>
-      
+      <p><a name="fn-nearest"></a><code>nearest(tbl: Tbl, row: Row, rows: Rows)</code><br />
+[3]<br />
+<small>calls <a href="ezr.html#fn-xdist"><code>xdist</code></a> &middot; used by <a href="#fn-test_optimize"><code>test_optimize</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">nearest</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span> <span class="c1"># [3]</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">nearest</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span>
   <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">row</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-5'>
+  <div class='section' id='section-5'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-5'>#</a>
       </div>
-      <h4>optimize</h4>
+      <h2>optimize</h2>
     </div>
     <div class='code'>
       <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-6'>
+  <div class='section' id='section-6'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-6'>#</a>
@@ -174,10 +182,13 @@ sometimes accepts worse solutions, less so as time runs out.
 de [6] is differential evolution: build a candidate by
 interpolating [5] between three population members (per
 column, a + f*(b-c), applied with probability cr); keep the
-candidate if it beats the member it challenges.</p>
+candidate if it beats the member it challenges.
+<a name="fn-pick"></a><code>pick(col: Col, v=None)</code><br />
+[1] sample a plausible value<br />
+<small>calls <a href="ezr.html#fn-sd"><code>sd</code></a> &middot; used by <a href="#fn-ls"><code>ls</code></a> <a href="#fn-sa"><code>sa</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">pick</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span> <span class="c1"># [1] sample a plausible value</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">pick</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
   <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Sym</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">col</span><span class="p">),</span> <span class="n">col</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
   <span class="n">mu</span> <span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">v</span> <span class="o">==</span> <span class="s2">&quot;?&quot;</span> <span class="k">else</span> <span class="n">v</span>
@@ -188,15 +199,17 @@ candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-7'>
+  <div class='section' id='section-7'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-7'>#</a>
       </div>
-      
+      <p><a name="fn-oneplus1"></a><code>oneplus1(tbl: Tbl, mutate, accept, oracle, restart=0)</code><br />
+[2]<br />
+<small>used by <a href="#fn-ls"><code>ls</code></a> <a href="#fn-sa"><code>sa</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">oneplus1</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">mutate</span><span class="p">,</span> <span class="n">accept</span><span class="p">,</span> <span class="n">oracle</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span> <span class="c1"># [2]</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">oneplus1</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">mutate</span><span class="p">,</span> <span class="n">accept</span><span class="p">,</span> <span class="n">oracle</span><span class="p">,</span> <span class="n">restart</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
   <span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">imp</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">be</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">1e32</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">1e32</span>
   <span class="n">s</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span>
   <span class="k">while</span> <span class="n">h</span> <span class="o">&lt;</span> <span class="n">the</span><span class="o">.</span><span class="n">budget</span><span class="p">:</span>
@@ -212,10 +225,24 @@ candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-8'>
+  <div class='section' id='section-8'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      <p><a name="fn-ls"></a><code>ls(tbl: Tbl, oracle, p=0.5, tries=20)</code><br />
+[3] local search<br />
+<small>calls <a href="#fn-oneplus1"><code>oneplus1</code></a> <a href="#fn-pick"><code>pick</code></a> &middot; used by <a href="#fn-test_optimize"><code>test_optimize</code></a></small></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">oracle</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">tries</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
       </div>
       
     </div>
@@ -230,10 +257,24 @@ candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-9'>
+  <div class='section' id='section-10'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-9'>#</a>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      <p><a name="fn-sa"></a><code>sa(tbl: Tbl, oracle, m=0.5)</code><br />
+[4] 1983 simulated annealing<br />
+<small>calls <a href="#fn-oneplus1"><code>oneplus1</code></a> <a href="#fn-pick"><code>pick</code></a> &middot; used by <a href="#fn-test_optimize"><code>test_optimize</code></a></small></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">sa</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">oracle</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
       </div>
       
     </div>
@@ -244,10 +285,10 @@ candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-10'>
+  <div class='section' id='section-12'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-10'>#</a>
+        <a class='octothorpe' href='#section-12'>#</a>
       </div>
       
     </div>
@@ -262,30 +303,34 @@ candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-11'>
+  <div class='section' id='section-13'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-11'>#</a>
+        <a class='octothorpe' href='#section-13'>#</a>
       </div>
-      
+      <p><a name="fn-interpolate"></a><code>interpolate(col: Col, a: Atom, b: Atom, c, f=0.5)</code><br />
+[5] DE crossover term<br />
+<small>used by <a href="#fn-de"><code>de</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">interpolate</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span> <span class="c1"># [5] DE crossover term</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">interpolate</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
   <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Sym</span> <span class="ow">or</span> <span class="s2">&quot;?&quot;</span> <span class="ow">in</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">])</span>
   <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">f</span><span class="o">*</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-12'>
+  <div class='section' id='section-14'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-12'>#</a>
+        <a class='octothorpe' href='#section-14'>#</a>
       </div>
-      
+      <p><a name="fn-de"></a><code>de(tbl: Tbl, oracle, np=20, cr=0.9)</code><br />
+[6] storn+price 1997<br />
+<small>calls <a href="#fn-interpolate"><code>interpolate</code></a> &middot; used by <a href="#fn-test_optimize"><code>test_optimize</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">de</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">oracle</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">cr</span><span class="o">=</span><span class="mf">0.9</span><span class="p">):</span> <span class="c1"># [6] storn+price 1997</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">de</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">oracle</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">cr</span><span class="o">=</span><span class="mf">0.9</span><span class="p">):</span>
   <span class="n">pop</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="n">np</span><span class="p">)</span>
   <span class="n">es</span> <span class="o">=</span> <span class="p">[</span><span class="n">oracle</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">pop</span><span class="p">]</span>
   <span class="n">h</span> <span class="o">=</span> <span class="n">np</span>
@@ -303,32 +348,35 @@ candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-13'>
+  <div class='section' id='section-15'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-13'>#</a>
+        <a class='octothorpe' href='#section-15'>#</a>
       </div>
-      <p>&ndash; bayes -------------------------------------------------</p>
+      <h2>bayes</h2>
     </div>
     <div class='code'>
       <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-14'>
+  <div class='section' id='section-16'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-14'>#</a>
+        <a class='octothorpe' href='#section-16'>#</a>
       </div>
       <p>Naive Bayes, used two ways: to pick which row to label next
 (bayes [4], acquireBayes [5]) and to classify (next
 section). like [1] scores one value against one column;
 likes [2] adds the logs of those scores across a row&rsquo;s x
 columns; liked [3] asks several tables &ldquo;who most likes this
-row?&rdquo;.</p>
+row?&rdquo;.
+<a name="fn-like"></a><code>like(col: Col, v: Atom, prior=0) -&gt; float</code><br />
+[1] P(v | col)<br />
+<small>calls <a href="ezr.html#fn-sd"><code>sd</code></a> <a href="ezr.html#fn-size"><code>size</code></a> &middot; used by <a href="#fn-likes"><code>likes</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">like</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span> <span class="c1"># [1] P(v | col)</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">like</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">prior</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
   <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Sym</span><span class="p">:</span>
     <span class="k">return</span> <span class="p">((</span><span class="n">col</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">the</span><span class="o">.</span><span class="n">m</span> <span class="o">*</span> <span class="n">prior</span><span class="p">)</span>
             <span class="o">/</span> <span class="p">(</span><span class="n">size</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="o">+</span> <span class="n">the</span><span class="o">.</span><span class="n">m</span> <span class="o">+</span> <span class="mf">1e-32</span><span class="p">))</span>
@@ -337,15 +385,17 @@ row?&rdquo;.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-15'>
+  <div class='section' id='section-17'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-15'>#</a>
+        <a class='octothorpe' href='#section-17'>#</a>
       </div>
-      
+      <p><a name="fn-likes"></a><code>likes(tbl: Tbl, row: Row, nall: int, nh: int) -&gt; float</code><br />
+[2] log P(tbl|row), unscaled<br />
+<small>calls <a href="#fn-like"><code>like</code></a> &middot; used by <a href="#fn-liked"><code>liked</code></a> <a href="#fn-bayes"><code>bayes</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">likes</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">nall</span><span class="p">,</span> <span class="n">nh</span><span class="p">):</span> <span class="c1"># [2] log P(tbl|row), unscaled</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">likes</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">nall</span><span class="p">,</span> <span class="n">nh</span><span class="p">):</span>
   <span class="n">prior</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span> <span class="o">+</span> <span class="n">the</span><span class="o">.</span><span class="n">k</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nall</span> <span class="o">+</span> <span class="n">the</span><span class="o">.</span><span class="n">k</span> <span class="o">*</span> <span class="n">nh</span><span class="p">)</span>
   <span class="k">return</span> <span class="n">log</span><span class="p">(</span><span class="n">prior</span><span class="p">)</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span>
     <span class="n">log</span><span class="p">(</span><span class="mf">1e-32</span> <span class="o">+</span> <span class="n">like</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="n">at</span><span class="p">],</span> <span class="n">v</span><span class="p">,</span> <span class="n">prior</span><span class="p">))</span>
@@ -353,24 +403,40 @@ row?&rdquo;.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-16'>
+  <div class='section' id='section-18'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-16'>#</a>
+        <a class='octothorpe' href='#section-18'>#</a>
       </div>
-      
+      <p><a name="fn-liked"></a><code>liked(tbls: dict[Atom,Tbl], row: Row) -&gt; Atom</code><br />
+[3] most likely of several tables<br />
+<small>calls <a href="#fn-likes"><code>likes</code></a> &middot; used by <a href="#fn-fitBayes"><code>fitBayes</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">liked</span><span class="p">(</span><span class="n">tbls</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span> <span class="c1"># [3] most likely of several tables</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">liked</span><span class="p">(</span><span class="n">tbls</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span>
   <span class="n">n</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tbls</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
   <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">tbls</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span><span class="n">likes</span><span class="p">(</span><span class="n">tbls</span><span class="p">[</span><span class="n">k</span><span class="p">],</span><span class="n">row</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">tbls</span><span class="p">)))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-17'>
+  <div class='section' id='section-19'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-17'>#</a>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      <p><a name="fn-bayes"></a><code>bayes(tbl: Tbl, best: Tbl, rest: Tbl)</code><br />
+[4] most likely best<br />
+<small>calls <a href="#fn-likes"><code>likes</code></a> &middot; used by <a href="#fn-acquireBayes"><code>acquireBayes</code></a></small></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">bayes</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">best</span><span class="p">,</span> <span class="n">rest</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-20'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-20'>#</a>
       </div>
       
     </div>
@@ -382,45 +448,50 @@ row?&rdquo;.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-18'>
+  <div class='section' id='section-21'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-18'>#</a>
+        <a class='octothorpe' href='#section-21'>#</a>
       </div>
-      
+      <p><a name="fn-acquireBayes"></a><code>acquireBayes(tbl: Tbl, cap=None)</code><br />
+[5] label most-likely-best<br />
+<small>calls <a href="ezr.html#fn-acquire"><code>acquire</code></a> <a href="#fn-bayes"><code>bayes</code></a> &middot; used by <a href="#fn-test_acquires"><code>test_acquires</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">acquireBayes</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span> <span class="c1"># [5] label most-likely-best</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">acquireBayes</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
   <span class="k">return</span> <span class="n">acquire</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">cap</span><span class="p">,</span> <span class="n">bayes</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-19'>
+  <div class='section' id='section-22'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-19'>#</a>
+        <a class='octothorpe' href='#section-22'>#</a>
       </div>
-      <h4>classify</h4>
+      <h2>classify</h2>
     </div>
     <div class='code'>
       <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-20'>
+  <div class='section' id='section-23'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-20'>#</a>
+        <a class='octothorpe' href='#section-23'>#</a>
       </div>
       <p>The optimizer&rsquo;s parts, reused for classification. confuse
 [1] turns (got, want) pairs into per-class accuracy, recall
 (pd), false alarm (pf) and precision. fitTree [2] and
 fitBayes [3] are rival classifiers built from ezr.py&rsquo;s trees
 and this file&rsquo;s bayes. _klass [4] races fits over the same
-train/test splits, printing one confusion report per fit.</p>
+train/test splits, printing one confusion report per fit.
+<a name="fn-confuse"></a><code>confuse(pairs: list[tuple[Atom,Atom]]) -&gt; dict</code><br />
+[1] (got, want)s &ndash;&gt; per-klass scores<br />
+<small>used by <a href="#fn-_klass"><code>_klass</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">confuse</span><span class="p">(</span><span class="n">pairs</span><span class="p">):</span> <span class="c1"># [1] (got, want)s --&gt; per-klass scores</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">confuse</span><span class="p">(</span><span class="n">pairs</span><span class="p">):</span>
   <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
   <span class="k">for</span> <span class="n">got</span><span class="p">,</span> <span class="n">want</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="n">got</span><span class="p">,</span> <span class="n">want</span><span class="p">]:</span>
@@ -437,30 +508,34 @@ train/test splits, printing one confusion report per fit.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-21'>
+  <div class='section' id='section-24'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-21'>#</a>
+        <a class='octothorpe' href='#section-24'>#</a>
       </div>
-      
+      <p><a name="fn-fitTree"></a><code>fitTree(tbl: Tbl, rows: Rows, y) -&gt; Callable</code><br />
+[2] sqrt-sized leaves<br />
+<small>calls <a href="ezr.html#fn-tree"><code>tree</code></a> <a href="ezr.html#fn-clone"><code>clone</code></a> <a href="ezr.html#fn-leaf"><code>leaf</code></a> &middot; used by <a href="#fn-test_klass"><code>test_klass</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">fitTree</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span> <span class="c1"># [2] sqrt-sized leaves</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">fitTree</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
   <span class="n">the</span><span class="o">.</span><span class="n">Leaf</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)))</span>
   <span class="n">tt</span> <span class="o">=</span> <span class="n">tree</span><span class="p">(</span><span class="n">clone</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">),</span> <span class="n">rows</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
   <span class="k">return</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">leaf</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span> <span class="n">r</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-22'>
+  <div class='section' id='section-25'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-22'>#</a>
+        <a class='octothorpe' href='#section-25'>#</a>
       </div>
-      
+      <p><a name="fn-fitBayes"></a><code>fitBayes(tbl: Tbl, rows: Rows, y) -&gt; Callable</code><br />
+[3] one table per class<br />
+<small>calls <a href="ezr.html#fn-addRow"><code>addRow</code></a> <a href="#fn-liked"><code>liked</code></a> <a href="ezr.html#fn-clone"><code>clone</code></a> &middot; used by <a href="#fn-test_klass"><code>test_klass</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">fitBayes</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span> <span class="c1"># [3] one table per class</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">fitBayes</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
   <span class="n">tbls</span> <span class="o">=</span> <span class="p">{}</span>
   <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">y</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tbls</span><span class="p">:</span> <span class="n">tbls</span><span class="p">[</span><span class="n">y</span><span class="p">(</span><span class="n">r</span><span class="p">)]</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span>
@@ -469,15 +544,17 @@ train/test splits, printing one confusion report per fit.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-23'>
+  <div class='section' id='section-26'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-23'>#</a>
+        <a class='octothorpe' href='#section-26'>#</a>
       </div>
-      
+      <p><a name="fn-_klass"></a><code>_klass(*fits: Callable) -&gt; list</code><br />
+[4] each fit(tbl, rows, y) &ndash;&gt; predictor<br />
+<small>calls <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="#fn-confuse"><code>confuse</code></a> &middot; used by <a href="#fn-test_klass"><code>test_klass</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">_klass</span><span class="p">(</span><span class="o">*</span><span class="n">fits</span><span class="p">):</span> <span class="c1"># [4] each fit(tbl, rows, y) --&gt; predictor</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">_klass</span><span class="p">(</span><span class="o">*</span><span class="n">fits</span><span class="p">):</span>
   <span class="n">tbl</span> <span class="o">=</span> <span class="n">Tbl</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Klass</span><span class="p">))</span>
   <span class="n">y</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="n">tbl</span><span class="o">.</span><span class="n">klass</span><span class="p">]</span>
   <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
@@ -486,10 +563,10 @@ train/test splits, printing one confusion report per fit.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-24'>
+  <div class='section' id='section-27'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-24'>#</a>
+        <a class='octothorpe' href='#section-27'>#</a>
       </div>
       
     </div>
@@ -513,26 +590,28 @@ train/test splits, printing one confusion report per fit.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-25'>
+  <div class='section' id='section-28'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-25'>#</a>
+        <a class='octothorpe' href='#section-28'>#</a>
       </div>
-      <p>&ndash; start-up ----------------------------------------------</p>
+      <h2>start-up</h2>
     </div>
     <div class='code'>
       <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-26'>
+  <div class='section' id='section-29'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-26'>#</a>
+        <a class='octothorpe' href='#section-29'>#</a>
       </div>
       <p>Demos, run from the shell: &ldquo;ezr_eg &ndash;kmeans&rdquo;, or &ldquo;&ndash;all&rdquo;
 for everything. &ldquo;-Key val&rdquo; flags (from the options above or
-ezr.py&rsquo;s) may precede any demo; settings reset after each.</p>
+ezr.py&rsquo;s) may precede any demo; settings reset after each.
+<a name="fn-test_help"></a><code>test_help() -&gt; None</code><br />
+Show usage, settings, demos</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">test_help</span><span class="p">():</span>
@@ -544,12 +623,14 @@ ezr.py&rsquo;s) may precede any demo; settings reset after each.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-27'>
+  <div class='section' id='section-30'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-27'>#</a>
+        <a class='octothorpe' href='#section-30'>#</a>
       </div>
-      
+      <p><a name="fn-test_kmeans"></a><code>test_kmeans() -&gt; None</code><br />
+Cluster the.File; per cluster: n rows, mean ydist<br />
+<small>calls <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="#fn-kmeans"><code>kmeans</code></a> <a href="ezr.html#fn-ymu"><code>ymu</code></a></small></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">test_kmeans</span><span class="p">():</span>
@@ -561,12 +642,14 @@ ezr.py&rsquo;s) may precede any demo; settings reset after each.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-28'>
+  <div class='section' id='section-31'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-28'>#</a>
+        <a class='octothorpe' href='#section-31'>#</a>
       </div>
-      
+      <p><a name="fn-test_kpp"></a><code>test_kpp() -&gt; None</code><br />
+kmeans++ seeds spread wider than random picks<br />
+<small>calls <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="ezr.html#fn-xdist"><code>xdist</code></a> <a href="#fn-kpp"><code>kpp</code></a></small></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">test_kpp</span><span class="p">():</span>
@@ -579,12 +662,14 @@ ezr.py&rsquo;s) may precede any demo; settings reset after each.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-29'>
+  <div class='section' id='section-32'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-29'>#</a>
+        <a class='octothorpe' href='#section-32'>#</a>
       </div>
-      
+      <p><a name="fn-test_optimize"></a><code>test_optimize() -&gt; None</code><br />
+SA vs local search, nearest-neighbor oracle, wins<br />
+<small>calls <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="ezr.html#fn-wins"><code>wins</code></a> <a href="ezr.html#fn-clone"><code>clone</code></a> <a href="#fn-sa"><code>sa</code></a> <a href="#fn-ls"><code>ls</code></a> <a href="#fn-de"><code>de</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="ezr.html#fn-ydist"><code>ydist</code></a> <a href="#fn-nearest"><code>nearest</code></a></small></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">test_optimize</span><span class="p">():</span>
@@ -595,10 +680,10 @@ ezr.py&rsquo;s) may precede any demo; settings reset after each.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-30'>
+  <div class='section' id='section-33'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-30'>#</a>
+        <a class='octothorpe' href='#section-33'>#</a>
       </div>
       
     </div>
@@ -612,12 +697,13 @@ ezr.py&rsquo;s) may precede any demo; settings reset after each.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-31'>
+  <div class='section' id='section-34'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-31'>#</a>
+        <a class='octothorpe' href='#section-34'>#</a>
       </div>
-      
+      <p><a name="fn-project"></a><code>project(rows: Rows, x: Any, y, east=None, west=None)</code><br />
+<small>used by <a href="#fn-sway3"><code>sway3</code></a></small></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">project</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">east</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">west</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -630,12 +716,13 @@ ezr.py&rsquo;s) may precede any demo; settings reset after each.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-32'>
+  <div class='section' id='section-35'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-32'>#</a>
+        <a class='octothorpe' href='#section-35'>#</a>
       </div>
-      
+      <p><a name="fn-sway3"></a><code>sway3(rows: Rows, y, x: Any, cap, lab=None, east=None, west=None)</code><br />
+<small>calls <a href="#fn-project"><code>project</code></a> &middot; used by <a href="#fn-acquireSway"><code>acquireSway</code></a></small></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">sway3</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">cap</span><span class="p">,</span> <span class="n">lab</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">east</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">west</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -658,15 +745,17 @@ ezr.py&rsquo;s) may precede any demo; settings reset after each.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-33'>
+  <div class='section' id='section-36'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-33'>#</a>
+        <a class='octothorpe' href='#section-36'>#</a>
       </div>
-      
+      <p><a name="fn-acquireSway"></a><code>acquireSway(tbl: Tbl, cap=None)</code><br />
+recursive halving acquire<br />
+<small>calls <a href="ezr.html#fn-ydist"><code>ydist</code></a> <a href="ezr.html#fn-xdist"><code>xdist</code></a> <a href="#fn-sway3"><code>sway3</code></a> &middot; used by <a href="#fn-test_acquires"><code>test_acquires</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">acquireSway</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span> <span class="c1"># recursive halving acquire</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">acquireSway</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
   <span class="n">y</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">ydist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
   <span class="n">x</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
   <span class="n">rows</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">))[:</span><span class="n">the</span><span class="o">.</span><span class="n">Few</span><span class="p">]</span>
@@ -674,12 +763,14 @@ ezr.py&rsquo;s) may precede any demo; settings reset after each.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-34'>
+  <div class='section' id='section-37'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-34'>#</a>
+        <a class='octothorpe' href='#section-37'>#</a>
       </div>
-      
+      <p><a name="fn-test_acquires"></a><code>test_acquires() -&gt; None</code><br />
+Centroid vs bayes acquisition: 20 holdouts each<br />
+<small>calls <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="ezr.html#fn-wins"><code>wins</code></a> <a href="ezr.html#fn-acquire"><code>acquire</code></a> <a href="#fn-acquireBayes"><code>acquireBayes</code></a> <a href="#fn-acquireSway"><code>acquireSway</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="ezr.html#fn-clone"><code>clone</code></a> <a href="ezr.html#fn-tree"><code>tree</code></a> <a href="ezr.html#fn-ydist"><code>ydist</code></a> <a href="ezr.html#fn-leaf"><code>leaf</code></a></small></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">test_acquires</span><span class="p">():</span>
@@ -704,12 +795,14 @@ ezr.py&rsquo;s) may precede any demo; settings reset after each.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-35'>
+  <div class='section' id='section-38'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-35'>#</a>
+        <a class='octothorpe' href='#section-38'>#</a>
       </div>
-      
+      <p><a name="fn-test_klass"></a><code>test_klass() -&gt; None</code><br />
+Tree vs bayes, same splits: confusions, then same?<br />
+<small>calls <a href="#fn-_klass"><code>_klass</code></a> <a href="#fn-fitTree"><code>fitTree</code></a> <a href="#fn-fitBayes"><code>fitBayes</code></a> <a href="ezr.html#fn-adds"><code>adds</code></a> <a href="ezr.html#fn-same"><code>same</code></a> <a href="ezr.html#fn-sd"><code>sd</code></a></small></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">test_klass</span><span class="p">():</span>
@@ -723,12 +816,14 @@ ezr.py&rsquo;s) may precede any demo; settings reset after each.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-36'>
+  <div class='section' id='section-39'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-36'>#</a>
+        <a class='octothorpe' href='#section-39'>#</a>
       </div>
-      
+      <p><a name="fn-test_all"></a><code>test_all() -&gt; None</code><br />
+Run every demo; exit code counts the crashes<br />
+<small>calls <a href="ezr.html#fn-run"><code>run</code></a></small></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">test_all</span><span class="p">():</span>
@@ -739,15 +834,17 @@ ezr.py&rsquo;s) may precede any demo; settings reset after each.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section intro' id='section-37'>
+  <div class='section' id='section-40'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-37'>#</a>
+        <a class='octothorpe' href='#section-40'>#</a>
       </div>
-      
+      <p><a name="fn-main"></a><code>main() -&gt; None</code><br />
+pip entry point<br />
+<small>calls <a href="ezr.html#fn-cli"><code>cli</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span> <span class="c1"># pip entry point</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
   <span class="n">cli</span><span class="p">(</span><span class="n">the</span><span class="p">,</span> <span class="nb">globals</span><span class="p">(),</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="ow">or</span> <span class="p">[</span><span class="s2">&quot;--help&quot;</span><span class="p">])</span>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span> <span class="n">main</span><span class="p">()</span>

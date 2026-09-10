@@ -83,7 +83,7 @@ runs: ## run random test loop
 
 Html := $(GIT_ROOT)/docs
 
-docs: $(Html)/ezr.html ~/tmp/ezr.pdf
+docs: $(Html)/ezr.html $(Html)/ezr_eg.html ~/tmp/ezr.pdf
 
 $(Html)/%.html: %.py
 	@mkdir -p $(Html)
@@ -107,7 +107,11 @@ pushpdf: tosem ## rebuild paper, commit it, push
 	@git commit -m "rebuild tosem pdf"; git push
 
 docs/ezr.html: ezr.py etc/lit.py ## literate page via pycco
-	@python3 -B etc/lit.py
+	@python3 -B etc/lit.py ezr.py
+	@open $@
+
+docs/ezr_eg.html: ezr_eg.py etc/lit.py ## literate page, demos
+	@python3 -B etc/lit.py ezr_eg.py
 	@open $@
 
 Tuts := $(patsubst %.md,%.html,$(wildcard $(Html)/*.md))
