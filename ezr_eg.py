@@ -249,22 +249,57 @@ def test_optimize():
     got = nearest(tbl, what(tbl, oracle), known.rows)
     print(f"{what.__name__:<3} win {round(win(got))}")
 
+def project(rows, x, y, east=None, west=None):
+  far  = lambda r: max(rows, key=lambda z: x(z, r))
+  east = east or far(rows[0])
+  west = west or far(east)
+  if y(east) > y(west): east, west = west, east
+  c = x(east, west) + 1e-32
+  return lambda r: (x(east,r)**2 + c*c - x(west,r)**2)/(2*c)
+
+def sway3(rows, y, x, cap, lab=None, east=None, west=None):
+  b4  = rows[:]
+  lab = lab or {}
+  while len(rows) >= 2 * the.Leaf:
+    more = min(4, cap - len(lab))
+    new  = []
+    for r in rows:
+      if   id(r) in lab          : new += [r]
+      elif (more := more-1) >= 0 : new += [r]; lab[id(r)] = r
+    if len(lab) >= cap: return lab.values()
+    rows = sorted(rows, key=project(new, x, y, east, west)
+                  )[:max(1, len(rows) // 2)]
+  if len(lab) < len(b4):
+    seen = sorted(lab.values(), key=y)
+    return sway3(random.sample(b4, len(b4)), y, x, cap,
+                 lab, seen[0], seen[-1])
+  return lab.values()
+
+def acquireSway(tbl, cap=None): # recursive halving acquire
+  y = lambda r: ydist(tbl, r)
+  x = lambda a, b: xdist(tbl, a, b)
+  rows = random.sample(tbl.rows, len(tbl.rows))[:the.Few]
+  return sorted(sway3(rows, y, x, cap or the.Stop), key=y)
+
 def test_acquires():
   "Centroid vs bayes acquisition: 20 holdouts each"
   tbl = Tbl(csv(the.File))
   win = wins(tbl)
-  for fn in [acquire, acquireBayes]:
+  for fn in [acquire, acquireBayes, acquireSway]:
     random.seed(the.Seed)
-    mu = 0
+    mu, spent = 0, 0
     for _ in range(20):
       rows = random.sample(tbl.rows, len(tbl.rows))
       n = len(rows) // 2
       tr = clone(tbl, rows[:n][:the.Few])
-      tt = tree(tr, fn(tr, the.Stop - the.Check))
+      lab = fn(tr, the.Stop - the.Check)
+      spent += len(lab)
+      tt = tree(tr, lab)
       top = sorted(rows[n:],
                    key=lambda r: leaf(tt, r)[2])[:the.Check]
       mu += win(min(top, key=lambda r: ydist(tr, r)))
-    print(f"{fn.__name__:<13} win {round(mu/20)}")
+    print(f"{fn.__name__:<13} win {round(mu/20)}"
+          f" labels {spent//20}")
 
 def test_klass():
   "Tree vs bayes, same splits: confusions, then same?"
