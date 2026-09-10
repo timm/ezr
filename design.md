@@ -9,13 +9,39 @@ the inner workings and show how small they are.
 
 ## The precedent chain
 
-- **Sheffer 1913**. The archetype. Logic's rich basis
-  (and, or, not, implies) collapses, after the fact, onto
-  one strange operator: NAND. Nobody designed toward the
-  Sheffer stroke; it was found. Nicod then derived all of
-  propositional logic from one axiom over it.
+- **The alphabet, c. 1050 BC**. Thousands of picture-signs
+  collapse onto ~22 letters that spell anything. The
+  scribes of logographic scripts did not plan it; traders
+  found it.
+- **Newton 1687**. Apples, tides, moons and cannonballs
+  collapse onto three laws and one gravitation. The
+  best-known found kernel there is.
+- **Darwin 1859**. All the apparent design in life
+  collapses onto one dumb loop: vary, select, retain.
+  Nobody expected the designer to be a machine that small.
+- **Maxwell 1865**. Electricity, magnetism and light:
+  four equations. The source of Kay's metaphor below.
+- **Mendeleev 1869**. Every substance collapses onto ~90
+  elements -- and later, those onto three particles.
+- **Sheffer 1913**. Logic's rich basis (and, or, not,
+  implies) collapses onto one strange operator: NAND.
+  Nobody designed toward the Sheffer stroke; it was found.
+  Nicod then derived all of propositional logic from one
+  axiom over it.
 - **Church 1932 / Turing 1936**. All computation into the
   lambda calculus, or one machine.
+- **Shannon 1937**. Ad-hoc relay circuit craft collapses
+  onto Boole's half-forgotten algebra. Surface expertise,
+  reconstructed on a strange old machine.
+- **Shannon 1948**. Every medium (voice, pictures,
+  telegraph) collapses onto one primitive, the bit, and
+  one measure, entropy. The engineers' many notions of
+  "amount of signal" turn out to be one found number --
+  which still runs inside ezr's div().
+- **Watson & Crick 1953; Crick et al. 1961**. All of
+  life's inheritance collapses onto a four-letter tape and
+  one triplet code. A digital machine inside cells, which
+  no biologist ordered in advance.
 - **McCarthy 1960**. Lisp's eval/apply on half a page.
   Alan Kay later called this "the Maxwell's equations of
   software" -- the popular name for the whole aesthetic.
@@ -23,17 +49,18 @@ the inner workings and show how small they are.
   resolution.
 - **Landin 1966**. "The Next 700 Programming Languages."
   The methodological statement (notes below).
-- **Ingalls 1981**. "Design Principles Behind Smalltalk":
-  the spec-on-a-postcard aesthetic stated as principle
-  ("provide a single uniform metaphor").
 - **Patterson & Ditzel 1980**. RISC: the empirical
   version. Measure real instruction traces, then shrink to
   the strange small core the data reveals. Experience
   guides you there.
+- **Ingalls 1981**. "Design Principles Behind Smalltalk":
+  the spec-on-a-postcard aesthetic stated as principle
+  ("provide a single uniform metaphor").
 - **Liedtke 1995**. Microkernels. The engineering
   criterion: "a concept is tolerated inside the mu-kernel
   only when moving it outside would prevent the system's
   required functionality."
+
 
 Philosophy-of-science name: **rational reconstruction**
 (Carnap) -- rebuilding a rich domain from a minimal
