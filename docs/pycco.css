@@ -220,6 +220,6 @@ div.section.intro div.docs, div.section.intro div.docs p {
 }
 
 .docs p { text-align: justify; }
-.docs h2 { margin-bottom: 0.9em; }
+.docs h2 { margin: 0 0 0.9em 0; }
 .docs a { text-decoration: none; }
 .docs a:hover { text-decoration: underline; }

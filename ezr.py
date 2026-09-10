@@ -57,6 +57,7 @@ def csv(file):
 
 
 #-- structs -----------------------------------------------
+# Data structures
 
 Num = lambda: (0, 0, 0) # n, mu, m2: all Welford keeps
 Sym = dict

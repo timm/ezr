@@ -126,7 +126,6 @@ def build(py):
       if not cmt and i+1 < len(src):
         dm = re.match(r'\s+"(.*)"\s*$', src[i+1])
         if dm: cmt = dm.group(1)
-      sigmd = f"`{name}({sig(name, args)}){r}`"
       calls = [x for x in us.get(name, []) if known(x)]
       parts = []
       if calls:
@@ -135,12 +134,15 @@ def build(py):
       if cb.get(name):
         parts.append("used by " +
                      " ".join(link(x) for x in cb[name]))
-      tail = " &middot; ".join(parts)
-      br1 = "  " if (cmt or tail) else ""
-      out.append(f'# <a name="fn-{name}"></a>{sigmd}{br1}')
-      if cmt: out.append(f"# {cmt}" + ("  " if tail else ""))
-      if tail: out.append(f"# <small>{tail}</small>")
-      out.append(f"def {name}({args}){rest.rstrip()}".rstrip())
+      br1 = "  " if parts else ""
+      out.append(f'# <a name="fn-{name}"></a>'
+                 + (f"{cmt}{br1}" if cmt else ""))
+      for i, p in enumerate(parts):
+        br = "  " if i < len(parts) - 1 else ""
+        out.append(f"# <small>{p}</small>{br}")
+      ann = r.replace(" -> ", " -> ") if r else ""
+      out.append(f"def {name}({sig(name, args)})"
+                 f"{ann}{rest.rstrip()}".rstrip())
     elif (re.match(r"\s+# ", line) and out
           and "#" in out[-1]):
       out[-1] += " " + line.strip()[1:].strip()
@@ -164,7 +166,7 @@ css = open("docs/pycco.css").read()
 css += open("etc/custom.css").read()
 css += """
 .docs p { text-align: justify; }
-.docs h2 { margin-bottom: 0.9em; }
+.docs h2 { margin: 0 0 0.9em 0; }
 .docs a { text-decoration: none; }
 .docs a:hover { text-decoration: underline; }
 """
