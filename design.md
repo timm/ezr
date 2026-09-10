@@ -1,11 +1,16 @@
-# The Found Kernel
+# Earned Simplicity
 
-A design lineage: many surface tasks collapse, after the
-fact, onto one small strange machine. The kernel is not
-pre-specified (contra Parnas); it is discovered by living
-with the system, then everything is rebuilt on it. And it
-is anti-information-hiding: the whole point is to expose
-the inner workings and show how small they are.
+> "Simplicity does not precede complexity, but follows
+> it." -- Alan Perlis, epigram 31
+
+Earned simplicity is a design lineage: many surface tasks
+collapse, after the fact, onto one small strange machine.
+The two words carry the whole anti-Parnas point: you
+cannot specify your way to the kernel up front -- you
+arrive at it after living with the system, then rebuild
+everything on it. And it is anti-information-hiding: the
+whole point is to expose the inner workings and show how
+small they are. The kernel is not designed; it is earned.
 
 ## The precedent chain
 
@@ -59,7 +64,9 @@ the inner workings and show how small they are.
 - **Liedtke 1995**. Microkernels. The engineering
   criterion: "a concept is tolerated inside the mu-kernel
   only when moving it outside would prevent the system's
-  required functionality."
+  required functionality." A necessity test, built for
+  privilege boundaries; see below for why ezr's test is
+  Landin's, not this one.
 
 
 Philosophy-of-science name: **rational reconstruction**
@@ -69,7 +76,7 @@ epigram 31: "Simplicity does not precede complexity, but
 follows it."
 
 For papers: "found kernel" or "post-hoc core calculus",
-with Landin + Liedtke + RISC as the precedent triangle.
+with Landin as the anchor and RISC as the empirical twin.
 
 ## Notes on Landin
 
@@ -110,3 +117,16 @@ distances; naive bayes, trees, clustering, optimizers and
 active learning are the sugar -- each defined by a short,
 published translation onto the core. y1, y2, y3 were the
 next 700 ezrs: same core, varying costume.
+
+**ezr's kernel test is Landin's, not Liedtke's.** Liedtke
+admits a concept only when it is impossible outside the
+kernel -- a necessity test, built for privilege
+boundaries. ezr has no privilege boundary; its admission
+rule is a sharing test: a function belongs in ezr.py only
+if two or more learners ask questions of it. That is
+Landin's criterion: the core is what stays fixed while
+the sugar varies. (Audited over the call graph: 17
+functions pass; the cut/label/stats plumbing serves them;
+evaluation and display stay by mission, since
+self-checking and self-explanation are the product's
+claim, not conveniences.)

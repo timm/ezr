@@ -3,6 +3,14 @@
 ezr_eg.py: more demos for ezr.py (clustering, optimizers)
 (c) 2026 Tim Menzies <timm@ieee.org> MIT license
 
+Which file? ezr.py keeps the shared core: whatever two or
+more learners ask questions of (columns, distances, one
+update primitive, plus the checks and reports that let
+the code judge itself). This file keeps the sugar: each
+learner here is a short translation onto that core. When
+a def here is needed by two other learners, it has earned
+its move to ezr.py.
+
 Options: see ezr.py (all settings live in one place).
 """
 import random, sys
