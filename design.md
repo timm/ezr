@@ -3,16 +3,51 @@
 > "Simplicity does not precede complexity, but follows
 > it." -- Alan Perlis, epigram 31
 
-Earned simplicity is a design lineage: many surface tasks
-collapse, after the fact, onto one small strange machine.
-The two words carry the whole anti-Parnas point: you
-cannot specify your way to the kernel up front -- you
-arrive at it after living with the system, then rebuild
-everything on it. And it is anti-information-hiding: the
-whole point is to expose the inner workings and show how
-small they are. The kernel is not designed; it is earned.
+Earned simplicity is that effect where, given enough experience,
+many surface tasks collapse, onto one mucher smaller (possibly much
+stranger) machine. Earned simplicity asks do we  know enough about
+our tools and processes to replace them with some things that are
+much smaller and much more essential.
 
-## The precedent chain
+Earned simplicity cannot be created after seeing one design, You
+arrive at it after living with the system, then rebuild everything
+on it again and again.  And it is anti-information-hiding: the whole
+point is to expose the inner workings and show how small they are.
+The kernel is not designed; it is earned.
+
+The counterclaim to earned simplicity comes in two
+strengths. Tesler's Law (conservation of complexity): a
+system's complexity can only be moved, never removed, so
+design's job is to hide it behind a good surface.
+Stronger, Brooks's "No Silver Bullet" (1986): software
+complexity divides into essence, which no tool or method
+can much shrink, and accident, which is mostly gone
+already. Earned simplicity doubts that boundary. Each
+entry below is a case where "essence", after long
+acquaintance, was reclassified as accident -- costume
+that someone finally deleted. (Norman, "Living with
+Complexity" 2011, half-concedes: "what is complex on the
+surface can be simple inside" -- but then argues for
+taming complexity. This lineage argues for shrinking it
+until there is nothing left to tame.)
+
+Why is earned simplicity so rare? Because it is very
+complex to find. Rushing out tomorrow's product leaves no
+time to reflect on the past and unify ten things into
+one. And the market's incentives point the other way:
+industry wants ten things to sell, and complexity that
+makes us dependent on its services -- one person's
+problem is another's consultancy opportunity. Wirth said
+it plainly in "A Plea for Lean Software" (1995): fat
+software is not an accident but a vendor strategy.
+Gabriel's "worse is better" (1991) explains the ratchet:
+the complicated-but-shippable thing wins the market
+before the simple thing is found. Upton Sinclair supplies
+the epitaph: "It is difficult to get a man to understand
+something when his salary depends upon his not
+understanding it."
+
+## Examples of Earned Simplicity
 
 - **The alphabet, c. 1050 BC**. Thousands of picture-signs
   collapse onto ~22 letters that spell anything. The
@@ -130,3 +165,72 @@ functions pass; the cut/label/stats plumbing serves them;
 evaluation and display stay by mission, since
 self-checking and self-explanation are the product's
 claim, not conveniences.)
+
+## References
+
+- Brooks, F. "No Silver Bullet: Essence and Accidents of
+  Software Engineering." IEEE Computer 20(4), 1987
+  (first presented IFIP 1986).
+- Carnap, R. Der logische Aufbau der Welt. 1928.
+- Church, A. "A Set of Postulates for the Foundation of
+  Logic." Annals of Mathematics 33, 1932.
+- Crick, F., Barnett, L., Brenner, S., Watts-Tobin, R.
+  "General Nature of the Genetic Code for Proteins."
+  Nature 192, 1961.
+- Daniels, P., Bright, W. (eds). The World's Writing
+  Systems. Oxford, 1996. (On the alphabet's origins.)
+- Darwin, C. On the Origin of Species. John Murray, 1859.
+- Gabriel, R. "Lisp: Good News, Bad News, How to Win
+  Big." AI Expert, 1991. (The "worse is better" essay.)
+- Ingalls, D. "Design Principles Behind Smalltalk."
+  Byte 6(8), 1981.
+- Kay, A. "A Conversation with Alan Kay." ACM Queue
+  2(9), 2004. (Lisp as "the Maxwell's equations of
+  software".)
+- Landin, P. "The Mechanical Evaluation of Expressions."
+  Computer Journal 6(4), 1964. (The SECD machine.)
+- Landin, P. "The Next 700 Programming Languages."
+  CACM 9(3), 1966.
+- Liedtke, J. "On mu-Kernel Construction." SOSP 15, 1995.
+- Maxwell, J.C. "A Dynamical Theory of the
+  Electromagnetic Field." Phil. Trans. Royal Society
+  155, 1865.
+- McCarthy, J. "Recursive Functions of Symbolic
+  Expressions and Their Computation by Machine, Part I."
+  CACM 3(4), 1960.
+- Mendeleev, D. "On the Relationship of the Properties
+  of the Elements to their Atomic Weights." Zeitschrift
+  fur Chemie 12, 1869.
+- Newton, I. Philosophiae Naturalis Principia
+  Mathematica. 1687.
+- Nicod, J. "A Reduction in the Number of Primitive
+  Propositions of Logic." Proc. Cambridge Philosophical
+  Society 19, 1917.
+- Norman, D. Living with Complexity. MIT Press, 2011.
+  (Also the standard source for Tesler's Law,
+  c. 1984.)
+- Parnas, D. "On the Criteria To Be Used in Decomposing
+  Systems into Modules." CACM 15(12), 1972.
+- Patterson, D., Ditzel, D. "The Case for the Reduced
+  Instruction Set Computer." SIGARCH Computer
+  Architecture News 8(6), 1980.
+- Perlis, A. "Epigrams on Programming." SIGPLAN Notices
+  17(9), 1982.
+- Robinson, J.A. "A Machine-Oriented Logic Based on the
+  Resolution Principle." JACM 12(1), 1965.
+- Shannon, C. "A Symbolic Analysis of Relay and
+  Switching Circuits." MSc thesis, MIT, 1937 (Trans.
+  AIEE 57, 1938).
+- Shannon, C. "A Mathematical Theory of Communication."
+  Bell System Technical Journal 27, 1948.
+- Sheffer, H.M. "A Set of Five Independent Postulates
+  for Boolean Algebras." Trans. AMS 14, 1913.
+- Sinclair, U. I, Candidate for Governor: And How I Got
+  Licked. 1935.
+- Turing, A. "On Computable Numbers, with an Application
+  to the Entscheidungsproblem." Proc. London
+  Mathematical Society 42, 1936.
+- Watson, J., Crick, F. "Molecular Structure of Nucleic
+  Acids." Nature 171, 1953.
+- Wirth, N. "A Plea for Lean Software." IEEE Computer
+  28(2), 1995.
