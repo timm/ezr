@@ -23,6 +23,7 @@ Options:
       -File=$MOOT/optimize/misc/auto93.csv
 
 """
+#-- preface -----------------------------------------------
 
 # pylint: disable=bad-indentation,invalid-name  
 # pylint: disable=missing-function-docstring  
@@ -35,10 +36,14 @@ Options:
  
 import os, random, re, sys, traceback
 from math import exp, log, log2, pi, sqrt
+from collections.abc import Callable
 
 # Used everywhere, defined late (see misc and start sections):
 # `o` (dicts with attribute access), `say` (pretty printer),
 # `the` (settings, parsed from this docstring).
+# Names imply types (tbl:TBL col:COL row:ROW rows:ROWS
+# tr:NODE at:col index v:cell xy:(x,y) pairs); hint
+# only where name or return type would otherwise mislead.
 
 def atom(s,bools={'True': True, 'False': False}):
   try: return int(s)
@@ -48,43 +53,33 @@ def atom(s,bools={'True': True, 'False': False}):
       s = s.strip()
       return bools[s] if s in bools else s
 
-def csv(file):
+def line2row(s):
+  if (s := s.strip()):
+    return tuple(atom(x) for x in s.split(","))
+
+def csv(file: str):
   file = file.replace("$MOOT", os.environ.get("MOOT")
                       or os.path.expanduser("~/gits/moot"), 1)
   with open(file, encoding="utf-8") as f:
-    return [tuple(atom(x) for x in line.split(","))
-            for line in f if line.strip()]
+    for line in f:
+      if (row := line2row(line)): yield row
 
-
 #-- structs -----------------------------------------------
 # Data structures
 
 Num = lambda: (0, 0, 0) # n, mu, m2: all Welford keeps
 Sym = dict
 
-type Atom = str | bool | int | float
-type Col  = tuple[int, float, float] | dict # Num | Sym
-type Row  = tuple[Atom, ...]
-type Rows = list[Row]
-type Tbl  = o # rows:Rows, cols:{at:Col}, x:[at],
-              # y:{at:bool}, names:Row, klass:at|None
-type Node = list # [edge, n, mid, ymids, go, left, right]
+type ATOM = str | bool | int | float
+type COL  = tuple[int, float, float] | dict # Num | Sym
+type ROW  = tuple[ATOM, ...]
+type ROWS = list[ROW]
+type TBL  = o # rows:ROWS, cols:{at:COL}, x:[at],
+              # y:{at:bool}, names:ROW, klass:at|None
+type NODE = list # [edge, n, mid, ymids, go, left, right]
+type FUN  = Callable
 
 def sd(col): return 0 if col[0] < 2 else sqrt(col[2]/(col[0]-1))
-
-def add(col, v, inc=1): # new Num, or updated Sym; inc=-1 undoes
-  if v == "?": return col
-  if type(col) is Sym: col[v] = col.get(v, 0) + inc; return col
-  n, mu, m2 = col
-  n += inc
-  d = v - mu
-  mu += inc * d / max(1, n)
-  return (n, mu, max(0, m2 + inc * d * (v - mu)))
-
-def adds(lst, it=None): # accumulate a list into it
-  if it is None: it = Num()   # NB: "it or Num()" would
-  for y in lst: it = add(it, y)  # clobber an empty Sym()
-  return it
 
 def size(col):
   return sum(col.values()) if type(col) is Sym else col[0]
@@ -94,30 +89,6 @@ def div(col): # Num: sd. Sym: entropy
   n = sum(col.values())
   return -sum(v/n * log2(v/n) for v in col.values() if v>0)
 
-def addRow(tbl, row=None, inc=1): # inc=-1 pops the last row
-  tbl._mids = None
-  if inc > 0: tbl.rows.append(row)
-  else: row = tbl.rows.pop()
-  for at in tbl.cols:
-    tbl.cols[at] = add(tbl.cols[at], row[at], inc)
-  return row
-
-def Tbl(src):
-  tbl = o(rows=[], cols={}, x=[], y={}, names=src[0],
-          klass=None, _mids=None)
-  for at, s in enumerate(tbl.names):
-    if not s.endswith("X"):
-      tbl.cols[at] = Num() if s[0].isupper() else Sym()
-      if   s[-1] == "!":  tbl.klass = at
-      elif s[-1] in "+-": tbl.y[at] = s[-1] == "+"
-      else: tbl.x.append(at)
-  for row in src[1:]: addRow(tbl, row)
-  return tbl
-
-def clone(tbl, rows=[]): return Tbl([tbl.names] + rows)
-
-
-#-- distance ----------------------------------------------
 def norm(col, v):
   z = max(-3, min(3, (v - col[1]) / (1e-32 + sd(col))))
   return 1 / (1 + exp(-1.7 * z))
@@ -129,6 +100,49 @@ def mids(tbl): # x centroid; cached until rows change
   tbl._mids = tbl._mids or {at:mid(tbl.cols[at]) for at in tbl.x}
   return tbl._mids
 
+
+#-- create -----------------------------------------------
+# Populate data.
+
+def add(col, v:ATOM, inc=1) -> COL: # new Num or Sym; -1 undoes
+  if v == "?": return col
+  if type(col) is Sym: col[v] = col.get(v, 0) + inc; return col
+  n, mu, m2 = col
+  n += inc
+  d = v - mu
+  mu += inc * d / max(1, n)
+  return (n, mu, max(0, m2 + inc * d * (v - mu)))
+
+def adds(lst, it:COL=None) -> COL: # accumulate a list into it
+  if it is None: it = Num()   # NB: "it or Num()" would
+  for y in lst: it = add(it, y)  # clobber an empty Sym()
+  return it
+
+def addRow(tbl, row=None, inc=1) -> ROW: # inc=-1 pops last row
+  tbl._mids = None
+  if inc > 0: tbl.rows.append(row)
+  else: row = tbl.rows.pop()
+  for at in tbl.cols:
+    tbl.cols[at] = add(tbl.cols[at], row[at], inc)
+  return row
+
+def Tbl(src):
+  src = iter(src)
+  tbl = o(rows=[], cols={}, x=[], y={}, names=next(src),
+          klass=None, _mids=None)
+  for at, s in enumerate(tbl.names):
+    if not s.endswith("X"):
+      tbl.cols[at] = Num() if s[0].isupper() else Sym()
+      if   s[-1] == "!":  tbl.klass = at
+      elif s[-1] in "+-": tbl.y[at] = s[-1] == "+"
+      else: tbl.x.append(at)
+  for row in src: addRow(tbl, row)
+  return tbl
+
+def clone(tbl, rows=[]): return Tbl([tbl.names] + rows)
+
+
+#-- distance ----------------------------------------------
 def ydist(tbl, row):
   return (sum(abs(norm(tbl.cols[at], row[at]) - w) ** the.P
              for at, w in tbl.y.items()) / len(tbl.y))**(1/the.P)
@@ -148,7 +162,7 @@ def ymu(tbl, rows):
 def ymids(tbl, rows):
   return [sum(r[at] for r in rows)/len(rows) for at in tbl.y]
 
-#-- acquire -----------------------------------------------
+#-- acquire -----------------------------------------------
 def centroid(tbl, best, rest): # near best, far from rest
   return lambda z: (xdist(tbl, z, mids(rest))
                   - xdist(tbl, z, mids(best)))
@@ -159,7 +173,7 @@ def label(tbl, best, rest, row): # keep best pool near sqrt
   b, r = len(best.rows), len(rest.rows)
   if b > sqrt(1 + b + r): addRow(rest, addRow(best, inc=-1))
 
-def acquire(tbl, cap=None, score=centroid): # pop the top scorer
+def acquire(tbl, cap:int=None, score:FUN=centroid) -> ROWS:
   best, rest = clone(tbl), clone(tbl)
   todo = random.sample(tbl.rows, len(tbl.rows))[:the.Few]
   for _ in range(the.Start): label(tbl, best, rest, todo.pop())
@@ -169,24 +183,24 @@ def acquire(tbl, cap=None, score=centroid): # pop the top scorer
     label(tbl, best, rest, todo.pop())
   return best.rows + rest.rows
 
-#-- tree --------------------------------------------------
-# Node = [edge, n, ymu, ymids, go, kid, kid]
+#-- tree --------------------------------------------------
+# NODE = [edge, n, ymu, ymids, go, kid, kid]
 def xpect(a, b): # sizes are >= the.Leaf, so no zero guard
   return ((div(a)*size(a) + div(b)*size(b))/(size(a) + size(b)))
 
-def cutNum(xy, acc): # (left, right, x) per value boundary
+def cutNum(xy, acc:FUN): # (left, right, x) per value boundary
   xy.sort()
   here, there = acc(), adds((y for _, y in xy), acc())
   for i, (x, y) in enumerate(xy[:-1]):
     here, there = add(here, y), add(there, y, -1)
     if x != xy[i+1][0]: yield here, there, x
 
-def cutSym(xy, acc): # (in, out, sym), one per symbol
+def cutSym(xy, acc:FUN): # (in, out, sym), one per symbol
   for v in sorted({x for x, _ in xy}):
     yield (adds((y for x, y in xy if x == v), acc()),
            adds((y for x, y in xy if x != v), acc()), v)
 
-def cut(tbl, rows, ys, acc): # best (col, val) split
+def cut(tbl, rows, ys, acc:FUN): # best (col, val) split
   best = (1e30, None, None)
   for at in tbl.x:
     xy = [(x, y) for r,y in zip(rows, ys) if (x := r[at]) != "?"]
@@ -219,7 +233,7 @@ def tree(tbl, rows, edge="", y=None):
       node += [go, tree(tbl, yes, e1, y), tree(tbl, no, e2, y)]
   return node
 
-def kids(n): return n[5:]
+def kids(tr): return tr[5:]
 
 def leaf(tr, row):
   while kids(tr): tr = tr[5] if tr[4](row) else tr[6]
@@ -288,7 +302,7 @@ class o(dict):
 mean   = lambda ys: sum(ys) / len(ys)
 median = lambda ys: ys[len(ys) // 2]
 
-def wins(tbl, b4=mean): # b4 anchors win=0; best row anchors 100
+def wins(tbl, b4:FUN=mean) -> FUN: # b4 scores 0; best row 100
   ys = sorted(ydist(tbl, r) for r in tbl.rows)
   lo, b4 = ys[0], b4(ys)
   return lambda r: max(-100, min(100,

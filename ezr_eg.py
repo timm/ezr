@@ -126,7 +126,7 @@ def de(tbl, oracle, np=20, cr=0.9): # [6] storn+price 1997
       if en < es[i]: pop[i], es[i] = tuple(sn), en
   return pop[es.index(min(es))]
 
-#-- bayes -------------------------------------------------
+#-- bayes -------------------------------------------------
 
 # Naive Bayes, used two ways: to pick which row to label next
 # (bayes [4], acquireBayes [5]) and to classify (next
