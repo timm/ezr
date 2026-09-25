@@ -1,5 +1,83 @@
 # How
 
+## 0. Surface and core
+
+A common pattern is a big surface language for humans and a tiny core
+for the optimizer and the backend, with a bridge between them. The
+bridge has many names. **Desugaring** in Haskell and Scheme,
+**lowering** in Rust, C# and Kotlin, **elaboration** in Lean, Coq,
+Idris and Agda, **macro expansion** in Lisp, **tocore** elsewhere.
+Same move each time: `do`, `for`, `async`, `guard`, `cond` are deleted,
+and what survives is a handful of forms the machine can reason about.
+The surface is where the vocabulary lives. The core is where the work
+happens, and it is always smaller than anyone expects.
+
+Data mining has the surface. Classification, regression, clustering,
+anomaly detection, retrieval, repair, synthesis, planning, monitoring,
+explanation, trends, forecasting, alerts, optimization, simulation,
+summarization: sixteen names, each with its own chapter, its own
+conference track, its own library. What it has never written down is
+the core.
+
+So: can all sixteen desugar into under 500 words?
+
+### The core, in under 500 words
+
+Rows hold observations (x, left of the bar) and outcomes (y, right).
+The header types every column, and that is the whole task declaration:
+`Volume` (upper case) is a `Num`, `origin` a `Sym`, `Lbs-` is
+minimized, `Acc+` maximized, `class!` is the klass, `HpX` is dropped.
+`ydist` folds any set of `+`/`-` columns into one number, 0 = best.
+
+Four primitives, each branching once, on column type:
+
+| op       | `Sym` / `Num`          | means       |
+|----------|------------------------|-------------|
+| `mid`    | mode / mean            | summarize   |
+| `_dist`  | 0-or-1 / scaled diff   | compare     |
+| `sample` | roulette / gauss       | generate    |
+| `delta`  | frequency shift / mean difference | extrapolate |
+
+One learner: `cluster(rows) -> [tbl]`, group the similar. One
+coordinate: `project(a,b)` places any row on the line between two
+poles, out of `_dist` and nothing else. Distant rows as poles,
+recursively, is `cluster`. First and last era as poles, and the same
+arithmetic is TRAJECTORY.
+
+Three ways to aim a primitive at what `cluster` returned. `relevant`
+is `_dist` from a row to each cluster's `mid`s, smallest kept.
+DISTINGUISH is `_dist` between two clusters' `mid`s, largest kept.
+`impute` is `sample`, aimed at a chosen cluster, written back into a
+row.
+
+Everything else is those three, read differently.
+
+From `relevant`: the `mid` of a `Sym` target is CLASSIFICATION, of a
+`Num` target REGRESSION, the distance itself ANOMALY DETECTION, the
+cluster's rows RETRIEVAL, a `sample` of its y cells SPREAD.
+
+From `impute`: aim at the row's own cluster and touch empty cells,
+REPAIR. At a better cluster, touching only actionable cells, PLANNING.
+At any cluster, touching everything, SYNTHESIS.
+
+From DISTINGUISH: left against right reads as EXPLANATION, worse
+against better as PLANNING, better against worse as MONITORING, one
+era against the next as TRENDS.
+
+From TRAJECTORY: read at `t<=1` it is TRENDS, past `t=1` FORECAST, and
+its step sizes fed to ANOMALY DETECTION are ALERTS.
+
+Then three compositions. PLANNING and MONITORING looped is
+OPTIMIZATION. SYNTHESIS then predict is SIMULATION. `same()`, gating
+every row above, is DISTINGUISHABILITY. And the `mid`s of `cluster`
+itself, read directly, are SUMMARIZATION.
+
+Sixteen applications. Nothing above branches on the task. The only
+branch in the system is `Num` or `Sym`, and the header row already
+said which.
+
+The rest of this document is that again, slowly, with the code.
+
 Suppose I have a bunch of rows I want to reason about. Each row
 holds some observations and some outcomes. On a sunny day, I went
 walking: here day=sunny is an observation (also called an x
@@ -425,7 +503,10 @@ file, so `ezr.py` stays as it is.
 ## 7. Every application, mapped
 
 Sixteen applications, four primitives, one operator. Everything
-below is `cluster` plus a primitive aimed at what it returned.
+below is `cluster` plus a primitive aimed at what it returned. Read
+these tables the way a desugarer reads its rules: the surface form on
+the left, the core form on the right. CLASSIFICATION is not something
+`ezr` does. It is a spelling of `mid`.
 
 **`cluster(rows)`** -- then read the mids: SUMMARIZATION.
 
@@ -492,6 +573,28 @@ And three that are compositions, not new machinery:
 | OPTIMIZATION       | PLANNING and MONITORING, looped   |
 | SIMULATION         | SYNTHESIS, then predict           |
 | DISTINGUISHABILITY | `same()` -- gates every row above |
+
+### Not exotic
+
+No compiler writer would find any of this strange:
+
+| Language | What the bridge is called | What stops existing |
+|---|---|---|
+| **Haskell** (GHC) | Desugarer (`GHC.HsToCore`), `HsSyn` -> Core | `do`, comprehensions, guards, `where`, classes |
+| **Rust** | AST -> HIR "lowering" (spans tagged `DesugaringKind`) | `for` -> `loop` + `match`; `?` -> `match`; `async` |
+| **Java** (javac) | `Lower`, `TransTypes` | inner classes, enhanced `for`, enums, generics |
+| **Scheme / Racket** | Macro expansion to fully expanded core forms | `let`, `cond`, `and`/`or` -> `lambda`/`if` |
+| **Lean / Coq / Idris** | "Elaboration" to a small kernel calculus | `do`, implicit args, classes, tactics |
+| **Swift** | SILGen (AST -> SIL) | `guard`, optional chaining, `defer` |
+
+Scala, C#, Kotlin, OCaml, Clojure and C++ all do the same under their
+own names. In every one of them the sugar is what people write and the
+core is what the machine reasons about, and the core stays small
+because that is what makes the reasoning tractable.
+
+The tables above are that table, for data mining. The left column is
+what gets written on a grant application. The right column is what
+runs.
 
 ### The hole this table found
 
