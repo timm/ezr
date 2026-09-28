@@ -36,7 +36,9 @@ Options:
  
 import os, random, re, sys, traceback
 from math import exp, log, log2, pi, sqrt
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
+
+sys.dont_write_bytecode = True # never write __pycache__
 
 # Used everywhere, defined late (see misc and start sections):
 # `o` (dicts with attribute access), `say` (pretty printer),
@@ -79,7 +81,7 @@ type TBL  = o # rows:ROWS, cols:{at:COL}, x:[at],
 type NODE = list # [edge, n, mid, ymids, go, left, right]
 type FUN  = Callable
 
-def sd(col): return 0 if col[0] < 2 else sqrt(col[2]/(col[0]-1))
+def sd(col): return 0 if col[0] < 2 else sqrt(max(0,col[2])/(col[0]-1))
 
 def size(col):
   return sum(col.values()) if type(col) is Sym else col[0]
@@ -105,13 +107,16 @@ def mids(tbl): # x centroid; cached until rows change
 # Populate data.
 
 def add(col, v:ATOM, inc=1) -> COL: # new Num or Sym; -1 undoes
-  if v == "?": return col
-  if type(col) is Sym: col[v] = col.get(v, 0) + inc; return col
-  n, mu, m2 = col
-  n += inc
-  d = v - mu
-  mu += inc * d / max(1, n)
-  return (n, mu, max(0, m2 + inc * d * (v - mu)))
+  if v != "?": 
+    if type(col) is Sym: 
+      col[v] = max(0,col.get(v,0) + inc)
+    else:
+      n, mu, m2 = col
+      if (n := n + inc) < 1: return Num() # emptied 
+      d = v - mu
+      mu += inc * d / n
+      col = (n, mu, m2 + inc * d * (v - mu))
+  return col
 
 def adds(lst, it:COL=None) -> COL: # accumulate a list into it
   if it is None: it = Num()   # NB: "it or Num()" would
@@ -126,19 +131,22 @@ def addRow(tbl, row=None, inc=1) -> ROW: # inc=-1 pops last row
     tbl.cols[at] = add(tbl.cols[at], row[at], inc)
   return row
 
-def Tbl(src):
+def Tbl(src:Iterable[ROW]) -> TBL: # return TBL build from rows
   src = iter(src)
   tbl = o(rows=[], cols={}, x=[], y={}, names=next(src),
           klass=None, _mids=None)
+  _tblHeader(tbl)
+  for row in src: addRow(tbl, row)
+  return tbl
+
+def _tblHeader(tbl:TBL) -> None: # install table header
   for at, s in enumerate(tbl.names):
     if not s.endswith("X"):
       tbl.cols[at] = Num() if s[0].isupper() else Sym()
       if   s[-1] == "!":  tbl.klass = at
       elif s[-1] in "+-": tbl.y[at] = s[-1] == "+"
       else: tbl.x.append(at)
-  for row in src: addRow(tbl, row)
-  return tbl
-
+     
 def clone(tbl, rows=[]): return Tbl([tbl.names] + rows)
 
 
@@ -384,6 +392,18 @@ def test_same():
   z = [random.gauss(11, 1) for _ in range(40)]
   assert same(x, y) and not same(x, z)
   print(f"same {same(x, y)} diff {not same(x, z)}")
+
+def test_delta():
+  "How much acquire beats random picks (0 if same)"
+  tbl = Tbl(csv(the.File))                        # lower ydist=better
+  smart = [ydist(tbl, acquire(tbl)[0])            # acquire's best row
+           for _ in range(the.Repeats)]
+  dumb  = [min(ydist(tbl, r) for r in            # best of Stop randoms
+               random.sample(tbl.rows, the.Stop))
+           for _ in range(the.Repeats)]
+  delta = 0 if same(smart, dumb) else mean(dumb) - mean(smart)
+  print(f"acquire {say(mean(smart))} random {say(mean(dumb))}"
+        f" delta {say(delta)}")
 
 
 # -- start ------------------------------------------------
