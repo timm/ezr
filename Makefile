@@ -77,6 +77,18 @@ CSVS = ls $(HOME)/gits/moot/optimize/*/*.csv | sort -R | xargs -P 24 -I{} sh -c
 	@$(CSVS) 'python3 -B ezr.py -File "{}" --holdout' | tee $@
 	@cut -d \  -f 2 $@ | sort -n | fmt -71
 
+Par ?= $(shell sysctl -n hw.ncpu 2>/dev/null || nproc) # parallel jobs
+Do  ?= --tree                                          # demo to time
+
+runtime: ok ## time parallel sweep over all optimize data (Par= Do=)
+	@mkdir -p ~/tmp
+	@n=$$(ls $(HOME)/gits/moot/optimize/*/*.csv | wc -l | tr -d ' '); \
+	 echo "sweep: $$n datasets, -P$(Par), $(Do)"; \
+	 time ( ls $(HOME)/gits/moot/optimize/*/*.csv \
+	        | xargs -P $(Par) -I{} python3 -B ezr.py -File "{}" $(Do) \
+	          >~/tmp/runtime.log 2>&1 )
+	@echo "-> ~/tmp/runtime.log ($$(wc -l <~/tmp/runtime.log | tr -d ' ') lines)"
+
 runs: ## run random test loop
 	@mkdir -p ~/tmp
 	bash $(ETC)/runs.sh | tee ~/tmp/runs.log
