@@ -84,9 +84,8 @@ def mids(tbl):
 
 def div(col):
   "Spread: entropy, or standard deviation."
-  if "has" in col:
-    return -sum(v/col.n * log2(v/col.n) for v in col.has.values())
-  return col.sd                       # kept fresh by `add`
+  return (-sum(v/col.n * log2(v/col.n) for v in col.has.values())
+          if "has" in col else col.sd)  # sd kept fresh by `add`
 
 def norm(col, v):
   "To 0..1, by the logistic curve.  Symbols do not scale."
@@ -129,8 +128,7 @@ def ydist(tbl, row):
 def gap(col, a, b):
   "Distance between two values of one column."
   if a == "?" or b == "?": return 1    # unknown = far
-  if "has" in col: return a != b
-  return abs(norm(col,a) - norm(col,b))
+  return a != b if "has" in col else abs(norm(col,a) - norm(col,b))
 
 def xdist(tbl, r1, r2):
   "How far apart two rows are, over the x columns."
@@ -191,9 +189,8 @@ def tree(tbl, rows):
     at, v, go = found
     yes = [r for r in rows if go(r)]
     no  = [r for r in rows if not go(r)]
-    if len(yes) >= the.Leaf and len(no) >= the.Leaf:
-      node.at, node.v, node.go = at, v, go
-      node.kids = [tree(tbl, yes), tree(tbl, no)]
+    node.at, node.v, node.go = at, v, go   # cut kept both sides big
+    node.kids = [tree(tbl, yes), tree(tbl, no)]
   return node
 
 def leaf(node, row):
