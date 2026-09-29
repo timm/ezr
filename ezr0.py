@@ -79,9 +79,8 @@ def mid(col):
   return max(col.has,key=col.has.get) if "has" in col else col.mu
 
 def mids(tbl):
-  "A row-shaped list of every column's middle."
-  return [mid(tbl.cols[at]) if at in tbl.cols else "?"
-          for at in range(len(tbl.names))]
+  "Every column's middle, keyed by column index."
+  return {at: mid(col) for at, col in tbl.cols.items()}
 
 def div(col):
   "Spread: entropy, or standard deviation."
@@ -144,16 +143,15 @@ def acquire(tbl, cap=None):
   cap  = cap or the.Stop
   todo = random.sample(tbl.rows, len(tbl.rows))[:the.Few]
   done = [todo.pop() for _ in range(the.Start)]
+  both = clone(tbl, done)           # only the rows we bought:
   while todo and len(done) < cap:
-    both = clone(tbl, done)         # only the rows we bought:
     done.sort(key=lambda r: ydist(both, r))   # no y leak
     n = int(sqrt(len(done)))              # the good ones
-    best, rest = clone(tbl, done[:n]), clone(tbl, done[n:])
-    b, r = mids(best), mids(rest)
+    b = mids(clone(tbl, done[:n]))
+    r = mids(clone(tbl, done[n:]))
     want, *todo = sorted(todo, reverse=True,
                    key=lambda z: xdist(tbl,z,r) - xdist(tbl,z,b))
-    done += [want]
-  both = clone(tbl, done)
+    done += [want]; addRow(both, want)  # both only grows
   return sorted(done, key=lambda r: ydist(both, r))
 
 def grabs(tbl, cap=None):
