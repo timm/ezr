@@ -8,6 +8,7 @@ Options:
       -Start=4         acquire: initial random labels
       -Stop=50         acquire: total labelling budget
       -Few=128         holdout: max training rows
+      -Cuts=8          tree: splits to try, per num
       -Leaf=4          tree: min rows in any leaf
       -Check=5         holdout: top picks to label
       -Repeats=20      holdout: how many train/test splits
@@ -117,7 +118,7 @@ def clone(tbl, rows=[]):
 #-- distance -----------------------------------------------
 def minkowski(vs, n):
   "Root mean square of N gaps."
-  return (sum(v*v for v in vs) / n) ** .5
+  return sqrt(sum(v*v for v in vs) / n)
 
 def ydist(tbl, row):
   "How far ROW's goals are from the best they could be."
@@ -140,17 +141,16 @@ def acquire(tbl, cap=None):
   "Label near the best rows, far from the rest.  Best first."
   cap  = cap or the.Stop
   todo = random.sample(tbl.rows, len(tbl.rows))[:the.Few]
-  done = [todo.pop() for _ in range(the.Start)]
-  both = clone(tbl, done)           # only the rows we bought:
-  while todo and len(done) < cap:
-    done.sort(key=lambda r: ydist(both, r))   # no y leak
-    n = int(sqrt(len(done)))              # the good ones
-    b = mids(clone(tbl, done[:n]))
-    r = mids(clone(tbl, done[n:]))
+  both = clone(tbl, [todo.pop() for _ in range(the.Start)])
+  while todo and len(both.rows) < cap:   # only the rows we bought:
+    both.rows.sort(key=lambda r: ydist(both, r))  # no y leak
+    n = int(sqrt(len(both.rows)))         # the good ones
+    b = mids(clone(tbl, both.rows[:n]))
+    r = mids(clone(tbl, both.rows[n:]))
     want, *todo = sorted(todo, reverse=True,
                    key=lambda z: xdist(tbl,z,r) - xdist(tbl,z,b))
-    done += [want]; addRow(both, want)  # both only grows
-  return sorted(done, key=lambda r: ydist(both, r))
+    addRow(both, want)                    # both only grows
+  return sorted(both.rows, key=lambda r: ydist(both, r))
 
 def grabs(tbl, cap=None):
   "The straw man: same budget, taken at random."
@@ -165,21 +165,23 @@ def cut(tbl, rows):
   out, least = None, 1e30
   for at in tbl.x:
     for v, go in candidates(tbl.cols[at], rows, at):
-      a = adds(y for r,y in zip(rows,ys) if go(r))
-      b = adds(y for r,y in zip(rows,ys) if not go(r))
+      a, b = Num(), Num()   # one pass, so one `go` per row
+      for r,y in zip(rows,ys): add(a if go(r) else b, y)
       if a.n >= the.Leaf and b.n >= the.Leaf:
         s = (div(a)*a.n + div(b)*b.n) / (a.n + b.n)
         if s < least: out, least = (at, v, go), s
   return out
 
 def candidates(col, rows, at):
-  "What splits to try: one per symbol, or one per num col."
+  "What splits to try: one per symbol, or CUTS per num."
   if "has" in col:
     for v in sorted({r[at] for r in rows if r[at] != "?"}):
       yield v, lambda r,v=v,at=at: r[at] == v
-  else:
-    yield col.mu, (lambda r,v=col.mu,at=at:
-                   r[at] != "?" and r[at] <= v)
+  else:                # by rank, not value: THESE rows are dense
+    xs = sorted(r[at] for r in rows if r[at] != "?")
+    k  = max(1, len(xs)//the.Cuts)     # cuts, spaced by rank
+    for v in xs[k-1:-1:k]:
+      yield v, (lambda r,v=v,at=at: r[at] != "?" and r[at] <= v)
 
 def tree(tbl, rows):
   "Split while a split keeps both sides big enough."
@@ -187,8 +189,8 @@ def tree(tbl, rows):
            mu=sum(ydist(tbl,r) for r in rows)/len(rows))
   if len(rows) > the.Leaf and (found := cut(tbl, rows)):
     at, v, go = found
-    yes = [r for r in rows if go(r)]
-    no  = [r for r in rows if not go(r)]
+    yes, no = [], []
+    for r in rows: (yes if go(r) else no).append(r)
     node.at, node.v, node.go = at, v, go   # cut kept both sides big
     node.kids = [tree(tbl, yes), tree(tbl, no)]
   return node
