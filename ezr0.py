@@ -20,6 +20,7 @@ import os, re, sys, random, traceback
 from math import exp, log2, sqrt
 
 #-- misc ---------------------------------------------------
+
 def say(x, p=2):
   "Floats get P decimals; dicts list their keys."
   if type(x) is float: 
@@ -49,6 +50,7 @@ def csv(file):
 
 #-- columns ------------------------------------------------
 # A column is a Num or a Sym.  Sym has `has`; Num does not.
+
 def Num(at=0, txt=" "):
   return o(at=at, txt=txt, n=0, mu=0, m2=0, sd=0,
            goal=0 if txt[-1] == "-" else 1)
@@ -56,16 +58,16 @@ def Num(at=0, txt=" "):
 def Sym(at=0, txt=" "):
   return o(at=at, txt=txt, n=0, has={})
 
-def add(col, v):
-  "Show V to COL.  `?` means unknown, so it changes nothing."
+def add(col, v, inc=1):
+  "Show V to COL.  INC=-1 takes it away.  `?` changes nothing."
   if v != "?":
-    col.n += 1
+    col.n += inc
     if "has" in col:
-      col.has[v] = col.has.get(v, 0) + 1
+      col.has[v] = col.has.get(v, 0) + inc
     else:
       d = v - col.mu                      # Welford, for `div`
-      col.mu += d / col.n
-      col.m2 += d * (v - col.mu)
+      col.mu += inc * d / max(1, col.n)
+      col.m2  = max(0, col.m2 + inc * d * (v - col.mu))
       col.sd  = 0 if col.n < 2 else (col.m2/(col.n-1))**.5
   return v
 
@@ -95,6 +97,7 @@ def norm(col, v):
   return 1 / (1 + exp(-1.7 * z))
 
 #-- tables -------------------------------------------------
+
 def Tbl(src):
   "Header names the columns: X skip, +- goal, ! klass."
   src = iter(src)
@@ -107,8 +110,13 @@ def Tbl(src):
   return tbl
 
 def addRow(tbl, row):
+  "Keep ROW, and show it to my columns."
   tbl.rows += [row]
-  for at, col in tbl.cols.items(): add(col, row[at])
+  return addCols(tbl, row)
+
+def addCols(tbl, row, inc=1):
+  "Show ROW to my columns, without keeping it."
+  for at, col in tbl.cols.items(): add(col, row[at], inc)
   return row
 
 def clone(tbl, rows=[]):
@@ -116,6 +124,7 @@ def clone(tbl, rows=[]):
   return Tbl([tbl.names] + rows)
 
 #-- distance -----------------------------------------------
+
 def minkowski(vs, n):
   "Root mean square of N gaps."
   return sqrt(sum(v*v for v in vs) / n)
@@ -137,19 +146,22 @@ def xdist(tbl, r1, r2):
                     for at in tbl.x), len(tbl.x))
 
 #-- acquire ------------------------------------------------
+
 def acquire(tbl, cap=None):
   "Label near the best rows, far from the rest.  Best first."
   cap  = cap or the.Stop
   todo = random.sample(tbl.rows, len(tbl.rows))[:the.Few]
   both = clone(tbl, [todo.pop() for _ in range(the.Start)])
-  while todo and len(both.rows) < cap:   # only the rows we bought:
-    both.rows.sort(key=lambda r: ydist(both, r))  # no y leak
-    n = int(sqrt(len(both.rows)))         # the good ones
-    b = mids(clone(tbl, both.rows[:n]))
-    r = mids(clone(tbl, both.rows[n:]))
-    want, *todo = sorted(todo, reverse=True,
-                   key=lambda z: xdist(tbl,z,r) - xdist(tbl,z,b))
-    addRow(both, want)                    # both only grows
+  done = sorted(both.rows, key=lambda r: ydist(both, r))
+  n    = int(sqrt(len(done)))
+  best, rest = clone(tbl, done[:n]), clone(tbl, done[n:])
+  while todo and len(both.rows) < cap:
+    b, r = mids(best), mids(rest)
+    todo.sort(key=lambda z: xdist(tbl,z,r) - xdist(tbl,z,b))
+    addRow(best, addRow(both, todo.pop()))
+    best.rows.sort(key=lambda z: ydist(both, z))  # no y leak
+    if len(best.rows) > sqrt(len(both.rows)): # best stays small
+      addRow(rest, addCols(best, best.rows.pop(), -1))
   return sorted(both.rows, key=lambda r: ydist(both, r))
 
 def grabs(tbl, cap=None):
@@ -159,6 +171,7 @@ def grabs(tbl, cap=None):
 
 #-- tree ---------------------------------------------------
 # A node is o(rows, at, v, go, kids, mu).
+
 def cut(tbl, rows):
   "The (at, v, go) whose two sides have the tightest ys."
   ys = [ydist(tbl, r) for r in rows]
@@ -219,6 +232,7 @@ def show(tbl, node, pre=None, edge=""):
   walk(node, pre, edge)
 
 #-- holdout ------------------------------------------------
+
 def wins(tbl):
   "100 at the best row, 0 at an average one."
   ys = sorted(ydist(tbl, r) for r in tbl.rows)
@@ -268,6 +282,7 @@ def same(xs, ys, eps=0):
   return cliffs(xs,ys) and ks(xs,ys) and cohen(xs,ys,eps=eps)
 
 #-- demos --------------------------------------------------
+
 def eg_h():
   "Show the options and the demos."
   print(__doc__, "Demos:", *[f"  --{k[3:]:<9} {f.__doc__}"
@@ -336,6 +351,7 @@ def eg_all():
                 if k[:3]=="eg_" and f is not eg_all))
 
 #-- start --------------------------------------------------
+
 the = o(_defaults=o())
 for k, v in re.findall(r"(\w+)=(\S+)", __doc__ or ""):
   the[k] = the._defaults[k] = atom(v)
