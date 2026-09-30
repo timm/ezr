@@ -96,7 +96,7 @@ def norm(col, v):
   z = max(-3, min(3, (v - col.mu) / (1e-32 + div(col))))
   return 1 / (1 + exp(-1.7 * z))
 
-#-- tables -------------------------------------------------
+#-- tables -------------------------------------------------
 
 def Tbl(src):
   "Header names the columns: X skip, +- goal, ! klass."
@@ -148,13 +148,13 @@ def xdist(tbl, r1, r2):
 #-- acquire ------------------------------------------------
 
 def acquire(tbl, cap=None):
-  "Label near the best rows, far from the rest.  Best first."
+  "Label near the best rows, far from the rest."
   cap  = cap or the.Stop
   todo = random.sample(tbl.rows, len(tbl.rows))[:the.Few]
   both = clone(tbl, [todo.pop() for _ in range(the.Start)])
-  done = sorted(both.rows, key=lambda r: ydist(both, r))
-  n    = int(sqrt(len(done)))
-  best, rest = clone(tbl, done[:n]), clone(tbl, done[n:])
+  both.rows.sort(key=lambda r: ydist(both, r))
+  n    = int(sqrt(the.Start))
+  best, rest = clone(tbl, both.rows[:n]), clone(tbl, both.rows[n:])
   while todo and len(both.rows) < cap:
     b, r = mids(best), mids(rest)
     todo.sort(key=lambda z: xdist(tbl,z,r) - xdist(tbl,z,b))
@@ -162,14 +162,14 @@ def acquire(tbl, cap=None):
     best.rows.sort(key=lambda z: ydist(both, z))  # no y leak
     if len(best.rows) > sqrt(len(both.rows)): # best stays small
       addRow(rest, addCols(best, best.rows.pop(), -1))
-  return sorted(both.rows, key=lambda r: ydist(both, r))
+  return both.rows
 
 def grabs(tbl, cap=None):
   "The straw man: same budget, taken at random."
   cap = cap or the.Stop
   return random.sample(tbl.rows, min(cap, len(tbl.rows)))
 
-#-- tree ---------------------------------------------------
+#-- tree ---------------------------------------------------
 # A node is o(rows, at, v, go, kids, mu).
 
 def cut(tbl, rows):
@@ -281,7 +281,7 @@ def same(xs, ys, eps=0):
   xs, ys = sorted(xs), sorted(ys)
   return cliffs(xs,ys) and ks(xs,ys) and cohen(xs,ys,eps=eps)
 
-#-- demos --------------------------------------------------
+#-- demos --------------------------------------------------
 
 def eg_h():
   "Show the options and the demos."
@@ -350,7 +350,7 @@ def eg_all():
                 for k,f in list(globals().items())
                 if k[:3]=="eg_" and f is not eg_all))
 
-#-- start --------------------------------------------------
+#-- start --------------------------------------------------
 
 the = o(_defaults=o())
 for k, v in re.findall(r"(\w+)=(\S+)", __doc__ or ""):
