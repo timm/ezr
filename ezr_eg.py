@@ -1,330 +1,403 @@
-#!/usr/bin/env python3 -B
+#!/usr/bin/env python3
 """
-ezr_eg.py: more demos for ezr.py (clustering, optimizers)
+ezr_eg.py: demos for ezr.py.  Try  ./ezr_eg.py --h
 (c) 2026 Tim Menzies <timm@ieee.org> MIT license
-
-Which file? ezr.py keeps the shared core: whatever two or
-more learners ask questions of (columns, distances, one
-update primitive, plus the checks and reports that let
-the code judge itself). This file keeps the sugar: each
-learner here is a short translation onto that core. When
-a def here is needed by two other learners, it has earned
-its move to ezr.py.
-
-Options: see ezr.py (all settings live in one place).
 """
-import random, sys
+
+# pylint: disable=bad-indentation,multiple-statements
+# pylint: disable=invalid-name,broad-exception-caught
+# pylint: disable=wildcard-import,unused-wildcard-import
+# pylint: disable=too-many-locals,missing-function-docstring
+# pylint: disable=protected-access
+
+import os, sys, random # pylint: disable=C0410
+import ezr
 from ezr import *
 
+the.Eras, the.Draws = 4, 20
+the.Klass = "~/gits/moot/classify/diabetes.csv"
+the._defaults.update(Eras=4, Draws=20, Klass=the.Klass)
 
-#-- cluster -----------------------------------------------
+def eg_h() -> None:
+  "Show the options and the demos."
+  print(ezr.__doc__, "Demos:", *[f"  --{k[3:]:<9} {f.__doc__}"
+        for k,f in globals().items() if k[:3]=="eg_"], sep="\n")
 
-# Group rows by x-distance, no labels needed. kmeans [1]
-# loops: send each row to its nearest centroid, then recompute
-# centroids. kpp [2] picks better starting seeds: each new
-# seed is chosen with probability proportional to its distance
-# from the seeds picked so far. nearest [3] is 1-nn lookup.
-def kmeans(tbl, rows): # [1]
-  cents = random.sample(rows, the.K)
-  for _ in range(the.N):
-    ds = [clone(tbl) for _ in cents]
-    for r in rows:
-      j = min(range(len(cents)),
-              key=lambda i: xdist(tbl, r, cents[i]))
-      addRow(ds[j], r)
-    ds = [d for d in ds if d.rows]
-    cents = [mids(d) for d in ds]
-  return ds
+def eg_num() -> None:
+  "Welford matches the textbook mean and sd."
+  c = adds([2,4,4,4,5,5,7,9])
+  assert c.n==8 and mid(c)==5 and abs(div(c)-2.138) < .01
+  print(say(c))                      # also checks __repr__
 
-def kpp(tbl, rows, k=None, few=256): # [2] kmeans++ seeds
-  rows = random.sample(rows, min(few, len(rows)))
-  out = [random.choice(rows)]
-  while len(out) < (k or the.K):
-    ws = [min(xdist(tbl, r, c)**2 for c in out) for r in rows]
-    out.append(random.choices(rows, weights=ws)[0])
-  return out
+def eg_sym() -> None:
+  "Syms count; mid is the mode, div is entropy."
+  c = adds("aabbbc", Sym())
+  assert c.has["b"]==3 and mid(c)=="b" and abs(div(c)-1.459)<.01
+  print(f"mode {mid(c)} ent {say(div(c))}")
 
-def nearest(tbl, row, rows): # [3]
-  return min(rows, key=lambda r: xdist(tbl, r, row))
+def eg_tbl() -> None:
+  "The header routes each column."
+  t = Tbl([["Age","job!","SkipX","Weight-"],[2,"a",3,80]])
+  assert [c.at for c in t.x]==[0] and [c.at for c in t.y]==[1,3]
+  print(f"x {[c.at for c in t.x]} y {[c.at for c in t.y]}")
 
+def eg_dist() -> None:
+  "A row is nearest itself, and ydist orders the data."
+  t  = Tbl(csv(the.File))
+  r  = t.rows[0]
+  assert xdist(t,r,r) == 0
+  ys = sorted(ydist(t,r) for r in t.rows)
+  print(f"ydist best {say(ys[0])} mid {say(ys[len(ys)//2])}"
+        f" worst {say(ys[-1])}")
 
-#-- optimize ----------------------------------------------
+def eg_tree() -> None:
+  "Acquire, then grow and show a tree."
+  t   = Tbl(csv(the.File))
+  lab = clone(t, acquire(t))
+  show(lab, tree(lab, lab.rows))
 
-# Search for good rows without labelling everything. pick [1]
-# samples a plausible value for one column. oneplus1 [2] is
-# the 1+1 evolution strategy: mutate the current solution,
-# keep the mutant if accepted, remember the best ever seen.
-# Two customizations: ls [3] accepts only improvements (and
-# restarts when stuck); sa [4] is simulated annealing, which
-# sometimes accepts worse solutions, less so as time runs out.
-# de [6] is differential evolution: build a candidate by
-# interpolating [5] between three population members (per
-# column, a + f*(b-c), applied with probability cr); keep the
-# candidate if it beats the member it challenges.
-def pick(col, v=None): # [1] sample a plausible value
-  if type(col) is Sym:
-    return random.choices(list(col), col.values())[0]
-  mu = col[1] if v is None or v == "?" else v
-  lo, hi = col[1] - 3*sd(col), col[1] + 3*sd(col)
-  new = mu + sd(col)*2*(random.random() + random.random()
-                        + random.random() - 1.5)
-  return lo + (new - lo) % (hi - lo + 1e-32)
+def eg_same() -> None:
+  "The stats tell noise from signal."
+  x = [random.gauss(10,1) for _ in range(40)]
+  y = [random.gauss(10,1) for _ in range(40)]
+  z = [random.gauss(11,1) for _ in range(40)]
+  assert same(x,y) and not same(x,z) and same(x,x)
+  print(f"same {same(x,y)} differ {not same(x,z)}")
 
-def oneplus1(tbl, mutate, accept, oracle, restart=0): # [2]
-  s, e, h, imp, best, be = None, 1e32, 0, 0, None, 1e32
-  s = random.choice(tbl.rows)
-  while h < the.budget:
-    for sn in mutate(s):
-      h += 1
-      en = oracle(sn)
-      if accept(en, e, h, the.budget): s, e = sn, en
-      if en < be: best, be, imp = sn, en, h
-      if restart and h - imp > restart:
-        s, e = random.choice(tbl.rows), 1e32
-      if h >= the.budget: break
-  return best
+def eg_holdout() -> None:
+  "Mean win over REPEATS holdouts."
+  t = Tbl(csv(the.File)); w = wins(t)
+  ws = sorted(round(w(holdout(t))) for _ in range(the.Repeats))
+  print(
+    f"{round(sum(ws)/len(ws)):>4} {os.path.basename(the.File)}")
 
-def ls(tbl, oracle, p=0.5, tries=20): # [3] local search
-  def mutate(s):
-    at = random.choice(tbl.x)
-    for _ in range(tries):
-      s2 = list(s); s2[at] = pick(tbl.cols[at], s[at])
-      yield tuple(s2)
-  return oneplus1(tbl, mutate, lambda en, e, *_: en < e,
-                  oracle, the.restart)
+def eg_vs() -> None:
+  "Acquire versus random, same budget.  0 if the same."
+  t = Tbl(csv(the.File)); w = wins(t)
+  a = [w(holdout(t, acquire)) for _ in range(the.Repeats)]
+  b = [w(holdout(t, grabs))   for _ in range(the.Repeats)]
+  d = 0 if same(a,b) else round(sum(a)/len(a) - sum(b)/len(b))
+  print(f"{round(sum(a)/len(a)):>4} {round(sum(b)/len(b)):>4}"
+        f" {d:>4} {os.path.basename(the.File)}")
 
-def sa(tbl, oracle, m=0.5): # [4] 1983 simulated annealing
-  def accept(en, e, h, b):
-    return en < e or random.random() < exp(
-      (e - en) / (1 - h/b + 1e-32))
-  def mutate(s):
-    s2 = list(s)
-    for at in tbl.x:
-      if random.random() < m:
-        s2[at] = pick(tbl.cols[at], s2[at])
-    yield tuple(s2)
-  return oneplus1(tbl, mutate, accept, oracle)
+#-- optimize ------------------------------------------------
+# de is differential evolution (storn+price 1997): build a
+# candidate by interpolating between three population members
+# (per x column, a + f*(b-c), applied with probability cr);
+# keep the candidate if it beats the member it challenges.
 
-def interpolate(col, a, b, c, f=0.5): # [5] DE crossover term
-  if type(col) is Sym or "?" in (a, b, c):
+def interpolate(col: COL, a: ATOM, b: ATOM, c: ATOM,
+                f: float = 0.5) -> ATOM:
+  "DE crossover term.  Syms, or unknowns, just pick one."
+  if "has" in col or "?" in (a, b, c):
     return random.choice([a, b, c])
   return a + f*(b - c)
 
-def de(tbl, oracle, np=20, cr=0.9): # [6] storn+price 1997
-  pop = random.sample(tbl.rows, np)
-  es = [oracle(s) for s in pop]
-  h = np
-  while h < the.budget:
+def de(tbl: TBL, score: Callable[[ROW], float],
+       np: int = 20, cr: float = 0.9) -> ROW:
+  "Differential evolution.  Lower SCOREs are better."
+  pop = [r[:] for r in random.sample(tbl.rows, np)]
+  es  = [score(r) for r in pop]
+  h   = np
+  while h < the.Stop:
     for i, s in enumerate(pop):
-      if h >= the.budget: break
+      if h >= the.Stop: break
       a, b, c = random.sample(pop, 3)
-      sn = list(s)
-      for at in tbl.x:
-        if random.random() < cr:
-          sn[at] = interpolate(tbl.cols[at], a[at], b[at], c[at])
-      en = oracle(tuple(sn)); h += 1
-      if en < es[i]: pop[i], es[i] = tuple(sn), en
+      sn   = s[:]
+      keep = random.choice(tbl.x).at   # sn keeps >= 1 of s
+      for col in tbl.x:
+        if col.at != keep and random.random() < cr:
+          sn[col.at] = interpolate(col, a[col.at],
+                                   b[col.at], c[col.at])
+      en = score(sn); h += 1
+      if en < es[i]: pop[i], es[i] = sn, en
   return pop[es.index(min(es))]
 
-#-- bayes -------------------------------------------------
+def eg_de() -> None:
+  "DE, budget Stop, scored by a nearest-neighbor oracle."
+  t = Tbl(csv(the.File)); w = wins(t)
+  known = random.sample(t.rows, the.Few)
+  def near(r: ROW) -> ROW:
+    return min(known, key=lambda z: xdist(t, r, z))
+  got = near(de(t, lambda r: ydist(t, near(r))))
+  print(f"de win {round(w(got))}")
 
-# Naive Bayes, used two ways: to pick which row to label next
-# (bayes [4], acquireBayes [5]) and to classify (next
-# section). like [1] scores one value against one column;
-# likes [2] adds the logs of those scores across a row's x
-# columns; liked [3] asks several tables "who most likes this
-# row?".
-def like(col, v, prior=0): # [1] P(v | col)
-  if type(col) is Sym:
-    return ((col.get(v, 0) + the.m * prior)
-            / (size(col) + the.m + 1e-32))
-  s = sd(col) + 1e-32
-  return exp(-(v-col[1])**2 / (2*s*s)) / sqrt(2*pi*s*s)
+#-- how: missing primitives ---------------------------------
+# Section 6 of how.md: the cost. Here it is, paid.
 
-def likes(tbl, row, nall, nh): # [2] log P(tbl|row), unscaled
-  prior = (len(tbl.rows) + the.k) / (nall + the.k * nh)
-  return log(prior) + sum(
-    log(1e-32 + like(tbl.cols[at], v, prior))
-    for at in tbl.x if (v := row[at]) != "?")
+def middles(tbl: TBL, ats=None) -> MIDS:
+  "Mids of all columns (or just ATS), keyed by position."
+  return {at: mid(c) for at, c in tbl.cols.items()
+          if ats is None or at in ats}
 
-def liked(tbls, row): # [3] most likely of several tables
-  n = sum(len(t.rows) for t in tbls.values())
-  return max(tbls, key=lambda k:likes(tbls[k],row,n,len(tbls)))
+def sample(col: COL) -> ATOM:
+  "Generate: one plausible value from COL."
+  if "has" in col:
+    return random.choices(list(col.has),
+                          weights=col.has.values())[0]
+  return random.gauss(col.mu, col.sd)
 
-def bayes(tbl, best, rest): # [4] most likely best
-  def score(z):
-    n = len(best.rows) + len(rest.rows)
-    return likes(best, z, n, 2) - likes(rest, z, n, 2)
-  return score
+def delta(a: COL, b: COL):
+  "Extrapolate: A earlier, B later; guess the next era."
+  if "has" in a:
+    u  = {**a.has, **b.has}
+    pa = {v: a.has.get(v,0)/max(1,a.n) for v in u}
+    pb = {v: b.has.get(v,0)/max(1,b.n) for v in u}
+    p  = {v: max(0, 2*pb[v] - pa[v]) for v in u}
+    n  = sum(p.values()) or 1
+    return {v: c/n for v, c in p.items() if c > 0}
+  n = max(2, round(2*b.n - a.n))
+  s = max(0, 2*b.sd - a.sd)
+  return o(at=b.at, txt=b.txt, n=n, mu=2*b.mu - a.mu,
+           m2=s*s*(n-1), sd=s)
 
-def acquireBayes(tbl, cap=None): # [5] label most-likely-best
-  return acquire(tbl, cap, bayes)
+def project(tbl: TBL, a: ROW, b: ROW):
+  "Place rows on the line from pole A to pole B."
+  c = xdist(tbl, a, b) + 1e-32
+  return lambda r: (xdist(tbl,a,r)**2 + c*c
+                    - xdist(tbl,b,r)**2) / (2*c)
 
-#-- classify ----------------------------------------------
+def halve(tbl: TBL, rows=None, stop=None) -> list:
+  "Cluster: recursive halving between poles; no y values."
+  stop = stop or the.Leaf
+  def go(rows):
+    if len(rows) <= stop: return [clone(tbl, rows)]
+    a = max(rows, key=lambda r: xdist(tbl, r, rows[0]))
+    b = max(rows, key=lambda r: xdist(tbl, r, a))
+    rows = sorted(rows, key=project(tbl, a, b))
+    n = len(rows) // 2
+    return go(rows[:n]) + go(rows[n:])
+  return go(list(tbl.rows if rows is None else rows))
 
-# The optimizer's parts, reused for classification. confuse
-# [1] turns (got, want) pairs into per-class accuracy, recall
-# (pd), false alarm (pf) and precision. fitTree [2] and
-# fitBayes [3] are rival classifiers built from ezr.py's trees
-# and this file's bayes. _klass [4] races fits over the same
-# train/test splits, printing one confusion report per fit.
-def confuse(pairs): # [1] (got, want)s --> per-klass scores
-  out = {}
-  for got, want in pairs:
-    for x in [got, want]:
-      out[x] = out.get(x) or o(l=x, tp=0, fp=0, fn=0)
-    if got == want: out[want].tp += 1
-    else:           out[want].fn += 1; out[got].fp += 1
-  for c in out.values():
-    c.tn   = len(pairs) - c.tp - c.fn - c.fp
-    c.acc  = (c.tp + c.tn) / len(pairs)
-    c.pd   = c.tp / (c.tp + c.fn + 1e-32)
-    c.pf   = c.fp / (c.fp + c.tn + 1e-32)
-    c.prec = c.tp / (c.tp + c.fp + 1e-32)
+def xats(tbl: TBL) -> list:
+  "Positions of the x columns."
+  return [c.at for c in tbl.x]
+
+def klass(tbl: TBL):
+  "Position of the `!` column, or None."
+  return next((c.at for c in tbl.y if c.txt[-1]=="!"), None)
+
+def targets(tbl: TBL) -> list:
+  "The columns predictions should talk about."
+  k = klass(tbl)
+  return [k] if k is not None else [c.at for c in tbl.y]
+
+def ymu(tbl: TBL, rows: ROWS) -> float:
+  "Mean ydist of ROWS."
+  return sum(ydist(tbl, r) for r in rows) / len(rows)
+
+def blank(tbl: TBL) -> ROW:
+  return ["?" for _ in tbl.names]
+
+def eras(tbl: TBL, at: int, n=None) -> list:
+  "Split rows, ordered by column AT, into N equal slices."
+  n    = n or the.Eras
+  rows = sorted((r for r in tbl.rows if r[at] != "?"),
+                key=lambda r: r[at])
+  k    = max(1, len(rows) // n)
+  return [clone(tbl, rows[i*k:(i+1)*k]) for i in range(n)]
+
+#-- how: three ways to aim a primitive at a cluster ---------
+
+def relevant(tbl: TBL, row: ROW, cs: list) -> TBL:
+  "The cluster whose x-centroid is nearest ROW."
+  return min(cs, key=lambda c: xdist(tbl, row, middles(c)))
+
+def DISTINGUISH(tbl: TBL, a: TBL, b: TBL, ats=None):
+  "The x column that best tells cluster A from B."
+  ats = ats or xats(tbl)
+  at  = max(ats, key=lambda at: gap(tbl.cols[at],
+                                    mid(a.cols[at]),
+                                    mid(b.cols[at])))
+  return at, mid(b.cols[at])
+
+def impute(row: ROW, c: TBL, ats) -> ROW:
+  "Write cluster C's expectations into ROW at ATS."
+  return [sample(c.cols[at]) if at in ats else v
+          for at, v in enumerate(row)]
+
+#-- how: the applications -----------------------------------
+
+def SUMMARIZATION(tbl, c=None):
+  return middles(c or tbl)
+
+def CLASSIFICATION(tbl, row, cs):
+  return mid(relevant(tbl, row, cs).cols[klass(tbl)])
+
+def REGRESSION(tbl, row, cs):
+  return middles(relevant(tbl, row, cs),
+                 [c.at for c in tbl.y])
+
+def ANOMALY(tbl, row, cs):
+  return xdist(tbl, row, middles(relevant(tbl, row, cs)))
+
+def RETRIEVAL(tbl, row, cs):
+  return relevant(tbl, row, cs).rows
+
+def SPREAD(tbl, row, cs, n=None): # table's unnamed row
+  c = relevant(tbl, row, cs)
+  return {at: sorted(sample(c.cols[at])
+                     for _ in range(n or the.Draws))
+          for at in targets(tbl)}
+
+def SYNTHESIS(tbl, c):
+  return impute(blank(tbl), c, set(c.cols))
+
+def REPAIR(tbl, row, cs):
+  c = relevant(tbl, row, cs)
+  return impute(row, c,
+                {at for at in c.cols if row[at] == "?"})
+
+def PLANNING(tbl, row, cs, can=None):  # minimal: one column
+  here   = relevant(tbl, row, cs)
+  better = min(cs, key=lambda c: ymu(tbl, c.rows))
+  if better is here: return None
+  at, v = DISTINGUISH(tbl, here, better, can)
+  return (tbl.names[at], row[at], v)
+
+def PLANNING_TOTAL(tbl, row, cs, can=None): # total: all cells
+  better = min(cs, key=lambda c: ymu(tbl, c.rows))
+  return impute(row, better, set(can or xats(tbl)))
+
+def MONITORING(tbl, row, cs, can=None):
+  here  = relevant(tbl, row, cs)
+  worse = max(cs, key=lambda c: ymu(tbl, c.rows))
+  at, v = DISTINGUISH(tbl, here, worse, can)
+  return (tbl.names[at], row[at], v)
+
+def EXPLANATION(tbl, a, b):
+  at, v = DISTINGUISH(tbl, a, b)
+  return f"{tbl.names[at]} = {say(v)}"
+
+def TRENDS(tbl, ers, row, stop=None):
+  return [relevant(tbl, row, halve(e, stop=stop))
+          for e in ers]
+
+def FORECAST(tbl, ers, row, stop=None):
+  cs = TRENDS(tbl, ers, row, stop)
+  return {at: delta(cs[-2].cols[at], cs[-1].cols[at])
+          for at in cs[-1].cols}
+
+def ALERTS(tbl, ers, row, stop=None):
+  cs    = TRENDS(tbl, ers, row, stop)
+  steps = [xdist(tbl, middles(a), middles(b))
+           for a, b in zip(cs, cs[1:])]
+  if len(steps) < 3: return steps, False
+  h = adds(steps[:-1])
+  return steps, steps[-1] > h.mu + 2*h.sd
+
+def SIMULATION(tbl, cs, n=None):   # unseen rows, scored
+  out = []
+  for _ in range(n or the.Draws):
+    r = impute(blank(tbl), random.choice(cs),
+               set(xats(tbl)))
+    out += [(r, REGRESSION(tbl, r, cs))]
   return out
 
-def fitTree(tbl, rows, y): # [2] sqrt-sized leaves
-  the.Leaf = int(sqrt(len(rows)))
-  tt = tree(clone(tbl, rows), rows, y=y)
-  return lambda r: leaf(tt, r)[2]
+def OPTIMIZATION(tbl, budget=None):     # demoed by eg_vs
+  return acquire(tbl, budget or the.Stop)
 
-def fitBayes(tbl, rows, y): # [3] one table per class
-  tbls = {}
-  for r in rows:
-    if y(r) not in tbls: tbls[y(r)] = clone(tbl)
-    addRow(tbls[y(r)], r)
-  return lambda r: liked(tbls, r)
+def DISTINGUISHABILITY(xs, ys):         # demoed by eg_same
+  return same(xs, ys)
 
-def _klass(*fits): # [4] each fit(tbl, rows, y) --> predictor
-  tbl = Tbl(csv(the.Klass))
-  y = lambda r: r[tbl.klass]
-  n = len(tbl.rows) // 2
-  splits = [random.sample(tbl.rows, len(tbl.rows))
-            for _ in range(the.Repeats)] # same splits, all fits
-  def one(fit):
-    accs, pairs = [], []
-    for rows in splits:
-      got = fit(tbl, rows[:n], y)
-      now = [(got(r), y(r)) for r in rows[n:]]
-      pairs += now
-      accs += [sum(g == w for g, w in now) / len(now)]
-    for c in confuse(pairs).values():
-      pc = lambda v: round(100 * v)
-      print(f"{fit.__name__:<10} {pc(c.acc):>3} {pc(c.pd):>3}"
-            f" {pc(c.pf):>3} {pc(c.prec):>4}"
-            f" {tbl.cols[tbl.klass].get(c.l, 0):>6}  {c.l}")
-    return accs
-  print(f"{'rx':<10} {'acc':>3} {'pd':>3} {'pf':>3}"
-        f" {'prec':>4} {'n':>6}  class")
-  return [one(fit) for fit in fits]
+#-- how: demos ----------------------------------------------
 
-#-- start-up ----------------------------------------------
+def _cars():
+  t = Tbl(csv(the.File)); return t, halve(t, stop=16)
 
-# Demos, run from the shell: "ezr_eg --kmeans", or "--all"
-# for everything. "-Key val" flags (from the options above or
-# ezr.py's) may precede any demo; settings reset after each.
-def test_help():
-  "Show usage, settings, demos"
-  print(__doc__, "Demos:\n",
-        *[f"  --{k[5:]:<10} {f.__doc__}"
-          for k, f in globals().items() if k[:5] == "test_"],
-        sep="\n")
+def eg_summarize() -> None:
+  "SUMMARIZATION: the usual values in a cluster."
+  t, cs = _cars()
+  c = min(cs, key=lambda c: ymu(t, c.rows))
+  print(f"best cluster n={len(c.rows)}",
+        {t.names[at]: say(v)
+         for at, v in SUMMARIZATION(t, c).items()})
 
-def test_kmeans():
-  "Cluster the.File; per cluster: n rows, mean ydist"
-  tbl = Tbl(csv(the.File))
-  for d in sorted(kmeans(tbl, tbl.rows),
-                  key=lambda d: ymu(tbl, d.rows)):
-    print(f"{len(d.rows):>4} {round(ymu(tbl, d.rows), 2)}")
+def eg_predict() -> None:
+  "CLASSIFICATION and REGRESSION: one act, two col types."
+  t, cs = _cars()
+  r = t.rows[0]
+  print("regress ", {t.names[at]: say(v) for at, v in
+                     REGRESSION(t, r, cs).items()})
+  print("actual  ", {t.names[c.at]: r[c.at] for c in t.y})
+  d   = Tbl(csv(the.Klass))
+  dcs = halve(d, stop=16)
+  print("classify", CLASSIFICATION(d, d.rows[0], dcs),
+        "actual", d.rows[0][klass(d)])
 
-def test_kpp():
-  "kmeans++ seeds spread wider than random picks"
-  tbl = Tbl(csv(the.File))
-  far = lambda cents: round(sum(
-    xdist(tbl, a, b) for a in cents for b in cents), 1)
-  print(f"random {far(random.sample(tbl.rows, the.K))}"
-        f" kpp {far(kpp(tbl, tbl.rows))}")
+def eg_anomaly() -> None:
+  "ANOMALY DETECTION: prediction's discarded byproduct."
+  t, cs = _cars()
+  ds = sorted((ANOMALY(t, r, cs), i)
+              for i, r in enumerate(t.rows))
+  print(f"typical {say(ds[0][0])}  odd {say(ds[-1][0])}"
+        f"  oddest {t.rows[ds[-1][1]]}")
 
-def test_optimize():
-  "SA vs local search, nearest-neighbor oracle, wins"
-  tbl = Tbl(csv(the.File))
-  win = wins(tbl)
-  known = clone(tbl, random.sample(tbl.rows, 50))
-  def oracle(r):
-    return ydist(tbl, nearest(tbl, r, known.rows))
-  for what in [sa, ls, de]:
-    random.seed(the.Seed)
-    got = nearest(tbl, what(tbl, oracle), known.rows)
-    print(f"{what.__name__:<3} win {round(win(got))}")
+def eg_retrieve() -> None:
+  "RETRIEVAL: the rows, not the summary."
+  t, cs = _cars()
+  print("like", t.rows[0], "->")
+  for r in RETRIEVAL(t, t.rows[0], cs)[:3]:
+    print("   ", r)
 
-def project(rows, x, y, east=None, west=None):
-  far  = lambda r: max(rows, key=lambda z: x(z, r))
-  east = east or far(rows[0])
-  west = west or far(east)
-  if y(east) > y(west): east, west = west, east
-  c = x(east, west) + 1e-32
-  return lambda r: (x(east,r)**2 + c*c - x(west,r)**2)/(2*c)
+def eg_spread() -> None:
+  "SPREAD: a distribution, not a point."
+  t, cs = _cars()
+  r = t.rows[0]
+  c = relevant(t, r, cs)
+  for at, ys in SPREAD(t, r, cs, 40).items():
+    print(f"{t.names[at]:>7} point {say(mid(c.cols[at]))}"
+          f"  10th-90th {say(ys[4])} .. {say(ys[-5])}")
 
-def sway3(rows, y, x, cap, lab=None, east=None, west=None):
-  b4  = rows[:]
-  lab = lab or {}
-  while len(rows) >= 2 * the.Leaf:
-    more = min(4, cap - len(lab))
-    new  = []
-    for r in rows:
-      if   id(r) in lab          : new += [r]
-      elif (more := more-1) >= 0 : new += [r]; lab[id(r)] = r
-    if len(lab) >= cap: return lab.values()
-    rows = sorted(rows, key=project(new, x, y, east, west)
-                  )[:max(1, len(rows) // 2)]
-  if len(lab) < len(b4):
-    seen = sorted(lab.values(), key=y)
-    return sway3(random.sample(b4, len(b4)), y, x, cap,
-                 lab, seen[0], seen[-1])
-  return lab.values()
+def eg_synth() -> None:
+  "SYNTHESIS and REPAIR: impute, aimed two ways."
+  t, cs = _cars()
+  c = min(cs, key=lambda c: ymu(t, c.rows))
+  print("synth ", [say(v) for v in SYNTHESIS(t, c)])
+  holed = ["?" if at in (0, 1) else v
+           for at, v in enumerate(t.rows[0])]
+  print("holed ", holed)
+  print("repair", [say(v) for v in REPAIR(t, holed, cs)])
 
-def acquireSway(tbl, cap=None): # recursive halving acquire
-  y = lambda r: ydist(tbl, r)
-  x = lambda a, b: xdist(tbl, a, b)
-  rows = random.sample(tbl.rows, len(tbl.rows))[:the.Few]
-  return sorted(sway3(rows, y, x, cap or the.Stop), key=y)
+def eg_advise() -> None:
+  "EXPLANATION, PLANNING, MONITORING: one DISTINGUISH."
+  t, cs = _cars()
+  best = min(cs, key=lambda c: ymu(t, c.rows))
+  rest = max(cs, key=lambda c: ymu(t, c.rows))
+  can  = [0, 1, 3]              # Clndrs, Volume, Model
+  print("explain", EXPLANATION(t, rest, best))
+  print("plan   ", PLANNING(t, rest.rows[0], cs, can))
+  print("monitor", MONITORING(t, best.rows[0], cs, can))
+  print("total  ", [say(v) for v in
+                    PLANNING_TOTAL(t, rest.rows[0], cs, can)])
 
-def test_acquires():
-  "Centroid vs bayes acquisition: 20 holdouts each"
-  tbl = Tbl(csv(the.File))
-  win = wins(tbl)
-  for fn in [acquire, acquireBayes, acquireSway]:
-    random.seed(the.Seed)
-    mu, spent = 0, 0
-    for _ in range(20):
-      rows = random.sample(tbl.rows, len(tbl.rows))
-      n = len(rows) // 2
-      tr = clone(tbl, rows[:n][:the.Few])
-      lab = fn(tr, the.Stop - the.Check)
-      spent += len(lab)
-      tt = tree(tr, lab)
-      top = sorted(rows[n:],
-                   key=lambda r: leaf(tt, r)[2])[:the.Check]
-      mu += win(min(top, key=lambda r: ydist(tr, r)))
-    print(f"{fn.__name__:<13} win {round(mu/20)}"
-          f" labels {spent//20}")
+def eg_trends() -> None:
+  "TRENDS, FORECAST, ALERTS: one trajectory, three reads."
+  t   = Tbl(csv(the.File))
+  ers = eras(t, 3)              # Model year is the order
+  r   = t.rows[0]
+  cs  = TRENDS(t, ers, r, stop=16)
+  print("era mpg ", [say(mid(c.cols[7])) for c in cs])
+  print("era lbs ", [say(mid(c.cols[5])) for c in cs])
+  f = FORECAST(t, ers, r, stop=16)
+  print("next mpg", say(mid(f[7])),
+        " next lbs", say(mid(f[5])))
+  print("next origin", say(f[4]))
+  steps, odd = ALERTS(t, ers, r, stop=16)
+  print("steps   ", [say(s) for s in steps], "alert:", odd)
 
-def test_klass():
-  "Tree vs bayes, same splits: confusions, then same?"
-  a, b = _klass(fitTree, fitBayes)
-  x, z = adds(a), adds(b)
-  print(f"\nfitTree {round(100*x[1])} ({round(100*sd(x))})"
-        f" fitBayes {round(100*z[1])} ({round(100*sd(z))})"
-        f" delta {round(100*abs(x[1] - z[1]))}"
-        f" : {'same' if same(a, b, eps=0.01) else 'different'}")
+def eg_simulate() -> None:
+  "SIMULATION: rows that never happened, scored."
+  t, cs = _cars()
+  for r, y in SIMULATION(t, cs, 3):
+    print([say(v) for v in r[:5]], "->",
+          {t.names[at]: say(v) for at, v in y.items()})
 
-def test_all():
-  "Run every demo; exit code counts the crashes"
-  sys.exit(sum(print(f"\n# {k[5:]}") or run(f)
-               for k, f in list(globals().items())
-               if k[:5] == "test_" and f is not test_all))
+def eg_all() -> None:
+  "Run every demo; exit code counts the crashes."
+  sys.exit(sum(print(f"\n# {k[3:]}") or run(f)
+                for k,f in list(globals().items())
+                if k[:3]=="eg_" and f is not eg_all))
 
-def main(): # pip entry point
-  cli(the, globals(), sys.argv[1:] or ["--help"])
-
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+  main(sys.argv[1:] or ["--h"], globals())

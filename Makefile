@@ -47,9 +47,9 @@ lint: $f.py ## Lint python file x.py using `make lint f=x`
 
 Font ?= 4.5 # pdf font size
 Cols ?= 3   # pdf columns
-LPC  ?= 120 # lines per pdf column; packs formfeed sections
 
-~/tmp/%.pdf: %.py $(MAKEFILE_LIST) ## .py ==> .pdf (Font= Cols= LPC=)
+# a formfeed (ctrl-v ctrl-l in vim) = hard column break
+~/tmp/%.pdf: %.py $(MAKEFILE_LIST) ## .py ==> .pdf (Font= Cols=)
 	@mkdir -p ~/tmp
 	@echo "pdf-ing $@ ... "
 	@a2ps -Bj --quiet --landscape --line-numbers=1 \
@@ -57,12 +57,7 @@ LPC  ?= 120 # lines per pdf column; packs formfeed sections
 	   --right-footer="" --left-footer="" \
 	   --pretty-print=python --footer="$< :: page %p." \
 	   -M letter --center-title="" \
-	   --font-size=$(Font) --columns $(Cols) -o - \
-	   <(awk -v C=$(LPC) 'BEGIN{RS="\f"; ORS=""} \
-	      {n=split($$0,L,"\n")-1; \
-	       if($$0==""){printf "\f"; pos=0; next} \
-	       if(NR>1 && pos>0 && pos+n>C){printf "\f"; pos=0} \
-	       printf "%s",$$0; pos+=n}' $<) \
+	   --font-size=$(Font) --columns $(Cols) -o - $< \
 	 | ps2pdf - $@
 	@open $@
 

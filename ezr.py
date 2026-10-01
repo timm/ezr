@@ -1,278 +1,300 @@
-#!/usr/bin/env python3 -B
+#!/usr/bin/env python3
 """
-ezr.py: minimal XAI for multi-objective reasoning     
-(c) 2026 Tim Menzies <timm@ieee.org> MIT license     
-     
-Options:     
-     
-      -P=2             minkowski coefficient     
-      -Start=4         acquire: initial random labels     
-      -Stop=50         acquire: total labelling budget     
-      -Few=128         max train rows     
-      -Leaf=4          tree: min rows in any leaf     
+ezr0.py: multi-objective XAI using minimal labels
+(c) 2026 Tim Menzies <timm@ieee.org> MIT license
+
+Options:
+      -Start=4         acquire: initial random labels
+      -Stop=50         acquire: total labelling budget
+      -Few=128         holdout: max training rows
+      -Cuts=8          tree: splits to try, per num
+      -Leaf=4          tree: min rows in any leaf
       -Check=5         holdout: top picks to label
-      -k=1             bayes: rare klass hack
-      -m=2             bayes: rare evidence hack
-      -K=10            kmeans: clusters
-      -N=10            kmeans: iterations
-      -budget=1000     optimize: max oracle calls
-      -restart=100     ls: retry after this many no-improves
-      -Repeats=30      klass: number of train/test splits
+      -Repeats=20      holdout: how many train/test splits
       -Seed=1234567891 random number seed
-      -Klass=$MOOT/classify/diabetes.csv  classify demo data
-      -File=$MOOT/optimize/misc/auto93.csv
+      -File=~/gits/moot/optimize/misc/auto93.csv """
 
-"""
-#-- preface -----------------------------------------------
+# pylint: disable=bad-indentation,multiple-statements
+# pylint: disable=invalid-name,ungrouped-imports
+# pylint: disable=attribute-defined-outside-init
+# pylint: disable=protected-access,broad-exception-caught
 
-# pylint: disable=bad-indentation,invalid-name  
-# pylint: disable=missing-function-docstring  
-# pylint: disable=multiple-statements,multiple-imports  
-# pylint: disable=unnecessary-lambda-assignment  
-# pylint: disable=inconsistent-return-statements  
-# pylint: disable=dangerous-default-value  
-# pylint: disable=broad-exception-caught  
-# pylint: disable=unidiomatic-typecheck  
- 
-import os, random, re, sys, traceback
-from math import exp, log, log2, pi, sqrt
-from collections.abc import Callable, Iterable
+from typing import Any
+import os, re, sys, random, traceback # pylint: disable=C0410
+from math import exp, log2, sqrt
+from collections.abc import Callable, Iterable, Iterator
+sys.dontWriteBytecode = True       # no __pycache__
 
-sys.dont_write_bytecode = True # never write __pycache__
+#-- types --------------------------------------------------
+type QTY    = int | float             # any number
+type ATOM   = QTY | str               # one cell; "?" = unknown
+type ROW    = list[ATOM]
+type MIDS   = dict[int, ATOM]         # a centroid
+type ROWS   = list[ROW]
+type NUMS   = list[QTY]
+type NUM    = o                       # base class, defined below
+type SYM    = o
+type COL    = NUM | SYM               # sumamry of a column
+type TBL    = o                       # rows and columns
+type NODE   = o                       # one node of a tree
+type GO     = Callable[[ROW], bool]   # which way does a row go?
+type PICKER = Callable[[TBL, int], ROWS]
+type ORACLE = Callable[[ROW], ROW]    # labels one row
 
-# Used everywhere, defined late (see misc and start sections):
-# `o` (dicts with attribute access), `say` (pretty printer),
-# `the` (settings, parsed from this docstring).
-# Names imply types (tbl:TBL col:COL row:ROW rows:ROWS
-# tr:NODE at:col index v:cell xy:(x,y) pairs); hint
-# only where name or return type would otherwise mislead.
+#-- misc ---------------------------------------------------
+def say(x: Any, p: int = 2) -> str:
+  "Floats get P decimals; dicts list their keys."
+  if isinstance(x,float): x= f"{x:.{p}f}".rstrip("0").rstrip(".")
+  if isinstance(x, dict):
+    x= "{"+", ".join(f"{k}: {say(v,p)}" for k,v in x.items())+"}"
+  return str(x)
 
-def atom(s,bools={'True': True, 'False': False}):
+class o(dict):
+  "A dict you can poke with a dot."
+  __getattr__, __setattr__ = dict.__getitem__, dict.__setitem__
+  __repr__ = say
+
+def atom(s: str) -> ATOM:
+  "'22' -> 22.  'x' -> 'x'."
   try: return int(s)
   except ValueError:
     try: return float(s)
-    except ValueError:
-      s = s.strip()
-      return bools[s] if s in bools else s
+    except ValueError: return s.strip()
 
-def line2row(s):
-  if (s := s.strip()):
-    return tuple(atom(x) for x in s.split(","))
-
-def csv(file: str):
-  file = file.replace("$MOOT", os.environ.get("MOOT")
-                      or os.path.expanduser("~/gits/moot"), 1)
-  with open(file, encoding="utf-8") as f:
+def csv(file: str) -> Iterator[ROW]:
+  "ROWS of FILE, each cell coerced."
+  with open(os.path.expanduser(file),  # -sig drops any BOM
+           encoding="utf-8-sig") as f:
     for line in f:
-      if (row := line2row(line)): yield row
+      if line.strip(): yield [atom(s) for s in line.split(",")]
 
-#-- structs -----------------------------------------------
-# Data structures
+#-- columns ------------------------------------------------
+def Col(txt: str = " ", at: int = 0) -> COL:
+  "Factory that returns NUM or SYM."
+  return Num(txt,at) if txt[0].isupper() else Sym(txt,at)
 
-Num = lambda: (0, 0, 0) # n, mu, m2: all Welford keeps
-Sym = dict
+def Num(txt: str = " ", at: int = 0) -> NUM:
+  "Place to summarize stream of numbers."
+  return o(at=at, txt=txt, n=0, mu=0, m2=0, sd=0,
+           goal=0 if txt[-1] == "-" else 1)
 
-type ATOM = str | bool | int | float
-type COL  = tuple[int, float, float] | dict # Num | Sym
-type ROW  = tuple[ATOM, ...]
-type ROWS = list[ROW]
-type TBL  = o # rows:ROWS, cols:{at:COL}, x:[at],
-              # y:{at:bool}, names:ROW, klass:at|None
-type NODE = list # [edge, n, mid, ymids, go, left, right]
-type FUN  = Callable
+def Sym(txt: str = " ", at: int = 0) -> SYM:
+  "Place to summarize stream of Symbols."
+  return o(at=at, txt=txt, n=0, has={})
 
-def sd(col): return 0 if col[0] < 2 else sqrt(max(0,col[2])/(col[0]-1))
+def add(col: COL, v: ATOM, inc: int = 1) -> ATOM:
+  "Show V to COL.  INC=-1 takes it away.  `?` changes nothing."
+  if v != "?":
+    col.n += inc
+    if "has" in col:
+      col.has[v] = col.has.get(v, 0) + inc
+    else:
+      d = v - col.mu                      # Welford, for `div`
+      col.mu += inc * d / max(1, col.n)
+      col.m2  = max(0, col.m2 + inc * d * (v - col.mu))
+      col.sd  = 0 if col.n < 2 else (col.m2/(col.n-1))**.5
+  return v
 
-def size(col):
-  return sum(col.values()) if type(col) is Sym else col[0]
+def mid(col: COL) -> ATOM:
+  "Middle: the mean, or the most common symbol."
+  return max(col.has,key=col.has.get) if "has" in col else col.mu
 
-def div(col): # Num: sd. Sym: entropy
-  if type(col) is not Sym: return sd(col)
-  n = sum(col.values())
-  return -sum(v/n * log2(v/n) for v in col.values() if v>0)
+def mids(tbl: TBL) -> MIDS:
+  "Every column's middle, keyed by column index."
+  return {at: mid(col) for at, col in tbl.cols.items()}
 
-def norm(col, v):
-  z = max(-3, min(3, (v - col[1]) / (1e-32 + sd(col))))
+def div(col: COL) -> float:
+  "Spread: entropy, or standard deviation."
+  return (-sum(v/col.n*log2(v/col.n) for v in col.has.values())
+          if "has" in col else col.sd)  # sd kept fresh by `add`
+
+def norm(col: COL, v: ATOM) -> ATOM:
+  "To 0..1, by the logistic curve.  Symbols do not scale."
+  if "has" in col: return v
+  z = max(-3, min(3, (v - col.mu) / (1e-32 + div(col))))
   return 1 / (1 + exp(-1.7 * z))
 
-def mid(col):
-  return max(col, key=col.get) if type(col) is Sym else col[1]
-
-def mids(tbl): # x centroid; cached until rows change
-  tbl._mids = tbl._mids or {at:mid(tbl.cols[at]) for at in tbl.x}
-  return tbl._mids
-
-
-#-- create -----------------------------------------------
-# Populate data.
-
-def add(col, v:ATOM, inc=1) -> COL: # new Num or Sym; -1 undoes
-  if v != "?": 
-    if type(col) is Sym: 
-      col[v] = max(0,col.get(v,0) + inc)
-    else:
-      n, mu, m2 = col
-      if (n := n + inc) < 1: return Num() # emptied 
-      d = v - mu
-      mu += inc * d / n
-      col = (n, mu, m2 + inc * d * (v - mu))
-  return col
-
-def adds(lst, it:COL=None) -> COL: # accumulate a list into it
-  if it is None: it = Num()   # NB: "it or Num()" would
-  for y in lst: it = add(it, y)  # clobber an empty Sym()
-  return it
-
-def addRow(tbl, row=None, inc=1) -> ROW: # inc=-1 pops last row
-  tbl._mids = None
-  if inc > 0: tbl.rows.append(row)
-  else: row = tbl.rows.pop()
-  for at in tbl.cols:
-    tbl.cols[at] = add(tbl.cols[at], row[at], inc)
-  return row
-
-def Tbl(src:Iterable[ROW]) -> TBL: # return TBL build from rows
+#-- tables -------------------------------------------------
+def Tbl(src: Iterable[ROW]) -> TBL:
+  "Header names the columns: X skip, +- goal, ! klass."
   src = iter(src)
-  tbl = o(rows=[], cols={}, x=[], y={}, names=next(src),
-          klass=None, _mids=None)
-  _tblHeader(tbl)
+  tbl = Cols(o(rows=[], cols={}, x=[], y=[], names=next(src)))
   for row in src: addRow(tbl, row)
   return tbl
 
-def _tblHeader(tbl:TBL) -> None: # install table header
+def Cols(tbl: TBL) -> TBL:
+  "Create column roles."
   for at, s in enumerate(tbl.names):
-    if not s.endswith("X"):
-      tbl.cols[at] = Num() if s[0].isupper() else Sym()
-      if   s[-1] == "!":  tbl.klass = at
-      elif s[-1] in "+-": tbl.y[at] = s[-1] == "+"
-      else: tbl.x.append(at)
-     
-def clone(tbl, rows=[]): return Tbl([tbl.names] + rows)
+    if s[-1] == "X": continue            # skip me entirely
+    tbl.cols[at] = Col(s,at)
+    (tbl.y if s[-1] in "+-!" else tbl.x).append(tbl.cols[at])
+  return tbl
 
-
-#-- distance ----------------------------------------------
-def ydist(tbl, row):
-  return (sum(abs(norm(tbl.cols[at], row[at]) - w) ** the.P
-             for at, w in tbl.y.items()) / len(tbl.y))**(1/the.P)
+def addRow(tbl: TBL, row: ROW) -> ROW:
+  "Keep ROW, and show it to my columns."
+  tbl.rows += [row]
+  return addCols(tbl, row)
 
-def _dist(col, a, b):
-  if a == "?" or b == "?": return 1
-  return (a != b if type(col) is Sym
-          else abs(norm(col, a) - norm(col, b)))
+def addCols(tbl: TBL, row: ROW, inc: int = 1) -> ROW:
+  "Show ROW to my columns, without keeping it."
+  for at, col in tbl.cols.items(): add(col, row[at], inc)
+  return row
 
-def xdist(tbl, row, m):
-  return (sum(_dist(tbl.cols[at], row[at], m[at]) ** the.P
-              for at in tbl.x) / len(tbl.x)) ** (1 / the.P)
+def clone(tbl: TBL, rows: ROWS = None) -> TBL:
+  "An empty copy of TBL, plus ROWS."
+  return Tbl([tbl.names] + (rows or []))
 
-def ymu(tbl, rows):
-  return sum(ydist(tbl, r) for r in rows) / len(rows)
+#-- distance -----------------------------------------------
+def minkowski(vs: Iterable[QTY], n: int) -> float:
+  "Root mean square of N gaps."
+  return sqrt(sum(v*v for v in vs) / n)
 
-def ymids(tbl, rows):
-  return [sum(r[at] for r in rows)/len(rows) for at in tbl.y]
+def ydist(tbl: TBL, row: ROW) -> float:
+  "How far ROW's goals are from the best they could be."
+  return minkowski((abs(norm(c, row[c.at]) - c.goal)
+                    for c in tbl.y), len(tbl.y))
 
-#-- acquire -----------------------------------------------
-def centroid(tbl, best, rest): # near best, far from rest
-  return lambda z: (xdist(tbl, z, mids(rest))
-                  - xdist(tbl, z, mids(best)))
+def gap(col: COL, a: ATOM, b: ATOM) -> QTY:
+  "Distance between two values of one column."
+  if a == "?" or b == "?": return 1    # unknown = far
+  return a!=b if "has" in col else abs(norm(col,a)-norm(col,b))
 
-def label(tbl, best, rest, row): # keep best pool near sqrt
-  addRow(best, row)
-  best.rows.sort(key=lambda r: ydist(tbl, r))
-  b, r = len(best.rows), len(rest.rows)
-  if b > sqrt(1 + b + r): addRow(rest, addRow(best, inc=-1))
+def xdist(tbl: TBL, r1: ROW, r2: ROW | MIDS) -> float:
+  "How far apart two rows are, over the x columns."
+  return minkowski((gap(c, r1[c.at], r2[c.at])
+                    for c in tbl.x), len(tbl.x))
 
-def acquire(tbl, cap:int=None, score:FUN=centroid) -> ROWS:
-  best, rest = clone(tbl), clone(tbl)
+#-- acquire ------------------------------------------------
+def oracle(row: ROW) -> ROW:
+  """Labeller. Rows here arrive with ys, so nothing to do.
+  Real oracles fill in any missing y cells (and can close
+  over a TBL to know which cells those are)."""
+  return row
+
+def acquire(tbl: TBL, cap: int | None = None,
+            label: ORACLE = oracle) -> ROWS:
+  "Label near the best rows, far from the rest."
+  cap  = cap or the.Stop
   todo = random.sample(tbl.rows, len(tbl.rows))[:the.Few]
-  for _ in range(the.Start): label(tbl, best, rest, todo.pop())
+  both = clone(tbl, [label(todo.pop())
+                     for _ in range(the.Start)])
+  both.rows.sort(key=lambda r: ydist(both, r))
+  n    = int(sqrt(the.Start))
+  best,rest = clone(tbl,both.rows[:n]), clone(tbl,both.rows[n:])
+  while todo and len(both.rows) < cap:
+    cb, cr = mids(best), mids(rest)    # two centroids
+    todo.sort(key=lambda z: xdist(tbl,z,cr) - xdist(tbl,z,cb))
+    addRow(best, addRow(both, label(todo.pop())))
+    best.rows.sort(key=lambda z: ydist(both, z))  # no y leak
+    if len(best.rows) > sqrt(len(both.rows)): # best stays small
+      addRow(rest, addCols(best, best.rows.pop(), -1))
+  return both.rows
+
+def grabs(tbl: TBL, cap: int | None = None,
+          label: ORACLE = oracle) -> ROWS:
+  "The straw man: same budget, taken at random."
   cap = cap or the.Stop
-  while todo and len(best.rows) + len(rest.rows) < cap:
-    todo.sort(key=score(tbl, best, rest))
-    label(tbl, best, rest, todo.pop())
-  return best.rows + rest.rows
+  return [label(r) for r in
+          random.sample(tbl.rows, min(cap, len(tbl.rows)))]
 
-#-- tree --------------------------------------------------
-# NODE = [edge, n, ymu, ymids, go, kid, kid]
-def xpect(a, b): # sizes are >= the.Leaf, so no zero guard
-  return ((div(a)*size(a) + div(b)*size(b))/(size(a) + size(b)))
+#-- tree ---------------------------------------------------
+# NODE = o(rows, at, v, go, kids, mu).
+def cut(tbl: TBL, rows: ROWS) -> tuple[int,ATOM,GO]|None:
+  "The (at, v, go) whose two sides have the tightest ys."
+  ys = [ydist(tbl, r) for r in rows]
+  out, least = None, 1e30
+  for col in tbl.x:
+    for v, go in candidates(col, rows):
+      a, b = Num(), Num()   # one pass, so one `go` per row
+      for r,y in zip(rows,ys): add(a if go(r) else b, y)
+      if a.n >= the.Leaf and b.n >= the.Leaf:
+        score = (div(a)*a.n + div(b)*b.n) / (a.n + b.n)
+        if score < least: out, least = (col.at, v, go), score
+  return out
 
-def cutNum(xy, acc:FUN): # (left, right, x) per value boundary
-  xy.sort()
-  here, there = acc(), adds((y for _, y in xy), acc())
-  for i, (x, y) in enumerate(xy[:-1]):
-    here, there = add(here, y), add(there, y, -1)
-    if x != xy[i+1][0]: yield here, there, x
+def candidates(col: COL, rows: ROWS) -> Iterator[tuple[ATOM,GO]]:
+  "What splits to try: one per symbol, or CUTS per num."
+  at = col.at
+  if "has" in col:
+    for v in sorted({r[at] for r in rows if r[at] != "?"}):
+      yield v, lambda r,v=v,at=at: r[at] == v
+  else:                # by rank, not value: THESE rows are dense
+    xs = sorted(r[at] for r in rows if r[at] != "?")
+    k  = max(1, len(xs)//the.Cuts)     # cuts, spaced by rank
+    for v in xs[k-1:-1:k]:
+      yield v, (lambda r,v=v,at=at: r[at] != "?" and r[at] <= v)
 
-def cutSym(xy, acc:FUN): # (in, out, sym), one per symbol
-  for v in sorted({x for x, _ in xy}):
-    yield (adds((y for x, y in xy if x == v), acc()),
-           adds((y for x, y in xy if x != v), acc()), v)
-
-def cut(tbl, rows, ys, acc:FUN): # best (col, val) split
-  best = (1e30, None, None)
-  for at in tbl.x:
-    xy = [(x, y) for r,y in zip(rows, ys) if (x := r[at]) != "?"]
-    what = cutSym if type(tbl.cols[at]) is Sym else cutNum
-    for here, there, v in what(xy, acc):
-      if the.Leaf <= size(here) <= len(xy) - the.Leaf:
-        if (s := xpect(here, there)) < best[0]:
-          best = (s, at, v)
-  if best[1] is not None: return best[1:]
-
-def routing(tbl, at, v):
-  s, c = tbl.names[at], tbl.cols[at]
-  if type(c) is not Sym:
-    return (f"{s} <= {say(v)}", f"{s} > {say(v)}",
-            lambda r: (c[1] if r[at] == "?" else r[at]) <= v)
-  return (f"{s} = {v}", f"{s} != {v}",
-          lambda r: (mid(c) if r[at] == "?" else r[at]) == v)
-
-def tree(tbl, rows, edge="", y=None):
-  y    = y or (lambda r: ydist(tbl, r))
-  ys   = [y(r) for r in rows]
-  acc  = Sym if isinstance(ys[0],str) else Num
-  node = [edge, len(rows), mid(adds(ys,acc())), ymids(tbl,rows)]
-  if (len(rows) > the.Leaf and (best := cut(tbl, rows, ys,acc))):
-    e1, e2, go = routing(tbl, *best)
+def tree(tbl: TBL, rows: ROWS) -> NODE:
+  "Split while a split keeps both sides big enough."
+  node = o(rows=rows, at=None, v=None, go=None, kids=[],
+           mu=sum(ydist(tbl,r) for r in rows)/len(rows))
+  if len(rows) > the.Leaf and (found := cut(tbl, rows)):
+    at, v, go = found
     yes, no = [], []
-    for r in rows:
-      (yes if go(r) else no).append(r)
-    if yes and no:
-      node += [go, tree(tbl, yes, e1, y), tree(tbl, no, e2, y)]
+    for r in rows: (yes if go(r) else no).append(r)
+    node.at, node.v, node.go = at, v, go # cut kepts sides big
+    node.kids = [tree(tbl, yes), tree(tbl, no)]
   return node
 
-def kids(tr): return tr[5:]
+def leaf(node: NODE, row: ROW) -> NODE:
+  "Walk ROW down to its leaf."
+  while node.kids: node = node.kids[0 if node.go(row) else 1]
+  return node
 
-def leaf(tr, row):
-  while kids(tr): tr = tr[5] if tr[4](row) else tr[6]
-  return tr
+def leafs(node: NODE) -> list[NODE]:
+  "Return leaves of this tree."
+  return [x for k in node.kids for x in leafs(k)] or [node]
 
-
-#-- report ------------------------------------------------
-def leafs(tr):
-  return [x for k in kids(tr) for x in leafs(k)] or [tr]
-
-def show(tbl, tr):
-  ls = sorted(leafs(tr), key=lambda z: z[2])
-  print("  d2h   n" + "".join(f"{tbl.names[at]:>7}"
-                              for at in tbl.y))
-  def walk(z, pre=None):
+def show(tbl: TBL, node: NODE, pre: str | None = None,
+         edge: str = "") -> None:
+  "Tree on the left; ydist and n on the right."
+  ls = sorted(leafs(node), key=lambda z: z.mu)
+  def walk(z: NODE, pre: str | None, edge: str) -> None:
     m = "+" if z is ls[0] else "-" if z is ls[-1] else " "
-    v = z[2] if type(z[2]) is str else round(100 * z[2])
-    print((f"{m} {v:>3} {z[1]:>3}"
-           + "".join(f"{round(v):>7}" for v in z[3])
-           + "   " + (pre or "") + z[0]).rstrip())
-    for k in kids(z): walk(k, "" if pre is None else pre+"|  ")
-  walk(tr)
+    print(f"{m} {round(100*z.mu):>4} {len(z.rows):>5}   "
+          f"{(pre or '')+edge}".rstrip())
+    op = "=" if "has" in tbl.cols[z.at or 0] else "<="
+    no = "!=" if op == "=" else ">"
+    for kid, oper in zip(z.kids, [op, no]):
+      walk(kid, "" if pre is None else pre + "|  ",
+           f"{tbl.names[z.at]} {oper} {say(z.v)}")
+  print(" ydist     n")
+  walk(node, pre, edge)
 
-
-#-- stats -------------------------------------------------
-def cohen(xs, ys, d=0.35, eps=0): # gap vs pooled sd, floored
+#-- holdout ------------------------------------------------
+def wins(tbl: TBL) -> Callable[[ROW], float]:
+  "100 at the best row, 0 at an average one."
+  ys = sorted(ydist(tbl, r) for r in tbl.rows)
+  lo, avg = ys[0], sum(ys)/len(ys)
+  return lambda r: max(-100, min(100, 100*(1 - (ydist(tbl,r)-lo)
+                                            / (avg-lo+1e-32))))
+
+def holdout(tbl: TBL, pick: PICKER = acquire) -> ROW:
+  "Train on half; of CHECK guesses on the rest, pick best."
+  rows  = random.sample(tbl.rows, len(tbl.rows))
+  n     = len(rows)//2
+  tr    = clone(tbl, rows[:n][:the.Few])
+  lab   = clone(tbl, pick(tr, the.Stop - the.Check))
+  tt    = tree(lab, lab.rows)
+  top   = sorted(rows[n:], key=lambda r: leaf(tt,r).mu)
+  return min(top[:the.Check], key=lambda r: ydist(lab, r))
+
+#-- stats --------------------------------------------------
+def adds(vs: Iterable[ATOM], col: COL | None = None) -> COL:
+  "Every item of VS into COL."
+  col = Num() if col is None else col
+  for v in vs: add(col, v)
+  return col
+
+def cohen(xs: NUMS, ys: NUMS, d: float = 0.35,
+          eps: float = 0) -> bool:
+  "Are the means within D pooled standard deviations?"
   a, b = adds(xs), adds(ys)
-  pool = ((a[0]-1)*sd(a)**2 + (b[0]-1)*sd(b)**2)/(a[0]+b[0]-2)
-  return abs(a[1] - b[1]) <= max(eps, d * sqrt(pool))
+  pool = ((a.n-1)*div(a)**2 + (b.n-1)*div(b)**2)/(a.n+b.n-2)
+  return abs(a.mu - b.mu) <= max(eps, d * sqrt(pool))
 
-def cliffs(xs, ys, d=0.197): # sorted in. rank imbalance ok?
+def cliffs(xs: NUMS, ys: NUMS, d: float = 0.197) -> bool:
+  "Sorted in.  Is the rank imbalance small enough?"
   gt = lt = j = k = 0
   for x in xs:
     while j < len(ys) and ys[j] <  x: j += 1; k = j
@@ -280,7 +302,8 @@ def cliffs(xs, ys, d=0.197): # sorted in. rank imbalance ok?
     gt += j; lt += len(ys) - k
   return abs(gt - lt) / (len(xs) * len(ys)) <= d
 
-def ks(xs, ys, a=1.36): # sorted in. 95% kolmogorov-smirnov
+def ks(xs: NUMS, ys: NUMS, a: float = 1.36) -> bool:
+  "Sorted in.  95% Kolmogorov-Smirnov."
   n, m, i, j, d = len(xs), len(ys), 0, 0, 0
   while i < n and j < m:
     v = min(xs[i], ys[j])
@@ -289,150 +312,29 @@ def ks(xs, ys, a=1.36): # sorted in. 95% kolmogorov-smirnov
     d = max(d, abs(i/n - j/m))
   return d <= a * sqrt((n + m) / (n * m))
 
-def same(xs, ys, eps=0): # indistinguishable, by all three
+def same(xs: NUMS, ys: NUMS, eps: float = 0) -> bool:
+  "Indistinguishable by all three.  One sort, then linear."
   xs, ys = sorted(xs), sorted(ys)
-  return (cliffs(xs,ys) and ks(xs,ys) and cohen(xs,ys,eps=eps))
+  return cliffs(xs,ys) and ks(xs,ys) and cohen(xs,ys,eps=eps)
 
-#-- misc -------------------------------------------------
-def say(x, p=2):
-  if type(x) is float: x= f"{x:.{p}f}".rstrip("0").rstrip(".")
-  elif type(x) in (dict, o): x= "{" + ", ".join(
-    f"{k}: {say(x[k], p)}" for k in x if str(k)[0] != "_") + "}"
-  elif type(x) in (list,tuple):
-    x = "[" + ", ".join(say(v, p) for v in x) + "]"
-  return str(x)
-
-class o(dict):
-  __repr__ = say
-  __getattr__,__setattr__ = dict.__getitem__,dict.__setitem__
-
-#-- tests -------------------------------------------------
-mean   = lambda ys: sum(ys) / len(ys)
-median = lambda ys: ys[len(ys) // 2]
-
-def wins(tbl, b4:FUN=mean) -> FUN: # b4 scores 0; best row 100
-  ys = sorted(ydist(tbl, r) for r in tbl.rows)
-  lo, b4 = ys[0], b4(ys)
-  return lambda r: max(-100, min(100,
-    100 * (1 - (ydist(tbl, r) - lo) / (b4 - lo + 1e-32))))
-
-def holdout(tbl):
-  rows = random.sample(tbl.rows, len(tbl.rows))
-  n = len(rows) // 2
-  train, test = rows[:n][:the.Few], rows[n:]
-  tr = clone(tbl, train)
-  tt = tree(tr, acquire(tr, the.Stop - the.Check))
-  top = sorted(test, key=lambda r: leaf(tt,r)[2])[:the.Check]
-  return min(top, key=lambda r: ydist(tr, r))
-
-
-#-- start-up ----------------------------------------------
-def test_help():
-  "Show usage, settings, demos"
-  print(__doc__, "Demos:\n",
-        *[f"  --{k[5:]:<10} {f.__doc__}"
-          for k, f in globals().items() if k[:5] == "test_"],
-        sep="\n")
-
-def test_num():
-  "Welford add matches textbook mean and sd"
-  c = adds([2, 4, 4, 4, 5, 5, 7, 9])
-  assert c[0] == 8 and c[1] == 5 and abs(sd(c)-2.138) < .01
-  print(f"mu {say(c[1])} sd {say(sd(c))}")
-
-def test_sym():
-  "Syms count; mid is mode; div is entropy"
-  c = adds("aabbbc", Sym())
-  assert c["b"]==3 and mid(c)=="b" and abs(div(c)-1.459)<.01
-  print(f"mode {mid(c)} ent {say(div(c))}")
-
-def test_tbl():
-  "Headers route columns to x, y, klass, or nowhere"
-  t = Tbl([("Age","job!","SkipX","Weight-"), (2,"a",3,80)])
-  assert t.x == [0] and t.y == {3: False} and t.klass == 1
-  assert 2 not in t.cols
-  print(f"x {t.x} y {t.y} klass {t.klass}")
-
-def test_cuts():
-  "cut returns a legal, routable split"
-  t = Tbl(csv(the.File))
-  rows = t.rows[:64]; ys = [ydist(t, r) for r in rows]
-  at, v = cut(t, rows, ys, Num)
-  e1, e2, go = routing(t, at, v)
-  yes = sum(go(r) for r in rows)
-  assert 0 < yes < len(rows)
-  print(f"cut: {e1} yes={yes}; {e2} no={len(rows)-yes}")
-
-def test_wins():
-  "wins grades the best row 100"
-  t = Tbl(csv(the.File))
-  w = wins(t)(min(t.rows, key=lambda r: ydist(t, r)))
-  assert w == 100; print(f"best row wins {w}")
-
-
-def test_tree():
-  "Acquire, grow and show the.File's tree"
-  tbl = Tbl(csv(the.File)); lab = acquire(tbl)
-  print(f"{the.File} n={len(tbl.rows)}"
-        f" mid={say(ymu(tbl, tbl.rows))}"
-        f" ezr={say(ydist(tbl, lab[0]))}")
-  show(tbl, tree(tbl, lab))
-
-def test_holdout():
-  "Mean win over 20 train/test holdouts"
-  tbl = Tbl(csv(the.File))
-  win = wins(tbl)
-  mu = sum(win(holdout(tbl)) for _ in range(20)) / 20
-  print(f"win {round(mu)}")
-
-def test_same():
-  "Stats tests tell noise from signal"
-  x = [random.gauss(10, 1) for _ in range(40)]
-  y = [random.gauss(10, 1) for _ in range(40)]
-  z = [random.gauss(11, 1) for _ in range(40)]
-  assert same(x, y) and not same(x, z)
-  print(f"same {same(x, y)} diff {not same(x, z)}")
-
-def test_delta():
-  "How much acquire beats random picks (0 if same)"
-  tbl = Tbl(csv(the.File))                        # lower ydist=better
-  smart = [ydist(tbl, acquire(tbl)[0])            # acquire's best row
-           for _ in range(the.Repeats)]
-  dumb  = [min(ydist(tbl, r) for r in            # best of Stop randoms
-               random.sample(tbl.rows, the.Stop))
-           for _ in range(the.Repeats)]
-  delta = 0 if same(smart, dumb) else mean(dumb) - mean(smart)
-  print(f"acquire {say(mean(smart))} random {say(mean(dumb))}"
-        f" delta {say(delta)}")
-
-
-# -- start ------------------------------------------------
+#-- start --------------------------------------------------
 the = o(_defaults=o())
-for k, v in re.findall(r"(\w+)=(\S+)", __doc__ or ""):
-  the[k] = the._defaults[k] = atom(v)
+for _k, _v in re.findall(r"(\w+)=(\S+)", __doc__ or ""):
+  the[_k] = the._defaults[_k] = atom(_v)
 
-def run(f=None): # demos may mutate the; always clean up
+def run(f: Callable) -> int:
+  "Run F. Demos may poke `the`, so always put it back."
   random.seed(the.Seed)
-  try:              (f or test_help)()
-  except Exception: traceback.print_exc(); return 1
-  finally:          the.update(the._defaults)
+  try:                   f()
+  except Exception as e: traceback.print_exception(e); return 1
+  finally:               the.update(the._defaults)
   return 0
 
-def test_all():
-  "Run every demo; exit code counts the crashes"
-  sys.exit(sum(print(f"\n# {k[5:]}") or run(f)
-               for k, f in list(globals().items())
-               if k[:5] == "test_" and f is not test_all))
-
-def cli(d, funs, args, n=0):
+def main(args: list[str], funcs: dict) -> None:
+  "Dispatch --x to FUNCS' eg_x; -key val updates `the`."
   while args:
     s = args.pop(0)
-    if   s[:2] == "--" : n += run(funs.get("test_"+s[2:]))
-    elif s[1:] in d    : d[s[1:]] = atom(args.pop(0))
+    if   s[:2] == "--":
+      run(funcs.get("eg_" + s[2:], funcs["eg_h"]))
+    elif s[1:] in the : the[s[1:]] = atom(args.pop(0))
     else: print(f"unknown arg: {s}")
-  sys.exit(n)
-
-def main(): # pip entry point
-  cli(the, globals(), sys.argv[1:] or ["--help"])
-
-if __name__ == "__main__": main()
