@@ -18,9 +18,9 @@ Options:
 """
 import os, re, sys, random, traceback
 sys.dontWriteBytecode = True       # no __pycache__
-from collections.abc import Callable, Iterable, Iterator
-from math import exp, log2, sqrt
 from typing import Any
+from math import exp, log2, sqrt
+from collections.abc import Callable, Iterable, Iterator
 
 #-- types --------------------------------------------------
 # `o` is defined below.  A `type` statement looks late, so
@@ -175,8 +175,8 @@ def acquire(tbl: Table, cap: int | None = None) -> Rows:
   n    = int(sqrt(the.Start))
   best,rest = clone(tbl,both.rows[:n]), clone(tbl,both.rows[n:])
   while todo and len(both.rows) < cap:
-    b, r = mids(best), mids(rest)
-    todo.sort(key=lambda z: xdist(tbl,z,r) - xdist(tbl,z,b))
+    cb, cr = mids(best), mids(rest)    # two centroids
+    todo.sort(key=lambda z: xdist(tbl,z,cr) - xdist(tbl,z,cb))
     addRow(best, addRow(both, todo.pop()))
     best.rows.sort(key=lambda z: ydist(both, z))  # no y leak
     if len(best.rows) > sqrt(len(both.rows)): # best stays small
@@ -200,8 +200,8 @@ def cut(tbl: Table, rows: Rows) -> tuple[int,Atom,Go]|None:
       a, b = Num(), Num()   # one pass, so one `go` per row
       for r,y in zip(rows,ys): add(a if go(r) else b, y)
       if a.n >= the.Leaf and b.n >= the.Leaf:
-        s = (div(a)*a.n + div(b)*b.n) / (a.n + b.n)
-        if s < least: out, least = (at, v, go), s
+        score = (div(a)*a.n + div(b)*b.n) / (a.n + b.n)
+        if score < least: out, least = (at, v, go), score
   return out
 
 def candidates(col: Col, rows: Rows,
@@ -238,7 +238,7 @@ def leafs(node: Node) -> list[Node]:
 
 def show(tbl: Table, node: Node, pre: str | None = None,
          edge: str = "") -> None:
-  "Tree on the left; d2h and n on the right."
+  "Tree on the left; ydist and n on the right."
   ls = sorted(leafs(node), key=lambda z: z.mu)
   def walk(z: Node, pre: str | None, edge: str) -> None:
     m = "+" if z is ls[0] else "-" if z is ls[-1] else " "
@@ -246,10 +246,10 @@ def show(tbl: Table, node: Node, pre: str | None = None,
           f"{(pre or '')+edge}".rstrip())
     op = "=" if "has" in tbl.cols[z.at or 0] else "<="
     no = "!=" if op == "=" else ">"
-    for k, o2 in zip(z.kids, [op, no]):
-      walk(k, "" if pre is None else pre + "|  ",
-           f"{tbl.names[z.at]} {o2} {say(z.v)}")
-  print(f"  d2h     n")
+    for kid, oper in zip(z.kids, [op, no]):
+      walk(kid, "" if pre is None else pre + "|  ",
+           f"{tbl.names[z.at]} {oper} {say(z.v)}")
+  print(" ydist     n")
   walk(node, pre, edge)
 
 #-- holdout ------------------------------------------------
@@ -257,9 +257,9 @@ def show(tbl: Table, node: Node, pre: str | None = None,
 def wins(tbl: Table) -> Callable[[Row], float]:
   "100 at the best row, 0 at an average one."
   ys = sorted(ydist(tbl, r) for r in tbl.rows)
-  lo, b4 = ys[0], sum(ys)/len(ys)
+  lo, avg = ys[0], sum(ys)/len(ys)
   return lambda r: max(-100, min(100, 100*(1 - (ydist(tbl,r)-lo)
-                                            / (b4-lo+1e-32))))
+                                            / (avg-lo+1e-32))))
 
 def holdout(tbl: Table, pick: Picker = acquire) -> Row:
   "Train on half; of CHECK guesses on the rest, pick best."
