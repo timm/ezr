@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 -B
+#!/usr/bin/env python3 
 """
 ezr0.py: multi-objective reasoning, cut to the bone.
 (c) 2026 Tim Menzies <timm@ieee.org> MIT license
@@ -63,7 +63,8 @@ def atom(s: str) -> Atom:
 
 def csv(file: str) -> Iterator[Row]:
   "Rows of FILE, each cell coerced."
-  with open(os.path.expanduser(file), encoding="utf-8") as f:
+  with open(os.path.expanduser(file),  # -sig drops any BOM
+           encoding="utf-8-sig") as f:
     for line in f:
       if line.strip(): yield [atom(s) for s in line.split(",")]
 
