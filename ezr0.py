@@ -42,11 +42,9 @@ type Picker = Callable[[Table, int], Rows]
 
 def say(x: Any, p: int = 2) -> str:
   "Floats get P decimals; dicts list their keys."
-  if type(x) is float: 
-    return f"{x:.{p}f}".rstrip("0").rstrip(".")
-  if isinstance(x, dict):            # not str(): that would
-    return "{" + ", ".join(          # call __repr__ -> say
-      f"{k}: {say(v,p)}" for k,v in x.items()) + "}"
+  if type(x) is float: x = f"{x:.{p}f}".rstrip("0").rstrip(".")
+  if isinstance(x, dict):            
+    x= "{"+", ".join(f"{k}: {say(v,p)}" for k,v in x.items())+"}"
   return str(x)
 
 class o(dict):
@@ -93,7 +91,7 @@ def add(col: Col, v: Atom, inc: int = 1) -> Atom:
 
 def adds(vs: Iterable[Atom], col: Col | None = None) -> Col:
   "Every item of VS into COL."
-  col = col if col is not None else Num()
+  col = Num() if col is None else col
   for v in vs: add(col, v)
   return col
 
@@ -125,7 +123,7 @@ def Tbl(src: Iterable[Row]) -> Table:
   for at, s in enumerate(tbl.names):
     if s[-1] == "X": continue            # skip me entirely
     tbl.cols[at] = Num(s,at) if s[0].isupper() else Sym(s,at)
-    (tbl.y if s[-1] in "+-!" else tbl.x).append(at)
+    (tbl.y if s[-1] in "+-!" else tbl.x).append(tbl.cols[at])
   for row in src: addRow(tbl, row)
   return tbl
 
@@ -151,9 +149,8 @@ def minkowski(vs: Iterable[Qty], n: int) -> float:
 
 def ydist(tbl: Table, row: Row) -> float:
   "How far ROW's goals are from the best they could be."
-  return minkowski((abs(norm(tbl.cols[at], row[at])
-                        - tbl.cols[at].goal) for at in tbl.y),
-                   len(tbl.y))
+  return minkowski((abs(norm(c, row[c.at]) - c.goal)
+                    for c in tbl.y), len(tbl.y))
 
 def gap(col: Col, a: Atom, b: Atom) -> Qty:
   "Distance between two values of one column."
@@ -162,8 +159,8 @@ def gap(col: Col, a: Atom, b: Atom) -> Qty:
 
 def xdist(tbl: Table, r1: Row, r2: Row | Mids) -> float:
   "How far apart two rows are, over the x columns."
-  return minkowski((gap(tbl.cols[at], r1[at], r2[at])
-                    for at in tbl.x), len(tbl.x))
+  return minkowski((gap(c, r1[c.at], r2[c.at])
+                    for c in tbl.x), len(tbl.x))
 
 #-- acquire ------------------------------------------------
 
@@ -196,18 +193,18 @@ def cut(tbl: Table, rows: Rows) -> tuple[int,Atom,Go]|None:
   "The (at, v, go) whose two sides have the tightest ys."
   ys = [ydist(tbl, r) for r in rows]
   out, least = None, 1e30
-  for at in tbl.x:
-    for v, go in candidates(tbl.cols[at], rows, at):
+  for col in tbl.x:
+    for v, go in candidates(col, rows):
       a, b = Num(), Num()   # one pass, so one `go` per row
       for r,y in zip(rows,ys): add(a if go(r) else b, y)
       if a.n >= the.Leaf and b.n >= the.Leaf:
         score = (div(a)*a.n + div(b)*b.n) / (a.n + b.n)
-        if score < least: out, least = (at, v, go), score
+        if score < least: out, least = (col.at, v, go), score
   return out
 
-def candidates(col: Col, rows: Rows,
-               at: int) -> Iterator[tuple[Atom, Go]]:
+def candidates(col: Col, rows: Rows) -> Iterator[tuple[Atom,Go]]:
   "What splits to try: one per symbol, or CUTS per num."
+  at = col.at
   if "has" in col:
     for v in sorted({r[at] for r in rows if r[at] != "?"}):
       yield v, lambda r,v=v,at=at: r[at] == v
@@ -326,8 +323,8 @@ def eg_sym() -> None:
 def eg_tbl() -> None:
   "The header routes each column."
   t = Tbl([["Age","job!","SkipX","Weight-"],[2,"a",3,80]])
-  assert t.x == [0] and t.y == [1,3]
-  print(f"x {t.x} y {t.y}")
+  assert [c.at for c in t.x]==[0] and [c.at for c in t.y]==[1,3]
+  print(f"x {[c.at for c in t.x]} y {[c.at for c in t.y]}")
 
 def eg_dist() -> None:
   "A row is nearest itself, and ydist orders the data."
