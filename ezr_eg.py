@@ -14,9 +14,10 @@ import os, sys, random # pylint: disable=C0410
 import ezr
 from ezr import *
 
-the.Eras, the.Draws = 4, 20
+the.Eras, the.Draws, the.Restart = 4, 20, 30
 the.Klass = "~/gits/moot/classify/diabetes.csv"
-the._defaults.update(Eras=4, Draws=20, Klass=the.Klass)
+the._defaults.update(Eras=4, Draws=20, Restart=30,
+                     Klass=the.Klass)
 
 def eg_h() -> None:
   "Show the options and the demos."
@@ -113,14 +114,86 @@ def de(tbl: TBL, score: Callable[[ROW], float],
       if en < es[i]: pop[i], es[i] = sn, en
   return pop[es.index(min(es))]
 
-def eg_de() -> None:
-  "DE, budget Stop, scored by a nearest-neighbor oracle."
+def pick(col: COL, v: ATOM = None) -> ATOM:
+  "Sample a plausible value, near V if V is known."
+  if "has" in col:
+    return random.choices(list(col.has),
+                          weights=col.has.values())[0]
+  mu = col.mu if v is None or v == "?" else v
+  lo, hi = col.mu - 3*col.sd, col.mu + 3*col.sd
+  new = mu + col.sd*2*(random.random() + random.random()
+                       + random.random() - 1.5)
+  return lo + (new - lo) % (hi - lo + 1e-32)
+
+def oneplus1(tbl: TBL, mutate, accept, score,
+             restart: int = 0) -> ROW:
+  "1+1 evolution: mutate, maybe accept, remember the best."
+  s, e, best, be = random.choice(tbl.rows), 1e32, None, 1e32
+  h = imp = 0
+  while h < the.Stop:
+    for sn in mutate(s):
+      h += 1
+      en = score(sn)
+      if accept(en, e, h, the.Stop): s, e = sn, en
+      if en < be: best, be, imp = sn, en, h
+      if restart and h - imp > restart:
+        s, e = random.choice(tbl.rows), 1e32
+      if h >= the.Stop: break
+  return best
+
+def ls(tbl: TBL, score, tries: int = 20) -> ROW:
+  "Local search: nudge one column; keep only improvements."
+  def mutate(s):
+    col = random.choice(tbl.x)
+    for _ in range(tries):
+      s2 = s[:]; s2[col.at] = pick(col, s[col.at])
+      yield s2
+  return oneplus1(tbl, mutate,
+                  lambda en, e, *_: en < e, score,
+                  the.Restart)
+
+def sa(tbl: TBL, score, m: float = 0.5) -> ROW:
+  "Simulated annealing: accept worse, less as time runs out."
+  def accept(en, e, h, b):
+    return en < e or random.random() < exp(
+      (e - en) / (1 - h/b + 1e-32))
+  def mutate(s):
+    s2 = s[:]
+    for col in tbl.x:
+      if random.random() < m:
+        s2[col.at] = pick(col, s2[col.at])
+    yield s2
+  return oneplus1(tbl, mutate, accept, score)
+
+def seek(t: TBL, searcher, picker: PICKER = grabs) -> ROW:
+  """Train : validate : test, in thirds. SEARCHER breeds
+  candidates from TRAIN; it scores them on the nearest row
+  of VALIDATE's few labelled rows (PICKER spends Stop there,
+  and nothing else is ever labelled); the winner is read off
+  the untouched TEST.  (Standard ezr -- acquire, holdout --
+  mashes train+validate into one pool: the rows it labels
+  are the rows it searches.)"""
+  rows  = random.sample(t.rows, len(t.rows))
+  n     = len(rows) // 3
+  train = rows[:n][:the.Few]
+  valid = rows[n:2*n]
+  test  = rows[2*n:]
+  lab   = picker(clone(t, valid), the.Stop)
+  def near(r: ROW, pool: ROWS) -> ROW:
+    return min(pool, key=lambda z: xdist(t, r, z))
+  best = searcher(clone(t, train),
+                  lambda r: ydist(t, near(r, lab)))
+  return near(best, test)
+
+def eg_seek() -> None:
+  "DE, SA, LS; scorer labelled by grabs or acquire."
   t = Tbl(csv(the.File)); w = wins(t)
-  known = random.sample(t.rows, the.Few)
-  def near(r: ROW) -> ROW:
-    return min(known, key=lambda z: xdist(t, r, z))
-  got = near(de(t, lambda r: ydist(t, near(r))))
-  print(f"de win {round(w(got))}")
+  for searcher in [de, sa, ls]:
+    for picker in [grabs, acquire]:
+      ws = [w(seek(t, searcher, picker))
+            for _ in range(the.Repeats)]
+      print(f"{searcher.__name__:<3} {picker.__name__:<7}"
+            f" win {round(sum(ws)/len(ws)):>4}")
 
 #-- how: missing primitives ---------------------------------
 # Section 6 of how.md: the cost. Here it is, paid.
