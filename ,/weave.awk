@@ -11,17 +11,34 @@
 # A truly blank line ends a paragraph.  A line holding one
 # space does not -- so that is how you group N functions
 # into one snippet.
+#
+# A ```py block opening with "def" or "class" that matches
+# nothing gets MARK pinned to that line, so stale snippets
+# show up in the .md instead of rotting there unnoticed.
+# The mark is stripped before every lookup, so running this
+# twice never doubles it, and a snippet that comes back
+# loses its mark on the next pass.
 
 function key(a, b) { sub(/[(:].*/, "", b); return a " " b }
 
-BEGIN { RS = ""; ORS = "\n\n" }
+BEGIN { RS = ""; ORS = "\n\n"
+        MARK = "  <==== SNIPPET NOT FOUND" }
 
 FNR == NR { snip[key($1, $2)] = $0; next }    # pass 1: the .py
 
 /^```py/ {                                    # pass 2: the .md
-  split($0, line, "\n")
+  gsub(MARK, "")                              # drop any earlier mark
+  n = split($0, line, "\n")
   split(line[2], word, /[ \t]+/)
   k = key(word[1], word[2])
-  if (k in snip) { print "```py\n" snip[k] "\n```"; next } }
+  if (k in snip) { print "```py\n" snip[k] "\n```"; next }
+  if (word[1] == "def" || word[1] == "class") {
+    line[2] = line[2] MARK
+    missing++ }
+  $0 = line[1]
+  for (i = 2; i <= n; i++) $0 = $0 "\n" line[i] }
 
 { print }
+
+END { if (missing) printf "weave: %d snippet(s) not found\n",
+                          missing > "/dev/stderr" }

@@ -24,7 +24,6 @@ from typing import Any
 import os, re, sys, random, traceback # pylint: disable=C0410
 from math import exp, log2, sqrt
 from collections.abc import Callable, Iterable, Iterator
-sys.dontWriteBytecode = True       # no __pycache__
 
 #-- types --------------------------------------------------
 type QTY    = int | float             # any number

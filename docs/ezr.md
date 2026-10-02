@@ -267,7 +267,7 @@ column type. Nothing else in the system branches on task.
 and missing:
 
 ```python
-def sample(col):
+def sample(col):  <==== SNIPPET NOT FOUND
   if type(col) is Sym:
     return random.choices(list(col), weights=col.values())[0]
   return random.gauss(col[1], sd(col))
@@ -343,7 +343,7 @@ Given two rows a and b, the cosine rule places any third row on the
 line between them, using `_dist` and nothing else:
 
 ```python
-def project(tbl, a, b):       # ezr_eg.py:260, with the poles supplied
+def project(tbl, a, b):       # ezr_eg.py:260, with the poles supplied  <==== SNIPPET NOT FOUND
   c = xdist(tbl, a, b) + 1e-32
   return lambda r: (xdist(tbl,a,r)**2 + c*c - xdist(tbl,b,r)**2)/(2*c)
 ```
@@ -447,7 +447,7 @@ about spending too much. At 50 repeats it reads 86 and 89, and
 ## 5. The learner is only `cluster`
 
 ```python
-def halve(t, rows):                  # the first half's own method
+def halve(t, rows):                  # the first half's own method  <==== SNIPPET NOT FOUND
   if len(rows) <= the.Leaf: return [clone(t, rows)]
   a = max(rows, key=lambda r: xdist(t, r, rows[0]))   # two distant
   b = max(rows, key=lambda r: xdist(t, r, a))         # rows

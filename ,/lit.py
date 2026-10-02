@@ -1,3 +1,4 @@
+#!/usr/bin/env python3 -B
 """lit.py: ezr.py --> docs/ezr.html via pycco.
 Moves def-line comments above the def, adds typed signatures,
 turns #-- banners into h2, injects header, justifies prose."""
