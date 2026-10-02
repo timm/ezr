@@ -3,6 +3,9 @@
 # ==============================================================================
 
 SHELL := /bin/bash
+# py3.13 ignores a runtime `sys.dontWriteBytecode = True`; only
+# startup settings (this, or -B) actually stop __pycache__.
+export PYTHONDONTWRITEBYTECODE := 1
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 ETC := $(GIT_ROOT)/,
 RUN_TEST := python3 -B ezr.py --all

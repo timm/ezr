@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 -B
 """
 ezr0.py: multi-objective XAI using minimal labels
 Faster, simpler AI. Better maps, not bigger boots. 

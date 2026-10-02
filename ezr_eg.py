@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 -B
 """
 ezr_eg.py: demos for ezr.py.  Try  ./ezr_eg.py --h
 (c) 2026 Tim Menzies <timm@ieee.org> MIT license

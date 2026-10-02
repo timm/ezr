@@ -13,6 +13,7 @@ eza()  { command eza --icons=always "$@"; }
 # environment
 export EDITOR="$(command -v nano)"
 export BASH_SILENCE_DEPRECATION_WARNING=1
+export PYTHONDONTWRITEBYTECODE=1   # py3.13 ignores the runtime flag
 export HISTSIZE=10000
 export HISTFILESIZE=20000
 
