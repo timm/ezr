@@ -4,7 +4,7 @@
 
 SHELL := /bin/bash
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
-ETC := $(GIT_ROOT)/etc
+ETC := $(GIT_ROOT)/,
 RUN_TEST := python3 -B ezr.py --all
 
 CLS    := '\033[H\033[J'
@@ -106,12 +106,12 @@ pushpdf: tosem ## rebuild paper, commit it, push
 	@git add docs/sec*.py docs/tosem10.pdf docs/tosem10.tex
 	@git commit -m "rebuild tosem pdf"; git push
 
-docs/ezr.html: ezr.py etc/lit.py ## literate page via pycco
-	@python3 -B etc/lit.py ezr.py
+docs/ezr.html: ezr.py ,/lit.py ## literate page via pycco
+	@python3 -B ,/lit.py ezr.py
 	@open $@
 
-docs/ezr_eg.html: ezr_eg.py etc/lit.py ## literate page, demos
-	@python3 -B etc/lit.py ezr_eg.py
+docs/ezr_eg.html: ezr_eg.py ,/lit.py ## literate page, demos
+	@python3 -B ,/lit.py ezr_eg.py
 	@open $@
 
 Tuts := $(patsubst %.md,%.html,$(wildcard $(Html)/*.md))

@@ -1,4 +1,4 @@
-# Usage: gawk -f etc/help.awk Makefile
+# Usage: gawk -f ,/help.awk Makefile
 BEGIN {
     FS = ":.*?##"; 
     printf "\nUsage:\n  make \033[36m<target>\033[0m\n\ntargets:\n"

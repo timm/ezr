@@ -6,8 +6,8 @@ tree() { command tree -C "$@"; }
 ls()   { command ls --color "$@"; }
 grep() { command grep --color=auto "$@"; }
 col()  { command column -s, -t "$@"; }
-tmux() { command tmux -u -f $GIT_ROOT/etc/tmux.rc; }
-vi()   { command nvim -u $GIT_ROOT/etc/nviminit.lua "$@"; }
+tmux() { command tmux -u -f $GIT_ROOT/,/tmux.rc; }
+vi()   { command nvim -u $GIT_ROOT/,/nviminit.lua "$@"; }
 eza()  { command eza --icons=always "$@"; }
 
 # environment

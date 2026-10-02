@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Usage: ./etc/runs.sh [N] [JOBS]
+# Usage: ./,/runs.sh [N] [JOBS]
 # Saturated parallel pool: keeps JOBS workers busy via `wait -n`.
 
 FILES=($(find "$HOME/gits/moot/optimize" -name "*.csv" -type f))

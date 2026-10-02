@@ -178,13 +178,16 @@ Key exports:
 ## FILES
 
     ezr/
-      ezr.py          Library + demos (~440 lines)
-      ezr_eg.py       Clustering + optimizer demos (~170 lines)
+      ezr.py          The library (~340 lines)
+      ezr_eg.py       Demos; `python3 ezr_eg.py --all` runs them
+      how.py          Applications layer (see how.md)
+      Makefile        Tasks; `make help` lists them
       pyproject.toml  Package config (ezr, ezr-eg commands)
       README.md       This file
       CHANGELOG.md    Release notes
       LICENSE.md      MIT
-      etc/            Paper artifacts (runs.sh, plot2.py), helpers
+      docs/           The published site, timm.github.io/ezr
+      ,/              Everything minor: helpers, essays, dotfiles
 
 ## AUTHOR
 
