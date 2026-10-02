@@ -40,7 +40,7 @@ push: ## save to cloud
 	@read -p "Reason? " msg; git commit -am "$$msg"; git push; git status
 
 ghReset: # GH esotericia
-	git remote set-url origin https://timmenzies@github.com/timmenzies/ez.git
+	git remote set-url origin https://github.com/timm/ezr.git
 
 lint: $f.py ## Lint python file x.py using `make lint f=x`
 	@pylint --rcfile=$(ETC)/pylintrc $f.py
@@ -92,13 +92,6 @@ Html := $(GIT_ROOT)/docs
 
 docs: $(Html)/ezr.html $(Html)/ezr_eg.html ~/tmp/ezr.pdf
 
-$(Html)/%.html: %.py
-	@mkdir -p $(Html)
-	@awk -f $(ETC)/py.awk $< > $(Html)/$<
-	@cd $(Html) && pycco -d . $<
-	@cat $(ETC)/custom.css >> $(Html)/pycco.css
-	@awk -v HEADER=$(ETC)/header.html -f $(ETC)/html.awk $@ > $@.tmp && mv $@.tmp $@
-	@rm $(Html)/$<
 
 tosem: ## rebuild docs/tosem10.pdf from ezr.py sections
 	@gawk 'BEGIN{RS="\f"} {sub(/^\n/,""); \
