@@ -20,4 +20,4 @@ ezr-eg = "ezr_eg:main"
 py-modules = ["ezr", "ezr_eg"]
 
 [project.urls]
-Changelog = "https://github.com/timm/ezr/blob/main/CHANGELOG.md"
+Changelog = "https://github.com/timm/ezr/blob/main/docs/CHANGELOG.md"
