@@ -13,6 +13,7 @@ ezr_eg.py: demos for ezr.py.  Try  ./ezr_eg.py --h
 import os, sys, random # pylint: disable=C0410
 import ezr
 from ezr import *
+sys.dontWriteBytecode = True
 
 the.Eras, the.Draws, the.Restart = 4, 20, 30
 the.Klass = "~/gits/moot/classify/diabetes.csv"
