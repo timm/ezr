@@ -89,4 +89,4 @@ Classic machine learning covers a different slice of the same
 surface -- classify, regress, cluster, detect, retrieve, repair,
 synthesize, explain, plan -- and desugars to the same core.
 
-Details, code and costs: `how.md`.
+Details, code and costs: `docs/ezr.md`.

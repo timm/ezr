@@ -405,15 +405,16 @@ optimize = acquire            # plan, look up, monitor, until settled
 
 `ezr.py` already ships it, as `holdout`:
 
-```python
-def holdout(tbl):
-  rows = random.sample(tbl.rows, len(tbl.rows))
-  n = len(rows) // 2
-  train, test = rows[:n][:the.Few], rows[n:]
-  tr = clone(tbl, train)
-  tt  = tree(tr, acquire(tr, the.Stop - the.Check))            # 1
-  top = sorted(test, key=lambda r: leaf(tt,r)[2])[:the.Check]  # 2
-  return min(top, key=lambda r: ydist(tr, r))                  # 3
+```py
+def holdout(tbl: TBL, pick: PICKER = acquire) -> ROW:
+  "Train on half; of CHECK guesses on the rest, pick best."
+  rows  = random.sample(tbl.rows, len(tbl.rows))
+  n     = len(rows)//2
+  tr    = clone(tbl, rows[:n][:the.Few])
+  lab   = clone(tbl, pick(tr, the.Stop - the.Check))
+  tt    = tree(lab, lab.rows)
+  top   = sorted(rows[n:], key=lambda r: leaf(tt,r).mu)
+  return min(top[:the.Check], key=lambda r: ydist(lab, r))
 ```
 
 Three moves. (1) ACQUIRE spends nearly all the budget, choosing
@@ -607,14 +608,13 @@ REGRESSION return, and no cell of the standard picture asks for it.
 
 ## 8. Built
 
-`how.py`, 284 lines, `import ezr`. It is this document in order:
-the four primitives section 6 called missing, then `halve`, then
-`relevant` / DISTINGUISH / `impute`, then one function per
-application in capitals, then a demo for each. `ezr.py` is not
-touched.
+The second half of `ezr_eg.py` is this document in order: the four
+primitives section 6 called missing, then `halve`, then `relevant`
+/ DISTINGUISH / `impute`, then one function per application in
+capitals, then a demo for each. `ezr.py` itself is not touched.
 
 ```
-python3 how.py --all
+python3 ezr_eg.py --all
 ```
 
 What that prints, on `$MOOT` data, unedited:
@@ -671,3 +671,4 @@ ranking rows against each other, useless as an absolute threshold
 -- which is what ALERTS wants. ALERTS therefore compares each step
 against the spread of earlier steps rather than against any fixed
 number, and that is a workaround, not an answer.
+

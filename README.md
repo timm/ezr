@@ -180,12 +180,11 @@ Key exports:
     ezr/
       ezr.py          The library (~340 lines)
       ezr_eg.py       Demos; `python3 ezr_eg.py --all` runs them
-      how.py          Applications layer (see docs/how.md)
       Makefile        Tasks; `make help` lists them
       pyproject.toml  Package config (ezr, ezr-eg commands)
       README.md       This file
       docs/           The published site, timm.github.io/ezr
-        how.md        One function per application
+        ezr.md        The library, woven; one function per application
         CHANGELOG.md  Release notes
         LICENSE.md    MIT
       ,/              Everything minor: helpers, essays, dotfiles
