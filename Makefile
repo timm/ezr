@@ -130,6 +130,6 @@ comments: ## claude adds missing comments; review diff, then "make update"
 # x.md is both input and output, so mtime can never decide.
 # FORCE makes it always run; $< is the .py, not FORCE.
 %.md : %.py FORCE
-	gawk -f weave.awk $< $@ > _tmp; mv _tmp $@
+	gawk -f $(ETC)/weave.awk $< $@ > _tmp; mv _tmp $@
 
 FORCE:
