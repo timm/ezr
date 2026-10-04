@@ -8,11 +8,13 @@ ezr_eg.py: demos for ezr.py.  Try  ./ezr_eg.py --h
 # pylint: disable=invalid-name,broad-exception-caught
 # pylint: disable=wildcard-import,unused-wildcard-import
 # pylint: disable=too-many-locals,missing-function-docstring
-# pylint: disable=protected-access
+# pylint: disable=protected-access,redefined-outer-name
 
 import os, sys, random # pylint: disable=C0410
 import ezr
 from ezr import *
+
+type CLUSTERS = list[TBL]   # what `halve` returns
 
 the.Eras, the.Draws, the.Restart = 4, 20, 30
 the.Klass = "~/gits/moot/classify/diabetes.csv"
@@ -72,9 +74,9 @@ def eg_holdout() -> None:
   print(
     f"{round(sum(ws)/len(ws)):>4} {os.path.basename(the.File)}")
 
-def eg_vs() -> None:
+def eg_vs(tbl: TBL | None = None) -> None:
   "Acquire versus random, same budget.  0 if the same."
-  t = Tbl(csv(the.File)); w = wins(t)
+  t = tbl or Tbl(csv(the.File)); w = wins(t)
   a = [w(holdout(t, acquire)) for _ in range(the.Repeats)]
   b = [w(holdout(t, grabs))   for _ in range(the.Repeats)]
   d = 0 if same(a,b) else round(sum(a)/len(a) - sum(b)/len(b))
@@ -195,7 +197,7 @@ def eg_seek() -> None:
       print(f"{searcher.__name__:<3} {picker.__name__:<7}"
             f" win {round(sum(ws)/len(ws)):>4}")
 
-#-- how: missing primitives ---------------------------------
+#-- how: missing primitives ---------------------------------
 # Section 6 of how.md: the cost. Here it is, paid.
 
 def middles(tbl: TBL, ats=None) -> MIDS:
@@ -230,7 +232,7 @@ def project(tbl: TBL, a: ROW, b: ROW):
   return lambda r: (xdist(tbl,a,r)**2 + c*c
                     - xdist(tbl,b,r)**2) / (2*c)
 
-def halve(tbl: TBL, rows=None, stop=None) -> list:
+def halve(tbl: TBL, rows=None, stop=None) -> CLUSTERS:
   "Cluster: recursive halving between poles; no y values."
   stop = stop or the.Leaf
   def go(rows):
@@ -262,7 +264,7 @@ def ymu(tbl: TBL, rows: ROWS) -> float:
 def blank(tbl: TBL) -> ROW:
   return ["?" for _ in tbl.names]
 
-def eras(tbl: TBL, at: int, n=None) -> list:
+def eras(tbl: TBL, at: int, n=None) -> CLUSTERS:
   "Split rows, ordered by column AT, into N equal slices."
   n    = n or the.Eras
   rows = sorted((r for r in tbl.rows if r[at] != "?"),
@@ -272,7 +274,7 @@ def eras(tbl: TBL, at: int, n=None) -> list:
 
 #-- how: three ways to aim a primitive at a cluster ---------
 
-def relevant(tbl: TBL, row: ROW, cs: list) -> TBL:
+def relevant(tbl: TBL, row: ROW, cs: CLUSTERS) -> TBL:
   "The cluster whose x-centroid is nearest ROW."
   return min(cs, key=lambda c: xdist(tbl, row, middles(c)))
 
@@ -289,89 +291,103 @@ def impute(row: ROW, c: TBL, ats) -> ROW:
   return [sample(c.cols[at]) if at in ats else v
           for at, v in enumerate(row)]
 
-#-- how: the applications -----------------------------------
+#-- how: the applications -----------------------------------
 
-def SUMMARIZATION(tbl, c=None):
+def SUMMARIZATION(tbl: TBL, c: TBL | None = None) -> MIDS:
   return middles(c or tbl)
 
-def CLASSIFICATION(tbl, row, cs):
+def CLASSIFICATION(tbl: TBL, row: ROW,
+                   cs: CLUSTERS) -> ATOM:
   return mid(relevant(tbl, row, cs).cols[klass(tbl)])
 
-def REGRESSION(tbl, row, cs):
+def REGRESSION(tbl: TBL, row: ROW, cs: CLUSTERS) -> MIDS:
   return middles(relevant(tbl, row, cs),
                  [c.at for c in tbl.y])
 
-def ANOMALY(tbl, row, cs):
+def ANOMALY(tbl: TBL, row: ROW, cs: CLUSTERS) -> float:
   return xdist(tbl, row, middles(relevant(tbl, row, cs)))
 
-def RETRIEVAL(tbl, row, cs):
+def RETRIEVAL(tbl: TBL, row: ROW, cs: CLUSTERS) -> ROWS:
   return relevant(tbl, row, cs).rows
 
-def SPREAD(tbl, row, cs, n=None): # table's unnamed row
-  c = relevant(tbl, row, cs)
+def SPREAD(tbl: TBL, row: ROW, cs: CLUSTERS,
+           n: int | None = None) -> dict[int, list[ATOM]]:
+  c = relevant(tbl, row, cs)        # table's unnamed row
   return {at: sorted(sample(c.cols[at])
                      for _ in range(n or the.Draws))
           for at in targets(tbl)}
 
-def SYNTHESIS(tbl, c):
+def SYNTHESIS(tbl: TBL, c: TBL) -> ROW:
   return impute(blank(tbl), c, set(c.cols))
 
-def REPAIR(tbl, row, cs):
+def REPAIR(tbl: TBL, row: ROW, cs: CLUSTERS) -> ROW:
   c = relevant(tbl, row, cs)
   return impute(row, c,
                 {at for at in c.cols if row[at] == "?"})
 
-def PLANNING(tbl, row, cs, can=None):  # minimal: one column
-  here   = relevant(tbl, row, cs)
+type ADVICE = tuple[str, ATOM, ATOM]  # column, old, new
+
+def PLANNING(tbl: TBL, row: ROW, cs: CLUSTERS,
+             can: list | None = None) -> ADVICE | None:
+  here   = relevant(tbl, row, cs)   # minimal: one column
   better = min(cs, key=lambda c: ymu(tbl, c.rows))
   if better is here: return None
   at, v = DISTINGUISH(tbl, here, better, can)
   return (tbl.names[at], row[at], v)
 
-def PLANNING_TOTAL(tbl, row, cs, can=None): # total: all cells
+def PLANNING_TOTAL(tbl: TBL, row: ROW, cs: CLUSTERS,
+                   can: list | None = None) -> ROW:
   better = min(cs, key=lambda c: ymu(tbl, c.rows))
   return impute(row, better, set(can or xats(tbl)))
 
-def MONITORING(tbl, row, cs, can=None):
+def MONITORING(tbl: TBL, row: ROW, cs: CLUSTERS,
+               can: list | None = None) -> ADVICE:
   here  = relevant(tbl, row, cs)
   worse = max(cs, key=lambda c: ymu(tbl, c.rows))
   at, v = DISTINGUISH(tbl, here, worse, can)
   return (tbl.names[at], row[at], v)
 
-def EXPLANATION(tbl, a, b):
+def EXPLANATION(tbl: TBL, a: TBL, b: TBL) -> str:
   at, v = DISTINGUISH(tbl, a, b)
   return f"{tbl.names[at]} = {say(v)}"
 
-def TRENDS(tbl, ers, row, stop=None):
+def TRENDS(tbl: TBL, eras: CLUSTERS, row: ROW,
+           stop: int | None = None) -> CLUSTERS:
   return [relevant(tbl, row, halve(e, stop=stop))
-          for e in ers]
+          for e in eras]
 
-def FORECAST(tbl, ers, row, stop=None):
-  cs = TRENDS(tbl, ers, row, stop)
+def FORECAST(tbl: TBL, eras: CLUSTERS, row: ROW,
+             stop: int | None = None) -> dict:
+  cs = TRENDS(tbl, eras, row, stop)
   return {at: delta(cs[-2].cols[at], cs[-1].cols[at])
           for at in cs[-1].cols}
 
-def ALERTS(tbl, ers, row, stop=None):
-  cs    = TRENDS(tbl, ers, row, stop)
+def ALERTS(tbl: TBL, eras: CLUSTERS, row: ROW,
+           stop: int | None = None) -> tuple[NUMS, bool]:
+  cs    = TRENDS(tbl, eras, row, stop)
   steps = [xdist(tbl, middles(a), middles(b))
            for a, b in zip(cs, cs[1:])]
   if len(steps) < 3: return steps, False
   h = adds(steps[:-1])
   return steps, steps[-1] > h.mu + 2*h.sd
 
-def SIMULATION(tbl, cs, n=None):   # unseen rows, scored
-  out = []
+def SIMULATION(tbl: TBL, cs: CLUSTERS,
+               n: int | None = None
+               ) -> list[tuple[ROW, MIDS]]:
+  out = []                          # unseen rows, scored
   for _ in range(n or the.Draws):
     r = impute(blank(tbl), random.choice(cs),
                set(xats(tbl)))
     out += [(r, REGRESSION(tbl, r, cs))]
   return out
 
-def OPTIMIZATION(tbl, budget=None):     # demoed by eg_vs
-  return acquire(tbl, budget or the.Stop)
+def OPTIMIZATION(tbl: TBL,
+                 budget: int | None = None) -> ROWS:
+  return sorted(acquire(tbl, budget or the.Stop),
+                key=lambda r: ydist(tbl, r))  # see eg_vs
 
-def DISTINGUISHABILITY(xs, ys):         # demoed by eg_same
-  return same(xs, ys)
+def DISTINGUISHABILITY(xs: NUMS, ys: NUMS) -> bool:
+  return same(xs, ys)               # see eg_same
 
 #-- how: demos ----------------------------------------------
 
@@ -447,16 +463,16 @@ def eg_advise() -> None:
 def eg_trends() -> None:
   "TRENDS, FORECAST, ALERTS: one trajectory, three reads."
   t   = Tbl(csv(the.File))
-  ers = eras(t, 3)              # Model year is the order
+  slices = eras(t, 3)              # Model year is the order
   r   = t.rows[0]
-  cs  = TRENDS(t, ers, r, stop=16)
+  cs  = TRENDS(t, slices, r, stop=16)
   print("era mpg ", [say(mid(c.cols[7])) for c in cs])
   print("era lbs ", [say(mid(c.cols[5])) for c in cs])
-  f = FORECAST(t, ers, r, stop=16)
+  f = FORECAST(t, slices, r, stop=16)
   print("next mpg", say(mid(f[7])),
         " next lbs", say(mid(f[5])))
   print("next origin", say(f[4]))
-  steps, odd = ALERTS(t, ers, r, stop=16)
+  steps, odd = ALERTS(t, slices, r, stop=16)
   print("steps   ", [say(s) for s in steps], "alert:", odd)
 
 def eg_simulate() -> None:
@@ -465,6 +481,20 @@ def eg_simulate() -> None:
   for r, y in SIMULATION(t, cs, 3):
     print([say(v) for v in r[:5]], "->",
           {t.names[at]: say(v) for at, v in y.items()})
+
+def eg_optimize() -> None:
+  "OPTIMIZATION: acquire, best first.  Then defer to --vs."
+  t = Tbl(csv(the.File))
+  print("best ydist", say(ydist(t, OPTIMIZATION(t)[0])))
+  eg_vs(t)
+
+def eg_distinguish() -> None:
+  "DISTINGUISHABILITY: same().  Then defer to --same."
+  x = [random.gauss(10, 1) for _ in range(40)]
+  z = [random.gauss(11, 1) for _ in range(40)]
+  print("x~x", DISTINGUISHABILITY(x, x),
+        " x~z", DISTINGUISHABILITY(x, z))
+  eg_same()
 
 def eg_all() -> None:
   "Run every demo; exit code counts the crashes."
