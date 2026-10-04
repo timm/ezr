@@ -8,46 +8,21 @@ SHELL := /bin/bash
 export PYTHONDONTWRITEBYTECODE := 1
 GIT_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null)
 ETC := $(GIT_ROOT)/,
-RUN_TEST := python3 -B ezr.py --all
 
-CLS    := '\033[H\033[J'
-cRESET := '\033[0m'
-cYELLOW:= '\033[1;33m'
+# Only file recipes live here; the verbs (ok push lint sweep
+# weave) moved to ./rc, which has positional args and no $$.
+# .PHONY so a same-named file cannot shadow a verb -- which
+# `docs/` very nearly did.
+.PHONY: help update
 
 help: ## show help
-	@gawk -f $(ETC)/help.awk $(MAKEFILE_LIST) 
+	@gawk 'BEGIN { FS=":.*?##"; \
+	   printf "\nUsage:\n  make \033[36m<target>\033[0m\n\ntargets:\n" } \
+	 /^[~a-z0-9A-Z_%.\/-]+:.*?##/ { \
+	   printf("  \033[36m%-25s\033[0m %s\n", $$1, $$2) | "sort" }' \
+	 $(MAKEFILE_LIST)
 
-push2pypi: ## push to PyPi
-	pip install build twine
-	python3 -B -m build
-	twine upload dist/*
-	rm -rf dist build *.egg-info
-
-pyclean: ## remove python temporaries
-	@find $(GIT_ROOT) -type d \( -name __pycache__ -o -name .pytest_cache -o -name "*.egg-info" \) -exec rm -rf {} +
-
-sh: ## demo of my shell
-	@-echo -e $(CLS)$(cYELLOW); figlet -W -f slant eZR.ai; echo -e $(cRESET)
-	@-bash --init-file $(ETC)/bash.rc -i
-
-install: ok ## install related repos to $HOME/gits
-
-ok: $(HOME)/gits/moot ## set up baseline
-	@-chmod +x $(GIT_ROOT)/*.py
-
-$(HOME)/gits/moot: ## get the data
-	@mkdir -p $(dir $@)
-	@[ -d $@/.git ] || git clone http://tiny.cc/moot $@
-
-push: ## save to cloud
-	@read -p "Reason? " msg; git commit -am "$$msg"; git push; git status
-
-ghReset: # GH esotericia
-	git remote set-url origin https://github.com/timm/ezr.git
-
-lint: $f.py ## Lint python file x.py using `make lint f=x`
-	@pylint --rcfile=$(ETC)/pylintrc $f.py
-
+# ---- paper ---------------------------------------------------
 Font ?= 4.5 # pdf font size
 Cols ?= 3   # pdf columns
 
@@ -64,75 +39,25 @@ Cols ?= 3   # pdf columns
 	 | ps2pdf - $@
 	@open $@
 
-stats: ## generate stats
-	@bash $(ETC)/stats.sh $(HOME)/gits/moot/optimize
-
-# Test runner targets
-CSVS = ls $(HOME)/gits/moot/optimize/*/*.csv | sort -R | xargs -P 24 -I{} sh -c
-
-~/tmp/ezr_acq.log: ok ## run ez_acq tests
-	@mkdir -p ~/tmp
-	@$(CSVS) 'python3 -B ezr.py -File "{}" --holdout' | tee $@
-	@cut -d \  -f 2 $@ | sort -n | fmt -71
-
-Par ?= $(shell sysctl -n hw.ncpu 2>/dev/null || nproc) # parallel jobs
-Do  ?= --tree                                          # demo to time
-
-runtime: ok ## time parallel sweep over all optimize data (Par= Do=)
-	@mkdir -p ~/tmp
-	@n=$$(ls $(HOME)/gits/moot/optimize/*/*.csv | wc -l | tr -d ' '); \
-	 echo "sweep: $$n datasets, -P$(Par), $(Do)"; \
-	 time ( ls $(HOME)/gits/moot/optimize/*/*.csv \
-	        | xargs -P $(Par) -I{} python3 -B ezr.py -File "{}" $(Do) \
-	          >~/tmp/runtime.log 2>&1 )
-	@echo "-> ~/tmp/runtime.log ($$(wc -l <~/tmp/runtime.log | tr -d ' ') lines)"
-
-runs: ## run random test loop
-	@mkdir -p ~/tmp
-	bash $(ETC)/runs.sh | tee ~/tmp/runs.log
-
-Html := $(GIT_ROOT)/docs
-
-docs: $(Html)/ezr.html $(Html)/ezr_eg.html ~/tmp/ezr.pdf
-
-
-tosem: ## rebuild docs/tosem10.pdf from ezr.py sections
-	@gawk 'BEGIN{RS="\f"} {sub(/^\n/,""); \
-	   printf "%s",$$0 > sprintf("docs/sec%02d.py",NR-1)}' ezr.py
-	@cd docs && \
-	  pdflatex -shell-escape -interaction=batchmode tosem10.tex >/dev/null 2>&1 && \
-	  pdflatex -shell-escape -interaction=batchmode tosem10.tex >/dev/null 2>&1
-	@pdfinfo docs/tosem10.pdf | grep Pages
-	@open docs/tosem10.pdf 2>/dev/null || true
-
-pushpdf: tosem ## rebuild paper, commit it, push
-	@git add docs/sec*.py docs/tosem10.pdf docs/tosem10.tex
-	@git commit -m "rebuild tosem pdf"; git push
-
-docs/ezr.html: ezr.py ,/lit.py ## literate page via pycco
-	@python3 -B ,/lit.py ezr.py
+# ---- web ---------------------------------------------------
+docs/ezr.html: ezr.py $(ETC)/lit.py ## literate page via pycco
+	@python3 -B $(ETC)/lit.py ezr.py
 	@open $@
 
-docs/ezr_eg.html: ezr_eg.py ,/lit.py ## literate page, demos
-	@python3 -B ,/lit.py ezr_eg.py
+docs/ezr_eg.html: ezr_eg.py $(ETC)/lit.py ## literate page, demos
+	@python3 -B $(ETC)/lit.py ezr_eg.py
 	@open $@
 
-Tuts := $(patsubst %.md,%.html,$(wildcard $(Html)/*.md))
+# ezr.md is skipped: pycco owns ezr.html.  CHANGELOG and LICENSE
+# are documents, not tutorials.
+Skip := $(addprefix docs/,CHANGELOG.md LICENSE.md ezr.md)
+Tuts := $(patsubst %.md,%.html, \
+          $(filter-out $(Skip),$(wildcard docs/*.md)))
 
-$(Html)/%.html: $(Html)/%.md $(ETC)/tut.html ## .md ==> .html tutorial
+docs/%.html: docs/%.md $(ETC)/tut.html ## .md ==> .html tutorial
 	@echo "md-ing $@"
-	@pandoc -s --syntax-highlighting=none --template=$(ETC)/tut.html -M pagetitle=$* -o $@ $<
+	@pandoc -s --syntax-highlighting=none \
+	  --template=$(ETC)/tut.html -M pagetitle=$* -o $@ $<
 
-update: docs/ezr.html $(Html)/ezr_eg.html $(Tuts) ## rebuild all html; commit; push
+update: docs/ezr.html docs/ezr_eg.html $(Tuts) ## rebuild html; commit; push
 	@read -p "Reason? " msg; git commit -am "$$msg"; git push; git status
-
-comments: ## claude adds missing comments; review diff, then "make update"
-	claude -p "$$(cat $(ETC)/prompt.txt)"
-	@git diff --stat
-
-# x.md is both input and output, so mtime can never decide.
-# FORCE makes it always run; $< is the .py, not FORCE.
-%.md : %.py FORCE
-	gawk -f $(ETC)/weave.awk $< $@ > _tmp; mv _tmp $@
-
-FORCE:

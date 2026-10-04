@@ -98,7 +98,25 @@ def build(py):
     for b in names:
       if known(b): cb.setdefault(b, []).append(a)
   raw = open(py).read().replace("\f", "")
-  raw = re.sub(r"# pylint:[^\n]*\n", "", raw)
+  # Each def's docstring is reprinted as a comment above it, so
+  # the original is a duplicate.  Worse, a multi-line one breaks
+  # pycco: its section boundary lands inside an open string, so
+  # pygments tags pycco's #DIVIDER sentinel as a string, pycco's
+  # `divider_html` (which wants a comment) misses it, and the
+  # sentinel leaks onto the page.  So: lift them, then cut them.
+  ds, drop = {}, set()
+  for node in ast.walk(ast.parse(raw)):
+    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+      doc = ast.get_docstring(node, clean=True)
+      if doc:
+        ds[node.name] = " ".join(doc.split())
+        d = node.body[0]
+        drop.update(range(d.lineno - 1, d.end_lineno))
+  raw = "\n".join(l for i, l in enumerate(raw.split("\n"))
+                  if i not in drop)
+  # `[^\n]*\n` used to eat the newline too, welding an inline
+  # pragma's line onto the next one.
+  raw = re.sub(r"[ \t]*# pylint:[^\n]*", "", raw)
   lines = raw.split("\n")
   q = [i for i,l in enumerate(lines) if l.strip() == '\'\'\''][:2]
   q = q or [i for i,l in enumerate(lines)
@@ -123,10 +141,7 @@ def build(py):
       r = rt.get(name,
                  "None" if name.startswith("test_") else "")
       r = f" -> {r}" if r else ""
-      cmt = cmt.strip() if cmt else fb.get(name)
-      if not cmt and i+1 < len(src):
-        dm = re.match(r'\s+"(.*)"\s*$', src[i+1])
-        if dm: cmt = dm.group(1)
+      cmt = cmt.strip() if cmt else fb.get(name) or ds.get(name)
       calls = [x for x in us.get(name, []) if known(x)]
       parts = []
       if calls:

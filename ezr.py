@@ -1,25 +1,25 @@
 #!/usr/bin/env python3 -B
 """
-ezr0.py: multi-objective XAI using minimal labels
-Faster, simpler AI. Better maps, not bigger boots. 
-(c) 2026 Tim Menzies <timm@ieee.org> MIT license
+ezr0.py: multi-objective XAI using minimal labels.   
+Faster, simpler AI. Better maps, not bigger boots.    
+(c) 2026 Tim Menzies <timm@ieee.org> MIT license.    
 
-Options:
-      -Start=4         acquire: initial random labels
-      -Stop=50         acquire: total labelling budget
-      -Few=128         holdout: max training rows
-      -Cuts=8          tree: splits to try, per num
-      -Leaf=4          tree: min rows in any leaf
-      -Check=5         holdout: top picks to label
-      -Repeats=20      holdout: how many train/test splits
-      -Seed=1234567891 random number seed
-      -File=~/gits/moot/optimize/misc/auto93.csv """
+Options:    
+      -Start=4         acquire: initial random labels   
+      -Stop=50         acquire: total labelling budget   
+      -Few=128         holdout: max training rows   
+      -Cuts=8          tree: splits to try, per num   
+      -Leaf=4          tree: min rows in any leaf  
+      -Check=5         holdout: top picks to label  
+      -Repeats=20      holdout: how many train/test splits  
+      -Seed=1234567891 random number seed  
+      -File=~/gits/moot/optimize/misc/auto93.csv   
 
-# pylint: disable=bad-indentation,multiple-statements
-# pylint: disable=invalid-name,ungrouped-imports
-# pylint: disable=attribute-defined-outside-init
-# pylint: disable=protected-access,broad-exception-caught
-
+"""
+# pylint: disable=bad-indentation,multiple-statements  
+# pylint: disable=invalid-name,ungrouped-imports   
+# pylint: disable=attribute-defined-outside-init   
+# pylint: disable=protected-access,broad-exception-caught  
 from typing import Any
 import os, re, sys, random, traceback # pylint: disable=C0410
 from math import exp, log2, sqrt
@@ -165,6 +165,7 @@ def xdist(tbl: TBL, r1: ROW, r2: ROW | MIDS) -> float:
                     for c in tbl.x), len(tbl.x))
 
 #-- acquire ------------------------------------------------
+
 def oracle(row: ROW) -> ROW:
   """Labeller. Rows here arrive with ys, so nothing to do.
   Real oracles fill in any missing y cells (and can close

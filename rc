@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+# rc -- run commands for this repo.
+#   ./rc              an interactive shell with all of this loaded
+#   ./rc lint ezr     run one command, then exit
+#   . ./rc            load it into the shell you are already in
+#
+# Executed, $0 == BASH_SOURCE[0], so we exec an interactive bash
+# that reads THIS file as its init-file.  That re-entry sources
+# us, making $0 "bash", so the guard is false and we do not
+# loop.  Sourced from a live shell, the guard is false as well:
+# no subshell, the definitions just land where you are.
+# No args: become that shell.  With args: fall through, define
+# everything, and run them from the last line of this file.
+[ "$0" = "${BASH_SOURCE[0]}" ] && [ $# -eq 0 ] \
+  && exec bash --init-file "$0" -i
+
+# Here = the dir holding this file (the repo root, not the dir
+# you cd to), so ,/ resolves even outside a git repo.
+Here=$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)
+
+export EDITOR="nvim -u $Here/,/nviminit.lua"
+export BASH_SILENCE_DEPRECATION_WARNING=1
+export PYTHONDONTWRITEBYTECODE=1  # py3.13 ignores the -B flag
+export HISTSIZE=10000
+export HISTFILESIZE=20000
+export HISTCONTROL=ignoredups:erasedups
+export LESS=-R                    # let git colors through
+
+# histappend matters: without it, exiting a shell OVERWRITES
+# .bash_history, so a second shell eats the first one's.
+shopt -s histappend autocd cdspell dirspell globstar checkwinsize
+
+# up-arrow walks only the lines starting with what you typed.
+# Only an interactive shell has a line editor to bind to.
+if [[ $- == *i* ]]; then
+  bind '"\e[A": history-search-backward'
+  bind '"\e[B": history-search-forward'
+fi
+
+ls()     { command ls --color "$@"; }
+grep()   { command grep --color=auto "$@"; }
+tree()   { command tree -C "$@"; }
+eza()    { command eza --icons=always "$@"; }
+col()    { command column -s, -t "$@"; }   # eyeball a csv
+vi()     { $EDITOR "$@"; }                 # $EDITOR set above
+tmux()   { command tmux -u -f "$Here/,/tmux.rc" "$@"; }
+branch() { git branch --show-current 2>/dev/null; }
+dirty()  { [ -n "$(git status -s 2>/dev/null)" ] && echo "*"; }
+root()   { cd "$Here"; }
+usage()  { grep -oE '^[a-z]+\(\)' "$Here/rc" | tr -d '()' | sort \
+           | tr '\n' ' '; echo; }
+
+# ---- jobs that were Makefile verbs -------------------------
+# They never used make's mtime logic, and make has no positional
+# args, so `lint ezr` beats `make lint f=ezr`.
+Moot=~/gits/moot/optimize
+
+ok() {                       # get the data; code runnable
+  [ -d ~/gits/moot/.git ] || git clone http://tiny.cc/moot ~/gits/moot
+  chmod +x "$Here"/*.py 2>/dev/null
+}
+
+push() {                     # save to cloud
+  local msg
+  read -rp "Reason? " msg
+  git commit -am "${msg:-saving}"
+  git push
+  git status -sb
+}
+
+lint() {                     # lint one file:  lint ezr
+  pylint --rcfile="$Here/,/pylintrc" "${1%.py}.py"
+}
+
+# ezr.py is a library with no __main__; ezr_eg.py is the cli.
+sweep() {                    # sweep [demo] [jobs], over all data
+  local do=${1:---tree} par=${2:-$(sysctl -n hw.ncpu 2>/dev/null || nproc)}
+  local csvs=("$Moot"/*/*.csv)
+  mkdir -p ~/tmp
+  echo "sweep: ${#csvs[@]} datasets, -P$par, $do"
+  time printf '%s\n' "${csvs[@]}" \
+    | xargs -P "$par" -I{} python3 -B "$Here/ezr_eg.py" -File {} "$do" \
+      > ~/tmp/sweep.log 2>&1
+  echo "-> ~/tmp/sweep.log ($(wc -l < ~/tmp/sweep.log) lines)"
+}
+
+weave() {                    # x.py -> x.md.  Always runs: x.md
+  local f=${1%.py}           # is both input and output, so no
+  gawk -f "$Here/,/weave.awk" "$f.py" "$f.md" > _tmp && mv _tmp "$f.md"
+}
+
+# Leave these as raw escape codes
+bold=$(tput bold)    ; plain=$(tput sgr0)
+cyan=$(tput setaf 6) ; yellow=$(tput setaf 3)
+
+# 🧩 parent/dir  branch*  ▶      \[ \] marks zero-width text,
+# so bash still counts the line length right.
+prompt_where='$(basename "$(dirname "$PWD")")/$(basename "$PWD")'
+prompt_git='$(branch)$(dirty)'
+prompt_fmt='🧩\[${bold}${cyan}\]'"$prompt_where"
+prompt_fmt+='\[${plain}\] \[${yellow}\]'"$prompt_git"
+prompt_fmt+='\[${plain}\] ▶ '
+PROMPT_COMMAND='PS1="'"$prompt_fmt"'"'
+
+# ./rc lint ezr  --  run one command and exit.  An `if` (not
+# `&&`) so that sourcing this file still returns 0.
+if [ "$0" = "${BASH_SOURCE[0]}" ] && [ $# -gt 0 ]; then "$@"; fi
