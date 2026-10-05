@@ -1,4 +1,4 @@
-![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white&labelColor=1D4ED8&color=0A2A7A)
+![Python 3.12+](https://img.shields.io/badge/Python-3.12+-blue?logo=python&logoColor=white&labelColor=1D4ED8&color=0A2A7A)
 ![Purpose XAI](https://img.shields.io/badge/Purpose-XAI-orange?logo=openai&logoColor=white&labelColor=FB8C00&color=A85A00)
 ![Goal Multi-Obj](https://img.shields.io/badge/Goal-Multi--Obj-purple?logo=target&logoColor=white&labelColor=C026D3&color=6D1780)
 ![Deps 0](https://img.shields.io/badge/Deps-0-green?logo=checkmarx&logoColor=white&labelColor=00C853&color=006B29)
@@ -65,13 +65,14 @@ entry, all at once. The exit code counts crashes, so
 ## INSTALLATION
 
     pip install ezr           # the ezr and ezr-eg commands
+                              # (both run the demos; ezr.py is a library)
 
 or run from a clone:
 
     git clone http://github.com/timm/ezr
-    cd ezr && ./ezr.py --help
+    cd ezr && ./ezr_eg.py --h
 
-Python 3.10+. Zero runtime dependencies. Sample data:
+Python 3.12+ (for `type X = ...`). Zero runtime dependencies. Sample data:
 
     git clone http://github.com/timm/moot ~/gits/moot
 

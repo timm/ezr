@@ -502,5 +502,9 @@ def eg_all() -> None:
                 for k,f in list(globals().items())
                 if k[:3]=="eg_" and f is not eg_all))
 
-if __name__ == "__main__":
+def cli() -> None:
+  "Console-script entry point: setuptools calls this with no args."
   main(sys.argv[1:] or ["--h"], globals())
+
+if __name__ == "__main__":
+  cli()
