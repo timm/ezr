@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ezr Manual</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+/* Layout: a printed manual page -- one measured column of prose,
+   full-bleed tables, everything else out of the way. */
+:root{
+  --paper:#f7f7f4; --ink:#16171a; --dim:#5e6166; --rule:#dcdcd6;
+  --card:#fffffe; --accent:#1b4d7a; --warm:#9a5b1e;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --paper:#121316; --ink:#e6e5e1; --dim:#9a9c9f; --rule:#2c2e33;
+  --card:#191b1f; --accent:#7fb2dd; --warm:#d9a35f; color-scheme:dark; }}
+:root[data-theme="dark"]{
+  --paper:#121316; --ink:#e6e5e1; --dim:#9a9c9f; --rule:#2c2e33;
+  --card:#191b1f; --accent:#7fb2dd; --warm:#d9a35f; color-scheme:dark; }
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--serif);
+     font-size:16px;line-height:1.55;margin:0}
+.wrap{max-width:860px;margin:0 auto;padding-inline:20px;padding-block:0 72px}
+code,pre,.mono{font-family:var(--mono)}
+
+header{border-bottom:1px solid var(--rule);margin-bottom:0}
+.masthead{display:flex;flex-wrap:wrap;align-items:baseline;gap:14px;
+          padding-block:34px 18px}
+h1{font-family:var(--mono);font-weight:600;font-size:30px;margin:0;
+   letter-spacing:-.02em}
+h1 .sec{color:var(--dim);font-weight:400}
+.tag{font-style:italic;color:var(--dim);font-size:16px;min-width:0}
+
+nav{display:flex;gap:2px;flex-wrap:wrap;position:sticky;
+    top:env(safe-area-inset-top,0px);background:var(--paper);
+    z-index:5;border-bottom:1px solid var(--rule);
+    margin-inline:-20px;padding-inline:20px}
+nav button{font-family:var(--mono);font-size:13px;letter-spacing:.06em;
+  text-transform:uppercase;background:none;border:0;color:var(--dim);
+  padding:13px 14px;cursor:pointer;border-bottom:2px solid transparent}
+nav button:hover{color:var(--ink)}
+nav button[aria-selected="true"]{color:var(--accent);
+  border-bottom-color:var(--accent)}
+nav button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+section{padding-top:30px}
+h2{font-family:var(--mono);font-size:13px;font-weight:600;
+   letter-spacing:.14em;text-transform:uppercase;color:var(--warm);
+   margin:34px 0 10px;text-wrap:balance}
+h2:first-child{margin-top:0}
+p{margin:0 0 14px;max-width:66ch;text-wrap:pretty}
+.lede{font-size:18px}
+ol{margin:0 0 14px;padding-left:22px;max-width:66ch}
+ol li{margin-bottom:5px;padding-left:4px}
+ol li::marker{font-family:var(--mono);color:var(--accent);font-size:13px}
+em.k{font-style:normal;font-family:var(--mono);font-size:.9em;
+     color:var(--accent)}
+
+.scroll{overflow-x:auto;margin-bottom:18px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:0}
+th,td{text-align:left;vertical-align:top;padding:7px 12px 7px 0;
+      border-bottom:1px solid var(--rule)}
+tr.g th{padding-top:26px;border-bottom:1px solid var(--ink)}
+tr.g span:first-child{font-family:var(--mono);font-size:12px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--warm)}
+tr.g .blurb{font-style:italic;color:var(--dim);font-weight:400;
+  margin-left:12px;font-size:13px}
+td.n{white-space:nowrap;width:1%}
+td.n code{color:var(--accent);font-weight:600}
+td.v code,td.s code{color:var(--dim);font-size:12.5px}
+td.s{white-space:nowrap;width:1%}
+td.d{min-width:16ch}
+
+details{margin-top:6px}
+summary{font-family:var(--mono);font-size:11.5px;color:var(--dim);
+  cursor:pointer;letter-spacing:.05em;width:fit-content}
+summary:hover{color:var(--accent)}
+details[open] summary{margin-bottom:7px}
+pre{background:var(--card);border:1px solid var(--rule);border-left:2px solid var(--accent);
+    padding:11px 13px;overflow-x:auto;font-size:12.5px;line-height:1.5;
+    margin:0;white-space:pre;color:var(--ink)}
+pre i{font-style:normal;color:var(--accent)}
+pre b{font-weight:400;color:var(--warm)}
+pre em{font-style:italic;color:var(--dim)}
+
+.data{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+      gap:0 30px;align-items:start}
+.ex{font-family:var(--mono);font-size:13px}
+.ex div{padding:4px 0;border-bottom:1px solid var(--rule);
+        display:flex;gap:14px;flex-wrap:wrap}
+.ex b{font-weight:400;color:var(--accent);white-space:nowrap}
+.ex span{color:var(--dim);font-style:italic;font-family:var(--serif);
+         font-size:14px;min-width:0}
+footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--rule);
+  font-size:13px;color:var(--dim);font-family:var(--mono)}
+footer a{color:var(--accent)}
+@media (max-width:560px){
+  td.s{display:none}
+  .masthead{padding-block:26px 14px}
+  h1{font-size:25px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);
+padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="masthead">
+    <h1>ezr<span class="sec">(1)</span></h1>
+    <div class="tag">multi-objective explanation from a few labels</div>
+  </div>
+  <nav role="tablist">
+    <button role="tab" aria-selected="true" aria-controls="man" id="t-man">Manual</button>
+    <button role="tab" aria-selected="false" aria-controls="fns" id="t-fns">Functions</button>
+    <button role="tab" aria-selected="false" aria-controls="dem" id="t-dem">Demos</button>
+    <button role="tab" aria-selected="false" aria-controls="ins" id="t-ins">Install</button>
+    <button role="tab" aria-selected="false" aria-controls="lic" id="t-lic">Licence</button>
+  </nav>
+</header>
+
+<section id="man" role="tabpanel" aria-labelledby="t-man">
+  <h2>Synopsis</h2>
+  <div class="scroll"><pre><code>./ezr_eg.py [-Key val]... [--demo]...</code></pre></div>
+
+  <h2>Description</h2>
+  <p class="lede">Rows have <em class="k">x</em> columns that are cheap and
+  known, and <em class="k">y</em> columns that are costly and mostly unknown.
+  Reading one row's <em class="k">y</em> is the only expensive act, so ezr
+  spends as few reads as it can.</p>
+  <ol>
+    <li>Label a few rows at random; sort them by <em class="k">ydist</em>.</li>
+    <li>Split those into <em class="k">best</em> and <em class="k">rest</em>;
+        take the two centroids.</li>
+    <li>Label whichever unlabelled row <em>looks</em> nearest best and
+        farthest from rest &mdash; judged on x columns only, which are free.</li>
+    <li>Repeat to the budget. That loop is <em class="k">acquire</em>.</li>
+    <li>Grow a tree over what got labelled, splitting on whatever tightens
+        <em class="k">y</em> most. Its leaves are the explanation.</li>
+  </ol>
+  <p><em class="k">grabs</em> does step 1 only, forever: the straw man that
+  any real acquisition has to beat.</p>
+
+  <h2>Data</h2>
+  <p>A csv whose header row names, types and routes every column. An upper-case
+  first letter means numeric, otherwise symbolic. The <em>last</em> letter gives
+  the role, and a cell of <code>?</code> is unknown.</p>
+  <div class="data">
+    <div class="scroll"><table><tbody>
+    {{ROLEROWS}}
+    </tbody></table></div>
+    <div>
+      <div class="scroll"><pre><code>Clndrs,Volume,HpX,Model,origin,Lbs-,Acc+,Mpg+
+8,304,193,70,1,4732,18.5,10
+4,97,?,82,2,2130,24.6,40</code></pre></div>
+      <p style="font-size:14px;color:var(--dim);font-style:italic">
+      Four x columns, three goals (lose weight, gain acceleration and
+      mileage), one ignored column, one unknown cell.</p>
+    </div>
+  </div>
+  <p><em class="k">ydist</em> is 0 at a row that hits every goal and 1 at the
+  worst possible row. Lower is better, everywhere in this system.</p>
+
+  <h2>Options</h2>
+  <div class="scroll"><table><tbody>
+  {{OPTROWS}}
+  </tbody></table></div>
+  <p>Written <code>-Key val</code>, space separated. A demo may poke a setting;
+  it is put back afterwards, and every demo starts from a fresh seed.</p>
+
+  <h2>Examples</h2>
+  <div class="ex">
+    <div><b>./ezr_eg.py --tree</b><span>grow a tree and print it</span></div>
+    <div><b>./ezr_eg.py -Stop 100 --holdout</b><span>100 labels, not 50</span></div>
+    <div><b>./ezr_eg.py -File my.csv --tree</b><span>your own data</span></div>
+    <div><b>./ezr_eg.py --all</b><span>every demo; exit code counts the crashes</span></div>
+    <div><b>./rc sweep --holdout 8</b><span>all of moot, 8 jobs</span></div>
+  </div>
+
+  <h2>Exit status</h2>
+  <p>Zero, or the number of demos that raised.</p>
+
+  <h2>Files</h2>
+  <div class="ex">
+    <div><b>ezr.py</b><span>the library: no main, nothing to run</span></div>
+    <div><b>ezr_eg.py</b><span>the demos and the command line</span></div>
+    <div><b>,/lit.py</b><span>renders ezr.py as a literate web page</span></div>
+    <div><b>rc</b><span>run commands: sweep, lint, push, weave</span></div>
+  </div>
+</section>
+
+<section id="fns" role="tabpanel" aria-labelledby="t-fns" hidden>
+  <h2>The library</h2>
+  <p>Every top-level function in <code>ezr.py</code>, in source order.
+  Open a row to read it; most are under ten lines.</p>
+  <div class="scroll"><table><tbody>
+  {{TABLE}}
+  </tbody></table></div>
+</section>
+
+<section id="dem" role="tabpanel" aria-labelledby="t-dem" hidden>
+  <h2>Demos</h2>
+  <p>Each is both an example and a test: it asserts what it claims.
+  <code>--all</code> runs the lot and exits with the number that crashed.</p>
+  <div class="scroll"><table><tbody>
+  {{DEMOS}}
+  </tbody></table></div>
+</section>
+
+<section id="ins" role="tabpanel" aria-labelledby="t-ins" hidden>
+  <h2>Requirements</h2>
+  <p><strong>Python 3.12 or newer</strong>, and nothing else. The library
+  declares its vocabulary with <code>type X = ...</code> statements
+  (<a href="https://peps.python.org/pep-0695/">PEP&nbsp;695</a>), which
+  earlier versions cannot parse. There are zero runtime dependencies: no
+  numpy, no pandas, no scikit-learn.</p>
+
+  <h2>From a clone</h2>
+  <div class="scroll"><pre><code>git clone http://github.com/timm/ezr
+cd ezr
+./ezr_eg.py --h          <em># the demos and the settings</em>
+./ezr_eg.py --all        <em># run everything; exit code counts crashes</em></code></pre></div>
+  <p>That is the whole install. <code>ezr.py</code> is a library with no
+  <code>__main__</code>; <code>ezr_eg.py</code> is the command line.</p>
+
+  <h2>Sample data</h2>
+  <p>The demos default to a car-design dataset inside the
+  <em class="k">moot</em> repository. Clone it beside this one:</p>
+  <div class="scroll"><pre><code>git clone http://github.com/timm/moot ~/gits/moot
+<em># or let the run-commands file do it:</em>
+./rc ok</code></pre></div>
+  <p>Point anywhere else with <code>-File</code>, which takes any csv whose
+  header follows the role conventions on the Manual tab.</p>
+
+  <h2>Optional tooling</h2>
+  <div class="ex">
+    <div><b>gawk</b><span>make help, and the weave rule</span></div>
+    <div><b>pycco</b><span>make docs/ezr.html, the literate page</span></div>
+    <div><b>pandoc</b><span>the .md to .html tutorials</span></div>
+    <div><b>pylint</b><span>./rc lint ezr</span></div>
+    <div><b>a2ps, ps2pdf</b><span>the three-column printed listing</span></div>
+  </div>
+  <p>None is needed to run ezr. Each belongs to one target in the Makefile or
+  one function in <code>rc</code>.</p>
+
+  <h2>Known rough edges</h2>
+  <p>Three things in the packaging do not currently match the code:</p>
+  <div class="ex">
+    <div><b>pip install ezr</b><span>the <code>ezr</code> and <code>ezr-eg</code>
+      console scripts call <code>main()</code> with no arguments, but both take
+      <code>(args, funcs)</code>, so they raise on launch. Use a clone.</span></div>
+    <div><b>requires-python</b><span>declared as 3.10, but the
+      <code>type</code> statements need 3.12.</span></div>
+    <div><b>./ezr.py --help</b><span>in the README; it exits silently because
+      the library has no entry point. Use <code>./ezr_eg.py --h</code>.</span></div>
+  </div>
+</section>
+
+<section id="lic" role="tabpanel" aria-labelledby="t-lic" hidden>
+  <h2>MIT Licence</h2>
+  <p class="lede">Copyright &copy; 2026 Tim Menzies
+  &lt;timm@ieee.org&gt;</p>
+  <p>Permission is hereby granted, free of charge, to any person obtaining a
+  copy of this software and associated documentation files (the "Software"),
+  to deal in the Software without restriction, including without limitation
+  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+  and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:</p>
+  <p>The above copyright notice and this permission notice shall be included
+  in all copies or substantial portions of the Software.</p>
+  <p style="text-transform:uppercase;font-size:13px;font-family:var(--mono);
+     line-height:1.6;color:var(--dim)">The software is provided "as is",
+  without warranty of any kind, express or implied, including but not limited
+  to the warranties of merchantability, fitness for a particular purpose and
+  noninfringement. In no event shall the authors or copyright holders be
+  liable for any claim, damages or other liability, whether in an action of
+  contract, tort or otherwise, arising from, out of or in connection with the
+  software or the use or other dealings in the software.</p>
+
+  <h2>Citing</h2>
+  <p>ezr is teaching code for CSC591 at NC State, and a working reference
+  implementation. If it helps your work, cite the repository.</p>
+</section>
+
+<footer>ezr &mdash; Tim Menzies, MIT licence.
+Better maps, not bigger boots.</footer>
+</div>
+
+<script>
+const tabs = [...document.querySelectorAll('nav button')];
+function show(id, push) {
+  tabs.forEach(t => {
+    const on = t.getAttribute('aria-controls') === id;
+    t.setAttribute('aria-selected', on);
+    document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+  });
+  try { localStorage.setItem('ezrtab', id); } catch (e) {}
+  if (push) history.replaceState(null, '', '#' + id);
+}
+tabs.forEach(t => t.addEventListener('click',
+  () => show(t.getAttribute('aria-controls'), true)));
+tabs.forEach((t, i) => t.addEventListener('keydown', e => {
+  const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+  if (!d) return;
+  e.preventDefault();
+  const n = tabs[(i + d + tabs.length) % tabs.length];
+  n.focus(); show(n.getAttribute('aria-controls'), true);
+}));
+let start = location.hash.slice(1);
+if (!['man','fns','dem','ins','lic'].includes(start)) {
+  try { start = localStorage.getItem('ezrtab'); } catch (e) {}
+}
+if (['man','fns','dem','ins','lic'].includes(start)) show(start, false);
+</script>
+
+</body>
+</html>

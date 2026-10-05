@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ezr Manual</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+/* Layout: a printed manual page -- one measured column of prose,
+   full-bleed tables, everything else out of the way. */
+:root{
+  --paper:#f7f7f4; --ink:#16171a; --dim:#5e6166; --rule:#dcdcd6;
+  --card:#fffffe; --accent:#1b4d7a; --warm:#9a5b1e;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --paper:#121316; --ink:#e6e5e1; --dim:#9a9c9f; --rule:#2c2e33;
+  --card:#191b1f; --accent:#7fb2dd; --warm:#d9a35f; color-scheme:dark; }}
+:root[data-theme="dark"]{
+  --paper:#121316; --ink:#e6e5e1; --dim:#9a9c9f; --rule:#2c2e33;
+  --card:#191b1f; --accent:#7fb2dd; --warm:#d9a35f; color-scheme:dark; }
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--serif);
+     font-size:16px;line-height:1.55;margin:0}
+.wrap{max-width:860px;margin:0 auto;padding-inline:20px;padding-block:0 72px}
+code,pre,.mono{font-family:var(--mono)}
+
+header{border-bottom:1px solid var(--rule);margin-bottom:0}
+.masthead{display:flex;flex-wrap:wrap;align-items:baseline;gap:14px;
+          padding-block:34px 18px}
+h1{font-family:var(--mono);font-weight:600;font-size:30px;margin:0;
+   letter-spacing:-.02em}
+h1 .sec{color:var(--dim);font-weight:400}
+.tag{font-style:italic;color:var(--dim);font-size:16px;min-width:0}
+
+nav{display:flex;gap:2px;flex-wrap:wrap;position:sticky;
+    top:env(safe-area-inset-top,0px);background:var(--paper);
+    z-index:5;border-bottom:1px solid var(--rule);
+    margin-inline:-20px;padding-inline:20px}
+nav button{font-family:var(--mono);font-size:13px;letter-spacing:.06em;
+  text-transform:uppercase;background:none;border:0;color:var(--dim);
+  padding:13px 14px;cursor:pointer;border-bottom:2px solid transparent}
+nav button:hover{color:var(--ink)}
+nav button[aria-selected="true"]{color:var(--accent);
+  border-bottom-color:var(--accent)}
+nav button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+section{padding-top:30px}
+h2{font-family:var(--mono);font-size:13px;font-weight:600;
+   letter-spacing:.14em;text-transform:uppercase;color:var(--warm);
+   margin:34px 0 10px;text-wrap:balance}
+h2:first-child{margin-top:0}
+p{margin:0 0 14px;max-width:66ch;text-wrap:pretty}
+.lede{font-size:18px}
+ol{margin:0 0 14px;padding-left:22px;max-width:66ch}
+ol li{margin-bottom:5px;padding-left:4px}
+ol li::marker{font-family:var(--mono);color:var(--accent);font-size:13px}
+em.k{font-style:normal;font-family:var(--mono);font-size:.9em;
+     color:var(--accent)}
+
+.scroll{overflow-x:auto;margin-bottom:18px}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:0}
+th,td{text-align:left;vertical-align:top;padding:7px 12px 7px 0;
+      border-bottom:1px solid var(--rule)}
+tr.g th{padding-top:26px;border-bottom:1px solid var(--ink)}
+tr.g span:first-child{font-family:var(--mono);font-size:12px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--warm)}
+tr.g .blurb{font-style:italic;color:var(--dim);font-weight:400;
+  margin-left:12px;font-size:13px}
+td.n{white-space:nowrap;width:1%}
+td.n code{color:var(--accent);font-weight:600}
+td.v code,td.s code{color:var(--dim);font-size:12.5px}
+td.s{white-space:nowrap;width:1%}
+td.d{min-width:16ch}
+
+details{margin-top:6px}
+summary{font-family:var(--mono);font-size:11.5px;color:var(--dim);
+  cursor:pointer;letter-spacing:.05em;width:fit-content}
+summary:hover{color:var(--accent)}
+details[open] summary{margin-bottom:7px}
+pre{background:var(--card);border:1px solid var(--rule);border-left:2px solid var(--accent);
+    padding:11px 13px;overflow-x:auto;font-size:12.5px;line-height:1.5;
+    margin:0;white-space:pre;color:var(--ink)}
+pre i{font-style:normal;color:var(--accent)}
+pre b{font-weight:400;color:var(--warm)}
+pre em{font-style:italic;color:var(--dim)}
+
+.data{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+      gap:0 30px;align-items:start}
+.ex{font-family:var(--mono);font-size:13px}
+.ex div{padding:4px 0;border-bottom:1px solid var(--rule);
+        display:flex;gap:14px;flex-wrap:wrap}
+.ex b{font-weight:400;color:var(--accent);white-space:nowrap}
+.ex span{color:var(--dim);font-style:italic;font-family:var(--serif);
+         font-size:14px;min-width:0}
+footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--rule);
+  font-size:13px;color:var(--dim);font-family:var(--mono)}
+footer a{color:var(--accent)}
+@media (max-width:560px){
+  td.s{display:none}
+  .masthead{padding-block:26px 14px}
+  h1{font-size:25px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);
+padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="masthead">
+    <h1>ezr<span class="sec">(1)</span></h1>
+    <div class="tag">multi-objective explanation from a few labels</div>
+  </div>
+  <nav role="tablist">
+    <button role="tab" aria-selected="true" aria-controls="man" id="t-man">Manual</button>
+    <button role="tab" aria-selected="false" aria-controls="fns" id="t-fns">Functions</button>
+    <button role="tab" aria-selected="false" aria-controls="dem" id="t-dem">Demos</button>
+    <button role="tab" aria-selected="false" aria-controls="ins" id="t-ins">Install</button>
+    <button role="tab" aria-selected="false" aria-controls="lic" id="t-lic">Licence</button>
+  </nav>
+</header>
+
+<section id="man" role="tabpanel" aria-labelledby="t-man">
+  <h2>Synopsis</h2>
+  <div class="scroll"><pre><code>./ezr_eg.py [-Key val]... [--demo]...</code></pre></div>
+
+  <h2>Description</h2>
+  <p class="lede">Rows have <em class="k">x</em> columns that are cheap and
+  known, and <em class="k">y</em> columns that are costly and mostly unknown.
+  Reading one row's <em class="k">y</em> is the only expensive act, so ezr
+  spends as few reads as it can.</p>
+  <ol>
+    <li>Label a few rows at random; sort them by <em class="k">ydist</em>.</li>
+    <li>Split those into <em class="k">best</em> and <em class="k">rest</em>;
+        take the two centroids.</li>
+    <li>Label whichever unlabelled row <em>looks</em> nearest best and
+        farthest from rest &mdash; judged on x columns only, which are free.</li>
+    <li>Repeat to the budget. That loop is <em class="k">acquire</em>.</li>
+    <li>Grow a tree over what got labelled, splitting on whatever tightens
+        <em class="k">y</em> most. Its leaves are the explanation.</li>
+  </ol>
+  <p><em class="k">grabs</em> does step 1 only, forever: the straw man that
+  any real acquisition has to beat.</p>
+
+  <h2>Data</h2>
+  <p>A csv whose header row names, types and routes every column. An upper-case
+  first letter means numeric, otherwise symbolic. The <em>last</em> letter gives
+  the role, and a cell of <code>?</code> is unknown.</p>
+  <div class="data">
+    <div class="scroll"><table><tbody>
+    <tr><td class="n"><code>+</code></td><td class="d">a goal to maximize</td></tr>
+<tr><td class="n"><code>-</code></td><td class="d">a goal to minimize</td></tr>
+<tr><td class="n"><code>!</code></td><td class="d">the class column</td></tr>
+<tr><td class="n"><code>X</code></td><td class="d">ignore this column</td></tr>
+<tr><td class="n"><code>&nbsp;</code></td><td class="d">no suffix: an x column</td></tr>
+    </tbody></table></div>
+    <div>
+      <div class="scroll"><pre><code>Clndrs,Volume,HpX,Model,origin,Lbs-,Acc+,Mpg+
+8,304,193,70,1,4732,18.5,10
+4,97,?,82,2,2130,24.6,40</code></pre></div>
+      <p style="font-size:14px;color:var(--dim);font-style:italic">
+      Four x columns, three goals (lose weight, gain acceleration and
+      mileage), one ignored column, one unknown cell.</p>
+    </div>
+  </div>
+  <p><em class="k">ydist</em> is 0 at a row that hits every goal and 1 at the
+  worst possible row. Lower is better, everywhere in this system.</p>
+
+  <h2>Options</h2>
+  <div class="scroll"><table><tbody>
+  <tr><td class="n"><code>-Start</code></td><td class="v"><code>4</code></td><td class="d">acquire: initial random labels</td></tr>
+<tr><td class="n"><code>-Stop</code></td><td class="v"><code>50</code></td><td class="d">acquire: total labelling budget</td></tr>
+<tr><td class="n"><code>-Few</code></td><td class="v"><code>128</code></td><td class="d">holdout: max training rows</td></tr>
+<tr><td class="n"><code>-Cuts</code></td><td class="v"><code>8</code></td><td class="d">tree: splits to try, per num</td></tr>
+<tr><td class="n"><code>-Leaf</code></td><td class="v"><code>4</code></td><td class="d">tree: min rows in any leaf</td></tr>
+<tr><td class="n"><code>-Check</code></td><td class="v"><code>5</code></td><td class="d">holdout: top picks to label</td></tr>
+<tr><td class="n"><code>-Repeats</code></td><td class="v"><code>20</code></td><td class="d">holdout: how many train/test splits</td></tr>
+<tr><td class="n"><code>-Seed</code></td><td class="v"><code>1234567891</code></td><td class="d">random number seed</td></tr>
+<tr><td class="n"><code>-File</code></td><td class="v"><code>~/gits/moot/optimize/misc/auto93.csv</code></td><td class="d"></td></tr>
+  </tbody></table></div>
+  <p>Written <code>-Key val</code>, space separated. A demo may poke a setting;
+  it is put back afterwards, and every demo starts from a fresh seed.</p>
+
+  <h2>Examples</h2>
+  <div class="ex">
+    <div><b>./ezr_eg.py --tree</b><span>grow a tree and print it</span></div>
+    <div><b>./ezr_eg.py -Stop 100 --holdout</b><span>100 labels, not 50</span></div>
+    <div><b>./ezr_eg.py -File my.csv --tree</b><span>your own data</span></div>
+    <div><b>./ezr_eg.py --all</b><span>every demo; exit code counts the crashes</span></div>
+    <div><b>./rc sweep --holdout 8</b><span>all of moot, 8 jobs</span></div>
+  </div>
+
+  <h2>Exit status</h2>
+  <p>Zero, or the number of demos that raised.</p>
+
+  <h2>Files</h2>
+  <div class="ex">
+    <div><b>ezr.py</b><span>the library: no main, nothing to run</span></div>
+    <div><b>ezr_eg.py</b><span>the demos and the command line</span></div>
+    <div><b>,/lit.py</b><span>renders ezr.py as a literate web page</span></div>
+    <div><b>rc</b><span>run commands: sweep, lint, push, weave</span></div>
+  </div>
+</section>
+
+<section id="fns" role="tabpanel" aria-labelledby="t-fns" hidden>
+  <h2>The library</h2>
+  <p>Every top-level function in <code>ezr.py</code>, in source order.
+  Open a row to read it; most are under ten lines.</p>
+  <div class="scroll"><table><tbody>
+  <tr class="g"><th colspan="3"><span>Shell</span><span class="blurb">coerce text, print it, read a csv</span></th></tr>
+<tr><td class="n"><code>say</code></td><td class="d">Floats get P decimals; dicts list their keys.<details><summary>6 lines</summary><pre><code><i>def</i> say(x: Any, p: int = 2) -&gt; str:
+  <b>&quot;Floats get P decimals; dicts list their keys.&quot;</b>
+  <i>if</i> isinstance(x,float): x= f<b>&quot;{x:.{p}f}&quot;</b>.rstrip(<b>&quot;0&quot;</b>).rstrip(<b>&quot;.&quot;</b>)
+  <i>if</i> isinstance(x, dict):
+    x= <b>&quot;{&quot;</b>+<b>&quot;, &quot;</b>.join(f<b>&quot;{k}: {say(v,p)}&quot;</b> <i>for</i> k,v <i>in</i> x.items())+<b>&quot;}&quot;</b>
+  <i>return</i> str(x)</code></pre></details></td><td class="s"><code><b>say</b>(x: Any, p: int = 2) -&gt; str</code></td></tr>
+<tr><td class="n"><code>atom</code></td><td class="d">&#x27;22&#x27; -&gt; 22. &#x27;x&#x27; -&gt; &#x27;x&#x27;.<details><summary>6 lines</summary><pre><code><i>def</i> atom(s: str) -&gt; ATOM:
+  &quot;&<em>#x27;22&#x27; -&gt; 22.  <b>&#x27;x&#x27;</b> -&gt; <b>&#x27;x&#x27;</b>.&quot;</em>
+  try: <i>return</i> int(s)
+  except ValueError:
+    try: <i>return</i> float(s)
+    except ValueError: <i>return</i> s.strip()</code></pre></details></td><td class="s"><code><b>atom</b>(s: str) -&gt; ATOM</code></td></tr>
+<tr><td class="n"><code>csv</code></td><td class="d">ROWS of FILE, each cell coerced.<details><summary>6 lines</summary><pre><code><i>def</i> csv(file: str) -&gt; Iterator[ROW]:
+  <b>&quot;ROWS of FILE, each cell coerced.&quot;</b>
+  with open(os.path.expanduser(file),  <em># -sig drops any BOM</em>
+           encoding=<b>&quot;utf-8-sig&quot;</b>) as f:
+    <i>for</i> line <i>in</i> f:
+      <i>if</i> line.strip(): <i>yield</i> [atom(s) <i>for</i> s <i>in</i> line.split(<b>&quot;,&quot;</b>)]</code></pre></details></td><td class="s"><code><b>csv</b>(file: str) -&gt; Iterator[ROW]</code></td></tr>
+<tr class="g"><th colspan="3"><span>Columns</span><span class="blurb">one running summary per column; `?` never counts</span></th></tr>
+<tr><td class="n"><code>Col</code></td><td class="d">Factory that returns NUM or SYM.<details><summary>3 lines</summary><pre><code><i>def</i> Col(txt: str = <b>&quot; &quot;</b>, at: int = 0) -&gt; COL:
+  <b>&quot;Factory that returns NUM <i>or</i> SYM.&quot;</b>
+  <i>return</i> Num(txt,at) <i>if</i> txt[0].isupper() <i>else</i> Sym(txt,at)</code></pre></details></td><td class="s"><code><b>Col</b>(txt: str = &quot; &quot;, at: int = 0) -&gt; COL</code></td></tr>
+<tr><td class="n"><code>Num</code></td><td class="d">Place to summarize stream of numbers.<details><summary>4 lines</summary><pre><code><i>def</i> Num(txt: str = <b>&quot; &quot;</b>, at: int = 0) -&gt; NUM:
+  <b>&quot;Place to summarize stream of numbers.&quot;</b>
+  <i>return</i> o(at=at, txt=txt, n=0, mu=0, m2=0, sd=0,
+           goal=0 <i>if</i> txt[-1] == <b>&quot;-&quot;</b> <i>else</i> 1)</code></pre></details></td><td class="s"><code><b>Num</b>(txt: str = &quot; &quot;, at: int = 0) -&gt; NUM</code></td></tr>
+<tr><td class="n"><code>Sym</code></td><td class="d">Place to summarize stream of Symbols.<details><summary>3 lines</summary><pre><code><i>def</i> Sym(txt: str = <b>&quot; &quot;</b>, at: int = 0) -&gt; SYM:
+  <b>&quot;Place to summarize stream of Symbols.&quot;</b>
+  <i>return</i> o(at=at, txt=txt, n=0, has={})</code></pre></details></td><td class="s"><code><b>Sym</b>(txt: str = &quot; &quot;, at: int = 0) -&gt; SYM</code></td></tr>
+<tr><td class="n"><code>add</code></td><td class="d">Show V to COL. INC=-1 takes it away. `?` changes nothing.<details><summary>12 lines</summary><pre><code><i>def</i> add(col: COL, v: ATOM, inc: int = 1) -&gt; ATOM:
+  <b>&quot;Show V to COL.  INC=-1 takes it away.  `?` changes nothing.&quot;</b>
+  <i>if</i> v != <b>&quot;?&quot;</b>:
+    col.n += inc
+    <i>if</i> <b>&quot;has&quot;</b> <i>in</i> col:
+      col.has[v] = col.has.get(v, 0) + inc
+    <i>else</i>:
+      d = v - col.mu                      <em># Welford, <i>for</i> `div`</em>
+      col.mu += inc * d / max(1, col.n)
+      col.m2  = max(0, col.m2 + inc * d * (v - col.mu))
+      col.sd  = 0 <i>if</i> col.n &lt; 2 <i>else</i> (col.m2/(col.n-1))**.5
+  <i>return</i> v</code></pre></details></td><td class="s"><code><b>add</b>(col: COL, v: ATOM, inc: int = 1) -&gt; ATOM</code></td></tr>
+<tr><td class="n"><code>mid</code></td><td class="d">Middle: the mean, or the most common symbol.<details><summary>3 lines</summary><pre><code><i>def</i> mid(col: COL) -&gt; ATOM:
+  <b>&quot;Middle: the mean, <i>or</i> the most common symbol.&quot;</b>
+  <i>return</i> max(col.has,key=col.has.get) <i>if</i> <b>&quot;has&quot;</b> <i>in</i> col <i>else</i> col.mu</code></pre></details></td><td class="s"><code><b>mid</b>(col: COL) -&gt; ATOM</code></td></tr>
+<tr><td class="n"><code>mids</code></td><td class="d">Every column&#x27;s middle, keyed by column index.<details><summary>3 lines</summary><pre><code><i>def</i> mids(tbl: TBL) -&gt; MIDS:
+  &quot;Every column&<em>#x27;s middle, keyed by column index.&quot;</em>
+  <i>return</i> {at: mid(col) <i>for</i> at, col <i>in</i> tbl.cols.items()}</code></pre></details></td><td class="s"><code><b>mids</b>(tbl: TBL) -&gt; MIDS</code></td></tr>
+<tr><td class="n"><code>div</code></td><td class="d">Spread: entropy, or standard deviation.<details><summary>4 lines</summary><pre><code><i>def</i> div(col: COL) -&gt; float:
+  <b>&quot;Spread: entropy, <i>or</i> standard deviation.&quot;</b>
+  <i>return</i> (-sum(v/col.n*log2(v/col.n) <i>for</i> v <i>in</i> col.has.values())
+          <i>if</i> <b>&quot;has&quot;</b> <i>in</i> col <i>else</i> col.sd)  <em># sd kept fresh by `add`</em></code></pre></details></td><td class="s"><code><b>div</b>(col: COL) -&gt; float</code></td></tr>
+<tr><td class="n"><code>norm</code></td><td class="d">To 0..1, by the logistic curve. Symbols do not scale.<details><summary>5 lines</summary><pre><code><i>def</i> norm(col: COL, v: ATOM) -&gt; ATOM:
+  <b>&quot;To 0..1, by the logistic curve.  Symbols do <i>not</i> scale.&quot;</b>
+  <i>if</i> <b>&quot;has&quot;</b> <i>in</i> col: <i>return</i> v
+  z = max(-3, min(3, (v - col.mu) / (1e-32 + div(col))))
+  <i>return</i> 1 / (1 + exp(-1.7 * z))</code></pre></details></td><td class="s"><code><b>norm</b>(col: COL, v: ATOM) -&gt; ATOM</code></td></tr>
+<tr class="g"><th colspan="3"><span>Tables</span><span class="blurb">a header row routes every column to x, y or skip</span></th></tr>
+<tr><td class="n"><code>Tbl</code></td><td class="d">Header names the columns: X skip, +- goal, ! klass.<details><summary>6 lines</summary><pre><code><i>def</i> Tbl(src: Iterable[ROW]) -&gt; TBL:
+  <b>&quot;Header names the columns: X skip, +- goal, ! klass.&quot;</b>
+  src = iter(src)
+  tbl = Cols(o(rows=[], cols={}, x=[], y=[], names=next(src)))
+  <i>for</i> row <i>in</i> src: addRow(tbl, row)
+  <i>return</i> tbl</code></pre></details></td><td class="s"><code><b>Tbl</b>(src: Iterable[ROW]) -&gt; TBL</code></td></tr>
+<tr><td class="n"><code>Cols</code></td><td class="d">Create column roles.<details><summary>7 lines</summary><pre><code><i>def</i> Cols(tbl: TBL) -&gt; TBL:
+  <b>&quot;Create column roles.&quot;</b>
+  <i>for</i> at, s <i>in</i> enumerate(tbl.names):
+    <i>if</i> s[-1] == <b>&quot;X&quot;</b>: continue            <em># skip me entirely</em>
+    tbl.cols[at] = Col(s,at)
+    (tbl.y <i>if</i> s[-1] <i>in</i> <b>&quot;+-!&quot;</b> <i>else</i> tbl.x).append(tbl.cols[at])
+  <i>return</i> tbl</code></pre></details></td><td class="s"><code><b>Cols</b>(tbl: TBL) -&gt; TBL</code></td></tr>
+<tr><td class="n"><code>addRow</code></td><td class="d">Keep ROW, and show it to my columns.<details><summary>4 lines</summary><pre><code><i>def</i> addRow(tbl: TBL, row: ROW) -&gt; ROW:
+  <b>&quot;Keep ROW, <i>and</i> show it to my columns.&quot;</b>
+  tbl.rows += [row]
+  <i>return</i> addCols(tbl, row)</code></pre></details></td><td class="s"><code><b>addRow</b>(tbl: TBL, row: ROW) -&gt; ROW</code></td></tr>
+<tr><td class="n"><code>addCols</code></td><td class="d">Show ROW to my columns, without keeping it.<details><summary>4 lines</summary><pre><code><i>def</i> addCols(tbl: TBL, row: ROW, inc: int = 1) -&gt; ROW:
+  <b>&quot;Show ROW to my columns, without keeping it.&quot;</b>
+  <i>for</i> at, col <i>in</i> tbl.cols.items(): add(col, row[at], inc)
+  <i>return</i> row</code></pre></details></td><td class="s"><code><b>addCols</b>(tbl: TBL, row: ROW, inc: int = 1) -&gt; ROW</code></td></tr>
+<tr><td class="n"><code>clone</code></td><td class="d">An empty copy of TBL, plus ROWS.<details><summary>3 lines</summary><pre><code><i>def</i> clone(tbl: TBL, rows: ROWS = <i>None</i>) -&gt; TBL:
+  <b>&quot;An empty copy of TBL, plus ROWS.&quot;</b>
+  <i>return</i> Tbl([tbl.names] + (rows <i>or</i> []))</code></pre></details></td><td class="s"><code><b>clone</b>(tbl: TBL, rows: ROWS = None) -&gt; TBL</code></td></tr>
+<tr class="g"><th colspan="3"><span>Distance</span><span class="blurb">how far two rows are, and how far a row is from perfect</span></th></tr>
+<tr><td class="n"><code>minkowski</code></td><td class="d">Root mean square of N gaps.<details><summary>3 lines</summary><pre><code><i>def</i> minkowski(vs: Iterable[QTY], n: int) -&gt; float:
+  <b>&quot;Root mean square of N gaps.&quot;</b>
+  <i>return</i> sqrt(sum(v*v <i>for</i> v <i>in</i> vs) / n)</code></pre></details></td><td class="s"><code><b>minkowski</b>(vs: Iterable[QTY], n: int) -&gt; float</code></td></tr>
+<tr><td class="n"><code>ydist</code></td><td class="d">How far ROW&#x27;s goals are from the best they could be.<details><summary>4 lines</summary><pre><code><i>def</i> ydist(tbl: TBL, row: ROW) -&gt; float:
+  &quot;How far ROW&<em>#x27;s goals are <i>from</i> the best they could be.&quot;</em>
+  <i>return</i> minkowski((abs(norm(c, row[c.at]) - c.goal)
+                    <i>for</i> c <i>in</i> tbl.y), len(tbl.y))</code></pre></details></td><td class="s"><code><b>ydist</b>(tbl: TBL, row: ROW) -&gt; float</code></td></tr>
+<tr><td class="n"><code>gap</code></td><td class="d">Distance between two values of one column.<details><summary>4 lines</summary><pre><code><i>def</i> gap(col: COL, a: ATOM, b: ATOM) -&gt; QTY:
+  <b>&quot;Distance between two values of one column.&quot;</b>
+  <i>if</i> a == <b>&quot;?&quot;</b> <i>or</i> b == <b>&quot;?&quot;</b>: <i>return</i> 1    <em># unknown = far</em>
+  <i>return</i> a!=b <i>if</i> <b>&quot;has&quot;</b> <i>in</i> col <i>else</i> abs(norm(col,a)-norm(col,b))</code></pre></details></td><td class="s"><code><b>gap</b>(col: COL, a: ATOM, b: ATOM) -&gt; QTY</code></td></tr>
+<tr><td class="n"><code>xdist</code></td><td class="d">How far apart two rows are, over the x columns.<details><summary>4 lines</summary><pre><code><i>def</i> xdist(tbl: TBL, r1: ROW, r2: ROW | MIDS) -&gt; float:
+  <b>&quot;How far apart two rows are, over the x columns.&quot;</b>
+  <i>return</i> minkowski((gap(c, r1[c.at], r2[c.at])
+                    <i>for</i> c <i>in</i> tbl.x), len(tbl.x))</code></pre></details></td><td class="s"><code><b>xdist</b>(tbl: TBL, r1: ROW, r2: ROW | MIDS) -&gt; float</code></td></tr>
+<tr class="g"><th colspan="3"><span>Acquire</span><span class="blurb">spend the labelling budget where it buys the most</span></th></tr>
+<tr><td class="n"><code>oracle</code></td><td class="d">Labeller. Rows here arrive with ys, so nothing to do. Real oracles fill in any missing y cells (and can close over a TBL to know which cells those are).<details><summary>5 lines</summary><pre><code><i>def</i> oracle(row: ROW) -&gt; ROW:
+  <b>&quot;&quot;</b>&quot;Labeller. Rows here arrive with ys, so nothing to do.
+  Real oracles fill <i>in</i> any missing y cells (<i>and</i> can close
+  over a TBL to know which cells those are).<b>&quot;&quot;</b>&quot;
+  <i>return</i> row</code></pre></details></td><td class="s"><code><b>oracle</b>(row: ROW) -&gt; ROW</code></td></tr>
+<tr><td class="n"><code>acquire</code></td><td class="d">Label near the best rows, far from the rest.<details><summary>18 lines</summary><pre><code><i>def</i> acquire(tbl: TBL, cap: int | <i>None</i> = <i>None</i>,
+            label: ORACLE = oracle) -&gt; ROWS:
+  <b>&quot;Label near the best rows, far <i>from</i> the rest.&quot;</b>
+  cap  = cap <i>or</i> the.Stop
+  todo = random.sample(tbl.rows, len(tbl.rows))[:the.Few]
+  both = clone(tbl, [label(todo.pop())
+                     <i>for</i> _ <i>in</i> range(the.Start)])
+  both.rows.sort(key=<i>lambda</i> r: ydist(both, r))
+  n    = int(sqrt(the.Start))
+  best,rest = clone(tbl,both.rows[:n]), clone(tbl,both.rows[n:])
+  <i>while</i> todo <i>and</i> len(both.rows) &lt; cap:
+    cb, cr = mids(best), mids(rest)    <em># two centroids</em>
+    todo.sort(key=<i>lambda</i> z: xdist(tbl,z,cr) - xdist(tbl,z,cb))
+    addRow(best, addRow(both, label(todo.pop())))
+    best.rows.sort(key=<i>lambda</i> z: ydist(both, z))  <em># no y leak</em>
+    <i>if</i> len(best.rows) &gt; sqrt(len(both.rows)): <em># best stays small</em>
+      addRow(rest, addCols(best, best.rows.pop(), -1))
+  <i>return</i> both.rows</code></pre></details></td><td class="s"><code><b>acquire</b>(tbl: TBL, cap: int | None = None, label: ORACLE = oracle) -&gt; ROWS</code></td></tr>
+<tr><td class="n"><code>grabs</code></td><td class="d">The straw man: same budget, taken at random.<details><summary>6 lines</summary><pre><code><i>def</i> grabs(tbl: TBL, cap: int | <i>None</i> = <i>None</i>,
+          label: ORACLE = oracle) -&gt; ROWS:
+  <b>&quot;The straw man: same budget, taken at random.&quot;</b>
+  cap = cap <i>or</i> the.Stop
+  <i>return</i> [label(r) <i>for</i> r <i>in</i>
+          random.sample(tbl.rows, min(cap, len(tbl.rows)))]</code></pre></details></td><td class="s"><code><b>grabs</b>(tbl: TBL, cap: int | None = None, label: ORACLE = oracle) -&gt; ROWS</code></td></tr>
+<tr class="g"><th colspan="3"><span>Tree</span><span class="blurb">split on whatever tightens the goals; leaves explain</span></th></tr>
+<tr><td class="n"><code>cut</code></td><td class="d">The (at, v, go) whose two sides have the tightest ys.<details><summary>12 lines</summary><pre><code><i>def</i> cut(tbl: TBL, rows: ROWS) -&gt; tuple[int,ATOM,GO]|<i>None</i>:
+  <b>&quot;The (at, v, go) whose two sides have the tightest ys.&quot;</b>
+  ys = [ydist(tbl, r) <i>for</i> r <i>in</i> rows]
+  out, least = <i>None</i>, 1e30
+  <i>for</i> col <i>in</i> tbl.x:
+    <i>for</i> v, go <i>in</i> candidates(col, rows):
+      a, b = Num(), Num()   <em># one pass, so one `go` per row</em>
+      <i>for</i> r,y <i>in</i> zip(rows,ys): add(a <i>if</i> go(r) <i>else</i> b, y)
+      <i>if</i> a.n &gt;= the.Leaf <i>and</i> b.n &gt;= the.Leaf:
+        score = (div(a)*a.n + div(b)*b.n) / (a.n + b.n)
+        <i>if</i> score &lt; least: out, least = (col.at, v, go), score
+  <i>return</i> out</code></pre></details></td><td class="s"><code><b>cut</b>(tbl: TBL, rows: ROWS) -&gt; tuple[int,ATOM,GO]|None</code></td></tr>
+<tr><td class="n"><code>candidates</code></td><td class="d">What splits to try: one per symbol, or CUTS per num.<details><summary>11 lines</summary><pre><code><i>def</i> candidates(col: COL, rows: ROWS) -&gt; Iterator[tuple[ATOM,GO]]:
+  <b>&quot;What splits to try: one per symbol, <i>or</i> CUTS per num.&quot;</b>
+  at = col.at
+  <i>if</i> <b>&quot;has&quot;</b> <i>in</i> col:
+    <i>for</i> v <i>in</i> sorted({r[at] <i>for</i> r <i>in</i> rows <i>if</i> r[at] != <b>&quot;?&quot;</b>}):
+      <i>yield</i> v, <i>lambda</i> r,v=v,at=at: r[at] == v
+  <i>else</i>:                <em># by rank, <i>not</i> value: THESE rows are dense</em>
+    xs = sorted(r[at] <i>for</i> r <i>in</i> rows <i>if</i> r[at] != <b>&quot;?&quot;</b>)
+    k  = max(1, len(xs)//the.Cuts)     <em># cuts, spaced by rank</em>
+    <i>for</i> v <i>in</i> xs[k-1:-1:k]:
+      <i>yield</i> v, (<i>lambda</i> r,v=v,at=at: r[at] != <b>&quot;?&quot;</b> <i>and</i> r[at] &lt;= v)</code></pre></details></td><td class="s"><code><b>candidates</b>(col: COL, rows: ROWS) -&gt; Iterator[tuple[ATOM,GO]]</code></td></tr>
+<tr><td class="n"><code>tree</code></td><td class="d">Split while a split keeps both sides big enough.<details><summary>11 lines</summary><pre><code><i>def</i> tree(tbl: TBL, rows: ROWS) -&gt; NODE:
+  <b>&quot;Split <i>while</i> a split keeps both sides big enough.&quot;</b>
+  node = o(rows=rows, at=<i>None</i>, v=<i>None</i>, go=<i>None</i>, kids=[],
+           mu=sum(ydist(tbl,r) <i>for</i> r <i>in</i> rows)/len(rows))
+  <i>if</i> len(rows) &gt; the.Leaf <i>and</i> (found := cut(tbl, rows)):
+    at, v, go = found
+    yes, no = [], []
+    <i>for</i> r <i>in</i> rows: (yes <i>if</i> go(r) <i>else</i> no).append(r)
+    node.at, node.v, node.go = at, v, go <em># cut kepts sides big</em>
+    node.kids = [tree(tbl, yes), tree(tbl, no)]
+  <i>return</i> node</code></pre></details></td><td class="s"><code><b>tree</b>(tbl: TBL, rows: ROWS) -&gt; NODE</code></td></tr>
+<tr><td class="n"><code>leaf</code></td><td class="d">Walk ROW down to its leaf.<details><summary>4 lines</summary><pre><code><i>def</i> leaf(node: NODE, row: ROW) -&gt; NODE:
+  <b>&quot;Walk ROW down to its leaf.&quot;</b>
+  <i>while</i> node.kids: node = node.kids[0 <i>if</i> node.go(row) <i>else</i> 1]
+  <i>return</i> node</code></pre></details></td><td class="s"><code><b>leaf</b>(node: NODE, row: ROW) -&gt; NODE</code></td></tr>
+<tr><td class="n"><code>leafs</code></td><td class="d">Return leaves of this tree.<details><summary>3 lines</summary><pre><code><i>def</i> leafs(node: NODE) -&gt; list[NODE]:
+  <b>&quot;Return leaves of this tree.&quot;</b>
+  <i>return</i> [x <i>for</i> k <i>in</i> node.kids <i>for</i> x <i>in</i> leafs(k)] <i>or</i> [node]</code></pre></details></td><td class="s"><code><b>leafs</b>(node: NODE) -&gt; list[NODE]</code></td></tr>
+<tr><td class="n"><code>show</code></td><td class="d">Tree on the left; ydist and n on the right.<details><summary>15 lines</summary><pre><code><i>def</i> show(tbl: TBL, node: NODE, pre: str | <i>None</i> = <i>None</i>,
+         edge: str = <b>&quot;&quot;</b>) -&gt; <i>None</i>:
+  <b>&quot;Tree on the left; ydist <i>and</i> n on the right.&quot;</b>
+  ls = sorted(leafs(node), key=<i>lambda</i> z: z.mu)
+  <i>def</i> walk(z: NODE, pre: str | <i>None</i>, edge: str) -&gt; <i>None</i>:
+    m = <b>&quot;+&quot;</b> <i>if</i> z is ls[0] <i>else</i> <b>&quot;-&quot;</b> <i>if</i> z is ls[-1] <i>else</i> <b>&quot; &quot;</b>
+    print(f&quot;{m} {round(100*z.mu):&gt;4} {len(z.rows):&gt;5}   &quot;
+          f&quot;{(pre <i>or</i> &<em>#x27;&#x27;)+edge}&quot;.rstrip())</em>
+    op = <b>&quot;=&quot;</b> <i>if</i> <b>&quot;has&quot;</b> <i>in</i> tbl.cols[z.at <i>or</i> 0] <i>else</i> &quot;&lt;=&quot;
+    no = <b>&quot;!=&quot;</b> <i>if</i> op == <b>&quot;=&quot;</b> <i>else</i> &quot;&gt;&quot;
+    <i>for</i> kid, oper <i>in</i> zip(z.kids, [op, no]):
+      walk(kid, <b>&quot;&quot;</b> <i>if</i> pre is <i>None</i> <i>else</i> pre + <b>&quot;|  &quot;</b>,
+           f<b>&quot;{tbl.names[z.at]} {oper} {say(z.v)}&quot;</b>)
+  print(<b>&quot; ydist     n&quot;</b>)
+  walk(node, pre, edge)</code></pre></details></td><td class="s"><code><b>show</b>(tbl: TBL, node: NODE, pre: str | None = None, edge: str = &quot;&quot;) -&gt; None</code></td></tr>
+<tr class="g"><th colspan="3"><span>Holdout</span><span class="blurb">train on half, guess on the rest, score the guess</span></th></tr>
+<tr><td class="n"><code>wins</code></td><td class="d">100 at the best row, 0 at an average one.<details><summary>6 lines</summary><pre><code><i>def</i> wins(tbl: TBL) -&gt; Callable[[ROW], float]:
+  <b>&quot;100 at the best row, 0 at an average one.&quot;</b>
+  ys = sorted(ydist(tbl, r) <i>for</i> r <i>in</i> tbl.rows)
+  lo, avg = ys[0], sum(ys)/len(ys)
+  <i>return</i> <i>lambda</i> r: max(-100, min(100, 100*(1 - (ydist(tbl,r)-lo)
+                                            / (avg-lo+1e-32))))</code></pre></details></td><td class="s"><code><b>wins</b>(tbl: TBL) -&gt; Callable[[ROW], float]</code></td></tr>
+<tr><td class="n"><code>holdout</code></td><td class="d">Train on half; of CHECK guesses on the rest, pick best.<details><summary>9 lines</summary><pre><code><i>def</i> holdout(tbl: TBL, pick: PICKER = acquire) -&gt; ROW:
+  <b>&quot;Train on half; of CHECK guesses on the rest, pick best.&quot;</b>
+  rows  = random.sample(tbl.rows, len(tbl.rows))
+  n     = len(rows)//2
+  tr    = clone(tbl, rows[:n][:the.Few])
+  lab   = clone(tbl, pick(tr, the.Stop - the.Check))
+  tt    = tree(lab, lab.rows)
+  top   = sorted(rows[n:], key=<i>lambda</i> r: leaf(tt,r).mu)
+  <i>return</i> min(top[:the.Check], key=<i>lambda</i> r: ydist(lab, r))</code></pre></details></td><td class="s"><code><b>holdout</b>(tbl: TBL, pick: PICKER = acquire) -&gt; ROW</code></td></tr>
+<tr class="g"><th colspan="3"><span>Stats</span><span class="blurb">is this difference real, or is it noise?</span></th></tr>
+<tr><td class="n"><code>adds</code></td><td class="d">Every item of VS into COL.<details><summary>5 lines</summary><pre><code><i>def</i> adds(vs: Iterable[ATOM], col: COL | <i>None</i> = <i>None</i>) -&gt; COL:
+  <b>&quot;Every item of VS into COL.&quot;</b>
+  col = Num() <i>if</i> col is <i>None</i> <i>else</i> col
+  <i>for</i> v <i>in</i> vs: add(col, v)
+  <i>return</i> col</code></pre></details></td><td class="s"><code><b>adds</b>(vs: Iterable[ATOM], col: COL | None = None) -&gt; COL</code></td></tr>
+<tr><td class="n"><code>cohen</code></td><td class="d">Are the means within D pooled standard deviations?<details><summary>6 lines</summary><pre><code><i>def</i> cohen(xs: NUMS, ys: NUMS, d: float = 0.35,
+          eps: float = 0) -&gt; bool:
+  <b>&quot;Are the means within D pooled standard deviations?&quot;</b>
+  a, b = adds(xs), adds(ys)
+  pool = ((a.n-1)*div(a)**2 + (b.n-1)*div(b)**2)/(a.n+b.n-2)
+  <i>return</i> abs(a.mu - b.mu) &lt;= max(eps, d * sqrt(pool))</code></pre></details></td><td class="s"><code><b>cohen</b>(xs: NUMS, ys: NUMS, d: float = 0.35, eps: float = 0) -&gt; bool</code></td></tr>
+<tr><td class="n"><code>cliffs</code></td><td class="d">Sorted in. Is the rank imbalance small enough?<details><summary>8 lines</summary><pre><code><i>def</i> cliffs(xs: NUMS, ys: NUMS, d: float = 0.197) -&gt; bool:
+  <b>&quot;Sorted <i>in</i>.  Is the rank imbalance small enough?&quot;</b>
+  gt = lt = j = k = 0
+  <i>for</i> x <i>in</i> xs:
+    <i>while</i> j &lt; len(ys) <i>and</i> ys[j] &lt;  x: j += 1; k = j
+    <i>while</i> k &lt; len(ys) <i>and</i> ys[k] &lt;= x: k += 1
+    gt += j; lt += len(ys) - k
+  <i>return</i> abs(gt - lt) / (len(xs) * len(ys)) &lt;= d</code></pre></details></td><td class="s"><code><b>cliffs</b>(xs: NUMS, ys: NUMS, d: float = 0.197) -&gt; bool</code></td></tr>
+<tr><td class="n"><code>ks</code></td><td class="d">Sorted in. 95% Kolmogorov-Smirnov.<details><summary>9 lines</summary><pre><code><i>def</i> ks(xs: NUMS, ys: NUMS, a: float = 1.36) -&gt; bool:
+  <b>&quot;Sorted <i>in</i>.  95% Kolmogorov-Smirnov.&quot;</b>
+  n, m, i, j, d = len(xs), len(ys), 0, 0, 0
+  <i>while</i> i &lt; n <i>and</i> j &lt; m:
+    v = min(xs[i], ys[j])
+    <i>while</i> i &lt; n <i>and</i> xs[i] &lt;= v: i += 1
+    <i>while</i> j &lt; m <i>and</i> ys[j] &lt;= v: j += 1
+    d = max(d, abs(i/n - j/m))
+  <i>return</i> d &lt;= a * sqrt((n + m) / (n * m))</code></pre></details></td><td class="s"><code><b>ks</b>(xs: NUMS, ys: NUMS, a: float = 1.36) -&gt; bool</code></td></tr>
+<tr><td class="n"><code>same</code></td><td class="d">Indistinguishable by all three. One sort, then linear.<details><summary>4 lines</summary><pre><code><i>def</i> same(xs: NUMS, ys: NUMS, eps: float = 0) -&gt; bool:
+  <b>&quot;Indistinguishable by all three.  One sort, then linear.&quot;</b>
+  xs, ys = sorted(xs), sorted(ys)
+  <i>return</i> cliffs(xs,ys) <i>and</i> ks(xs,ys) <i>and</i> cohen(xs,ys,eps=eps)</code></pre></details></td><td class="s"><code><b>same</b>(xs: NUMS, ys: NUMS, eps: float = 0) -&gt; bool</code></td></tr>
+<tr class="g"><th colspan="3"><span>Cli</span><span class="blurb">-Key val sets a setting; --name runs a demo</span></th></tr>
+<tr><td class="n"><code>run</code></td><td class="d">Run F. Demos may poke `the`, so always put it back.<details><summary>7 lines</summary><pre><code><i>def</i> run(f: Callable) -&gt; int:
+  <b>&quot;Run F. Demos may poke `the`, so always put it back.&quot;</b>
+  random.seed(the.Seed)
+  try:                   f()
+  except Exception as e: traceback.print_exception(e); <i>return</i> 1
+  finally:               the.update(the._defaults)
+  <i>return</i> 0</code></pre></details></td><td class="s"><code><b>run</b>(f: Callable) -&gt; int</code></td></tr>
+<tr><td class="n"><code>main</code></td><td class="d">Dispatch --x to FUNCS&#x27; eg_x; -key val updates `the`.<details><summary>8 lines</summary><pre><code><i>def</i> main(args: list[str], funcs: dict) -&gt; <i>None</i>:
+  &quot;Dispatch --x to FUNCS&<em>#x27; eg_x; -key val updates `the`.&quot;</em>
+  <i>while</i> args:
+    s = args.pop(0)
+    <i>if</i>   s[:2] == <b>&quot;--&quot;</b>:
+      run(funcs.get(<b>&quot;eg_&quot;</b> + s[2:], funcs[<b>&quot;eg_h&quot;</b>]))
+    <i>elif</i> s[1:] <i>in</i> the : the[s[1:]] = atom(args.pop(0))
+    <i>else</i>: print(f<b>&quot;unknown arg: {s}&quot;</b>)</code></pre></details></td><td class="s"><code><b>main</b>(args: list[str], funcs: dict) -&gt; None</code></td></tr>
+  </tbody></table></div>
+</section>
+
+<section id="dem" role="tabpanel" aria-labelledby="t-dem" hidden>
+  <h2>Demos</h2>
+  <p>Each is both an example and a test: it asserts what it claims.
+  <code>--all</code> runs the lot and exits with the number that crashed.</p>
+  <div class="scroll"><table><tbody>
+  <tr><td class="n"><code>--h</code></td><td class="d">Show the options and the demos.<details><summary>4 lines</summary><pre><code><i>def</i> eg_h() -&gt; <i>None</i>:
+  <b>&quot;Show the options <i>and</i> the demos.&quot;</b>
+  print(ezr.__doc__, <b>&quot;Demos:&quot;</b>, *[f&quot;  --{k[3:]:&lt;9} {f.__doc__}&quot;
+        <i>for</i> k,f <i>in</i> globals().items() <i>if</i> k[:3]==<b>&quot;eg_&quot;</b>], sep=<b>&quot;\n&quot;</b>)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--num</code></td><td class="d">Welford matches the textbook mean and sd.<details><summary>5 lines</summary><pre><code><i>def</i> eg_num() -&gt; <i>None</i>:
+  <b>&quot;Welford matches the textbook mean <i>and</i> sd.&quot;</b>
+  c = adds([2,4,4,4,5,5,7,9])
+  assert c.n==8 <i>and</i> mid(c)==5 <i>and</i> abs(div(c)-2.138) &lt; .01
+  print(say(c))                      <em># also checks __repr__</em></code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--sym</code></td><td class="d">Syms count; mid is the mode, div is entropy.<details><summary>5 lines</summary><pre><code><i>def</i> eg_sym() -&gt; <i>None</i>:
+  <b>&quot;Syms count; mid is the mode, div is entropy.&quot;</b>
+  c = adds(<b>&quot;aabbbc&quot;</b>, Sym())
+  assert c.has[<b>&quot;b&quot;</b>]==3 <i>and</i> mid(c)==<b>&quot;b&quot;</b> <i>and</i> abs(div(c)-1.459)&lt;.01
+  print(f<b>&quot;mode {mid(c)} ent {say(div(c))}&quot;</b>)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--tbl</code></td><td class="d">The header routes each column.<details><summary>5 lines</summary><pre><code><i>def</i> eg_tbl() -&gt; <i>None</i>:
+  <b>&quot;The header routes each column.&quot;</b>
+  t = Tbl([[<b>&quot;Age&quot;</b>,<b>&quot;job!&quot;</b>,<b>&quot;SkipX&quot;</b>,<b>&quot;Weight-&quot;</b>],[2,<b>&quot;a&quot;</b>,3,80]])
+  assert [c.at <i>for</i> c <i>in</i> t.x]==[0] <i>and</i> [c.at <i>for</i> c <i>in</i> t.y]==[1,3]
+  print(f<b>&quot;x {[c.at <i>for</i> c <i>in</i> t.x]} y {[c.at <i>for</i> c <i>in</i> t.y]}&quot;</b>)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--dist</code></td><td class="d">A row is nearest itself, and ydist orders the data.<details><summary>8 lines</summary><pre><code><i>def</i> eg_dist() -&gt; <i>None</i>:
+  <b>&quot;A row is nearest itself, <i>and</i> ydist orders the data.&quot;</b>
+  t  = Tbl(csv(the.File))
+  r  = t.rows[0]
+  assert xdist(t,r,r) == 0
+  ys = sorted(ydist(t,r) <i>for</i> r <i>in</i> t.rows)
+  print(f<b>&quot;ydist best {say(ys[0])} mid {say(ys[len(ys)//2])}&quot;</b>
+        f<b>&quot; worst {say(ys[-1])}&quot;</b>)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--tree</code></td><td class="d">Acquire, then grow and show a tree.<details><summary>5 lines</summary><pre><code><i>def</i> eg_tree() -&gt; <i>None</i>:
+  <b>&quot;Acquire, then grow <i>and</i> show a tree.&quot;</b>
+  t   = Tbl(csv(the.File))
+  lab = clone(t, acquire(t))
+  show(lab, tree(lab, lab.rows))</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--same</code></td><td class="d">The stats tell noise from signal.<details><summary>7 lines</summary><pre><code><i>def</i> eg_same() -&gt; <i>None</i>:
+  <b>&quot;The stats tell noise <i>from</i> signal.&quot;</b>
+  x = [random.gauss(10,1) <i>for</i> _ <i>in</i> range(40)]
+  y = [random.gauss(10,1) <i>for</i> _ <i>in</i> range(40)]
+  z = [random.gauss(11,1) <i>for</i> _ <i>in</i> range(40)]
+  assert same(x,y) <i>and</i> <i>not</i> same(x,z) <i>and</i> same(x,x)
+  print(f<b>&quot;same {same(x,y)} differ {<i>not</i> same(x,z)}&quot;</b>)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--holdout</code></td><td class="d">Mean win over REPEATS holdouts.<details><summary>6 lines</summary><pre><code><i>def</i> eg_holdout() -&gt; <i>None</i>:
+  <b>&quot;Mean win over REPEATS holdouts.&quot;</b>
+  t = Tbl(csv(the.File)); w = wins(t)
+  ws = sorted(round(w(holdout(t))) <i>for</i> _ <i>in</i> range(the.Repeats))
+  print(
+    f&quot;{round(sum(ws)/len(ws)):&gt;4} {os.path.basename(the.File)}&quot;)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--vs</code></td><td class="d">Acquire versus random, same budget. 0 if the same.<details><summary>8 lines</summary><pre><code><i>def</i> eg_vs(tbl: TBL | <i>None</i> = <i>None</i>) -&gt; <i>None</i>:
+  <b>&quot;Acquire versus random, same budget.  0 <i>if</i> the same.&quot;</b>
+  t = tbl <i>or</i> Tbl(csv(the.File)); w = wins(t)
+  a = [w(holdout(t, acquire)) <i>for</i> _ <i>in</i> range(the.Repeats)]
+  b = [w(holdout(t, grabs))   <i>for</i> _ <i>in</i> range(the.Repeats)]
+  d = 0 <i>if</i> same(a,b) <i>else</i> round(sum(a)/len(a) - sum(b)/len(b))
+  print(f&quot;{round(sum(a)/len(a)):&gt;4} {round(sum(b)/len(b)):&gt;4}&quot;
+        f&quot; {d:&gt;4} {os.path.basename(the.File)}&quot;)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--seek</code></td><td class="d">DE, SA, LS; scorer labelled by grabs or acquire.<details><summary>9 lines</summary><pre><code><i>def</i> eg_seek() -&gt; <i>None</i>:
+  <b>&quot;DE, SA, LS; scorer labelled by grabs <i>or</i> acquire.&quot;</b>
+  t = Tbl(csv(the.File)); w = wins(t)
+  <i>for</i> searcher <i>in</i> [de, sa, ls]:
+    <i>for</i> picker <i>in</i> [grabs, acquire]:
+      ws = [w(seek(t, searcher, picker))
+            <i>for</i> _ <i>in</i> range(the.Repeats)]
+      print(f&quot;{searcher.__name__:&lt;3} {picker.__name__:&lt;7}&quot;
+            f&quot; win {round(sum(ws)/len(ws)):&gt;4}&quot;)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--summarize</code></td><td class="d">SUMMARIZATION: the usual values in a cluster.<details><summary>7 lines</summary><pre><code><i>def</i> eg_summarize() -&gt; <i>None</i>:
+  <b>&quot;SUMMARIZATION: the usual values <i>in</i> a cluster.&quot;</b>
+  t, cs = _cars()
+  c = min(cs, key=<i>lambda</i> c: ymu(t, c.rows))
+  print(f<b>&quot;best cluster n={len(c.rows)}&quot;</b>,
+        {t.names[at]: say(v)
+         <i>for</i> at, v <i>in</i> SUMMARIZATION(t, c).items()})</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--predict</code></td><td class="d">CLASSIFICATION and REGRESSION: one act, two col types.<details><summary>11 lines</summary><pre><code><i>def</i> eg_predict() -&gt; <i>None</i>:
+  <b>&quot;CLASSIFICATION <i>and</i> REGRESSION: one act, two col types.&quot;</b>
+  t, cs = _cars()
+  r = t.rows[0]
+  print(<b>&quot;regress &quot;</b>, {t.names[at]: say(v) <i>for</i> at, v <i>in</i>
+                     REGRESSION(t, r, cs).items()})
+  print(<b>&quot;actual  &quot;</b>, {t.names[c.at]: r[c.at] <i>for</i> c <i>in</i> t.y})
+  d   = Tbl(csv(the.Klass))
+  dcs = halve(d, stop=16)
+  print(<b>&quot;classify&quot;</b>, CLASSIFICATION(d, d.rows[0], dcs),
+        <b>&quot;actual&quot;</b>, d.rows[0][klass(d)])</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--anomaly</code></td><td class="d">ANOMALY DETECTION: prediction&#x27;s discarded byproduct.<details><summary>7 lines</summary><pre><code><i>def</i> eg_anomaly() -&gt; <i>None</i>:
+  &quot;ANOMALY DETECTION: prediction&<em>#x27;s discarded byproduct.&quot;</em>
+  t, cs = _cars()
+  ds = sorted((ANOMALY(t, r, cs), i)
+              <i>for</i> i, r <i>in</i> enumerate(t.rows))
+  print(f<b>&quot;typical {say(ds[0][0])}  odd {say(ds[-1][0])}&quot;</b>
+        f<b>&quot;  oddest {t.rows[ds[-1][1]]}&quot;</b>)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--retrieve</code></td><td class="d">RETRIEVAL: the rows, not the summary.<details><summary>6 lines</summary><pre><code><i>def</i> eg_retrieve() -&gt; <i>None</i>:
+  <b>&quot;RETRIEVAL: the rows, <i>not</i> the summary.&quot;</b>
+  t, cs = _cars()
+  print(<b>&quot;like&quot;</b>, t.rows[0], &quot;-&gt;&quot;)
+  <i>for</i> r <i>in</i> RETRIEVAL(t, t.rows[0], cs)[:3]:
+    print(<b>&quot;   &quot;</b>, r)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--spread</code></td><td class="d">SPREAD: a distribution, not a point.<details><summary>8 lines</summary><pre><code><i>def</i> eg_spread() -&gt; <i>None</i>:
+  <b>&quot;SPREAD: a distribution, <i>not</i> a point.&quot;</b>
+  t, cs = _cars()
+  r = t.rows[0]
+  c = relevant(t, r, cs)
+  <i>for</i> at, ys <i>in</i> SPREAD(t, r, cs, 40).items():
+    print(f&quot;{t.names[at]:&gt;7} point {say(mid(c.cols[at]))}&quot;
+          f<b>&quot;  10th-90th {say(ys[4])} .. {say(ys[-5])}&quot;</b>)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--synth</code></td><td class="d">SYNTHESIS and REPAIR: impute, aimed two ways.<details><summary>9 lines</summary><pre><code><i>def</i> eg_synth() -&gt; <i>None</i>:
+  <b>&quot;SYNTHESIS <i>and</i> REPAIR: impute, aimed two ways.&quot;</b>
+  t, cs = _cars()
+  c = min(cs, key=<i>lambda</i> c: ymu(t, c.rows))
+  print(<b>&quot;synth &quot;</b>, [say(v) <i>for</i> v <i>in</i> SYNTHESIS(t, c)])
+  holed = [<b>&quot;?&quot;</b> <i>if</i> at <i>in</i> (0, 1) <i>else</i> v
+           <i>for</i> at, v <i>in</i> enumerate(t.rows[0])]
+  print(<b>&quot;holed &quot;</b>, holed)
+  print(<b>&quot;repair&quot;</b>, [say(v) <i>for</i> v <i>in</i> REPAIR(t, holed, cs)])</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--advise</code></td><td class="d">EXPLANATION, PLANNING, MONITORING: one DISTINGUISH.<details><summary>11 lines</summary><pre><code><i>def</i> eg_advise() -&gt; <i>None</i>:
+  <b>&quot;EXPLANATION, PLANNING, MONITORING: one DISTINGUISH.&quot;</b>
+  t, cs = _cars()
+  best = min(cs, key=<i>lambda</i> c: ymu(t, c.rows))
+  rest = max(cs, key=<i>lambda</i> c: ymu(t, c.rows))
+  can  = [0, 1, 3]              <em># Clndrs, Volume, Model</em>
+  print(<b>&quot;explain&quot;</b>, EXPLANATION(t, rest, best))
+  print(<b>&quot;plan   &quot;</b>, PLANNING(t, rest.rows[0], cs, can))
+  print(<b>&quot;monitor&quot;</b>, MONITORING(t, best.rows[0], cs, can))
+  print(<b>&quot;total  &quot;</b>, [say(v) <i>for</i> v <i>in</i>
+                    PLANNING_TOTAL(t, rest.rows[0], cs, can)])</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--trends</code></td><td class="d">TRENDS, FORECAST, ALERTS: one trajectory, three reads.<details><summary>14 lines</summary><pre><code><i>def</i> eg_trends() -&gt; <i>None</i>:
+  <b>&quot;TRENDS, FORECAST, ALERTS: one trajectory, three reads.&quot;</b>
+  t   = Tbl(csv(the.File))
+  slices = eras(t, 3)              <em># Model year is the order</em>
+  r   = t.rows[0]
+  cs  = TRENDS(t, slices, r, stop=16)
+  print(<b>&quot;era mpg &quot;</b>, [say(mid(c.cols[7])) <i>for</i> c <i>in</i> cs])
+  print(<b>&quot;era lbs &quot;</b>, [say(mid(c.cols[5])) <i>for</i> c <i>in</i> cs])
+  f = FORECAST(t, slices, r, stop=16)
+  print(<b>&quot;next mpg&quot;</b>, say(mid(f[7])),
+        <b>&quot; next lbs&quot;</b>, say(mid(f[5])))
+  print(<b>&quot;next origin&quot;</b>, say(f[4]))
+  steps, odd = ALERTS(t, slices, r, stop=16)
+  print(<b>&quot;steps   &quot;</b>, [say(s) <i>for</i> s <i>in</i> steps], <b>&quot;alert:&quot;</b>, odd)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--simulate</code></td><td class="d">SIMULATION: rows that never happened, scored.<details><summary>6 lines</summary><pre><code><i>def</i> eg_simulate() -&gt; <i>None</i>:
+  <b>&quot;SIMULATION: rows that never happened, scored.&quot;</b>
+  t, cs = _cars()
+  <i>for</i> r, y <i>in</i> SIMULATION(t, cs, 3):
+    print([say(v) <i>for</i> v <i>in</i> r[:5]], &quot;-&gt;&quot;,
+          {t.names[at]: say(v) <i>for</i> at, v <i>in</i> y.items()})</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--optimize</code></td><td class="d">OPTIMIZATION: acquire, best first. Then defer to --vs.<details><summary>5 lines</summary><pre><code><i>def</i> eg_optimize() -&gt; <i>None</i>:
+  <b>&quot;OPTIMIZATION: acquire, best first.  Then defer to --vs.&quot;</b>
+  t = Tbl(csv(the.File))
+  print(<b>&quot;best ydist&quot;</b>, say(ydist(t, OPTIMIZATION(t)[0])))
+  eg_vs(t)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--distinguish</code></td><td class="d">DISTINGUISHABILITY: same(). Then defer to --same.<details><summary>7 lines</summary><pre><code><i>def</i> eg_distinguish() -&gt; <i>None</i>:
+  <b>&quot;DISTINGUISHABILITY: same().  Then defer to --same.&quot;</b>
+  x = [random.gauss(10, 1) <i>for</i> _ <i>in</i> range(40)]
+  z = [random.gauss(11, 1) <i>for</i> _ <i>in</i> range(40)]
+  print(<b>&quot;x~x&quot;</b>, DISTINGUISHABILITY(x, x),
+        <b>&quot; x~z&quot;</b>, DISTINGUISHABILITY(x, z))
+  eg_same()</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--all</code></td><td class="d">Run every demo; exit code counts the crashes.<details><summary>5 lines</summary><pre><code><i>def</i> eg_all() -&gt; <i>None</i>:
+  <b>&quot;Run every demo; exit code counts the crashes.&quot;</b>
+  sys.exit(sum(print(f<b>&quot;\n<em># {k[3:]}&quot;</b>) <i>or</i> run(f)</em>
+                <i>for</i> k,f <i>in</i> list(globals().items())
+                <i>if</i> k[:3]==<b>&quot;eg_&quot;</b> <i>and</i> f is <i>not</i> eg_all))</code></pre></details></td><td class="s"><code></code></td></tr>
+  </tbody></table></div>
+</section>
+
+<section id="ins" role="tabpanel" aria-labelledby="t-ins" hidden>
+  <h2>Requirements</h2>
+  <p><strong>Python 3.12 or newer</strong>, and nothing else. The library
+  declares its vocabulary with <code>type X = ...</code> statements
+  (<a href="https://peps.python.org/pep-0695/">PEP&nbsp;695</a>), which
+  earlier versions cannot parse. There are zero runtime dependencies: no
+  numpy, no pandas, no scikit-learn.</p>
+
+  <h2>From a clone</h2>
+  <div class="scroll"><pre><code>git clone http://github.com/timm/ezr
+cd ezr
+./ezr_eg.py --h          <em># the demos and the settings</em>
+./ezr_eg.py --all        <em># run everything; exit code counts crashes</em></code></pre></div>
+  <p>That is the whole install. <code>ezr.py</code> is a library with no
+  <code>__main__</code>; <code>ezr_eg.py</code> is the command line.</p>
+
+  <h2>Sample data</h2>
+  <p>The demos default to a car-design dataset inside the
+  <em class="k">moot</em> repository. Clone it beside this one:</p>
+  <div class="scroll"><pre><code>git clone http://github.com/timm/moot ~/gits/moot
+<em># or let the run-commands file do it:</em>
+./rc ok</code></pre></div>
+  <p>Point anywhere else with <code>-File</code>, which takes any csv whose
+  header follows the role conventions on the Manual tab.</p>
+
+  <h2>Optional tooling</h2>
+  <div class="ex">
+    <div><b>gawk</b><span>make help, and the weave rule</span></div>
+    <div><b>pycco</b><span>make docs/ezr.html, the literate page</span></div>
+    <div><b>pandoc</b><span>the .md to .html tutorials</span></div>
+    <div><b>pylint</b><span>./rc lint ezr</span></div>
+    <div><b>a2ps, ps2pdf</b><span>the three-column printed listing</span></div>
+  </div>
+  <p>None is needed to run ezr. Each belongs to one target in the Makefile or
+  one function in <code>rc</code>.</p>
+
+  <h2>Known rough edges</h2>
+  <p>Three things in the packaging do not currently match the code:</p>
+  <div class="ex">
+    <div><b>pip install ezr</b><span>the <code>ezr</code> and <code>ezr-eg</code>
+      console scripts call <code>main()</code> with no arguments, but both take
+      <code>(args, funcs)</code>, so they raise on launch. Use a clone.</span></div>
+    <div><b>requires-python</b><span>declared as 3.10, but the
+      <code>type</code> statements need 3.12.</span></div>
+    <div><b>./ezr.py --help</b><span>in the README; it exits silently because
+      the library has no entry point. Use <code>./ezr_eg.py --h</code>.</span></div>
+  </div>
+</section>
+
+<section id="lic" role="tabpanel" aria-labelledby="t-lic" hidden>
+  <h2>MIT Licence</h2>
+  <p class="lede">Copyright &copy; 2026 Tim Menzies
+  &lt;timm@ieee.org&gt;</p>
+  <p>Permission is hereby granted, free of charge, to any person obtaining a
+  copy of this software and associated documentation files (the "Software"),
+  to deal in the Software without restriction, including without limitation
+  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+  and/or sell copies of the Software, and to permit persons to whom the
+  Software is furnished to do so, subject to the following conditions:</p>
+  <p>The above copyright notice and this permission notice shall be included
+  in all copies or substantial portions of the Software.</p>
+  <p style="text-transform:uppercase;font-size:13px;font-family:var(--mono);
+     line-height:1.6;color:var(--dim)">The software is provided "as is",
+  without warranty of any kind, express or implied, including but not limited
+  to the warranties of merchantability, fitness for a particular purpose and
+  noninfringement. In no event shall the authors or copyright holders be
+  liable for any claim, damages or other liability, whether in an action of
+  contract, tort or otherwise, arising from, out of or in connection with the
+  software or the use or other dealings in the software.</p>
+
+  <h2>Citing</h2>
+  <p>ezr is teaching code for CSC591 at NC State, and a working reference
+  implementation. If it helps your work, cite the repository.</p>
+</section>
+
+<footer>ezr &mdash; Tim Menzies, MIT licence.
+Better maps, not bigger boots.</footer>
+</div>
+
+<script>
+const tabs = [...document.querySelectorAll('nav button')];
+function show(id, push) {
+  tabs.forEach(t => {
+    const on = t.getAttribute('aria-controls') === id;
+    t.setAttribute('aria-selected', on);
+    document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+  });
+  try { localStorage.setItem('ezrtab', id); } catch (e) {}
+  if (push) history.replaceState(null, '', '#' + id);
+}
+tabs.forEach(t => t.addEventListener('click',
+  () => show(t.getAttribute('aria-controls'), true)));
+tabs.forEach((t, i) => t.addEventListener('keydown', e => {
+  const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+  if (!d) return;
+  e.preventDefault();
+  const n = tabs[(i + d + tabs.length) % tabs.length];
+  n.focus(); show(n.getAttribute('aria-controls'), true);
+}));
+let start = location.hash.slice(1);
+if (!['man','fns','dem','ins','lic'].includes(start)) {
+  try { start = localStorage.getItem('ezrtab'); } catch (e) {}
+}
+if (['man','fns','dem','ins','lic'].includes(start)) show(start, false);
+</script>
+
+</body>
+</html>

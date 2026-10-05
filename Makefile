@@ -13,7 +13,7 @@ ETC := $(GIT_ROOT)/,
 # weave) moved to ./rc, which has positional args and no $$.
 # .PHONY so a same-named file cannot shadow a verb -- which
 # `docs/` very nearly did.
-.PHONY: help update
+.PHONY: help update manual
 
 help: ## show help
 	@gawk 'BEGIN { FS=":.*?##"; \
@@ -40,6 +40,16 @@ Cols ?= 3   # pdf columns
 	@open $@
 
 # ---- web ---------------------------------------------------
+# docs/ is served at timm.github.io/ezr, so the manual gets a url
+# you own and can hand out, unlike the claude.ai artifact.
+Manual := https://timm.github.io/ezr/manual.html
+
+docs/manual.html: ezr.py ezr_eg.py $(ETC)/manual.py $(ETC)/manual.html ## the five-tab reference
+	@python3 -B $(ETC)/manual.py
+
+manual: docs/manual.html ## build it, then open it
+	@open $(Manual) 2>/dev/null || echo $(Manual)
+
 docs/ezr.html: ezr.py $(ETC)/lit.py ## literate page via pycco
 	@python3 -B $(ETC)/lit.py ezr.py
 	@open $@
@@ -59,5 +69,5 @@ docs/%.html: docs/%.md $(ETC)/tut.html ## .md ==> .html tutorial
 	@pandoc -s --syntax-highlighting=none \
 	  --template=$(ETC)/tut.html -M pagetitle=$* -o $@ $<
 
-update: docs/ezr.html docs/ezr_eg.html $(Tuts) ## rebuild html; commit; push
+update: docs/ezr.html docs/ezr_eg.html docs/manual.html $(Tuts) ## rebuild html; commit; push
 	@read -p "Reason? " msg; git commit -am "$$msg"; git push; git status
