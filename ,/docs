@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-## rebuild any page whose source moved
+##  rebuild any page whose source moved
 # `-nt` is all the dependency logic this project ever needed.
 export PYTHONDONTWRITEBYTECODE=1   # py3.13 ignores the -B flag
 Here=$(cd "$(dirname "$0")/.." && pwd); cd "$Here" || exit 1

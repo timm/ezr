@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-## run a demo over every moot dataset:  ,/sweep --holdout 8
+## [demo] [jobs]  run one demo over every moot dataset
 export PYTHONDONTWRITEBYTECODE=1   # py3.13 ignores the -B flag
 Here=$(cd "$(dirname "$0")/.." && pwd)
 Moot=$HOME/gits/moot/optimize

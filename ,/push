@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-## commit everything and push:  ,/push "why"
+## [why]  commit everything and push
 msg=$1
 [ -n "$msg" ] || read -rp "Reason? " msg
 git add -A

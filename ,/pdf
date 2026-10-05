@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-## x.py -> a 3-column pdf:  ,/pdf ezr [font] [cols]
+## [file] [font] [cols]  a 3-column printed listing
 # A formfeed (ctrl-v ctrl-l in vim) is a hard column break.
 Here=$(cd "$(dirname "$0")/.." && pwd); cd "$Here" || exit 1
 f=${1:-ezr}; f=${f%.py}; font=${2:-4.5}; cols=${3:-3}
