@@ -60,7 +60,7 @@ Two files. No package structure, no test framework.
 
 Any function named `test_*` is a demo, a test, and a help
 entry, all at once. The exit code counts crashes, so
-`make tests` needs no framework.
+`./ezr_eg.py --all` needs no framework.
 
 ## INSTALLATION
 
@@ -180,14 +180,15 @@ Key exports:
     ezr/
       ezr.py          The library (~340 lines)
       ezr_eg.py       Demos; `python3 ezr_eg.py --all` runs them
-      Makefile        Tasks; `make help` lists them
       pyproject.toml  Package config (ezr, ezr-eg commands)
       README.md       This file
+      ,/              Commands; `,/help` lists them
+      etc/            What those commands use
       docs/           The published site, timm.github.io/ezr
         ezr.md        The library, woven; one function per application
         CHANGELOG.md  Release notes
         LICENSE.md    MIT
-      ,/              Everything minor: helpers, essays, dotfiles
+
 
 ## AUTHOR
 

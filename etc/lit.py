@@ -167,7 +167,7 @@ def build(py):
   open(f"docs/{py}", "w").write("\n".join(out))
   subprocess.run(["pycco", "-d", "docs", f"docs/{py}"],
                  check=True, capture_output=True)
-  h = open(",/header.html").read().replace("PROJECT", "ezr")
+  h = open("etc/header.html").read().replace("PROJECT", "ezr")
   t = open(f"docs/{stem}.html").read()
   t = re.sub(r"(<body[^>]*>)", lambda m: m.group(1)+"\n"+h,
              t, count=1)
@@ -179,7 +179,7 @@ import sys
 for py in sys.argv[1:] or ["ezr.py", "ezr_eg.py"]:
   build(py)
 css = open("docs/pycco.css").read()
-css += open(",/custom.css").read()
+css += open("etc/custom.css").read()
 css += """
 .docs p { text-align: justify; }
 .docs h2 { margin: 0 0 0.9em 0; }

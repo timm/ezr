@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+## clone the sample data; make the code runnable
+[ -d ~/gits/moot/.git ] || git clone http://tiny.cc/moot ~/gits/moot
+Here=$(cd "$(dirname "$0")/.." && pwd)
+chmod +x "$Here"/*.py "$Here"/,/* 2>/dev/null
+echo "ok"

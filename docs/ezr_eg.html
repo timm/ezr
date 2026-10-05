@@ -77,6 +77,8 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">ezr</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ezr</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 
+<span class="nb">type</span> <span class="n">CLUSTERS</span> <span class="o">=</span> <span class="nb">list</span><span class="p">[</span><span class="n">TBL</span><span class="p">]</span>   <span class="c1"># what `halve` returns</span>
+
 <span class="n">the</span><span class="o">.</span><span class="n">Eras</span><span class="p">,</span> <span class="n">the</span><span class="o">.</span><span class="n">Draws</span><span class="p">,</span> <span class="n">the</span><span class="o">.</span><span class="n">Restart</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span>
 <span class="n">the</span><span class="o">.</span><span class="n">Klass</span> <span class="o">=</span> <span class="s2">&quot;~/gits/moot/classify/diabetes.csv&quot;</span>
 <span class="n">the</span><span class="o">.</span><span class="n">_defaults</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">Eras</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">Draws</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">Restart</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
@@ -187,7 +189,8 @@
         <a class='octothorpe' href='#section-7'>#</a>
       </div>
       <p><a name="fn-eg_same"></a>The stats tell noise from signal.<br />
-<small>calls <a href="ezr.html#fn-same"><code>same</code></a></small></p>
+<small>calls <a href="ezr.html#fn-same"><code>same</code></a></small><br />
+<small>used by <a href="#fn-eg_distinguish"><code>eg_distinguish</code></a></small></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">eg_same</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -222,11 +225,12 @@
         <a class='octothorpe' href='#section-9'>#</a>
       </div>
       <p><a name="fn-eg_vs"></a>Acquire versus random, same budget. 0 if the same.<br />
-<small>calls <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="ezr.html#fn-wins"><code>wins</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="ezr.html#fn-same"><code>same</code></a> <a href="ezr.html#fn-holdout"><code>holdout</code></a> <a href="ezr.html#fn-acquire"><code>acquire</code></a> <a href="ezr.html#fn-grabs"><code>grabs</code></a></small></p>
+<small>calls <a href="ezr.html#fn-wins"><code>wins</code></a> <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="ezr.html#fn-same"><code>same</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="ezr.html#fn-holdout"><code>holdout</code></a> <a href="ezr.html#fn-acquire"><code>acquire</code></a> <a href="ezr.html#fn-grabs"><code>grabs</code></a></small><br />
+<small>used by <a href="#fn-eg_optimize"><code>eg_optimize</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">eg_vs</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-  <span class="n">t</span> <span class="o">=</span> <span class="n">Tbl</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">File</span><span class="p">));</span> <span class="n">w</span> <span class="o">=</span> <span class="n">wins</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">eg_vs</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="n">t</span> <span class="o">=</span> <span class="n">tbl</span> <span class="ow">or</span> <span class="n">Tbl</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">File</span><span class="p">));</span> <span class="n">w</span> <span class="o">=</span> <span class="n">wins</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
   <span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span><span class="p">(</span><span class="n">holdout</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">acquire</span><span class="p">))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Repeats</span><span class="p">)]</span>
   <span class="n">b</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span><span class="p">(</span><span class="n">holdout</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">grabs</span><span class="p">))</span>   <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Repeats</span><span class="p">)]</span>
   <span class="n">d</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">same</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span> <span class="k">else</span> <span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
@@ -585,7 +589,7 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
 <small>used by <a href="ezr.html#fn-TRENDS"><code>TRENDS</code></a> <a href="ezr.html#fn-_cars"><code>_cars</code></a> <a href="#fn-eg_predict"><code>eg_predict</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">halve</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">halve</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CLUSTERS</span><span class="p">:</span>
   <span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span> <span class="ow">or</span> <span class="n">the</span><span class="o">.</span><span class="n">Leaf</span></pre></div>
     </div>
   </div>
@@ -689,10 +693,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
       </div>
       <p><a name="fn-eras"></a>Split rows, ordered by column AT, into N equal slices.<br />
 <small>calls <a href="ezr.html#fn-clone"><code>clone</code></a></small><br />
-<small>used by <a href="#fn-eg_trends"><code>eg_trends</code></a></small></p>
+<small>used by <a href="ezr.html#fn-TRENDS"><code>TRENDS</code></a> <a href="ezr.html#fn-FORECAST"><code>FORECAST</code></a> <a href="ezr.html#fn-ALERTS"><code>ALERTS</code></a> <a href="#fn-eg_trends"><code>eg_trends</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">eras</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">at</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">eras</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">at</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CLUSTERS</span><span class="p">:</span>
   <span class="n">n</span>    <span class="o">=</span> <span class="n">n</span> <span class="ow">or</span> <span class="n">the</span><span class="o">.</span><span class="n">Eras</span>
   <span class="n">rows</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">((</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">rows</span> <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">at</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span><span class="p">),</span>
                 <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="n">at</span><span class="p">])</span>
@@ -723,7 +727,7 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
 <small>used by <a href="ezr.html#fn-CLASSIFICATION"><code>CLASSIFICATION</code></a> <a href="ezr.html#fn-REGRESSION"><code>REGRESSION</code></a> <a href="ezr.html#fn-ANOMALY"><code>ANOMALY</code></a> <a href="ezr.html#fn-RETRIEVAL"><code>RETRIEVAL</code></a> <a href="ezr.html#fn-SPREAD"><code>SPREAD</code></a> <a href="ezr.html#fn-REPAIR"><code>REPAIR</code></a> <a href="ezr.html#fn-PLANNING"><code>PLANNING</code></a> <a href="ezr.html#fn-MONITORING"><code>MONITORING</code></a> <a href="ezr.html#fn-TRENDS"><code>TRENDS</code></a> <a href="#fn-eg_spread"><code>eg_spread</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">relevant</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span> <span class="n">cs</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TBL</span><span class="p">:</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">relevant</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span> <span class="n">cs</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TBL</span><span class="p">:</span>
   <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">middles</span><span class="p">(</span><span class="n">c</span><span class="p">)))</span></pre></div>
     </div>
   </div>
@@ -785,7 +789,7 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
 <small>used by <a href="#fn-eg_summarize"><code>eg_summarize</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">SUMMARIZATION</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">SUMMARIZATION</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">TBL</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MIDS</span><span class="p">:</span>
   <span class="k">return</span> <span class="n">middles</span><span class="p">(</span><span class="n">c</span> <span class="ow">or</span> <span class="n">tbl</span><span class="p">)</span></pre></div>
     </div>
   </div>
@@ -795,12 +799,11 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-43'>#</a>
       </div>
-      <p><a name="fn-CLASSIFICATION"></a>
-<small>calls <a href="ezr.html#fn-mid"><code>mid</code></a> <a href="#fn-klass"><code>klass</code></a> <a href="#fn-relevant"><code>relevant</code></a></small><br />
-<small>used by <a href="#fn-eg_predict"><code>eg_predict</code></a></small></p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">CLASSIFICATION</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Row</span><span class="p">,</span> <span class="n">cs</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">CLASSIFICATION</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span>
+                   <span class="n">cs</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ATOM</span><span class="p">:</span>
   <span class="k">return</span> <span class="n">mid</span><span class="p">(</span><span class="n">relevant</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="n">klass</span><span class="p">(</span><span class="n">tbl</span><span class="p">)])</span></pre></div>
     </div>
   </div>
@@ -815,7 +818,7 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
 <small>used by <a href="ezr.html#fn-SIMULATION"><code>SIMULATION</code></a> <a href="#fn-eg_predict"><code>eg_predict</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">REGRESSION</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Row</span><span class="p">,</span> <span class="n">cs</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">REGRESSION</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span> <span class="n">cs</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MIDS</span><span class="p">:</span>
   <span class="k">return</span> <span class="n">middles</span><span class="p">(</span><span class="n">relevant</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">cs</span><span class="p">),</span>
                  <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">at</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">y</span><span class="p">])</span></pre></div>
     </div>
@@ -831,7 +834,7 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
 <small>used by <a href="#fn-eg_anomaly"><code>eg_anomaly</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">ANOMALY</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Row</span><span class="p">,</span> <span class="n">cs</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">ANOMALY</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span> <span class="n">cs</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
   <span class="k">return</span> <span class="n">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">middles</span><span class="p">(</span><span class="n">relevant</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">cs</span><span class="p">)))</span></pre></div>
     </div>
   </div>
@@ -846,7 +849,7 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
 <small>used by <a href="#fn-eg_retrieve"><code>eg_retrieve</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">RETRIEVAL</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Row</span><span class="p">,</span> <span class="n">cs</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">RETRIEVAL</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span> <span class="n">cs</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ROWS</span><span class="p">:</span>
   <span class="k">return</span> <span class="n">relevant</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span><span class="o">.</span><span class="n">rows</span></pre></div>
     </div>
   </div>
@@ -856,13 +859,12 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-47'>#</a>
       </div>
-      <p><a name="fn-SPREAD"></a>table&rsquo;s unnamed row<br />
-<small>calls <a href="#fn-relevant"><code>relevant</code></a> <a href="#fn-targets"><code>targets</code></a> <a href="#fn-sample"><code>sample</code></a></small><br />
-<small>used by <a href="#fn-eg_spread"><code>eg_spread</code></a></small></p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">SPREAD</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Row</span><span class="p">,</span> <span class="n">cs</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-  <span class="n">c</span> <span class="o">=</span> <span class="n">relevant</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">SPREAD</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span> <span class="n">cs</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">,</span>
+           <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">ATOM</span><span class="p">]]:</span>
+  <span class="n">c</span> <span class="o">=</span> <span class="n">relevant</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span>        <span class="c1"># table&#39;s unnamed row</span>
   <span class="k">return</span> <span class="p">{</span><span class="n">at</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">sample</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="n">at</span><span class="p">])</span>
                      <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="ow">or</span> <span class="n">the</span><span class="o">.</span><span class="n">Draws</span><span class="p">))</span>
           <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">(</span><span class="n">tbl</span><span class="p">)}</span></pre></div>
@@ -879,7 +881,7 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
 <small>used by <a href="#fn-eg_synth"><code>eg_synth</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">SYNTHESIS</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">SYNTHESIS</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">TBL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ROW</span><span class="p">:</span>
   <span class="k">return</span> <span class="n">impute</span><span class="p">(</span><span class="n">blank</span><span class="p">(</span><span class="n">tbl</span><span class="p">),</span> <span class="n">c</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">cols</span><span class="p">))</span></pre></div>
     </div>
   </div>
@@ -894,10 +896,12 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
 <small>used by <a href="#fn-eg_synth"><code>eg_synth</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">REPAIR</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Row</span><span class="p">,</span> <span class="n">cs</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">REPAIR</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span> <span class="n">cs</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ROW</span><span class="p">:</span>
   <span class="n">c</span> <span class="o">=</span> <span class="n">relevant</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span>
   <span class="k">return</span> <span class="n">impute</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span>
-                <span class="p">{</span><span class="n">at</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">cols</span> <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">at</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;?&quot;</span><span class="p">})</span></pre></div>
+                <span class="p">{</span><span class="n">at</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">cols</span> <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">at</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;?&quot;</span><span class="p">})</span>
+
+<span class="nb">type</span> <span class="n">ADVICE</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ATOM</span><span class="p">,</span> <span class="n">ATOM</span><span class="p">]</span>  <span class="c1"># column, old, new</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -906,13 +910,12 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-50'>#</a>
       </div>
-      <p><a name="fn-PLANNING"></a>minimal: one column<br />
-<small>calls <a href="#fn-relevant"><code>relevant</code></a> <a href="#fn-DISTINGUISH"><code>DISTINGUISH</code></a> <a href="#fn-ymu"><code>ymu</code></a></small><br />
-<small>used by <a href="#fn-eg_advise"><code>eg_advise</code></a></small></p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">PLANNING</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Row</span><span class="p">,</span> <span class="n">cs</span><span class="p">,</span> <span class="n">can</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-  <span class="n">here</span>   <span class="o">=</span> <span class="n">relevant</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">PLANNING</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span> <span class="n">cs</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">,</span>
+             <span class="n">can</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ADVICE</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="n">here</span>   <span class="o">=</span> <span class="n">relevant</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span>   <span class="c1"># minimal: one column</span>
   <span class="n">better</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">ymu</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">rows</span><span class="p">))</span>
   <span class="k">if</span> <span class="n">better</span> <span class="ow">is</span> <span class="n">here</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
   <span class="n">at</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">DISTINGUISH</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">here</span><span class="p">,</span> <span class="n">better</span><span class="p">,</span> <span class="n">can</span><span class="p">)</span>
@@ -925,12 +928,11 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-51'>#</a>
       </div>
-      <p><a name="fn-PLANNING_TOTAL"></a>total: all cells<br />
-<small>calls <a href="#fn-impute"><code>impute</code></a> <a href="#fn-ymu"><code>ymu</code></a> <a href="#fn-xats"><code>xats</code></a></small><br />
-<small>used by <a href="#fn-eg_advise"><code>eg_advise</code></a></small></p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">PLANNING_TOTAL</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Row</span><span class="p">,</span> <span class="n">cs</span><span class="p">,</span> <span class="n">can</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">PLANNING_TOTAL</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span> <span class="n">cs</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">,</span>
+                   <span class="n">can</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ROW</span><span class="p">:</span>
   <span class="n">better</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">ymu</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">rows</span><span class="p">))</span>
   <span class="k">return</span> <span class="n">impute</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">better</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">can</span> <span class="ow">or</span> <span class="n">xats</span><span class="p">(</span><span class="n">tbl</span><span class="p">)))</span></pre></div>
     </div>
@@ -941,12 +943,11 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-52'>#</a>
       </div>
-      <p><a name="fn-MONITORING"></a>
-<small>calls <a href="#fn-relevant"><code>relevant</code></a> <a href="#fn-DISTINGUISH"><code>DISTINGUISH</code></a> <a href="#fn-ymu"><code>ymu</code></a></small><br />
-<small>used by <a href="#fn-eg_advise"><code>eg_advise</code></a></small></p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">MONITORING</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Row</span><span class="p">,</span> <span class="n">cs</span><span class="p">,</span> <span class="n">can</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">MONITORING</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span> <span class="n">cs</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">,</span>
+               <span class="n">can</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ADVICE</span><span class="p">:</span>
   <span class="n">here</span>  <span class="o">=</span> <span class="n">relevant</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span>
   <span class="n">worse</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">ymu</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">rows</span><span class="p">))</span>
   <span class="n">at</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">DISTINGUISH</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">here</span><span class="p">,</span> <span class="n">worse</span><span class="p">,</span> <span class="n">can</span><span class="p">)</span>
@@ -964,7 +965,7 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
 <small>used by <a href="#fn-eg_advise"><code>eg_advise</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">EXPLANATION</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Atom</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">EXPLANATION</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">TBL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
   <span class="n">at</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">DISTINGUISH</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
   <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tbl</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">at</span><span class="p">]</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">say</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></pre></div>
     </div>
@@ -975,14 +976,13 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-54'>#</a>
       </div>
-      <p><a name="fn-TRENDS"></a>
-<small>calls <a href="#fn-relevant"><code>relevant</code></a> <a href="#fn-halve"><code>halve</code></a></small><br />
-<small>used by <a href="ezr.html#fn-FORECAST"><code>FORECAST</code></a> <a href="ezr.html#fn-ALERTS"><code>ALERTS</code></a> <a href="#fn-eg_trends"><code>eg_trends</code></a></small></p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">TRENDS</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">ers</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Row</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">TRENDS</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">eras</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span>
+           <span class="n">stop</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CLUSTERS</span><span class="p">:</span>
   <span class="k">return</span> <span class="p">[</span><span class="n">relevant</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">halve</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">))</span>
-          <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">ers</span><span class="p">]</span></pre></div>
+          <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">eras</span><span class="p">]</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -991,13 +991,12 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-55'>#</a>
       </div>
-      <p><a name="fn-FORECAST"></a>
-<small>calls <a href="#fn-delta"><code>delta</code></a></small><br />
-<small>used by <a href="#fn-eg_trends"><code>eg_trends</code></a></small></p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">FORECAST</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">ers</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Row</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-  <span class="n">cs</span> <span class="o">=</span> <span class="n">TRENDS</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">ers</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">FORECAST</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">eras</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span>
+             <span class="n">stop</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+  <span class="n">cs</span> <span class="o">=</span> <span class="n">TRENDS</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">eras</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
   <span class="k">return</span> <span class="p">{</span><span class="n">at</span><span class="p">:</span> <span class="n">delta</span><span class="p">(</span><span class="n">cs</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="n">at</span><span class="p">],</span> <span class="n">cs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="n">at</span><span class="p">])</span>
           <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">cs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">cols</span><span class="p">}</span></pre></div>
     </div>
@@ -1008,13 +1007,12 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-56'>#</a>
       </div>
-      <p><a name="fn-ALERTS"></a>
-<small>calls <a href="ezr.html#fn-adds"><code>adds</code></a> <a href="ezr.html#fn-xdist"><code>xdist</code></a> <a href="#fn-middles"><code>middles</code></a></small><br />
-<small>used by <a href="#fn-eg_trends"><code>eg_trends</code></a></small></p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">ALERTS</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">ers</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">Row</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-  <span class="n">cs</span>    <span class="o">=</span> <span class="n">TRENDS</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">ers</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">ALERTS</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">eras</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span>
+           <span class="n">stop</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NUMS</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+  <span class="n">cs</span>    <span class="o">=</span> <span class="n">TRENDS</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">eras</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
   <span class="n">steps</span> <span class="o">=</span> <span class="p">[</span><span class="n">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">middles</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">middles</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
            <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">cs</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span>
   <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span> <span class="k">return</span> <span class="n">steps</span><span class="p">,</span> <span class="kc">False</span>
@@ -1028,13 +1026,13 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-57'>#</a>
       </div>
-      <p><a name="fn-SIMULATION"></a>unseen rows, scored<br />
-<small>calls <a href="#fn-impute"><code>impute</code></a> <a href="#fn-xats"><code>xats</code></a></small><br />
-<small>used by <a href="#fn-eg_simulate"><code>eg_simulate</code></a></small></p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">SIMULATION</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">cs</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-  <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">SIMULATION</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">cs</span><span class="p">:</span> <span class="n">CLUSTERS</span><span class="p">,</span>
+               <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+               <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">ROW</span><span class="p">,</span> <span class="n">MIDS</span><span class="p">]]:</span>
+  <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>                          <span class="c1"># unseen rows, scored</span>
   <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="ow">or</span> <span class="n">the</span><span class="o">.</span><span class="n">Draws</span><span class="p">):</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">impute</span><span class="p">(</span><span class="n">blank</span><span class="p">(</span><span class="n">tbl</span><span class="p">),</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">cs</span><span class="p">),</span>
                <span class="nb">set</span><span class="p">(</span><span class="n">xats</span><span class="p">(</span><span class="n">tbl</span><span class="p">)))</span>
@@ -1048,12 +1046,13 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-58'>#</a>
       </div>
-      <p><a name="fn-OPTIMIZATION"></a>demoed by eg_vs<br />
-<small>calls <a href="ezr.html#fn-acquire"><code>acquire</code></a></small></p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">OPTIMIZATION</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">Tbl</span><span class="p">,</span> <span class="n">budget</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-  <span class="k">return</span> <span class="n">acquire</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">budget</span> <span class="ow">or</span> <span class="n">the</span><span class="o">.</span><span class="n">Stop</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">OPTIMIZATION</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span>
+                 <span class="n">budget</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ROWS</span><span class="p">:</span>
+  <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">acquire</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">budget</span> <span class="ow">or</span> <span class="n">the</span><span class="o">.</span><span class="n">Stop</span><span class="p">),</span>
+                <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">ydist</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span>  <span class="c1"># see eg_vs</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1062,12 +1061,13 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-59'>#</a>
       </div>
-      <p><a name="fn-DISTINGUISHABILITY"></a>demoed by eg_same<br />
-<small>calls <a href="ezr.html#fn-same"><code>same</code></a></small></p>
+      <p><a name="fn-DISTINGUISHABILITY"></a>
+<small>calls <a href="ezr.html#fn-same"><code>same</code></a></small><br />
+<small>used by <a href="#fn-eg_distinguish"><code>eg_distinguish</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">DISTINGUISHABILITY</span><span class="p">(</span><span class="n">xs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">ys</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
-  <span class="k">return</span> <span class="n">same</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">DISTINGUISHABILITY</span><span class="p">(</span><span class="n">xs</span><span class="p">:</span> <span class="n">NUMS</span><span class="p">,</span> <span class="n">ys</span><span class="p">:</span> <span class="n">NUMS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">same</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">)</span>               <span class="c1"># see eg_same</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1244,16 +1244,16 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">eg_trends</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
   <span class="n">t</span>   <span class="o">=</span> <span class="n">Tbl</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">File</span><span class="p">))</span>
-  <span class="n">ers</span> <span class="o">=</span> <span class="n">eras</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>              <span class="c1"># Model year is the order</span>
+  <span class="n">slices</span> <span class="o">=</span> <span class="n">eras</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>              <span class="c1"># Model year is the order</span>
   <span class="n">r</span>   <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-  <span class="n">cs</span>  <span class="o">=</span> <span class="n">TRENDS</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ers</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+  <span class="n">cs</span>  <span class="o">=</span> <span class="n">TRENDS</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">slices</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
   <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;era mpg &quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">say</span><span class="p">(</span><span class="n">mid</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="mi">7</span><span class="p">]))</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cs</span><span class="p">])</span>
   <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;era lbs &quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">say</span><span class="p">(</span><span class="n">mid</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">cols</span><span class="p">[</span><span class="mi">5</span><span class="p">]))</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cs</span><span class="p">])</span>
-  <span class="n">f</span> <span class="o">=</span> <span class="n">FORECAST</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ers</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+  <span class="n">f</span> <span class="o">=</span> <span class="n">FORECAST</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">slices</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
   <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;next mpg&quot;</span><span class="p">,</span> <span class="n">say</span><span class="p">(</span><span class="n">mid</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">7</span><span class="p">])),</span>
         <span class="s2">&quot; next lbs&quot;</span><span class="p">,</span> <span class="n">say</span><span class="p">(</span><span class="n">mid</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">5</span><span class="p">])))</span>
   <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;next origin&quot;</span><span class="p">,</span> <span class="n">say</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">4</span><span class="p">]))</span>
-  <span class="n">steps</span><span class="p">,</span> <span class="n">odd</span> <span class="o">=</span> <span class="n">ALERTS</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">ers</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+  <span class="n">steps</span><span class="p">,</span> <span class="n">odd</span> <span class="o">=</span> <span class="n">ALERTS</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">slices</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
   <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;steps   &quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">say</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">],</span> <span class="s2">&quot;alert:&quot;</span><span class="p">,</span> <span class="n">odd</span><span class="p">)</span></pre></div>
     </div>
   </div>
@@ -1279,6 +1279,40 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-71'>#</a>
+      </div>
+      <p><a name="fn-eg_optimize"></a>OPTIMIZATION: acquire, best first. Then defer to &ndash;vs.<br />
+<small>calls <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="#fn-eg_vs"><code>eg_vs</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="ezr.html#fn-say"><code>say</code></a> <a href="ezr.html#fn-ydist"><code>ydist</code></a></small></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">eg_optimize</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="n">t</span> <span class="o">=</span> <span class="n">Tbl</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">File</span><span class="p">))</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;best ydist&quot;</span><span class="p">,</span> <span class="n">say</span><span class="p">(</span><span class="n">ydist</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">OPTIMIZATION</span><span class="p">(</span><span class="n">t</span><span class="p">)[</span><span class="mi">0</span><span class="p">])))</span>
+  <span class="n">eg_vs</span><span class="p">(</span><span class="n">t</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-72'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-72'>#</a>
+      </div>
+      <p><a name="fn-eg_distinguish"></a>DISTINGUISHABILITY: same(). Then defer to &ndash;same.<br />
+<small>calls <a href="#fn-eg_same"><code>eg_same</code></a></small></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">eg_distinguish</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">gauss</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">40</span><span class="p">)]</span>
+  <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">gauss</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">40</span><span class="p">)]</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;x~x&quot;</span><span class="p">,</span> <span class="n">DISTINGUISHABILITY</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span>
+        <span class="s2">&quot; x~z&quot;</span><span class="p">,</span> <span class="n">DISTINGUISHABILITY</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span>
+  <span class="n">eg_same</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-73'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-73'>#</a>
       </div>
       <p><a name="fn-eg_all"></a>Run every demo; exit code counts the crashes.<br />
 <small>calls <a href="ezr.html#fn-run"><code>run</code></a></small></p>

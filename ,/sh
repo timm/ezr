@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# rc -- run commands for this repo.
-#   ./rc              an interactive shell with all of this loaded
-#   ./rc lint ezr     run one command, then exit
-#   . ./rc            load it into the shell you are already in
+## an interactive shell: prompt, history, aliases
+# ,/sh -- the only command here that must change YOUR shell, so
+# it is the only one you source.  Everything else in ,/ is an
+# ordinary script.
+#   ,/sh          an interactive shell with all of this loaded
+#   . ,/sh        load it into the shell you are already in
 #
 # Executed, $0 == BASH_SOURCE[0], so we exec an interactive bash
 # that reads THIS file as its init-file.  That re-entry sources
@@ -14,11 +16,12 @@
 [ "$0" = "${BASH_SOURCE[0]}" ] && [ $# -eq 0 ] \
   && exec bash --init-file "$0" -i
 
-# Here = the dir holding this file (the repo root, not the dir
-# you cd to), so ,/ resolves even outside a git repo.
-Here=$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)
+# Here = the repo root (this file lives in ,/), so etc/ resolves
+# even when you have cd'd somewhere else.
+Here=$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)
+PATH="$Here/,:$PATH"        # so `lint ezr` works, not just ,/lint
 
-export EDITOR="nvim -u $Here/,/nviminit.lua"
+export EDITOR="nvim -u $Here/etc/nviminit.lua"
 export BASH_SILENCE_DEPRECATION_WARNING=1
 export PYTHONDONTWRITEBYTECODE=1  # py3.13 ignores the -B flag
 export HISTSIZE=10000
@@ -43,51 +46,10 @@ tree()   { command tree -C "$@"; }
 eza()    { command eza --icons=always "$@"; }
 col()    { command column -s, -t "$@"; }   # eyeball a csv
 vi()     { $EDITOR "$@"; }                 # $EDITOR set above
-tmux()   { command tmux -u -f "$Here/,/tmux.rc" "$@"; }
+tmux()   { command tmux -u -f "$Here/etc/tmux.rc" "$@"; }
 branch() { git branch --show-current 2>/dev/null; }
 dirty()  { [ -n "$(git status -s 2>/dev/null)" ] && echo "*"; }
 root()   { cd "$Here"; }
-usage()  { grep -oE '^[a-z]+\(\)' "$Here/rc" | tr -d '()' | sort \
-           | tr '\n' ' '; echo; }
-
-# ---- jobs that were Makefile verbs -------------------------
-# They never used make's mtime logic, and make has no positional
-# args, so `lint ezr` beats `make lint f=ezr`.
-Moot=~/gits/moot/optimize
-
-ok() {                       # get the data; code runnable
-  [ -d ~/gits/moot/.git ] || git clone http://tiny.cc/moot ~/gits/moot
-  chmod +x "$Here"/*.py 2>/dev/null
-}
-
-push() {                     # save to cloud
-  local msg
-  read -rp "Reason? " msg
-  git commit -am "${msg:-saving}"
-  git push
-  git status -sb
-}
-
-lint() {                     # lint one file:  lint ezr
-  pylint --rcfile="$Here/,/pylintrc" "${1%.py}.py"
-}
-
-# ezr.py is a library with no __main__; ezr_eg.py is the cli.
-sweep() {                    # sweep [demo] [jobs], over all data
-  local do=${1:---tree} par=${2:-$(sysctl -n hw.ncpu 2>/dev/null || nproc)}
-  local csvs=("$Moot"/*/*.csv)
-  mkdir -p ~/tmp
-  echo "sweep: ${#csvs[@]} datasets, -P$par, $do"
-  time printf '%s\n' "${csvs[@]}" \
-    | xargs -P "$par" -I{} python3 -B "$Here/ezr_eg.py" -File {} "$do" \
-      > ~/tmp/sweep.log 2>&1
-  echo "-> ~/tmp/sweep.log ($(wc -l < ~/tmp/sweep.log) lines)"
-}
-
-weave() {                    # x.py -> x.md.  Always runs: x.md
-  local f=${1%.py}           # is both input and output, so no
-  gawk -f "$Here/,/weave.awk" "$f.py" "$f.md" > _tmp && mv _tmp "$f.md"
-}
 
 # Leave these as raw escape codes
 bold=$(tput bold)    ; plain=$(tput sgr0)

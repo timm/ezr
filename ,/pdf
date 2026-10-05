@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+## x.py -> a 3-column pdf:  ,/pdf ezr [font] [cols]
+# A formfeed (ctrl-v ctrl-l in vim) is a hard column break.
+Here=$(cd "$(dirname "$0")/.." && pwd); cd "$Here" || exit 1
+f=${1:-ezr}; f=${f%.py}; font=${2:-4.5}; cols=${3:-3}
+mkdir -p ~/tmp
+a2ps -Bj --quiet --landscape --line-numbers=1 \
+  --highlight-level=heavy --borders=no --pro=color \
+  --right-footer="" --left-footer="" --pretty-print=python \
+  --footer="$f.py :: page %p." -M letter --center-title="" \
+  --font-size="$font" --columns "$cols" -o - "$f.py" \
+  | ps2pdf - ~/tmp/"$f".pdf
+open ~/tmp/"$f".pdf 2>/dev/null || echo ~/tmp/"$f".pdf

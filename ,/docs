@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+## rebuild any page whose source moved
+# `-nt` is all the dependency logic this project ever needed.
+export PYTHONDONTWRITEBYTECODE=1   # py3.13 ignores the -B flag
+Here=$(cd "$(dirname "$0")/.." && pwd); cd "$Here" || exit 1
+for f in ezr ezr_eg; do
+  [ $f.py -nt docs/$f.html ] && python3 -B etc/lit.py $f.py
+done
+[ ezr.py        -nt docs/manual.html ] ||
+[ ezr_eg.py     -nt docs/manual.html ] ||
+[ etc/manual.py -nt docs/manual.html ] && python3 -B etc/manual.py
+for m in docs/*.md; do
+  h=${m%.md}.html
+  case $m in */CHANGELOG.md|*/LICENSE.md|*/ezr.md) continue;; esac
+  [ "$m" -nt "$h" ] && pandoc -s --syntax-highlighting=none \
+     --template=etc/tut.html -M pagetitle="$(basename "${m%.md}")" -o "$h" "$m"
+done
+echo "docs up to date"

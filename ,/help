@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+## list these commands
+# Same trick the Makefile used: one `##` line per file is its
+# doc.  Nothing to keep in sync -- a new script documents itself.
+Here=$(cd "$(dirname "$0")" && pwd)
+printf '\nUsage:\n  ,/\033[36m<command>\033[0m [args]\n\ncommands:\n'
+gawk 'FNR==1 { f = FILENAME; sub(/.*\//, "", f) }
+      /^## / { printf("  \033[36m%-9s\033[0m %s\n", f, substr($0,4)) | "sort" }' \
+  "$Here"/*

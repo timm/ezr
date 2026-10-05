@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+## refresh the ```py blocks of an essay:  ,/weave ezr
+# weave.awk reads BOTH files: the .py supplies the snippets, the
+# .md is rewritten in place.  So the .md must already exist --
+# this refreshes prose you wrote, it does not generate it.
+Here=$(cd "$(dirname "$0")/.." && pwd); cd "$Here" || exit 1
+py=${1:-ezr}; py=${py%.py}
+md=${2:-docs/$py.md}
+[ -f "$py.py" ] || { echo "no $py.py" >&2; exit 1; }
+[ -f "$md" ]    || { echo "no essay at $md" >&2; exit 1; }
+t=$(mktemp); trap 'rm -f "$t"' EXIT
+gawk -f etc/weave.awk "$py.py" "$md" > "$t" && mv "$t" "$md"
+n=$(grep -c "SNIPPET NOT FOUND" "$md")
+echo "$md  ($n stale $( [ "$n" = 1 ] && echo snippet || echo snippets ))"

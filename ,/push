@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+## commit everything and push:  ,/push "why"
+msg=$1
+[ -n "$msg" ] || read -rp "Reason? " msg
+git add -A
+git diff-index --quiet HEAD -- || git commit -qm "${msg:-saving}"
+git push -q -u origin HEAD
+git status -sb

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+## build the five-tab reference, then open it
+export PYTHONDONTWRITEBYTECODE=1   # py3.13 ignores the -B flag
+Here=$(cd "$(dirname "$0")/.." && pwd); cd "$Here" || exit 1
+Url=https://timm.github.io/ezr/manual.html
+python3 -B etc/manual.py
+open "$Url" 2>/dev/null || echo "$Url"
