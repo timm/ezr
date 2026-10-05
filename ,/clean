@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+##  delete python build and cache droppings
+# Scripts here export PYTHONDONTWRITEBYTECODE, but anything run
+# outside them (pylint importing a module, `pip install .`) still
+# leaves these behind.  All are gitignored; none are tracked.
+Here=$(cd "$(dirname "$0")/.." && pwd)
+find "$Here" \( -name __pycache__ -o -name .pytest_cache \
+             -o -name '*.egg-info' -o -name build -o -name dist \) \
+     -not -path '*/.git/*' -prune -print -exec rm -rf {} +
+echo "clean"
