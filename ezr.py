@@ -82,7 +82,7 @@ def Sym(txt: str = " ", at: int = 0) -> SYM:
   "Place to summarize stream of Symbols."
   return o(at=at, txt=txt, n=0, has={})
 
-def add(col: COL, v: ATOM, inc: int = 1) -> ATOM:
+def add(col: COL, v: ATOM, inc: int = 1) -> None:
   "Show V to COL.  INC=-1 takes it away.  `?` changes nothing."
   if v != "?":
     col.n += inc
@@ -93,7 +93,6 @@ def add(col: COL, v: ATOM, inc: int = 1) -> ATOM:
       col.mu += inc * d / max(1, col.n)
       col.m2  = max(0, col.m2 + inc * d * (v - col.mu))
       col.sd  = 0 if col.n < 2 else (col.m2/(col.n-1))**.5
-  return v
 
 def mid(col: COL) -> ATOM:
   "Middle: the mean, or the most common symbol."
@@ -314,9 +313,11 @@ def ks(xs: NUMS, ys: NUMS, a: float = 1.36) -> bool:
   return d <= a * sqrt((n + m) / (n * m))
 
 def same(xs: NUMS, ys: NUMS, eps: float = 0) -> bool:
-  "Indistinguishable by all three.  One sort, then linear."
+  """Indistinguishable.  Always cliffs and ks; EPS adds cohen, and
+  doubles as its effect size (eps=0 skips that third test)."""
   xs, ys = sorted(xs), sorted(ys)
-  return cliffs(xs,ys) and ks(xs,ys) and cohen(xs,ys,eps=eps)
+  return (cliffs(xs,ys) and ks(xs,ys)
+          and (not eps or cohen(xs,ys,d=eps)))
 
 #-- start --------------------------------------------------
 the = o(_defaults=o())

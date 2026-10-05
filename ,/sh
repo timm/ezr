@@ -31,7 +31,9 @@ export LESS=-R                    # let git colors through
 
 # histappend matters: without it, exiting a shell OVERWRITES
 # .bash_history, so a second shell eats the first one's.
-shopt -s histappend autocd cdspell dirspell globstar checkwinsize
+for o in histappend autocd cdspell dirspell globstar checkwinsize; do
+  shopt -s "$o" 2>/dev/null
+done
 
 # up-arrow walks only the lines starting with what you typed.
 # Only an interactive shell has a line editor to bind to.

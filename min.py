@@ -1,20 +1,22 @@
 #!/usr/bin/env python3 -B
+# vim: set et sw=2 ts=2 sts=2 cc=75 :
 """
-min.py: eat rows, spit guesses.
-(c) 2026 Tim Menzies <timm@ieee.org> MIT license.
+min.py: one small corner of ezr.py -- buy a few labels, guess the best.
+Every name below is ezr.py's, so this is a way in to reading that.
+Where ezr.py picks its next label after every label, this spends the
+whole budget at random, up front, then splits best from rest.
 
 Options:
    -Budget=50   rows we may label, all up
    -Check=5     of that budget, saved for the unseen rows
    -Seed=1      random number seed
-   -File=../src/ezr-lua/data/auto93.csv
+   -File=~/gits/moot/optimize/misc/auto93.csv
 """
-import random
+import os, random, re, sys
 from math import exp, sqrt
-from types import SimpleNamespace as o
 
-the = o(Budget=50, Check=5, Seed=1,
-        File="../src/ezr-lua/data/auto93.csv")
+class o(dict): # a dict you can poke with a dot.
+  __getattr__, __setattr__ = dict.__getitem__, dict.__setitem__
 
 def atom(s): # '22' -> 22.  'x' -> 'x'.
   try: return int(s)
@@ -22,73 +24,98 @@ def atom(s): # '22' -> 22.  'x' -> 'x'.
     try: return float(s)
     except ValueError: return s.strip()
 
-#-- 1. eat: rows off disc; mu,n,m2 per num, seen[v]+1 per sym ---
-def Col(txt, at): # uppercase name = NUM, else SYM; +- = a goal
-  return o(at=at, txt=txt, n=0, mu=0, m2=0, seen={},
-           num=txt[0].isupper(), y=txt[-1] in "+-",
+def csv(file): # rows of FILE, each cell coerced; -sig drops any BOM
+  with open(os.path.expanduser(file), encoding="utf-8-sig") as f:
+    return [[atom(s) for s in ln.split(",")] for ln in f if ln.strip()]
+
+the = o(**{k: atom(v) for k, v in re.findall(r"-(\w+)=(\S+)", __doc__)})
+
+#-- columns ----------------------------------------------------
+def Col(txt, at): # uppercase name = NUM, else SYM
+  return Num(txt, at) if txt[0].isupper() else Sym(txt, at)
+
+def Num(txt, at): # +- marks a goal; 0 = minimise, 1 = maximise
+  return o(at=at, txt=txt, n=0, mu=0, m2=0, sd=0,
            goal=0 if txt[-1] == "-" else 1)
 
-def add(col, v): # show V to COL
+def Sym(txt, at): # `has` is what tells a SYM from a NUM
+  return o(at=at, txt=txt, n=0, has={})
+
+def add(col, v): # show V to COL.  `?` changes nothing.
   if v != "?":
     col.n += 1
-    if not col.num: col.seen[v] = col.seen.get(v, 0) + 1
+    if "has" in col: col.has[v] = col.has.get(v, 0) + 1
     else:
-      d = v - col.mu                             # Welford
+      d = v - col.mu                          # Welford
       col.mu += d / col.n
       col.m2 += d * (v - col.mu)
-  return v
+      col.sd  = 0 if col.n < 2 else (col.m2 / (col.n - 1))**.5
 
-def eat(file): # row 1 names the columns, the rest are data
-  rows, cols = [], None
-  for line in open(file):
-    if not line.strip(): continue
-    row = [atom(s) for s in line.split(",")]
-    if cols is None: cols = [Col(s, at) for at, s in enumerate(row)]
-    else: rows += [[add(c, row[c.at]) for c in cols]]
-  return o(rows=rows, cols=cols, y=[c for c in cols if c.y],
-           x=[c for c in cols if not c.y and c.txt[-1] != "X"])
+def mid(col): # middle: the mean, or the most common symbol
+  return max(col.has, key=col.has.get) if "has" in col else col.mu
+
+def mids(tbl): # every column's middle, keyed by column index
+  return {at: mid(col) for at, col in tbl.cols.items()}
+
+def norm(col, v): # to 0..1, by the logistic curve; syms do not scale
+  if "has" in col: return v
+  z = max(-3, min(3, (v - col.mu) / (1e-32 + col.sd)))
+  return 1 / (1 + exp(-1.7 * z))
+
+#-- tables -----------------------------------------------------
+def Tbl(src): # header names the columns: X skip, +-! goal
+  src = iter(src)
+  tbl = Cols(o(rows=[], cols={}, x=[], y=[], names=next(src)))
+  for row in src: addRow(tbl, row)
+  return tbl
+
+def Cols(tbl): # create column roles
+  for at, s in enumerate(tbl.names):
+    if s[-1] == "X": continue             # skip me entirely
+    (tbl.y if s[-1] in "+-!" else tbl.x).append(
+      tbl.cols.setdefault(at, Col(s, at)))
+  return tbl
+
+def addRow(tbl, row): # keep ROW, and show it to my columns
+  tbl.rows += [row]
+  for at, col in tbl.cols.items(): add(col, row[at])
+  return row
+
+def clone(tbl, rows): # an empty copy of TBL, plus ROWS
+  return Tbl([tbl.names] + rows)
 
 #-- distance ---------------------------------------------------
-def norm(col, v): # to 0..1, by the logistic curve; syms do not scale
-  if not col.num or v == "?": return v
-  sd = sqrt(col.m2 / (col.n - 1)) if col.n > 1 else 0
-  return 1 / (1 + exp(-1.7 * max(-3, min(3, (v - col.mu)/(1e-32 + sd)))))
-
-def gap(col, a, b): # one column's two values; unknown = far
-  if a == "?" or b == "?": return 1
-  return norm(col,a) - norm(col,b) if col.num else a != b
-
-def rms(vs, n): # root mean square of N gaps (so no abs needed above)
+def minkowski(vs, n): # root mean square of N gaps
   return sqrt(sum(v*v for v in vs) / n)
 
-def ydist(d, row): # how far ROW's goals are from heaven; 0 = best
-  return rms((norm(c, row[c.at]) - c.goal for c in d.y), len(d.y))
+def ydist(tbl, row): # how far ROW's goals are from the best they could be
+  return minkowski((abs(norm(c,row[c.at])-c.goal) for c in tbl.y),
+                   len(tbl.y))
 
-def xdist(d, r1, r2): # how far apart two rows are, over the x cols
-  return rms((gap(c, r1[c.at], r2[c.at]) for c in d.x), len(d.x))
+def gap(col, a, b): # distance between two values of one column
+  if a == "?" or b == "?": return 1       # unknown = far
+  return a != b if "has" in col else abs(norm(col,a) - norm(col,b))
 
-def mid(d, rows): # centroid: each column's mean, or its mode
-  out = {}
-  for col in d.cols:
-    c = Col(col.txt, col.at)
-    for row in rows: add(c, row[col.at])
-    out[col.at] = c.mu if col.num else max(c.seen, key=c.seen.get)
-  return out
+def xdist(tbl, r1, r2): # how far apart two rows are, over the x columns
+  return minkowski((gap(c,r1[c.at],r2[c.at]) for c in tbl.x),len(tbl.x))
 
-#-- 2. spit: budget random labels, then rank what is left ------
-def spit(d): # label BUDGET-CHECK rows, split best vs rest, rank the unseen
+def holdout(tbl): # train on half, guess on the rest
   random.seed(the.Seed)
-  todo = random.sample(d.rows, len(d.rows))
-  n    = the.Budget - the.Check                # keep Check in hand
-  lab  = sorted(todo[:n], key=lambda r: ydist(d, r))
-  todo = todo[n:]
-  k    = int(sqrt(len(lab)))                   # sqrt best, rest rest
-  b, r = mid(d, lab[:k]), mid(d, lab[k:])
-  todo.sort(key=lambda z: xdist(d,z,b) - xdist(d,z,r))
-  return min(todo[:the.Check], key=lambda z: ydist(d,z)), lab[0]
+  rows = random.sample(tbl.rows, len(tbl.rows))
+  half = len(rows)//2                       # 50/50, as in ezr.py
+  n    = the.Budget - the.Check             # keep Check in hand
+  lab  = clone(tbl, rows[:min(half, n)])    # y stats: labels only
+  lab.rows.sort(key=lambda r: ydist(lab, r))
+  k    = int(sqrt(len(lab.rows)))           # sqrt best, rest rest
+  cb,cr = mids(clone(tbl,lab.rows[:k])), mids(clone(tbl,lab.rows[k:]))
+  test = sorted(rows[half:], key=lambda z: xdist(tbl,z,cb)-xdist(tbl,z,cr))
+  return min(test[:the.Check],key=lambda z: ydist(lab,z)), lab.rows[0]
 
 if __name__ == "__main__":
-  d = eat(the.File)
-  got, seen = spit(d)
-  print(f"labels={the.Budget}  picked={ydist(d,got):.3f}"
-        f"  bestOfBudget={ydist(d,seen):.3f}")
+  if "-h" in sys.argv: print(__doc__); sys.exit()
+  for k, v in zip(sys.argv[1:], sys.argv[2:]):
+    if k[1:] in the: the[k[1:]] = atom(v)
+  t = Tbl(csv(the.File))
+  got, seen = holdout(t)
+  print(f"labels={the.Budget}  picked={ydist(t,got):.3f}"
+        f"  bestOfBudget={ydist(t,seen):.3f}")
