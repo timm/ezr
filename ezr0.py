@@ -54,11 +54,13 @@ def add(col, v): # show V to COL.  `?` changes nothing.
       col.m2 += d * (v - col.mu)
       col.sd  = 0 if col.n < 2 else (col.m2 / (col.n - 1))**.5
 
-def mid(col): # middle: the mean, or the most common symbol
-  return max(col.has, key=col.has.get) if "has" in col else col.mu
+def mid(col): # middle: the mean, or the most common symbol; ? if none
+  return (max(col.has, key=col.has.get) if col.has else "?"
+          ) if "has" in col else col.mu
 
-def mids(tbl): # every column's middle, keyed by column index
-  return {at: mid(col) for at, col in tbl.cols.items()}
+def mids(tbl): # every column's middle, cached until the next addRow
+  tbl.mids = tbl.mids or {at: mid(c) for at, c in tbl.cols.items()}
+  return tbl.mids
 
 def norm(col, v): # to 0..1, by the logistic curve; syms do not scale
   if "has" in col: return v
@@ -68,7 +70,7 @@ def norm(col, v): # to 0..1, by the logistic curve; syms do not scale
 #-- tables -----------------------------------------------------
 def Tbl(src): # header names the columns: X skip, +-! goal
   src = iter(src)
-  tbl = Cols(o(rows=[], cols={}, x=[], y=[], names=next(src)))
+  tbl = Cols(o(rows=[], cols={}, x=[], y=[], mids=None, names=next(src)))
   for row in src: addRow(tbl, row)
   return tbl
 
@@ -80,6 +82,7 @@ def Cols(tbl): # create column roles
   return tbl
 
 def addRow(tbl, row): # keep ROW, and show it to my columns
+  tbl.mids = None                 # a new row moves the middles
   tbl.rows += [row]
   for at, col in tbl.cols.items(): add(col, row[at])
   return row
@@ -99,16 +102,18 @@ def gap(col, a, b): # distance between two values of one column
 def xdist(tbl, r1, r2): # how far apart two rows are, over the x columns
   return dist((gap(c,r1[c.at],r2[c.at]) for c in tbl.x),len(tbl.x))
 
-def oracle(row): return row # labeller: does nothing if already labelled.
+#-- inference ----------------------------------------------------
+def oracle(row): return row # labeller: does nothing if already labelled.
 
 def model(tbl, rows, label=oracle): # return something that can rank rows
   lab = clone(tbl, [label(r) for r in rows[:the.Budget - the.Check]])
   lab.rows.sort(key=lambda r: ydist(lab, r))
-  k   = int(sqrt(len(lab.rows)))           # sqrt best, rest rest
-  cb  = mids(clone(tbl, lab.rows[:k]))
-  cr  = mids(clone(tbl, lab.rows[k:]))
-  return o(key=lambda z: xdist(tbl,z,cb) - xdist(tbl,z,cr),
-           cb=cb, cr=cr, lab=lab)
+  k    = int(sqrt(len(lab.rows)))          # sqrt best, rest rest
+  best = clone(tbl, lab.rows[:k])
+  rest = clone(tbl, lab.rows[k:])
+  return o(key=lambda z: (xdist(tbl, z, mids(best)) -
+                          xdist(tbl, z, mids(rest))),
+           best=best, rest=rest, lab=lab)
 
 def holdout(tbl, label=oracle): # train on half, guess on the rest
   random.seed(the.Seed)
@@ -121,11 +126,13 @@ def explain(tbl, m): # the model is two centroids; show their gap
   say = lambda v: (f"{round(v, the.decimals):g}"
                    if isinstance(v, (int, float)) else str(v))
   print(f"{'delta':>6}{'best':>10}{'rest':>10}  attribute")
-  d = lambda c: gap(c, m.cb[c.at], m.cr[c.at])
+  cb, cr = mids(m.best), mids(m.rest)
+  d = lambda c: gap(c, cb[c.at], cr[c.at])
   for col in sorted(tbl.x, key=lambda c: -d(c)):
-    b, r = m.cb[col.at], m.cr[col.at]
-    print(f"{d(col):>6.2f}{say(b):>10}{say(r):>10}" f"  {col.txt}")
+    print(f"{d(col):>6.2f}{say(cb[col.at]):>10}"
+          f"{say(cr[col.at]):>10}  {col.txt}")
 
+#-- cli, main ----------------------------------------------------
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
   for _k, _v in zip(sys.argv[1:], sys.argv[2:]):   # _ : no leaks
