@@ -187,7 +187,8 @@ def sa(tbl: TBL, score, m: float = 0.5) -> ROW:
     yield s2
   return oneplus1(tbl, mutate, accept, score)
 
-def seek(t: TBL, searcher, picker: PICKER = grabs) -> ROW:
+def seek(t: TBL, searcher, picker: PICKER = grabs,
+         label: ORACLE = oracle) -> ROW:
   """Train : validate : test, in thirds. SEARCHER breeds
   candidates from TRAIN; it scores them on the nearest row
   of VALIDATE's few labelled rows (PICKER spends Stop there,
@@ -200,7 +201,7 @@ def seek(t: TBL, searcher, picker: PICKER = grabs) -> ROW:
   train = rows[:n][:the.Few]
   valid = rows[n:2*n]
   test  = rows[2*n:]
-  lab   = picker(clone(t, valid), the.Stop)
+  lab   = picker(clone(t, valid), the.Stop, label)
   def near(r: ROW, pool: ROWS) -> ROW:
     return min(pool, key=lambda z: xdist(t, r, z))
   best = searcher(clone(t, train),

@@ -49,8 +49,8 @@ type COL    = NUM | SYM               # sumamry of a column
 type TBL    = o                       # rows and columns
 type NODE   = o                       # one node of a tree
 type GO     = Callable[[ROW], bool]   # which way does a row go?
-type PICKER = Callable[[TBL, int], ROWS]
 type ORACLE = Callable[[ROW], ROW]    # labels one row
+type PICKER = Callable[[TBL, int, ORACLE], ROWS]
 type RANKER = Callable[[TBL], Callable[[ROW], float]]
                                       # ranks unlabelled rows
 
@@ -292,14 +292,15 @@ def wins(tbl: TBL) -> Callable[[ROW], float]:
                                             / (avg-lo+1e-32))))
 
 def holdout(tbl: TBL, pick: PICKER = acquire,
-            rank: RANKER = ranker) -> ROW:
+            rank: RANKER = ranker,
+            label: ORACLE = oracle) -> ROW:
   "Train on half; of CHECK guesses on the rest, pick best."
   rows  = random.sample(tbl.rows, len(tbl.rows))
   n     = len(rows)//2
   tr    = clone(tbl, rows[:n][:the.Few])
-  lab   = clone(tbl, pick(tr, the.Stop - the.Check))
+  lab   = clone(tbl, pick(tr, the.Stop - the.Check, label))
   top   = sorted(rows[n:], key=rank(lab))
-  return min(top[:the.Check], key=lambda r: ydist(lab, r))
+  return min(top[:the.Check], key=lambda r: ydist(lab, label(r)))
 
 
 #-- stats --------------------------------------------------

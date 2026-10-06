@@ -7,6 +7,7 @@ Where ezr.py picks its next label after every label, this spends the
 whole budget at random, up front, then splits best from rest.
 
 Options:
+   -decimals=2  explain: digits shown after the point
    -Budget=50   rows we may label, all up
    -Check=5     of that budget, saved for the unseen rows
    -Seed=1      random number seed
@@ -18,15 +19,17 @@ from math import exp, sqrt
 class o(dict): # a dict you can poke with a dot.
   __getattr__, __setattr__ = dict.__getitem__, dict.__setitem__
 
-def atom(s): # '22' -> 22.  'x' -> 'x'.
-  try: return int(s)
-  except ValueError:
-    try: return float(s)
-    except ValueError: return s.strip()
+def atom(s): # '22' -> 22. '3.1' -> 3.1. 'True' -> True. 'x' -> 'x'.
+  for fn in (int, float):
+    try: return fn(s)
+    except ValueError: pass
+  s = s.strip()
+  return {"True": True, "False": False}.get(s, s)
 
-def csv(file): # rows of FILE, each cell coerced; -sig drops any BOM
+def csv(file): # rows of FILE, one at a time; -sig drops any BOM
   with open(os.path.expanduser(file), encoding="utf-8-sig") as f:
-    return [[atom(s) for s in ln.split(",")] for ln in f if ln.strip()]
+    for ln in f:
+      if ln.strip(): yield [atom(s) for s in ln.split(",")]
 
 the = o(**{k: atom(v) for k, v in re.findall(r"-(\w+)=(\S+)", __doc__)})
 
@@ -81,41 +84,54 @@ def addRow(tbl, row): # keep ROW, and show it to my columns
   for at, col in tbl.cols.items(): add(col, row[at])
   return row
 
-def clone(tbl, rows): # an empty copy of TBL, plus ROWS
-  return Tbl([tbl.names] + rows)
+def clone(tbl, rows): return Tbl([tbl.names] + rows) # copy structre
 
 #-- distance ---------------------------------------------------
-def minkowski(vs, n): # root mean square of N gaps
-  return sqrt(sum(v*v for v in vs) / n)
+def dist(vs, n): return sqrt(sum(v*v for v in vs) / n) # distance
 
 def ydist(tbl, row): # how far ROW's goals are from the best they could be
-  return minkowski((abs(norm(c,row[c.at])-c.goal) for c in tbl.y),
-                   len(tbl.y))
+  return dist((abs(norm(c,row[c.at])-c.goal) for c in tbl.y), len(tbl.y))
 
 def gap(col, a, b): # distance between two values of one column
   if a == "?" or b == "?": return 1       # unknown = far
   return a != b if "has" in col else abs(norm(col,a) - norm(col,b))
 
 def xdist(tbl, r1, r2): # how far apart two rows are, over the x columns
-  return minkowski((gap(c,r1[c.at],r2[c.at]) for c in tbl.x),len(tbl.x))
+  return dist((gap(c,r1[c.at],r2[c.at]) for c in tbl.x),len(tbl.x))
 
-def holdout(tbl): # train on half, guess on the rest
+def oracle(row): return row # labeller: does nothing if already labelled.
+
+def model(tbl, rows, label=oracle): # return something that can rank rows
+  lab = clone(tbl, [label(r) for r in rows[:the.Budget - the.Check]])
+  lab.rows.sort(key=lambda r: ydist(lab, r))
+  k   = int(sqrt(len(lab.rows)))           # sqrt best, rest rest
+  cb  = mids(clone(tbl, lab.rows[:k]))
+  cr  = mids(clone(tbl, lab.rows[k:]))
+  return o(key=lambda z: xdist(tbl,z,cb) - xdist(tbl,z,cr),
+           cb=cb, cr=cr, lab=lab)
+
+def holdout(tbl, label=oracle): # train on half, guess on the rest
   random.seed(the.Seed)
   rows = random.sample(tbl.rows, len(tbl.rows))
-  half = len(rows)//2                       # 50/50, as in ezr.py
-  n    = the.Budget - the.Check             # keep Check in hand
-  lab  = clone(tbl, rows[:min(half, n)])    # y stats: labels only
-  lab.rows.sort(key=lambda r: ydist(lab, r))
-  k    = int(sqrt(len(lab.rows)))           # sqrt best, rest rest
-  cb,cr = mids(clone(tbl,lab.rows[:k])), mids(clone(tbl,lab.rows[k:]))
-  test = sorted(rows[half:], key=lambda z: xdist(tbl,z,cb)-xdist(tbl,z,cr))
-  return min(test[:the.Check],key=lambda z: ydist(lab,z)), lab.rows[0]
+  m    = model(tbl, rows[:len(rows)//2], label)
+  test = sorted(rows[len(rows)//2:], key=m.key)
+  return (min(test[:the.Check], key=lambda z: ydist(m.lab, label(z))), m)
+
+def explain(tbl, m): # the model is two centroids; show their gap
+  say = lambda v: (f"{round(v, the.decimals):g}"
+                   if isinstance(v, (int, float)) else str(v))
+  print(f"{'delta':>6}{'best':>10}{'rest':>10}  attribute")
+  d = lambda c: gap(c, m.cb[c.at], m.cr[c.at])
+  for col in sorted(tbl.x, key=lambda c: -d(c)):
+    b, r = m.cb[col.at], m.cr[col.at]
+    print(f"{d(col):>6.2f}{say(b):>10}{say(r):>10}" f"  {col.txt}")
 
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
   for _k, _v in zip(sys.argv[1:], sys.argv[2:]):   # _ : no leaks
     if _k[1:] in the: the[_k[1:]] = atom(_v)
   t = Tbl(csv(the.File))
-  got, seen = holdout(t)
-  print(f"labels={the.Budget}  picked={ydist(t,got):.3f}"
-        f"  bestOfBudget={ydist(t,seen):.3f}")
+  got, m = holdout(t)
+  print(f"labels={the.Budget}  picked={ydist(t,got):.{the.decimals}f}"
+        f"  bestOfBudget={ydist(t,m.lab.rows[0]):.{the.decimals}f}")
+  explain(t, m)
