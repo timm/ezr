@@ -113,8 +113,8 @@ def holdout(tbl): # train on half, guess on the rest
 
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
-  for k, v in zip(sys.argv[1:], sys.argv[2:]):
-    if k[1:] in the: the[k[1:]] = atom(v)
+  for _k, _v in zip(sys.argv[1:], sys.argv[2:]):   # _ : no leaks
+    if _k[1:] in the: the[_k[1:]] = atom(_v)
   t = Tbl(csv(the.File))
   got, seen = holdout(t)
   print(f"labels={the.Budget}  picked={ydist(t,got):.3f}"

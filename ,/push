@@ -2,8 +2,11 @@
 ## [why] [--ok]  commit everything and push
 . "$(dirname "$0")/.needs"
 needs "$1" git
+
 msg=$1
+
 [ -n "$msg" ] || read -rp "Reason? " msg
+
 git add -A
 git diff-index --quiet HEAD -- || git commit -qm "${msg:-saving}"
 git push -q -u origin HEAD

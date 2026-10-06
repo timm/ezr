@@ -4,6 +4,9 @@ export PYTHONDONTWRITEBYTECODE=1   # py3.13 ignores the -B flag
 Here=$(cd "$(dirname "$0")/.." && pwd); cd "$Here" || exit 1
 . "$(dirname "$0")/.needs"
 needs "$1" python3 etc/manual.py '?open'
+
 Url=https://timm.github.io/ezr/manual.html
+
 python3 -B etc/manual.py
+
 open "$Url" 2>/dev/null || echo "$Url"

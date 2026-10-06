@@ -6,11 +6,17 @@
 Here=$(cd "$(dirname "$0")/.." && pwd); cd "$Here" || exit 1
 . "$(dirname "$0")/.needs"
 needs "$1" gawk etc/weave.awk
+
 py=${1:-ezr}; py=${py%.py}
 md=${2:-docs/$py.md}
+
 [ -f "$py.py" ] || { echo "no $py.py" >&2; exit 1; }
 [ -f "$md" ]    || { echo "no essay at $md" >&2; exit 1; }
+
 t=$(mktemp); trap 'rm -f "$t"' EXIT
+
 gawk -f etc/weave.awk "$py.py" "$md" > "$t" && mv "$t" "$md"
+
 n=$(grep -c "SNIPPET NOT FOUND" "$md")
+
 echo "$md  ($n stale $( [ "$n" = 1 ] && echo snippet || echo snippets ))"

@@ -5,8 +5,11 @@
 # other script in ,/ answers --ok and stops.
 Here=$(cd "$(dirname "$0")/.." && pwd)
 [ -d ~/gits/moot/.git ] || git clone http://tiny.cc/moot ~/gits/moot
+
 chmod +x "$Here"/*.py "$Here"/,/* 2>/dev/null
+
 bad=0
+
 for f in "$Here"/,/*; do            # a glob, so ,/.needs stays out
   n=${f##*/}
   [ "$n" = ok ] && continue         # me.  no --ok, no recursion
@@ -17,5 +20,6 @@ for f in "$Here"/,/*; do            # a glob, so ,/.needs stays out
          printf '%s\n' "$out" | grep -v '^  ok' | sed 's/^/    /'
   fi
 done
+
 [ "$bad" = 0 ] && echo "ok" ||
   { echo "$bad of those need tools installed" >&2; exit 1; }

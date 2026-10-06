@@ -4,13 +4,19 @@ export PYTHONDONTWRITEBYTECODE=1   # py3.13 ignores the -B flag
 Here=$(cd "$(dirname "$0")/.." && pwd)
 . "$(dirname "$0")/.needs"
 needs "$1" python3 xargs ./ezr_eg.py ~/gits/moot/optimize
+
 Moot=$HOME/gits/moot/optimize
+
 do_=${1:---tree}
 par=${2:-$(sysctl -n hw.ncpu 2>/dev/null || nproc)}
 csvs=("$Moot"/*/*.csv)
+
 mkdir -p ~/tmp
+
 echo "sweep: ${#csvs[@]} datasets, -P$par, $do_"
-time printf '%s\n' "${csvs[@]}" \
+
+  time printf '%s\n' "${csvs[@]}" \
   | xargs -P "$par" -I{} python3 -B "$Here/ezr_eg.py" -File {} "$do_" \
     > ~/tmp/sweep.log 2>&1
-echo "-> ~/tmp/sweep.log ($(wc -l < ~/tmp/sweep.log) lines)"
+
+  echo "-> ~/tmp/sweep.log ($(wc -l < ~/tmp/sweep.log) lines)"

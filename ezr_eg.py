@@ -85,11 +85,11 @@ def eg_vs(tbl: TBL | None = None) -> None:
   print(f"{round(sum(a)/len(a)):>4} {round(sum(b)/len(b)):>4}"
         f" {d:>4} {os.path.basename(the.File)}")
 
+# Two whole programs, not two settings: ezr0 keeps its own table
+# and its own stats.  One wins() ruler, built here, grades both,
+# so the only thing compared is which row each one found.
 def eg_ezr0() -> None:
-  """ezr versus ezr0, same budget.  0 if the same.
-  Two whole programs, not two settings: ezr0 keeps its own table
-  and its own stats.  One wins() ruler, built here, grades both,
-  so the only thing compared is which row each one found."""
+  "ezr versus ezr0, same budget.  0 if the same."
   t = Tbl(csv(the.File)); w = wins(t)
   ezr0.the.Budget, ezr0.the.Check = the.Stop, the.Check
   d0   = ezr0.Tbl(ezr0.csv(the.File))      # ezr0's own table

@@ -6,7 +6,9 @@
 Here=$(cd "$(dirname "$0")" && pwd)
 . "$(dirname "$0")/.needs"
 needs "$1" gawk sort
+
 printf '\nUsage:\n  ,/\033[36m<command>\033[0m [args]\n\ncommands:\n'
+
 gawk 'FNR==1 { f = FILENAME; sub(/.*\//, "", f) }
       /^## / || /^##$/ {
         s = substr($0, 4)

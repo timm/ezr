@@ -6,7 +6,9 @@
 Here=$(cd "$(dirname "$0")/.." && pwd)
 . "$(dirname "$0")/.needs"
 needs "$1" find rm
+
 find "$Here" \( -name __pycache__ -o -name .pytest_cache \
              -o -name '*.egg-info' -o -name build -o -name dist \) \
      -not -path '*/.git/*' -prune -print -exec rm -rf {} +
+
 echo "clean"
