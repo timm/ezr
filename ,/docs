@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-##  rebuild any page whose source moved
+## [--ok]  rebuild any page whose source moved
 # `-nt` is all the dependency logic this project ever needed.
 export PYTHONDONTWRITEBYTECODE=1   # py3.13 ignores the -B flag
 Here=$(cd "$(dirname "$0")/.." && pwd); cd "$Here" || exit 1
+. "$(dirname "$0")/.needs"
+needs "$1" python3 pandoc etc/lit.py etc/manual.py etc/tut.html
 for f in ezr ezr_eg; do
   [ $f.py -nt docs/$f.html ] && python3 -B etc/lit.py $f.py
 done

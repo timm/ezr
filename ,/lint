@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-## [file]  pylint one file, default ezr
+## [file] [--ok]  pylint one file, default ezr
 export PYTHONDONTWRITEBYTECODE=1   # py3.13 ignores the -B flag
 Here=$(cd "$(dirname "$0")/.." && pwd)
+. "$(dirname "$0")/.needs"
+needs "$1" pylint etc/pylintrc
 exec pylint --rcfile="$Here/etc/pylintrc" "${1:-ezr}.py"

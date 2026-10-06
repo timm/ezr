@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
-##  clone the sample data, make the code runnable
-[ -d ~/gits/moot/.git ] || git clone http://tiny.cc/moot ~/gits/moot
+##  install what the repo needs, then --ok every other command
+# This IS the check, so it takes no --ok of its own.  Nothing here
+# calls back into here, so the loop below cannot recurse: every
+# other script in ,/ answers --ok and stops.
 Here=$(cd "$(dirname "$0")/.." && pwd)
+[ -d ~/gits/moot/.git ] || git clone http://tiny.cc/moot ~/gits/moot
 chmod +x "$Here"/*.py "$Here"/,/* 2>/dev/null
-echo "ok"
+bad=0
+for f in "$Here"/,/*; do            # a glob, so ,/.needs stays out
+  n=${f##*/}
+  [ "$n" = ok ] && continue         # me.  no --ok, no recursion
+  if out=$("$f" --ok 2>&1)
+    then printf '  ok       %s\n' "$n"
+    else bad=$((bad + 1))
+         printf '  CHECK    %s\n' "$n"
+         printf '%s\n' "$out" | grep -v '^  ok' | sed 's/^/    /'
+  fi
+done
+[ "$bad" = 0 ] && echo "ok" ||
+  { echo "$bad of those need tools installed" >&2; exit 1; }

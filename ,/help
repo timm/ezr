@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-##  list these commands
+## [--ok]  list these commands
 # One `## <args>  <doc>` line per file is its whole manual: args,
 # then two or more spaces, then what it does.  A new script shows
 # up here the moment you write it.
 Here=$(cd "$(dirname "$0")" && pwd)
+. "$(dirname "$0")/.needs"
+needs "$1" gawk sort
 printf '\nUsage:\n  ,/\033[36m<command>\033[0m [args]\n\ncommands:\n'
 gawk 'FNR==1 { f = FILENAME; sub(/.*\//, "", f) }
       /^## / || /^##$/ {

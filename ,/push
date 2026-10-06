@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-## [why]  commit everything and push
+## [why] [--ok]  commit everything and push
+. "$(dirname "$0")/.needs"
+needs "$1" git
 msg=$1
 [ -n "$msg" ] || read -rp "Reason? " msg
 git add -A

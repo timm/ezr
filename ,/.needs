@@ -1,0 +1,38 @@
+# shellcheck shell=bash
+#
+# Sourced by every script in ,/ -- it is a dotfile, so the `*`
+# globs in ,/help and ,/ok walk past it.  One call per script:
+#
+#    . "$(dirname "$0")/.needs"
+#    needs "$1" pandoc etc/lit.py '?open'
+#
+# which does nothing at all unless that script was run with --ok.
+# Then each item is reported and, if anything required is absent,
+# the script exits 1 without doing its real work.
+#
+#    pandoc        a command, looked for on PATH
+#    etc/lit.py    has a slash, so a file, relative to the repo
+#    ~/gits/moot   a file too; ~ and / are left alone
+#    ?open         a leading ? means optional: reported, never fatal
+needs() {
+  [ "$1" = "--ok" ] || return 0
+  local root item want label bad=0 opt
+  root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+  shift
+  for item; do
+    want=${item#\?}; opt=""; [ "$want" != "$item" ] && opt=" (optional)"
+    case $want in
+      [~/]*) [ -e "${want/#\~/$HOME}" ] && label=ok || label=MISSING ;;
+      */*)   [ -e "$root/$want"       ] && label=ok || label=MISSING ;;
+      *)     command -v "$want" >/dev/null 2>&1 && label=ok || label=MISSING ;;
+    esac
+    [ "$label" = MISSING ] && [ -z "$opt" ] && bad=1
+    printf '  %-8s %s%s\n' "$label" "$want" "$opt"
+  done
+  [ "$bad" = 0 ] && echo "ok" ||
+    { echo "missing: install the items above" >&2; }
+  # `. ,/sh --ok` must not exit the shell the user is sitting in,
+  # so only a script that was EXECUTED gets to exit.
+  if [ "${BASH_SOURCE[${#BASH_SOURCE[@]}-1]}" = "$0" ]
+    then exit "$bad"; else return "$bad"; fi
+}

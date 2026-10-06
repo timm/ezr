@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-##  an interactive shell: prompt, history, aliases
+## [--ok]  an interactive shell: prompt, history, aliases
 # ,/sh -- the only command here that must change YOUR shell, so
 # it is the only one you source.  Everything else in ,/ is an
 # ordinary script.
@@ -13,6 +13,9 @@
 # no subshell, the definitions just land where you are.
 # No args: become that shell.  With args: fall through, define
 # everything, and run them from the last line of this file.
+. "$(dirname "${BASH_SOURCE[0]:-$0}")/.needs"
+needs "$1" bash tput '?nvim' '?eza' '?tree' '?tmux' '?column'
+
 [ "$0" = "${BASH_SOURCE[0]}" ] && [ $# -eq 0 ] \
   && exec bash --init-file "$0" -i
 

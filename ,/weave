@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-## [file] [essay]  refresh the code blocks inside an essay
+## [file] [essay] [--ok]  refresh the code blocks inside an essay
 # weave.awk reads BOTH files: the .py supplies the snippets, the
 # .md is rewritten in place.  So the .md must already exist --
 # this refreshes prose you wrote, it does not generate it.
 Here=$(cd "$(dirname "$0")/.." && pwd); cd "$Here" || exit 1
+. "$(dirname "$0")/.needs"
+needs "$1" gawk etc/weave.awk
 py=${1:-ezr}; py=${py%.py}
 md=${2:-docs/$py.md}
 [ -f "$py.py" ] || { echo "no $py.py" >&2; exit 1; }
