@@ -126,11 +126,11 @@ def holdout(tbl, label=oracle): # train on half, guess on the rest
 def explain(tbl, m): # the model is two centroids; show their gap
   say = lambda v: (f"{round(v, the.decimals):g}"
                    if isinstance(v, (int, float)) else str(v))
-  print(f"{'delta':>6}{'best':>10}{'rest':>10}  attribute")
+  print(f"{'power':>6}{'best':>10}{'rest':>10}  attribute")
   cb, cr = mids(m.best), mids(m.rest)
   d = lambda c: gap(c, cb[c.at], cr[c.at])
   for col in sorted(tbl.x, key=lambda c: -d(c)):
-    print(f"{d(col):>6.2f}{say(cb[col.at]):>10}"
+    print(f"{int(100*d(col)):>5}{say(cb[col.at]):>10}"
           f"{say(cr[col.at]):>10}  {col.txt}")
 
 #-- cli, main ----------------------------------------------------
