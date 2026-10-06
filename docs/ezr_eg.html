@@ -75,13 +75,15 @@
     <div class='code'>
       <div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">random</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">ezr</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ezr0</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ezr</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 
 <span class="nb">type</span> <span class="n">CLUSTERS</span> <span class="o">=</span> <span class="nb">list</span><span class="p">[</span><span class="n">TBL</span><span class="p">]</span>   <span class="c1"># what `halve` returns</span>
 
 <span class="n">the</span><span class="o">.</span><span class="n">Eras</span><span class="p">,</span> <span class="n">the</span><span class="o">.</span><span class="n">Draws</span><span class="p">,</span> <span class="n">the</span><span class="o">.</span><span class="n">Restart</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span>
+<span class="n">the</span><span class="o">.</span><span class="n">Eps</span> <span class="o">=</span> <span class="mf">0.35</span>                 <span class="c1"># cohen&#39;s floor, in score points</span>
 <span class="n">the</span><span class="o">.</span><span class="n">Klass</span> <span class="o">=</span> <span class="s2">&quot;~/gits/moot/classify/diabetes.csv&quot;</span>
-<span class="n">the</span><span class="o">.</span><span class="n">_defaults</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">Eras</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">Draws</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">Restart</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+<span class="n">the</span><span class="o">.</span><span class="n">_defaults</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">Eras</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">Draws</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">Restart</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">Eps</span><span class="o">=</span><span class="n">the</span><span class="o">.</span><span class="n">Eps</span><span class="p">,</span>
                      <span class="n">Klass</span><span class="o">=</span><span class="n">the</span><span class="o">.</span><span class="n">Klass</span><span class="p">)</span></pre></div>
     </div>
   </div>
@@ -244,10 +246,26 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-10'>#</a>
       </div>
-      <h2>optimize</h2>
+      <p>Two whole programs, not two settings: ezr0 keeps its own table
+and its own stats.  One wins() ruler, built here, grades both,
+so the only thing compared is which row each one found.
+<a name="fn-eg_ezr0"></a>ezr versus ezr0, same budget. 0 if the same.<br />
+<small>calls <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="ezr.html#fn-wins"><code>wins</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="ezr.html#fn-same"><code>same</code></a> <a href="ezr.html#fn-holdout"><code>holdout</code></a> <a href="ezr.html#fn-acquire"><code>acquire</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre></pre></div>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">eg_ezr0</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="n">t</span> <span class="o">=</span> <span class="n">Tbl</span><span class="p">(</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">File</span><span class="p">));</span> <span class="n">w</span> <span class="o">=</span> <span class="n">wins</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+  <span class="n">ezr0</span><span class="o">.</span><span class="n">the</span><span class="o">.</span><span class="n">Stop</span><span class="p">,</span> <span class="n">ezr0</span><span class="o">.</span><span class="n">the</span><span class="o">.</span><span class="n">Check</span> <span class="o">=</span> <span class="n">the</span><span class="o">.</span><span class="n">Stop</span><span class="p">,</span> <span class="n">the</span><span class="o">.</span><span class="n">Check</span>
+  <span class="n">d0</span>   <span class="o">=</span> <span class="n">ezr0</span><span class="o">.</span><span class="n">Tbl</span><span class="p">(</span><span class="n">ezr0</span><span class="o">.</span><span class="n">csv</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">File</span><span class="p">))</span>      <span class="c1"># ezr0&#39;s own table</span>
+  <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Repeats</span><span class="p">):</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">Seed</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>              <span class="c1"># same seed, both arms</span>
+    <span class="n">a</span> <span class="o">+=</span> <span class="p">[</span><span class="n">w</span><span class="p">(</span><span class="n">holdout</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">acquire</span><span class="p">))]</span>          <span class="c1"># ezr, end to end</span>
+    <span class="n">ezr0</span><span class="o">.</span><span class="n">the</span><span class="o">.</span><span class="n">Seed</span> <span class="o">=</span> <span class="n">the</span><span class="o">.</span><span class="n">Seed</span> <span class="o">+</span> <span class="n">i</span>           <span class="c1"># ezr0 seeds itself</span>
+    <span class="n">b</span> <span class="o">+=</span> <span class="p">[</span><span class="n">w</span><span class="p">(</span><span class="n">ezr0</span><span class="o">.</span><span class="n">holdout</span><span class="p">(</span><span class="n">d0</span><span class="p">))]</span>          <span class="c1"># ezr0, end to end</span>
+  <span class="n">d</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">same</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">eps</span><span class="o">=</span><span class="n">the</span><span class="o">.</span><span class="n">Eps</span><span class="p">)</span> <span class="k">else</span> <span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">-</span><span class="nb">sum</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">))</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">))</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">d</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">the</span><span class="o">.</span><span class="n">File</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -255,6 +273,18 @@
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      <h2>optimize</h2>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
       </div>
       <p>de is differential evolution (storn+price 1997): build a
 candidate by interpolating between three population members
@@ -266,10 +296,10 @@ keep the candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-12'>
+  <div class='section' id='section-13'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-12'>#</a>
+        <a class='octothorpe' href='#section-13'>#</a>
       </div>
       
     </div>
@@ -282,10 +312,10 @@ keep the candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-13'>
+  <div class='section' id='section-14'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-13'>#</a>
+        <a class='octothorpe' href='#section-14'>#</a>
       </div>
       
     </div>
@@ -311,10 +341,10 @@ keep the candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-14'>
+  <div class='section' id='section-15'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-14'>#</a>
+        <a class='octothorpe' href='#section-15'>#</a>
       </div>
       <p><a name="fn-pick"></a>Sample a plausible value, near V if V is known.<br />
 <small>used by <a href="#fn-ls"><code>ls</code></a> <a href="#fn-sa"><code>sa</code></a></small></p>
@@ -332,10 +362,10 @@ keep the candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-15'>
+  <div class='section' id='section-16'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-15'>#</a>
+        <a class='octothorpe' href='#section-16'>#</a>
       </div>
       
     </div>
@@ -357,10 +387,10 @@ keep the candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-16'>
+  <div class='section' id='section-17'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-16'>#</a>
+        <a class='octothorpe' href='#section-17'>#</a>
       </div>
       <p><a name="fn-ls"></a>Local search: nudge one column; keep only improvements.<br />
 <small>calls <a href="#fn-oneplus1"><code>oneplus1</code></a> <a href="#fn-pick"><code>pick</code></a></small><br />
@@ -371,10 +401,10 @@ keep the candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-17'>
+  <div class='section' id='section-18'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-17'>#</a>
+        <a class='octothorpe' href='#section-18'>#</a>
       </div>
       
     </div>
@@ -390,10 +420,10 @@ keep the candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-18'>
+  <div class='section' id='section-19'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-18'>#</a>
+        <a class='octothorpe' href='#section-19'>#</a>
       </div>
       <p><a name="fn-sa"></a>Simulated annealing: accept worse, less as time runs out.<br />
 <small>calls <a href="#fn-oneplus1"><code>oneplus1</code></a> <a href="#fn-pick"><code>pick</code></a></small><br />
@@ -404,10 +434,10 @@ keep the candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-19'>
+  <div class='section' id='section-20'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-19'>#</a>
+        <a class='octothorpe' href='#section-20'>#</a>
       </div>
       
     </div>
@@ -418,10 +448,10 @@ keep the candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-20'>
+  <div class='section' id='section-21'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-20'>#</a>
+        <a class='octothorpe' href='#section-21'>#</a>
       </div>
       
     </div>
@@ -436,30 +466,29 @@ keep the candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-21'>
+  <div class='section' id='section-22'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-21'>#</a>
+        <a class='octothorpe' href='#section-22'>#</a>
       </div>
-      <p><a name="fn-seek"></a>Train : validate : test, in thirds. SEARCHER breeds candidates from TRAIN; it scores them on the nearest row of VALIDATE&rsquo;s few labelled rows (PICKER spends Stop there, and nothing else is ever labelled); the winner is read off the untouched TEST. (Standard ezr &ndash; acquire, holdout &ndash; mashes train+validate into one pool: the rows it labels are the rows it searches.)<br />
-<small>calls <a href="ezr.html#fn-grabs"><code>grabs</code></a> <a href="ezr.html#fn-clone"><code>clone</code></a> <a href="ezr.html#fn-ydist"><code>ydist</code></a> <a href="ezr.html#fn-xdist"><code>xdist</code></a></small><br />
-<small>used by <a href="#fn-eg_seek"><code>eg_seek</code></a></small></p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">seek</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">searcher</span><span class="p">,</span> <span class="n">picker</span><span class="p">:</span> <span class="n">PICKER</span> <span class="o">=</span> <span class="n">grabs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ROW</span><span class="p">:</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">seek</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">searcher</span><span class="p">,</span> <span class="n">picker</span><span class="p">:</span> <span class="n">PICKER</span> <span class="o">=</span> <span class="n">grabs</span><span class="p">,</span>
+         <span class="n">label</span><span class="p">:</span> <span class="n">ORACLE</span> <span class="o">=</span> <span class="n">oracle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ROW</span><span class="p">:</span>
   <span class="n">rows</span>  <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">rows</span><span class="p">))</span>
   <span class="n">n</span>     <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span>
   <span class="n">train</span> <span class="o">=</span> <span class="n">rows</span><span class="p">[:</span><span class="n">n</span><span class="p">][:</span><span class="n">the</span><span class="o">.</span><span class="n">Few</span><span class="p">]</span>
   <span class="n">valid</span> <span class="o">=</span> <span class="n">rows</span><span class="p">[</span><span class="n">n</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="n">n</span><span class="p">]</span>
   <span class="n">test</span>  <span class="o">=</span> <span class="n">rows</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="n">n</span><span class="p">:]</span>
-  <span class="n">lab</span>   <span class="o">=</span> <span class="n">picker</span><span class="p">(</span><span class="n">clone</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span> <span class="n">the</span><span class="o">.</span><span class="n">Stop</span><span class="p">)</span></pre></div>
+  <span class="n">lab</span>   <span class="o">=</span> <span class="n">picker</span><span class="p">(</span><span class="n">clone</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span> <span class="n">the</span><span class="o">.</span><span class="n">Stop</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-22'>
+  <div class='section' id='section-23'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-22'>#</a>
+        <a class='octothorpe' href='#section-23'>#</a>
       </div>
       
     </div>
@@ -472,10 +501,10 @@ keep the candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-23'>
+  <div class='section' id='section-24'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-23'>#</a>
+        <a class='octothorpe' href='#section-24'>#</a>
       </div>
       <p><a name="fn-eg_seek"></a>DE, SA, LS; scorer labelled by grabs or acquire.<br />
 <small>calls <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="ezr.html#fn-wins"><code>wins</code></a> <a href="#fn-de"><code>de</code></a> <a href="#fn-sa"><code>sa</code></a> <a href="#fn-ls"><code>ls</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="ezr.html#fn-grabs"><code>grabs</code></a> <a href="ezr.html#fn-acquire"><code>acquire</code></a> <a href="#fn-seek"><code>seek</code></a></small></p>
@@ -492,10 +521,10 @@ keep the candidate if it beats the member it challenges.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-24'>
+  <div class='section' id='section-25'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-24'>#</a>
+        <a class='octothorpe' href='#section-25'>#</a>
       </div>
       <p>&ndash; how: missing primitives ---------------------------------
 Section 6 of how.md: the cost. Here it is, paid.</p>
@@ -505,10 +534,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-25'>
+  <div class='section' id='section-26'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-25'>#</a>
+        <a class='octothorpe' href='#section-26'>#</a>
       </div>
       <p><a name="fn-middles"></a>Mids of all columns (or just ATS), keyed by position.<br />
 <small>calls <a href="ezr.html#fn-mid"><code>mid</code></a></small><br />
@@ -521,10 +550,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-26'>
+  <div class='section' id='section-27'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-26'>#</a>
+        <a class='octothorpe' href='#section-27'>#</a>
       </div>
       <p><a name="fn-sample"></a>Generate: one plausible value from COL.<br />
 <small>used by <a href="#fn-impute"><code>impute</code></a> <a href="ezr.html#fn-SPREAD"><code>SPREAD</code></a></small></p>
@@ -538,10 +567,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-27'>
+  <div class='section' id='section-28'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-27'>#</a>
+        <a class='octothorpe' href='#section-28'>#</a>
       </div>
       <p><a name="fn-delta"></a>Extrapolate: A earlier, B later; guess the next era.<br />
 <small>used by <a href="ezr.html#fn-FORECAST"><code>FORECAST</code></a></small></p>
@@ -562,10 +591,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-28'>
+  <div class='section' id='section-29'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-28'>#</a>
+        <a class='octothorpe' href='#section-29'>#</a>
       </div>
       <p><a name="fn-project"></a>Place rows on the line from pole A to pole B.<br />
 <small>calls <a href="ezr.html#fn-xdist"><code>xdist</code></a></small><br />
@@ -579,10 +608,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-29'>
+  <div class='section' id='section-30'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-29'>#</a>
+        <a class='octothorpe' href='#section-30'>#</a>
       </div>
       <p><a name="fn-halve"></a>Cluster: recursive halving between poles; no y values.<br />
 <small>calls <a href="ezr.html#fn-clone"><code>clone</code></a> <a href="#fn-project"><code>project</code></a> <a href="ezr.html#fn-xdist"><code>xdist</code></a></small><br />
@@ -594,10 +623,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-30'>
+  <div class='section' id='section-31'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-30'>#</a>
+        <a class='octothorpe' href='#section-31'>#</a>
       </div>
       
     </div>
@@ -613,10 +642,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-31'>
+  <div class='section' id='section-32'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-31'>#</a>
+        <a class='octothorpe' href='#section-32'>#</a>
       </div>
       <p><a name="fn-xats"></a>Positions of the x columns.<br />
 <small>used by <a href="#fn-DISTINGUISH"><code>DISTINGUISH</code></a> <a href="ezr.html#fn-PLANNING_TOTAL"><code>PLANNING_TOTAL</code></a> <a href="ezr.html#fn-SIMULATION"><code>SIMULATION</code></a></small></p>
@@ -627,10 +656,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-32'>
+  <div class='section' id='section-33'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-32'>#</a>
+        <a class='octothorpe' href='#section-33'>#</a>
       </div>
       <p><a name="fn-klass"></a>Position of the <code>!</code> column, or None.<br />
 <small>used by <a href="#fn-targets"><code>targets</code></a> <a href="ezr.html#fn-CLASSIFICATION"><code>CLASSIFICATION</code></a> <a href="#fn-eg_predict"><code>eg_predict</code></a></small></p>
@@ -641,10 +670,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-33'>
+  <div class='section' id='section-34'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-33'>#</a>
+        <a class='octothorpe' href='#section-34'>#</a>
       </div>
       <p><a name="fn-targets"></a>The columns predictions should talk about.<br />
 <small>calls <a href="#fn-klass"><code>klass</code></a></small><br />
@@ -657,10 +686,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-34'>
+  <div class='section' id='section-35'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-34'>#</a>
+        <a class='octothorpe' href='#section-35'>#</a>
       </div>
       <p><a name="fn-ymu"></a>mean ydist of some rows<br />
 <small>calls <a href="ezr.html#fn-ydist"><code>ydist</code></a></small><br />
@@ -672,10 +701,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-35'>
+  <div class='section' id='section-36'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-35'>#</a>
+        <a class='octothorpe' href='#section-36'>#</a>
       </div>
       <p><a name="fn-blank"></a>
 <small>used by <a href="ezr.html#fn-SYNTHESIS"><code>SYNTHESIS</code></a> <a href="ezr.html#fn-SIMULATION"><code>SIMULATION</code></a></small></p>
@@ -686,10 +715,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-36'>
+  <div class='section' id='section-37'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-36'>#</a>
+        <a class='octothorpe' href='#section-37'>#</a>
       </div>
       <p><a name="fn-eras"></a>Split rows, ordered by column AT, into N equal slices.<br />
 <small>calls <a href="ezr.html#fn-clone"><code>clone</code></a></small><br />
@@ -705,10 +734,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-37'>
+  <div class='section' id='section-38'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-37'>#</a>
+        <a class='octothorpe' href='#section-38'>#</a>
       </div>
       <p>&ndash; how: three ways to aim a primitive at a cluster ---------</p>
     </div>
@@ -717,10 +746,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-38'>
+  <div class='section' id='section-39'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-38'>#</a>
+        <a class='octothorpe' href='#section-39'>#</a>
       </div>
       <p><a name="fn-relevant"></a>The cluster whose x-centroid is nearest ROW.<br />
 <small>calls <a href="ezr.html#fn-xdist"><code>xdist</code></a> <a href="#fn-middles"><code>middles</code></a></small><br />
@@ -732,10 +761,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-39'>
+  <div class='section' id='section-40'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-39'>#</a>
+        <a class='octothorpe' href='#section-40'>#</a>
       </div>
       <p><a name="fn-DISTINGUISH"></a>The x column that best tells cluster A from B.<br />
 <small>calls <a href="#fn-xats"><code>xats</code></a> <a href="ezr.html#fn-mid"><code>mid</code></a> <a href="ezr.html#fn-gap"><code>gap</code></a></small><br />
@@ -751,10 +780,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-40'>
+  <div class='section' id='section-41'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-40'>#</a>
+        <a class='octothorpe' href='#section-41'>#</a>
       </div>
       <p><a name="fn-impute"></a>Write cluster C&rsquo;s expectations into ROW at ATS.<br />
 <small>calls <a href="#fn-sample"><code>sample</code></a></small><br />
@@ -767,10 +796,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-41'>
+  <div class='section' id='section-42'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-41'>#</a>
+        <a class='octothorpe' href='#section-42'>#</a>
       </div>
       <p>&ndash; how: the applications -----------------------------------</p>
     </div>
@@ -779,10 +808,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-42'>
+  <div class='section' id='section-43'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-42'>#</a>
+        <a class='octothorpe' href='#section-43'>#</a>
       </div>
       <p><a name="fn-SUMMARIZATION"></a>
 <small>calls <a href="#fn-middles"><code>middles</code></a></small><br />
@@ -794,10 +823,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-43'>
+  <div class='section' id='section-44'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-43'>#</a>
+        <a class='octothorpe' href='#section-44'>#</a>
       </div>
       
     </div>
@@ -808,10 +837,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-44'>
+  <div class='section' id='section-45'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-44'>#</a>
+        <a class='octothorpe' href='#section-45'>#</a>
       </div>
       <p><a name="fn-REGRESSION"></a>
 <small>calls <a href="#fn-middles"><code>middles</code></a> <a href="#fn-relevant"><code>relevant</code></a></small><br />
@@ -824,10 +853,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-45'>
+  <div class='section' id='section-46'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-45'>#</a>
+        <a class='octothorpe' href='#section-46'>#</a>
       </div>
       <p><a name="fn-ANOMALY"></a>
 <small>calls <a href="ezr.html#fn-xdist"><code>xdist</code></a> <a href="#fn-middles"><code>middles</code></a> <a href="#fn-relevant"><code>relevant</code></a></small><br />
@@ -839,10 +868,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-46'>
+  <div class='section' id='section-47'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-46'>#</a>
+        <a class='octothorpe' href='#section-47'>#</a>
       </div>
       <p><a name="fn-RETRIEVAL"></a>
 <small>calls <a href="#fn-relevant"><code>relevant</code></a></small><br />
@@ -854,10 +883,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-47'>
+  <div class='section' id='section-48'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-47'>#</a>
+        <a class='octothorpe' href='#section-48'>#</a>
       </div>
       
     </div>
@@ -871,10 +900,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-48'>
+  <div class='section' id='section-49'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-48'>#</a>
+        <a class='octothorpe' href='#section-49'>#</a>
       </div>
       <p><a name="fn-SYNTHESIS"></a>
 <small>calls <a href="#fn-impute"><code>impute</code></a></small><br />
@@ -886,10 +915,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-49'>
+  <div class='section' id='section-50'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-49'>#</a>
+        <a class='octothorpe' href='#section-50'>#</a>
       </div>
       <p><a name="fn-REPAIR"></a>
 <small>calls <a href="#fn-relevant"><code>relevant</code></a> <a href="#fn-impute"><code>impute</code></a></small><br />
@@ -905,10 +934,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-50'>
+  <div class='section' id='section-51'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-50'>#</a>
+        <a class='octothorpe' href='#section-51'>#</a>
       </div>
       
     </div>
@@ -923,10 +952,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-51'>
+  <div class='section' id='section-52'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-51'>#</a>
+        <a class='octothorpe' href='#section-52'>#</a>
       </div>
       
     </div>
@@ -938,10 +967,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-52'>
+  <div class='section' id='section-53'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-52'>#</a>
+        <a class='octothorpe' href='#section-53'>#</a>
       </div>
       
     </div>
@@ -955,10 +984,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-53'>
+  <div class='section' id='section-54'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-53'>#</a>
+        <a class='octothorpe' href='#section-54'>#</a>
       </div>
       <p><a name="fn-EXPLANATION"></a>
 <small>calls <a href="#fn-DISTINGUISH"><code>DISTINGUISH</code></a> <a href="ezr.html#fn-say"><code>say</code></a></small><br />
@@ -971,10 +1000,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-54'>
+  <div class='section' id='section-55'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-54'>#</a>
+        <a class='octothorpe' href='#section-55'>#</a>
       </div>
       
     </div>
@@ -986,10 +1015,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-55'>
+  <div class='section' id='section-56'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-55'>#</a>
+        <a class='octothorpe' href='#section-56'>#</a>
       </div>
       
     </div>
@@ -1002,10 +1031,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-56'>
+  <div class='section' id='section-57'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-56'>#</a>
+        <a class='octothorpe' href='#section-57'>#</a>
       </div>
       
     </div>
@@ -1021,10 +1050,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-57'>
+  <div class='section' id='section-58'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-57'>#</a>
+        <a class='octothorpe' href='#section-58'>#</a>
       </div>
       
     </div>
@@ -1041,10 +1070,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-58'>
+  <div class='section' id='section-59'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-58'>#</a>
+        <a class='octothorpe' href='#section-59'>#</a>
       </div>
       
     </div>
@@ -1056,10 +1085,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-59'>
+  <div class='section' id='section-60'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-59'>#</a>
+        <a class='octothorpe' href='#section-60'>#</a>
       </div>
       <p><a name="fn-DISTINGUISHABILITY"></a>
 <small>calls <a href="ezr.html#fn-same"><code>same</code></a></small><br />
@@ -1071,10 +1100,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-60'>
+  <div class='section' id='section-61'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-60'>#</a>
+        <a class='octothorpe' href='#section-61'>#</a>
       </div>
       <p>&ndash; how: demos ----------------------------------------------</p>
     </div>
@@ -1083,10 +1112,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-61'>
+  <div class='section' id='section-62'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-61'>#</a>
+        <a class='octothorpe' href='#section-62'>#</a>
       </div>
       <p><a name="fn-_cars"></a>
 <small>calls <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="#fn-halve"><code>halve</code></a></small><br />
@@ -1098,10 +1127,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-62'>
+  <div class='section' id='section-63'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-62'>#</a>
+        <a class='octothorpe' href='#section-63'>#</a>
       </div>
       <p><a name="fn-eg_summarize"></a>SUMMARIZATION: the usual values in a cluster.<br />
 <small>calls <a href="ezr.html#fn-say"><code>say</code></a> <a href="#fn-ymu"><code>ymu</code></a></small></p>
@@ -1116,10 +1145,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-63'>
+  <div class='section' id='section-64'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-63'>#</a>
+        <a class='octothorpe' href='#section-64'>#</a>
       </div>
       <p><a name="fn-eg_predict"></a>CLASSIFICATION and REGRESSION: one act, two col types.<br />
 <small>calls <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="#fn-halve"><code>halve</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="ezr.html#fn-say"><code>say</code></a> <a href="#fn-klass"><code>klass</code></a></small></p>
@@ -1138,10 +1167,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-64'>
+  <div class='section' id='section-65'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-64'>#</a>
+        <a class='octothorpe' href='#section-65'>#</a>
       </div>
       <p><a name="fn-eg_anomaly"></a>ANOMALY DETECTION: prediction&rsquo;s discarded byproduct.<br />
 <small>calls <a href="ezr.html#fn-say"><code>say</code></a></small></p>
@@ -1156,10 +1185,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-65'>
+  <div class='section' id='section-66'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-65'>#</a>
+        <a class='octothorpe' href='#section-66'>#</a>
       </div>
       <p><a name="fn-eg_retrieve"></a>RETRIEVAL: the rows, not the summary.</p>
     </div>
@@ -1172,10 +1201,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-66'>
+  <div class='section' id='section-67'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-66'>#</a>
+        <a class='octothorpe' href='#section-67'>#</a>
       </div>
       <p><a name="fn-eg_spread"></a>SPREAD: a distribution, not a point.<br />
 <small>calls <a href="#fn-relevant"><code>relevant</code></a> <a href="ezr.html#fn-say"><code>say</code></a> <a href="ezr.html#fn-mid"><code>mid</code></a></small></p>
@@ -1191,10 +1220,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-67'>
+  <div class='section' id='section-68'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-67'>#</a>
+        <a class='octothorpe' href='#section-68'>#</a>
       </div>
       <p><a name="fn-eg_synth"></a>SYNTHESIS and REPAIR: impute, aimed two ways.<br />
 <small>calls <a href="ezr.html#fn-say"><code>say</code></a> <a href="#fn-ymu"><code>ymu</code></a></small></p>
@@ -1211,10 +1240,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-68'>
+  <div class='section' id='section-69'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-68'>#</a>
+        <a class='octothorpe' href='#section-69'>#</a>
       </div>
       <p><a name="fn-eg_advise"></a>EXPLANATION, PLANNING, MONITORING: one DISTINGUISH.<br />
 <small>calls <a href="ezr.html#fn-say"><code>say</code></a> <a href="#fn-ymu"><code>ymu</code></a></small></p>
@@ -1233,10 +1262,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-69'>
+  <div class='section' id='section-70'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-69'>#</a>
+        <a class='octothorpe' href='#section-70'>#</a>
       </div>
       <p><a name="fn-eg_trends"></a>TRENDS, FORECAST, ALERTS: one trajectory, three reads.<br />
 <small>calls <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="#fn-eras"><code>eras</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="ezr.html#fn-say"><code>say</code></a> <a href="ezr.html#fn-mid"><code>mid</code></a></small></p>
@@ -1258,10 +1287,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-70'>
+  <div class='section' id='section-71'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-70'>#</a>
+        <a class='octothorpe' href='#section-71'>#</a>
       </div>
       <p><a name="fn-eg_simulate"></a>SIMULATION: rows that never happened, scored.<br />
 <small>calls <a href="ezr.html#fn-say"><code>say</code></a></small></p>
@@ -1275,10 +1304,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-71'>
+  <div class='section' id='section-72'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-71'>#</a>
+        <a class='octothorpe' href='#section-72'>#</a>
       </div>
       <p><a name="fn-eg_optimize"></a>OPTIMIZATION: acquire, best first. Then defer to &ndash;vs.<br />
 <small>calls <a href="ezr.html#fn-Tbl"><code>Tbl</code></a> <a href="#fn-eg_vs"><code>eg_vs</code></a> <a href="ezr.html#fn-csv"><code>csv</code></a> <a href="ezr.html#fn-say"><code>say</code></a> <a href="ezr.html#fn-ydist"><code>ydist</code></a></small></p>
@@ -1291,10 +1320,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-72'>
+  <div class='section' id='section-73'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-72'>#</a>
+        <a class='octothorpe' href='#section-73'>#</a>
       </div>
       <p><a name="fn-eg_distinguish"></a>DISTINGUISHABILITY: same(). Then defer to &ndash;same.<br />
 <small>calls <a href="#fn-eg_same"><code>eg_same</code></a></small></p>
@@ -1309,10 +1338,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-73'>
+  <div class='section' id='section-74'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-73'>#</a>
+        <a class='octothorpe' href='#section-74'>#</a>
       </div>
       <p><a name="fn-eg_all"></a>Run every demo; exit code counts the crashes.<br />
 <small>calls <a href="ezr.html#fn-run"><code>run</code></a></small></p>
@@ -1325,10 +1354,10 @@ Section 6 of how.md: the cost. Here it is, paid.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-74'>
+  <div class='section' id='section-75'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-74'>#</a>
+        <a class='octothorpe' href='#section-75'>#</a>
       </div>
       <p><a name="fn-cli"></a>-Key val sets; &ndash;name runs; exit counts crashes<br />
 <small>calls <a href="ezr.html#fn-main"><code>main</code></a></small></p>

@@ -25,7 +25,7 @@ from ezr0 import the, atom
 
 the.update(alg="ezr0", runs=1000, dir="~/gits/moot/optimize",
            plot="", diff="", png="docs/rq.png", rq0=0,
-           repeats=20, sd=0)
+           repeats=20, sd=0, rq2="", plot2="", eps=0.35)
 
 def wins(mod, tbl): # 100 at the best row, 0 at an average one
   ys = sorted(mod.ydist(tbl, r) for r in tbl.rows)
@@ -46,6 +46,60 @@ def rq0(): # per dataset: mean win of 20 repeats' picks.
       ws += [w(mod.holdout(t))]
     print(f"{round(sum(ws)/len(ws))}:{os.path.basename(f)[:-4]}",
           flush=True)
+
+def pick(mod, tbl, alg, i): # one treatment's choice, seeded by I
+  random.seed(i)
+  if alg == "rand": # same budget, no model: best of Stop random rows
+    rows = random.sample(tbl.rows, len(tbl.rows))
+    test = rows[len(rows)//2:]
+    return min(random.sample(test, min(the.Stop, len(test))),
+               key=lambda r: mod.ydist(tbl, r))
+  m = importlib.import_module(alg)
+  m.the.Seed = i
+  return m.holdout(tbl)
+
+def rq2(): # two treatments, 20 repeats each; one line per dataset
+  a1, a2 = the.rq2.split(",")
+  mod = importlib.import_module("ezr0")
+  d = os.path.expanduser(the.dir)
+  for f in ([d] if d.endswith(".csv") else
+            sorted(glob.glob(d + "/**/*.csv", recursive=True))):
+    t = mod.Tbl(mod.csv(f))
+    w, out = wins(mod, t), []
+    for alg in (a1, a2):
+      ws  = [w(pick(mod, t, alg, i)) for i in range(the.repeats)]
+      mu  = sum(ws) / len(ws)
+      out += [mu, (sum((x-mu)**2 for x in ws)/len(ws))**.5]
+    print(f"{os.path.basename(f)[:-4]},{out[0]:.1f},{out[1]:.1f},"
+          f"{out[2]:.1f},{out[3]:.1f}", flush=True)
+
+def plot2(): # delta bars, sorted; grey background = "same"
+  import matplotlib.pyplot as plt
+  a1, a2 = (the.rq2 or "rx1,rx2").split(",")
+  nums = [[float(x) for x in ln.strip().split(",")[1:]]
+          for ln in open(the.plot2)]
+  nums.sort(key=lambda r: r[2] - r[0])      # LHS: a1 winning
+  delta = [r[0] - r[2] for r in nums]
+  same  = [abs(d) < the.eps * ((r[1]**2 + r[3]**2)/2 + 1e-32)**.5
+           for d, r in zip(delta, nums)]
+  x = list(range(len(nums)))
+  plt.figure(figsize=(3.3, 2.1))
+  for i, s in enumerate(same):
+    if s: plt.axvspan(i-.5, i+.5, color="0.88", lw=0, zorder=0)
+  plt.bar(x, delta, width=1,
+          color=["C0" if d > 0 else "C1" for d in delta])
+  plt.axhline(0, color="k", lw=.5)
+  plt.xlabel(f"datasets, sorted by win({a1}) - win({a2})",
+             fontsize=8)
+  plt.ylabel(f"Δ win ({a1} - {a2})", fontsize=8)
+  plt.tick_params(labelsize=7)
+  n = len(nums)
+  plt.text(.02, .95, f"{a1} better", transform=plt.gca().transAxes,
+           fontsize=7, color="C0", va="top")
+  plt.text(.98, .05, f"{a2} better", transform=plt.gca().transAxes,
+           fontsize=7, color="C1", va="bottom", ha="right")
+  plt.savefig(the.png, dpi=120, bbox_inches="tight")
+  print(the.png, sum(same), "same of", n)
 
 def rq(): # many random holdouts; one "budget check win" line each
   mod   = importlib.import_module(the.alg)
@@ -112,4 +166,5 @@ if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
   for _k, _v in zip(sys.argv[1:], sys.argv[2:]):
     if _k[1:] in the: the[_k[1:]] = atom(_v)
-  plot() if the.plot else rq0() if the.rq0 else rq()
+  (plot2() if the.plot2 else plot() if the.plot else
+   rq2() if the.rq2 else rq0() if the.rq0 else rq())

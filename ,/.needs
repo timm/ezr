@@ -36,3 +36,14 @@ needs() {
   if [ "${BASH_SOURCE[${#BASH_SOURCE[@]}-1]}" = "$0" ]
     then exit "$bad"; else return "$bad"; fi
 }
+
+# out_of_date TARGET SOURCE...
+# True if TARGET is missing or any SOURCE is newer, so:
+#
+#    out_of_date docs/x.html x.py etc/lit.py && rebuild
+out_of_date() {
+  local t=$1; shift
+  [ -e "$t" ] || return 0
+  for s; do [ "$s" -nt "$t" ] && return 0; done
+  return 1
+}

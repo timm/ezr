@@ -181,7 +181,7 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <tr><td class="n"><code>-Check</code></td><td class="v"><code>5</code></td><td class="d">holdout: top picks to label</td></tr>
 <tr><td class="n"><code>-Repeats</code></td><td class="v"><code>20</code></td><td class="d">holdout: how many train/test splits</td></tr>
 <tr><td class="n"><code>-Seed</code></td><td class="v"><code>1234567891</code></td><td class="d">random number seed</td></tr>
-<tr><td class="n"><code>-File</code></td><td class="v"><code>~/gits/moot/optimize/misc/auto93.csv</code></td><td class="d"></td></tr>
+<tr><td class="n"><code>-File</code></td><td class="v"><code>~/gits/moot/optimize/misc/auto93.csv</code></td><td class="d">One file, five layers.  Each calls the layers above it and</td></tr>
   </tbody></table></div>
   <p>Written <code>-Key val</code>, space separated. A demo may poke a setting;
   it is put back afterwards, and every demo starts from a fresh seed.</p>
@@ -219,12 +219,13 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
   <i>if</i> isinstance(x, dict):
     x= <b>&quot;{&quot;</b>+<b>&quot;, &quot;</b>.join(f<b>&quot;{k}: {say(v,p)}&quot;</b> <i>for</i> k,v <i>in</i> x.items())+<b>&quot;}&quot;</b>
   <i>return</i> str(x)</code></pre></details></td><td class="s"><code><b>say</b>(x: Any, p: int = 2) -&gt; str</code></td></tr>
-<tr><td class="n"><code>atom</code></td><td class="d">&#x27;22&#x27; -&gt; 22. &#x27;x&#x27; -&gt; &#x27;x&#x27;.<details><summary>6 lines</summary><pre><code><i>def</i> atom(s: str) -&gt; ATOM:
-  &quot;&<em>#x27;22&#x27; -&gt; 22.  <b>&#x27;x&#x27;</b> -&gt; <b>&#x27;x&#x27;</b>.&quot;</em>
-  try: <i>return</i> int(s)
-  except ValueError:
-    try: <i>return</i> float(s)
-    except ValueError: <i>return</i> s.strip()</code></pre></details></td><td class="s"><code><b>atom</b>(s: str) -&gt; ATOM</code></td></tr>
+<tr><td class="n"><code>atom</code></td><td class="d">&#x27;22&#x27; -&gt; 22. &#x27;3.1&#x27; -&gt; 3.1. &#x27;True&#x27; -&gt; True. &#x27;x&#x27; -&gt; &#x27;x&#x27;.<details><summary>7 lines</summary><pre><code><i>def</i> atom(s: str) -&gt; ATOM:
+  &quot;&<em>#x27;22&#x27; -&gt; 22. <b>&#x27;3.1&#x27;</b> -&gt; 3.1. <b>&#x27;<i>True</i>&#x27;</b> -&gt; <i>True</i>. <b>&#x27;x&#x27;</b> -&gt; <b>&#x27;x&#x27;</b>.&quot;</em>
+  <i>for</i> fn <i>in</i> (int, float):
+    try: <i>return</i> fn(s)
+    except ValueError: pass
+  s = s.strip()
+  <i>return</i> {<b>&quot;<i>True</i>&quot;</b>: <i>True</i>, <b>&quot;<i>False</i>&quot;</b>: <i>False</i>}.get(s, s)</code></pre></details></td><td class="s"><code><b>atom</b>(s: str) -&gt; ATOM</code></td></tr>
 <tr><td class="n"><code>csv</code></td><td class="d">ROWS of FILE, each cell coerced.<details><summary>6 lines</summary><pre><code><i>def</i> csv(file: str) -&gt; Iterator[ROW]:
   <b>&quot;ROWS of FILE, each cell coerced.&quot;</b>
   with open(os.path.expanduser(file),  <em># -sig drops any BOM</em>
@@ -242,7 +243,7 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <tr><td class="n"><code>Sym</code></td><td class="d">Place to summarize stream of Symbols.<details><summary>3 lines</summary><pre><code><i>def</i> Sym(txt: str = <b>&quot; &quot;</b>, at: int = 0) -&gt; SYM:
   <b>&quot;Place to summarize stream of Symbols.&quot;</b>
   <i>return</i> o(at=at, txt=txt, n=0, has={})</code></pre></details></td><td class="s"><code><b>Sym</b>(txt: str = &quot; &quot;, at: int = 0) -&gt; SYM</code></td></tr>
-<tr><td class="n"><code>add</code></td><td class="d">Show V to COL. INC=-1 takes it away. `?` changes nothing.<details><summary>12 lines</summary><pre><code><i>def</i> add(col: COL, v: ATOM, inc: int = 1) -&gt; ATOM:
+<tr><td class="n"><code>add</code></td><td class="d">Show V to COL. INC=-1 takes it away. `?` changes nothing.<details><summary>11 lines</summary><pre><code><i>def</i> add(col: COL, v: ATOM, inc: int = 1) -&gt; <i>None</i>:
   <b>&quot;Show V to COL.  INC=-1 takes it away.  `?` changes nothing.&quot;</b>
   <i>if</i> v != <b>&quot;?&quot;</b>:
     col.n += inc
@@ -252,14 +253,15 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
       d = v - col.mu                      <em># Welford, <i>for</i> `div`</em>
       col.mu += inc * d / max(1, col.n)
       col.m2  = max(0, col.m2 + inc * d * (v - col.mu))
-      col.sd  = 0 <i>if</i> col.n &lt; 2 <i>else</i> (col.m2/(col.n-1))**.5
-  <i>return</i> v</code></pre></details></td><td class="s"><code><b>add</b>(col: COL, v: ATOM, inc: int = 1) -&gt; ATOM</code></td></tr>
-<tr><td class="n"><code>mid</code></td><td class="d">Middle: the mean, or the most common symbol.<details><summary>3 lines</summary><pre><code><i>def</i> mid(col: COL) -&gt; ATOM:
-  <b>&quot;Middle: the mean, <i>or</i> the most common symbol.&quot;</b>
-  <i>return</i> max(col.has,key=col.has.get) <i>if</i> <b>&quot;has&quot;</b> <i>in</i> col <i>else</i> col.mu</code></pre></details></td><td class="s"><code><b>mid</b>(col: COL) -&gt; ATOM</code></td></tr>
-<tr><td class="n"><code>mids</code></td><td class="d">Every column&#x27;s middle, keyed by column index.<details><summary>3 lines</summary><pre><code><i>def</i> mids(tbl: TBL) -&gt; MIDS:
-  &quot;Every column&<em>#x27;s middle, keyed by column index.&quot;</em>
-  <i>return</i> {at: mid(col) <i>for</i> at, col <i>in</i> tbl.cols.items()}</code></pre></details></td><td class="s"><code><b>mids</b>(tbl: TBL) -&gt; MIDS</code></td></tr>
+      col.sd  = 0 <i>if</i> col.n &lt; 2 <i>else</i> (col.m2/(col.n-1))**.5</code></pre></details></td><td class="s"><code><b>add</b>(col: COL, v: ATOM, inc: int = 1) -&gt; None</code></td></tr>
+<tr><td class="n"><code>mid</code></td><td class="d">Middle: the mean, or the most common symbol; ? if none.<details><summary>4 lines</summary><pre><code><i>def</i> mid(col: COL) -&gt; ATOM:
+  <b>&quot;Middle: the mean, <i>or</i> the most common symbol; ? <i>if</i> none.&quot;</b>
+  <i>return</i> (max(col.has, key=col.has.get) <i>if</i> col.has <i>else</i> <b>&quot;?&quot;</b>
+          ) <i>if</i> <b>&quot;has&quot;</b> <i>in</i> col <i>else</i> col.mu</code></pre></details></td><td class="s"><code><b>mid</b>(col: COL) -&gt; ATOM</code></td></tr>
+<tr><td class="n"><code>mids</code></td><td class="d">Every column&#x27;s middle, cached until the next addCols.<details><summary>4 lines</summary><pre><code><i>def</i> mids(tbl: TBL) -&gt; MIDS:
+  &quot;Every column&<em>#x27;s middle, cached until the next addCols.&quot;</em>
+  tbl.mids = tbl.mids <i>or</i> {at: mid(c) <i>for</i> at,c <i>in</i> tbl.cols.items()}
+  <i>return</i> tbl.mids</code></pre></details></td><td class="s"><code><b>mids</b>(tbl: TBL) -&gt; MIDS</code></td></tr>
 <tr><td class="n"><code>div</code></td><td class="d">Spread: entropy, or standard deviation.<details><summary>4 lines</summary><pre><code><i>def</i> div(col: COL) -&gt; float:
   <b>&quot;Spread: entropy, <i>or</i> standard deviation.&quot;</b>
   <i>return</i> (-sum(v/col.n*log2(v/col.n) <i>for</i> v <i>in</i> col.has.values())
@@ -270,10 +272,11 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
   z = max(-3, min(3, (v - col.mu) / (1e-32 + div(col))))
   <i>return</i> 1 / (1 + exp(-1.7 * z))</code></pre></details></td><td class="s"><code><b>norm</b>(col: COL, v: ATOM) -&gt; ATOM</code></td></tr>
 <tr class="g"><th colspan="3"><span>Tables</span><span class="blurb">a header row routes every column to x, y or skip</span></th></tr>
-<tr><td class="n"><code>Tbl</code></td><td class="d">Header names the columns: X skip, +- goal, ! klass.<details><summary>6 lines</summary><pre><code><i>def</i> Tbl(src: Iterable[ROW]) -&gt; TBL:
+<tr><td class="n"><code>Tbl</code></td><td class="d">Header names the columns: X skip, +- goal, ! klass.<details><summary>7 lines</summary><pre><code><i>def</i> Tbl(src: Iterable[ROW]) -&gt; TBL:
   <b>&quot;Header names the columns: X skip, +- goal, ! klass.&quot;</b>
   src = iter(src)
-  tbl = Cols(o(rows=[], cols={}, x=[], y=[], names=next(src)))
+  tbl = Cols(o(rows=[], cols={}, x=[], y=[], mids=<i>None</i>,
+               names=next(src)))
   <i>for</i> row <i>in</i> src: addRow(tbl, row)
   <i>return</i> tbl</code></pre></details></td><td class="s"><code><b>Tbl</b>(src: Iterable[ROW]) -&gt; TBL</code></td></tr>
 <tr><td class="n"><code>Cols</code></td><td class="d">Create column roles.<details><summary>7 lines</summary><pre><code><i>def</i> Cols(tbl: TBL) -&gt; TBL:
@@ -287,20 +290,18 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
   <b>&quot;Keep ROW, <i>and</i> show it to my columns.&quot;</b>
   tbl.rows += [row]
   <i>return</i> addCols(tbl, row)</code></pre></details></td><td class="s"><code><b>addRow</b>(tbl: TBL, row: ROW) -&gt; ROW</code></td></tr>
-<tr><td class="n"><code>addCols</code></td><td class="d">Show ROW to my columns, without keeping it.<details><summary>4 lines</summary><pre><code><i>def</i> addCols(tbl: TBL, row: ROW, inc: int = 1) -&gt; ROW:
+<tr><td class="n"><code>addCols</code></td><td class="d">Show ROW to my columns, without keeping it.<details><summary>5 lines</summary><pre><code><i>def</i> addCols(tbl: TBL, row: ROW, inc: int = 1) -&gt; ROW:
   <b>&quot;Show ROW to my columns, without keeping it.&quot;</b>
+  tbl.mids = <i>None</i>                 <em># a new row moves the middles</em>
   <i>for</i> at, col <i>in</i> tbl.cols.items(): add(col, row[at], inc)
   <i>return</i> row</code></pre></details></td><td class="s"><code><b>addCols</b>(tbl: TBL, row: ROW, inc: int = 1) -&gt; ROW</code></td></tr>
 <tr><td class="n"><code>clone</code></td><td class="d">An empty copy of TBL, plus ROWS.<details><summary>3 lines</summary><pre><code><i>def</i> clone(tbl: TBL, rows: ROWS = <i>None</i>) -&gt; TBL:
   <b>&quot;An empty copy of TBL, plus ROWS.&quot;</b>
   <i>return</i> Tbl([tbl.names] + (rows <i>or</i> []))</code></pre></details></td><td class="s"><code><b>clone</b>(tbl: TBL, rows: ROWS = None) -&gt; TBL</code></td></tr>
 <tr class="g"><th colspan="3"><span>Distance</span><span class="blurb">how far two rows are, and how far a row is from perfect</span></th></tr>
-<tr><td class="n"><code>minkowski</code></td><td class="d">Root mean square of N gaps.<details><summary>3 lines</summary><pre><code><i>def</i> minkowski(vs: Iterable[QTY], n: int) -&gt; float:
-  <b>&quot;Root mean square of N gaps.&quot;</b>
-  <i>return</i> sqrt(sum(v*v <i>for</i> v <i>in</i> vs) / n)</code></pre></details></td><td class="s"><code><b>minkowski</b>(vs: Iterable[QTY], n: int) -&gt; float</code></td></tr>
 <tr><td class="n"><code>ydist</code></td><td class="d">How far ROW&#x27;s goals are from the best they could be.<details><summary>4 lines</summary><pre><code><i>def</i> ydist(tbl: TBL, row: ROW) -&gt; float:
   &quot;How far ROW&<em>#x27;s goals are <i>from</i> the best they could be.&quot;</em>
-  <i>return</i> minkowski((abs(norm(c, row[c.at]) - c.goal)
+  <i>return</i> dist((abs(norm(c, row[c.at]) - c.goal)
                     <i>for</i> c <i>in</i> tbl.y), len(tbl.y))</code></pre></details></td><td class="s"><code><b>ydist</b>(tbl: TBL, row: ROW) -&gt; float</code></td></tr>
 <tr><td class="n"><code>gap</code></td><td class="d">Distance between two values of one column.<details><summary>4 lines</summary><pre><code><i>def</i> gap(col: COL, a: ATOM, b: ATOM) -&gt; QTY:
   <b>&quot;Distance between two values of one column.&quot;</b>
@@ -308,7 +309,7 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
   <i>return</i> a!=b <i>if</i> <b>&quot;has&quot;</b> <i>in</i> col <i>else</i> abs(norm(col,a)-norm(col,b))</code></pre></details></td><td class="s"><code><b>gap</b>(col: COL, a: ATOM, b: ATOM) -&gt; QTY</code></td></tr>
 <tr><td class="n"><code>xdist</code></td><td class="d">How far apart two rows are, over the x columns.<details><summary>4 lines</summary><pre><code><i>def</i> xdist(tbl: TBL, r1: ROW, r2: ROW | MIDS) -&gt; float:
   <b>&quot;How far apart two rows are, over the x columns.&quot;</b>
-  <i>return</i> minkowski((gap(c, r1[c.at], r2[c.at])
+  <i>return</i> dist((gap(c, r1[c.at], r2[c.at])
                     <i>for</i> c <i>in</i> tbl.x), len(tbl.x))</code></pre></details></td><td class="s"><code><b>xdist</b>(tbl: TBL, r1: ROW, r2: ROW | MIDS) -&gt; float</code></td></tr>
 <tr class="g"><th colspan="3"><span>Acquire</span><span class="blurb">spend the labelling budget where it buys the most</span></th></tr>
 <tr><td class="n"><code>oracle</code></td><td class="d">Labeller. Rows here arrive with ys, so nothing to do. Real oracles fill in any missing y cells (and can close over a TBL to know which cells those are).<details><summary>5 lines</summary><pre><code><i>def</i> oracle(row: ROW) -&gt; ROW:
@@ -404,15 +405,16 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
   lo, avg = ys[0], sum(ys)/len(ys)
   <i>return</i> <i>lambda</i> r: max(-100, min(100, 100*(1 - (ydist(tbl,r)-lo)
                                             / (avg-lo+1e-32))))</code></pre></details></td><td class="s"><code><b>wins</b>(tbl: TBL) -&gt; Callable[[ROW], float]</code></td></tr>
-<tr><td class="n"><code>holdout</code></td><td class="d">Train on half; of CHECK guesses on the rest, pick best.<details><summary>9 lines</summary><pre><code><i>def</i> holdout(tbl: TBL, pick: PICKER = acquire) -&gt; ROW:
+<tr><td class="n"><code>holdout</code></td><td class="d">Train on half; of CHECK guesses on the rest, pick best.<details><summary>10 lines</summary><pre><code><i>def</i> holdout(tbl: TBL, pick: PICKER = acquire,
+            rank: RANKER = ranker,
+            label: ORACLE = oracle) -&gt; ROW:
   <b>&quot;Train on half; of CHECK guesses on the rest, pick best.&quot;</b>
   rows  = random.sample(tbl.rows, len(tbl.rows))
   n     = len(rows)//2
   tr    = clone(tbl, rows[:n][:the.Few])
-  lab   = clone(tbl, pick(tr, the.Stop - the.Check))
-  tt    = tree(lab, lab.rows)
-  top   = sorted(rows[n:], key=<i>lambda</i> r: leaf(tt,r).mu)
-  <i>return</i> min(top[:the.Check], key=<i>lambda</i> r: ydist(lab, r))</code></pre></details></td><td class="s"><code><b>holdout</b>(tbl: TBL, pick: PICKER = acquire) -&gt; ROW</code></td></tr>
+  lab   = clone(tbl, pick(tr, the.Stop - the.Check, label))
+  top   = sorted(rows[n:], key=rank(lab))
+  <i>return</i> min(top[:the.Check], key=<i>lambda</i> r: ydist(lab, label(r)))</code></pre></details></td><td class="s"><code><b>holdout</b>(tbl: TBL, pick: PICKER = acquire, rank: RANKER = ranker, label: ORACLE = oracle) -&gt; ROW</code></td></tr>
 <tr class="g"><th colspan="3"><span>Stats</span><span class="blurb">is this difference real, or is it noise?</span></th></tr>
 <tr><td class="n"><code>adds</code></td><td class="d">Every item of VS into COL.<details><summary>5 lines</summary><pre><code><i>def</i> adds(vs: Iterable[ATOM], col: COL | <i>None</i> = <i>None</i>) -&gt; COL:
   <b>&quot;Every item of VS into COL.&quot;</b>
@@ -442,10 +444,12 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
     <i>while</i> j &lt; m <i>and</i> ys[j] &lt;= v: j += 1
     d = max(d, abs(i/n - j/m))
   <i>return</i> d &lt;= a * sqrt((n + m) / (n * m))</code></pre></details></td><td class="s"><code><b>ks</b>(xs: NUMS, ys: NUMS, a: float = 1.36) -&gt; bool</code></td></tr>
-<tr><td class="n"><code>same</code></td><td class="d">Indistinguishable by all three. One sort, then linear.<details><summary>4 lines</summary><pre><code><i>def</i> same(xs: NUMS, ys: NUMS, eps: float = 0) -&gt; bool:
-  <b>&quot;Indistinguishable by all three.  One sort, then linear.&quot;</b>
+<tr><td class="n"><code>same</code></td><td class="d">Indistinguishable. Always cliffs and ks; EPS adds cohen, and doubles as its effect size (eps=0 skips that third test).<details><summary>6 lines</summary><pre><code><i>def</i> same(xs: NUMS, ys: NUMS, eps: float = 0) -&gt; bool:
+  <b>&quot;&quot;</b>&quot;Indistinguishable.  Always cliffs <i>and</i> ks; EPS adds cohen, <i>and</i>
+  doubles as its effect size (eps=0 skips that third test).<b>&quot;&quot;</b>&quot;
   xs, ys = sorted(xs), sorted(ys)
-  <i>return</i> cliffs(xs,ys) <i>and</i> ks(xs,ys) <i>and</i> cohen(xs,ys,eps=eps)</code></pre></details></td><td class="s"><code><b>same</b>(xs: NUMS, ys: NUMS, eps: float = 0) -&gt; bool</code></td></tr>
+  <i>return</i> (cliffs(xs,ys) <i>and</i> ks(xs,ys)
+          <i>and</i> (<i>not</i> eps <i>or</i> cohen(xs,ys,d=eps)))</code></pre></details></td><td class="s"><code><b>same</b>(xs: NUMS, ys: NUMS, eps: float = 0) -&gt; bool</code></td></tr>
 <tr class="g"><th colspan="3"><span>Cli</span><span class="blurb">-Key val sets a setting; --name runs a demo</span></th></tr>
 <tr><td class="n"><code>run</code></td><td class="d">Run F. Demos may poke `the`, so always put it back.<details><summary>7 lines</summary><pre><code><i>def</i> run(f: Callable) -&gt; int:
   <b>&quot;Run F. Demos may poke `the`, so always put it back.&quot;</b>
@@ -521,6 +525,20 @@ body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
   a = [w(holdout(t, acquire)) <i>for</i> _ <i>in</i> range(the.Repeats)]
   b = [w(holdout(t, grabs))   <i>for</i> _ <i>in</i> range(the.Repeats)]
   d = 0 <i>if</i> same(a,b) <i>else</i> round(sum(a)/len(a) - sum(b)/len(b))
+  print(f&quot;{round(sum(a)/len(a)):&gt;4} {round(sum(b)/len(b)):&gt;4}&quot;
+        f&quot; {d:&gt;4} {os.path.basename(the.File)}&quot;)</code></pre></details></td><td class="s"><code></code></td></tr>
+<tr><td class="n"><code>--ezr0</code></td><td class="d">ezr versus ezr0, same budget. 0 if the same.<details><summary>14 lines</summary><pre><code><i>def</i> eg_ezr0() -&gt; <i>None</i>:
+  <b>&quot;ezr versus ezr0, same budget.  0 <i>if</i> the same.&quot;</b>
+  t = Tbl(csv(the.File)); w = wins(t)
+  ezr0.the.Stop, ezr0.the.Check = the.Stop, the.Check
+  d0   = ezr0.Tbl(ezr0.csv(the.File))      <em># ezr0&#x27;s own table</em>
+  a, b = [], []
+  <i>for</i> i <i>in</i> range(the.Repeats):
+    random.seed(the.Seed + i)              <em># same seed, both arms</em>
+    a += [w(holdout(t, acquire))]          <em># ezr, end to end</em>
+    ezr0.the.Seed = the.Seed + i           <em># ezr0 seeds itself</em>
+    b += [w(ezr0.holdout(d0))]          <em># ezr0, end to end</em>
+  d = 0 <i>if</i> same(a,b,eps=the.Eps) <i>else</i> round(sum(a)/len(a)-sum(b)/len(b))
   print(f&quot;{round(sum(a)/len(a)):&gt;4} {round(sum(b)/len(b)):&gt;4}&quot;
         f&quot; {d:&gt;4} {os.path.basename(the.File)}&quot;)</code></pre></details></td><td class="s"><code></code></td></tr>
 <tr><td class="n"><code>--seek</code></td><td class="d">DE, SA, LS; scorer labelled by grabs or acquire.<details><summary>9 lines</summary><pre><code><i>def</i> eg_seek() -&gt; <i>None</i>:

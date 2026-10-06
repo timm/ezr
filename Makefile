@@ -42,10 +42,26 @@ $(TMP)/rq1_ezr0.txt: rq.py ezr0.py
 	  '$(PY) rq.py -alg ezr0 -runs 2500 -Seed @ > $(TMP)/rq1_ezr0_@.txt'
 	cat $(TMP)/rq1_ezr0_*.txt > $@
 
+rq2: $(TMP)/rq2_ezr0_rand.txt $(TMP)/rq2_ezr_ezr0.txt ## sorted-delta charts: ezr0 vs rand, ezr vs ezr0
+	python3 rq.py -plot2 $(TMP)/rq2_ezr0_rand.txt \
+	  -rq2 ezr0,rand -png docs/rq2_ezr0_rand.png
+	python3 rq.py -plot2 $(TMP)/rq2_ezr_ezr0.txt \
+	  -rq2 ezr,ezr0 -png docs/rq2_ezr_ezr0.png
+
+$(TMP)/rq2_ezr0_rand.txt: rq.py ezr0.py
+	@mkdir -p $(TMP)
+	find $(DIR) -name '*.csv' | \
+	  xargs -P $(J) -I@ $(PY) rq.py -rq2 ezr0,rand -dir @ > $@
+
+$(TMP)/rq2_ezr_ezr0.txt: rq.py ezr0.py ezr.py
+	@mkdir -p $(TMP)
+	find $(DIR) -name '*.csv' | \
+	  xargs -P $(J) -I@ $(PY) rq.py -rq2 ezr,ezr0 -dir @ > $@
+
 $(TMP)/rq1_ezr.txt: rq.py ezr0.py ezr.py
 	@mkdir -p $(TMP)
 	seq 10 | xargs -P 10 -I@ sh -c \
 	  '$(PY) rq.py -alg ezr  -runs 2500 -Seed @ > $(TMP)/rq1_ezr_@.txt'
 	cat $(TMP)/rq1_ezr_*.txt > $@
 
-.PHONY: rq00 rq0 rq1 help
+.PHONY: rq00 rq0 rq1 rq2 help

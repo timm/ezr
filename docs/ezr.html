@@ -82,6 +82,16 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
       -Repeats=20      holdout: how many train/test splits<br />
       -Seed=1234567891 random number seed<br />
       -File=~/gits/moot/optimize/misc/auto93.csv   </p>
+<p>One file, five layers.  Each calls the layers above it and
+knows nothing of the ones below.  Cut on the banners to get
+five files back:    </p>
+<pre><code>  core     columns, tables, distance.  Calls nothing.    
+  acquire  spend a label budget.    
+  tree     recursive splits, and a way to read them.    
+  rig      wins, holdout.  Takes its ranker as an argument,    
+           so the tree is its default, not its requirement.    
+  stats    cliffs, ks, cohen.  A leaf: nothing calls it.
+</code></pre>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
@@ -111,8 +121,9 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
 <span class="nb">type</span> <span class="n">TBL</span>    <span class="o">=</span> <span class="n">o</span>                       <span class="c1"># rows and columns</span>
 <span class="nb">type</span> <span class="n">NODE</span>   <span class="o">=</span> <span class="n">o</span>                       <span class="c1"># one node of a tree</span>
 <span class="nb">type</span> <span class="n">GO</span>     <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ROW</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>   <span class="c1"># which way does a row go?</span>
-<span class="nb">type</span> <span class="n">PICKER</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">TBL</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">ROWS</span><span class="p">]</span>
-<span class="nb">type</span> <span class="n">ORACLE</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ROW</span><span class="p">],</span> <span class="n">ROW</span><span class="p">]</span>    <span class="c1"># labels one row</span></pre></div>
+<span class="nb">type</span> <span class="n">ORACLE</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ROW</span><span class="p">],</span> <span class="n">ROW</span><span class="p">]</span>    <span class="c1"># labels one row</span>
+<span class="nb">type</span> <span class="n">PICKER</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">TBL</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ORACLE</span><span class="p">],</span> <span class="n">ROWS</span><span class="p">]</span>
+<span class="nb">type</span> <span class="n">RANKER</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">TBL</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ROW</span><span class="p">],</span> <span class="nb">float</span><span class="p">]]</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -121,7 +132,7 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
       <div class='octowrap'>
         <a class='octothorpe' href='#section-2'>#</a>
       </div>
-      <h2>misc</h2>
+      <p>ranks unlabelled rows</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre></pre></div>
@@ -132,6 +143,18 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <h2>misc</h2>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
       </div>
       <p><a name="fn-say"></a>round floats, hide _fields, recurse into dicts, lists<br />
 <small>used by <a href="#fn-show"><code>show</code></a></small></p>
@@ -145,10 +168,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-4'>
+  <div class='section' id='section-5'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-4'>#</a>
+        <a class='octothorpe' href='#section-5'>#</a>
       </div>
       
     </div>
@@ -160,27 +183,28 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-5'>
+  <div class='section' id='section-6'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-5'>#</a>
+        <a class='octothorpe' href='#section-6'>#</a>
       </div>
       <p><a name="fn-atom"></a>strings become ints, floats, bools, or stay strings<br />
 <small>used by <a href="#fn-csv"><code>csv</code></a> <a href="#fn-main"><code>main</code></a></small></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">atom</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atom</span> <span class="o">-&gt;</span> <span class="n">ATOM</span><span class="p">:</span>
-  <span class="k">try</span><span class="p">:</span> <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-  <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-    <span class="k">try</span><span class="p">:</span> <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span> <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span></pre></div>
+  <span class="k">for</span> <span class="n">fn</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span> <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span> <span class="k">pass</span>
+  <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+  <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;True&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-6'>
+  <div class='section' id='section-7'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-6'>#</a>
+        <a class='octothorpe' href='#section-7'>#</a>
       </div>
       <p><a name="fn-csv"></a>load a csv file as a list of typed tuples<br />
 <small>calls <a href="#fn-atom"><code>atom</code></a></small></p>
@@ -194,10 +218,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-7'>
+  <div class='section' id='section-8'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-7'>#</a>
+        <a class='octothorpe' href='#section-8'>#</a>
       </div>
       <h2>columns</h2>
     </div>
@@ -206,10 +230,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-8'>
+  <div class='section' id='section-9'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-8'>#</a>
+        <a class='octothorpe' href='#section-9'>#</a>
       </div>
       <p><a name="fn-Col"></a>Factory that returns NUM or SYM.<br />
 <small>calls <a href="#fn-Num"><code>Num</code></a> <a href="#fn-Sym"><code>Sym</code></a></small><br />
@@ -221,10 +245,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-9'>
+  <div class='section' id='section-10'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-9'>#</a>
+        <a class='octothorpe' href='#section-10'>#</a>
       </div>
       <p><a name="fn-Num"></a>Place to summarize stream of numbers.<br />
 <small>used by <a href="#fn-Col"><code>Col</code></a> <a href="#fn-cut"><code>cut</code></a> <a href="#fn-adds"><code>adds</code></a></small></p>
@@ -236,10 +260,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-10'>
+  <div class='section' id='section-11'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-10'>#</a>
+        <a class='octothorpe' href='#section-11'>#</a>
       </div>
       <p><a name="fn-Sym"></a>Place to summarize stream of Symbols.<br />
 <small>used by <a href="#fn-Col"><code>Col</code></a></small></p>
@@ -250,16 +274,16 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-11'>
+  <div class='section' id='section-12'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-11'>#</a>
+        <a class='octothorpe' href='#section-12'>#</a>
       </div>
       <p><a name="fn-add"></a>Show V to COL. INC=-1 takes it away. <code>?</code> changes nothing.<br />
 <small>used by <a href="#fn-addCols"><code>addCols</code></a> <a href="#fn-cut"><code>cut</code></a> <a href="#fn-adds"><code>adds</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">col</span><span class="p">:</span> <span class="n">COL</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">ATOM</span><span class="p">,</span> <span class="n">inc</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Col</span> <span class="o">-&gt;</span> <span class="n">ATOM</span><span class="p">:</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">col</span><span class="p">:</span> <span class="n">COL</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">ATOM</span><span class="p">,</span> <span class="n">inc</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Col</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
   <span class="k">if</span> <span class="n">v</span> <span class="o">!=</span> <span class="s2">&quot;?&quot;</span><span class="p">:</span>
     <span class="n">col</span><span class="o">.</span><span class="n">n</span> <span class="o">+=</span> <span class="n">inc</span>
     <span class="k">if</span> <span class="s2">&quot;has&quot;</span> <span class="ow">in</span> <span class="n">col</span><span class="p">:</span>
@@ -268,22 +292,7 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
       <span class="n">d</span> <span class="o">=</span> <span class="n">v</span> <span class="o">-</span> <span class="n">col</span><span class="o">.</span><span class="n">mu</span>                      <span class="c1"># Welford, for `div`</span>
       <span class="n">col</span><span class="o">.</span><span class="n">mu</span> <span class="o">+=</span> <span class="n">inc</span> <span class="o">*</span> <span class="n">d</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
       <span class="n">col</span><span class="o">.</span><span class="n">m2</span>  <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="o">.</span><span class="n">m2</span> <span class="o">+</span> <span class="n">inc</span> <span class="o">*</span> <span class="n">d</span> <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">-</span> <span class="n">col</span><span class="o">.</span><span class="n">mu</span><span class="p">))</span>
-      <span class="n">col</span><span class="o">.</span><span class="n">sd</span>  <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">m2</span><span class="o">/</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">.5</span>
-  <span class="k">return</span> <span class="n">v</span></pre></div>
-    </div>
-  </div>
-  <div class='clearall'></div>
-  <div class='section' id='section-12'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-12'>#</a>
-      </div>
-      <p><a name="fn-mid"></a>middle of a column: mean or mode<br />
-<small>used by <a href="#fn-mids"><code>mids</code></a></small></p>
-    </div>
-    <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">mid</span><span class="p">(</span><span class="n">col</span><span class="p">:</span> <span class="n">COL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atom</span> <span class="o">-&gt;</span> <span class="n">ATOM</span><span class="p">:</span>
-  <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">has</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="n">col</span><span class="o">.</span><span class="n">has</span><span class="o">.</span><span class="n">get</span><span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;has&quot;</span> <span class="ow">in</span> <span class="n">col</span> <span class="k">else</span> <span class="n">col</span><span class="o">.</span><span class="n">mu</span></pre></div>
+      <span class="n">col</span><span class="o">.</span><span class="n">sd</span>  <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">m2</span><span class="o">/</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">.5</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -292,13 +301,13 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
       <div class='octowrap'>
         <a class='octothorpe' href='#section-13'>#</a>
       </div>
-      <p><a name="fn-mids"></a>Every column&rsquo;s middle, keyed by column index.<br />
-<small>calls <a href="#fn-mid"><code>mid</code></a></small><br />
-<small>used by <a href="#fn-acquire"><code>acquire</code></a></small></p>
+      <p><a name="fn-mid"></a>middle of a column: mean or mode<br />
+<small>used by <a href="#fn-mids"><code>mids</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">mids</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span><span class="n">Atom</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">MIDS</span><span class="p">:</span>
-  <span class="k">return</span> <span class="p">{</span><span class="n">at</span><span class="p">:</span> <span class="n">mid</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="k">for</span> <span class="n">at</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">mid</span><span class="p">(</span><span class="n">col</span><span class="p">:</span> <span class="n">COL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Atom</span> <span class="o">-&gt;</span> <span class="n">ATOM</span><span class="p">:</span>
+  <span class="k">return</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">has</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">col</span><span class="o">.</span><span class="n">has</span><span class="o">.</span><span class="n">get</span><span class="p">)</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">has</span> <span class="k">else</span> <span class="s2">&quot;?&quot;</span>
+          <span class="p">)</span> <span class="k">if</span> <span class="s2">&quot;has&quot;</span> <span class="ow">in</span> <span class="n">col</span> <span class="k">else</span> <span class="n">col</span><span class="o">.</span><span class="n">mu</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -306,6 +315,22 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      <p><a name="fn-mids"></a>Every column&rsquo;s middle, cached until the next addCols.<br />
+<small>calls <a href="#fn-mid"><code>mid</code></a></small><br />
+<small>used by <a href="#fn-acquire"><code>acquire</code></a></small></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">mids</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span><span class="n">Atom</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">MIDS</span><span class="p">:</span>
+  <span class="n">tbl</span><span class="o">.</span><span class="n">mids</span> <span class="o">=</span> <span class="n">tbl</span><span class="o">.</span><span class="n">mids</span> <span class="ow">or</span> <span class="p">{</span><span class="n">at</span><span class="p">:</span> <span class="n">mid</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">at</span><span class="p">,</span><span class="n">c</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+  <span class="k">return</span> <span class="n">tbl</span><span class="o">.</span><span class="n">mids</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
       </div>
       <p><a name="fn-div"></a>Spread: entropy, or standard deviation.<br />
 <small>used by <a href="#fn-norm"><code>norm</code></a> <a href="#fn-cut"><code>cut</code></a> <a href="#fn-cohen"><code>cohen</code></a></small></p>
@@ -317,10 +342,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-15'>
+  <div class='section' id='section-16'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-15'>#</a>
+        <a class='octothorpe' href='#section-16'>#</a>
       </div>
       <p><a name="fn-norm"></a>squash v to 0..1 via clamped z-score and logistic<br />
 <small>calls <a href="#fn-div"><code>div</code></a></small><br />
@@ -334,10 +359,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-16'>
+  <div class='section' id='section-17'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-16'>#</a>
+        <a class='octothorpe' href='#section-17'>#</a>
       </div>
       <h2>tables</h2>
     </div>
@@ -346,10 +371,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-17'>
+  <div class='section' id='section-18'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-17'>#</a>
+        <a class='octothorpe' href='#section-18'>#</a>
       </div>
       <p><a name="fn-Tbl"></a>header names route columns to x, y, klass, or skip<br />
 <small>calls <a href="#fn-Cols"><code>Cols</code></a> <a href="#fn-addRow"><code>addRow</code></a></small><br />
@@ -358,16 +383,17 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">Tbl</span><span class="p">(</span><span class="n">src</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">ROW</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tbl</span> <span class="o">-&gt;</span> <span class="n">TBL</span><span class="p">:</span>
   <span class="n">src</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
-  <span class="n">tbl</span> <span class="o">=</span> <span class="n">Cols</span><span class="p">(</span><span class="n">o</span><span class="p">(</span><span class="n">rows</span><span class="o">=</span><span class="p">[],</span> <span class="n">cols</span><span class="o">=</span><span class="p">{},</span> <span class="n">x</span><span class="o">=</span><span class="p">[],</span> <span class="n">y</span><span class="o">=</span><span class="p">[],</span> <span class="n">names</span><span class="o">=</span><span class="nb">next</span><span class="p">(</span><span class="n">src</span><span class="p">)))</span>
+  <span class="n">tbl</span> <span class="o">=</span> <span class="n">Cols</span><span class="p">(</span><span class="n">o</span><span class="p">(</span><span class="n">rows</span><span class="o">=</span><span class="p">[],</span> <span class="n">cols</span><span class="o">=</span><span class="p">{},</span> <span class="n">x</span><span class="o">=</span><span class="p">[],</span> <span class="n">y</span><span class="o">=</span><span class="p">[],</span> <span class="n">mids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">names</span><span class="o">=</span><span class="nb">next</span><span class="p">(</span><span class="n">src</span><span class="p">)))</span>
   <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">src</span><span class="p">:</span> <span class="n">addRow</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
   <span class="k">return</span> <span class="n">tbl</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-18'>
+  <div class='section' id='section-19'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-18'>#</a>
+        <a class='octothorpe' href='#section-19'>#</a>
       </div>
       <p><a name="fn-Cols"></a>Create column roles.<br />
 <small>calls <a href="#fn-Col"><code>Col</code></a></small><br />
@@ -383,10 +409,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-19'>
+  <div class='section' id='section-20'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-19'>#</a>
+        <a class='octothorpe' href='#section-20'>#</a>
       </div>
       <p><a name="fn-addRow"></a>Keep ROW, and show it to my columns.<br />
 <small>calls <a href="#fn-addCols"><code>addCols</code></a></small><br />
@@ -399,10 +425,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-20'>
+  <div class='section' id='section-21'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-20'>#</a>
+        <a class='octothorpe' href='#section-21'>#</a>
       </div>
       <p><a name="fn-addCols"></a>Show ROW to my columns, without keeping it.<br />
 <small>calls <a href="#fn-add"><code>add</code></a></small><br />
@@ -410,15 +436,16 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">addCols</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span> <span class="n">inc</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ROW</span><span class="p">:</span>
+  <span class="n">tbl</span><span class="o">.</span><span class="n">mids</span> <span class="o">=</span> <span class="kc">None</span>                 <span class="c1"># a new row moves the middles</span>
   <span class="k">for</span> <span class="n">at</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">cols</span><span class="o">.</span><span class="n">items</span><span class="p">():</span> <span class="n">add</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="n">at</span><span class="p">],</span> <span class="n">inc</span><span class="p">)</span>
   <span class="k">return</span> <span class="n">row</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-21'>
+  <div class='section' id='section-22'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-21'>#</a>
+        <a class='octothorpe' href='#section-22'>#</a>
       </div>
       <p><a name="fn-clone"></a>an empty copy of a table, sharing the header<br />
 <small>calls <a href="#fn-Tbl"><code>Tbl</code></a></small><br />
@@ -430,10 +457,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-22'>
+  <div class='section' id='section-23'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-22'>#</a>
+        <a class='octothorpe' href='#section-23'>#</a>
       </div>
       <h2>distance</h2>
     </div>
@@ -442,33 +469,17 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-23'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-23'>#</a>
-      </div>
-      <p><a name="fn-minkowski"></a>Root mean square of N gaps.<br />
-<small>used by <a href="#fn-ydist"><code>ydist</code></a> <a href="#fn-xdist"><code>xdist</code></a></small></p>
-    </div>
-    <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">minkowski</span><span class="p">(</span><span class="n">vs</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">QTY</span><span class="p">],</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-  <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">v</span><span class="o">*</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vs</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span></pre></div>
-    </div>
-  </div>
-  <div class='clearall'></div>
   <div class='section' id='section-24'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-24'>#</a>
       </div>
-      <p><a name="fn-ydist"></a>distance to heaven: 0 (best) to 1 (worst)<br />
-<small>calls <a href="#fn-minkowski"><code>minkowski</code></a> <a href="#fn-norm"><code>norm</code></a></small><br />
-<small>used by <a href="#fn-acquire"><code>acquire</code></a> <a href="#fn-cut"><code>cut</code></a> <a href="#fn-tree"><code>tree</code></a> <a href="#fn-wins"><code>wins</code></a> <a href="#fn-holdout"><code>holdout</code></a></small></p>
+      <p><a name="fn-dist"></a>Root mean square of N gaps.<br />
+<small>used by <a href="#fn-ydist"><code>ydist</code></a> <a href="#fn-xdist"><code>xdist</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">ydist</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-  <span class="k">return</span> <span class="n">minkowski</span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">at</span><span class="p">])</span> <span class="o">-</span> <span class="n">c</span><span class="o">.</span><span class="n">goal</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">y</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">y</span><span class="p">))</span></pre></div>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">dist</span><span class="p">(</span><span class="n">vs</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">QTY</span><span class="p">],</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">v</span><span class="o">*</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vs</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -476,6 +487,22 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-25'>#</a>
+      </div>
+      <p><a name="fn-ydist"></a>distance to heaven: 0 (best) to 1 (worst)<br />
+<small>calls <a href="#fn-dist"><code>dist</code></a> <a href="#fn-norm"><code>norm</code></a></small><br />
+<small>used by <a href="#fn-acquire"><code>acquire</code></a> <a href="#fn-cut"><code>cut</code></a> <a href="#fn-tree"><code>tree</code></a> <a href="#fn-wins"><code>wins</code></a> <a href="#fn-holdout"><code>holdout</code></a></small></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">ydist</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">dist</span><span class="p">((</span><span class="nb">abs</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">at</span><span class="p">])</span> <span class="o">-</span> <span class="n">c</span><span class="o">.</span><span class="n">goal</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">y</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">y</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-26'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-26'>#</a>
       </div>
       <p><a name="fn-gap"></a>Distance between two values of one column.<br />
 <small>calls <a href="#fn-norm"><code>norm</code></a></small><br />
@@ -488,31 +515,19 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-26'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-26'>#</a>
-      </div>
-      <p><a name="fn-xdist"></a>Minkowski distance over the x columns<br />
-<small>calls <a href="#fn-minkowski"><code>minkowski</code></a> <a href="#fn-gap"><code>gap</code></a></small><br />
-<small>used by <a href="#fn-acquire"><code>acquire</code></a></small></p>
-    </div>
-    <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">r1</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span> <span class="n">r2</span><span class="p">:</span> <span class="n">ROW</span> <span class="o">|</span> <span class="n">MIDS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-  <span class="k">return</span> <span class="n">minkowski</span><span class="p">((</span><span class="n">gap</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">r1</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">at</span><span class="p">],</span> <span class="n">r2</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">at</span><span class="p">])</span>
-                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">x</span><span class="p">))</span></pre></div>
-    </div>
-  </div>
-  <div class='clearall'></div>
   <div class='section' id='section-27'>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-27'>#</a>
       </div>
-      <h2>acquire</h2>
+      <p><a name="fn-xdist"></a>Minkowski distance over the x columns<br />
+<small>calls <a href="#fn-dist"><code>dist</code></a> <a href="#fn-gap"><code>gap</code></a></small><br />
+<small>used by <a href="#fn-acquire"><code>acquire</code></a></small></p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre></pre></div>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">xdist</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">r1</span><span class="p">:</span> <span class="n">ROW</span><span class="p">,</span> <span class="n">r2</span><span class="p">:</span> <span class="n">ROW</span> <span class="o">|</span> <span class="n">MIDS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">dist</span><span class="p">((</span><span class="n">gap</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">r1</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">at</span><span class="p">],</span> <span class="n">r2</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">at</span><span class="p">])</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">x</span><span class="p">))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -521,12 +536,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
       <div class='octowrap'>
         <a class='octothorpe' href='#section-28'>#</a>
       </div>
-      <p><a name="fn-oracle"></a>Labeller. Rows here arrive with ys, so nothing to do. Real oracles fill in any missing y cells (and can close over a TBL to know which cells those are).<br />
-<small>used by <a href="#fn-acquire"><code>acquire</code></a> <a href="#fn-grabs"><code>grabs</code></a></small></p>
+      <h2>acquire</h2>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">oracle</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ROW</span><span class="p">:</span>
-  <span class="k">return</span> <span class="n">row</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -534,6 +547,20 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-29'>#</a>
+      </div>
+      <p><a name="fn-oracle"></a>Labeller. Rows here arrive with ys, so nothing to do. Real oracles fill in any missing y cells (and can close over a TBL to know which cells those are).<br />
+<small>used by <a href="#fn-acquire"><code>acquire</code></a> <a href="#fn-grabs"><code>grabs</code></a> <a href="#fn-holdout"><code>holdout</code></a></small></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">oracle</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ROW</span><span class="p">:</span>
+  <span class="k">return</span> <span class="n">row</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-30'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-30'>#</a>
       </div>
       
     </div>
@@ -558,10 +585,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-30'>
+  <div class='section' id='section-31'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-30'>#</a>
+        <a class='octothorpe' href='#section-31'>#</a>
       </div>
       
     </div>
@@ -574,10 +601,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-31'>
+  <div class='section' id='section-32'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-31'>#</a>
+        <a class='octothorpe' href='#section-32'>#</a>
       </div>
       <h2>tree</h2>
     </div>
@@ -586,12 +613,13 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-32'>
+  <div class='section' id='section-33'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-32'>#</a>
+        <a class='octothorpe' href='#section-33'>#</a>
       </div>
-      <p>NODE = o(rows, at, v, go, kids, mu).
+      <p>Calls core.  Nothing above this line calls down here.
+NODE = o(rows, at, v, go, kids, mu).
 <a name="fn-cut"></a>The (at, v, go) whose two sides have the tightest ys.<br />
 <small>calls <a href="#fn-ydist"><code>ydist</code></a> <a href="#fn-candidates"><code>candidates</code></a> <a href="#fn-Num"><code>Num</code></a> <a href="#fn-add"><code>add</code></a> <a href="#fn-div"><code>div</code></a></small><br />
 <small>used by <a href="#fn-tree"><code>tree</code></a></small></p>
@@ -611,10 +639,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-33'>
+  <div class='section' id='section-34'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-33'>#</a>
+        <a class='octothorpe' href='#section-34'>#</a>
       </div>
       <p><a name="fn-candidates"></a>What splits to try: one per symbol, or CUTS per num.<br />
 <small>used by <a href="#fn-cut"><code>cut</code></a></small></p>
@@ -633,14 +661,14 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-34'>
+  <div class='section' id='section-35'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-34'>#</a>
+        <a class='octothorpe' href='#section-35'>#</a>
       </div>
       <p><a name="fn-tree"></a>recursive discretization; leaves predict<br />
 <small>calls <a href="#fn-cut"><code>cut</code></a> <a href="#fn-ydist"><code>ydist</code></a></small><br />
-<small>used by <a href="#fn-holdout"><code>holdout</code></a></small></p>
+<small>used by <a href="#fn-ranker"><code>ranker</code></a></small></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">tree</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="n">ROWS</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span> <span class="o">-&gt;</span> <span class="n">NODE</span><span class="p">:</span>
@@ -656,13 +684,13 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-35'>
+  <div class='section' id='section-36'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-35'>#</a>
+        <a class='octothorpe' href='#section-36'>#</a>
       </div>
       <p><a name="fn-leaf"></a>route a row to its leaf<br />
-<small>used by <a href="#fn-holdout"><code>holdout</code></a></small></p>
+<small>used by <a href="#fn-ranker"><code>ranker</code></a></small></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">leaf</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">NODE</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">ROW</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Node</span> <span class="o">-&gt;</span> <span class="n">NODE</span><span class="p">:</span>
@@ -671,10 +699,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-36'>
+  <div class='section' id='section-37'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-36'>#</a>
+        <a class='octothorpe' href='#section-37'>#</a>
       </div>
       <p><a name="fn-leafs"></a>all leaves under a node<br />
 <small>used by <a href="#fn-show"><code>show</code></a></small></p>
@@ -685,10 +713,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-37'>
+  <div class='section' id='section-38'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-37'>#</a>
+        <a class='octothorpe' href='#section-38'>#</a>
       </div>
       
     </div>
@@ -699,10 +727,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-38'>
+  <div class='section' id='section-39'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-38'>#</a>
+        <a class='octothorpe' href='#section-39'>#</a>
       </div>
       
     </div>
@@ -721,22 +749,39 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-39'>
+  <div class='section' id='section-40'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-39'>#</a>
+        <a class='octothorpe' href='#section-40'>#</a>
       </div>
-      <h2>holdout</h2>
+      <h2>rig</h2>
     </div>
     <div class='code'>
       <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-40'>
+  <div class='section' id='section-41'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-40'>#</a>
+        <a class='octothorpe' href='#section-41'>#</a>
+      </div>
+      <p>Calls core, acquire, and one RANKER &ndash; tree&rsquo;s, by default.
+<a name="fn-ranker"></a>Grow a tree on LAB; score any row by its leaf&rsquo;s mean ydist.<br />
+<small>calls <a href="#fn-tree"><code>tree</code></a> <a href="#fn-leaf"><code>leaf</code></a></small><br />
+<small>used by <a href="#fn-holdout"><code>holdout</code></a></small></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">ranker</span><span class="p">(</span><span class="n">lab</span><span class="p">:</span> <span class="n">TBL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ROW</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
+  <span class="n">node</span> <span class="o">=</span> <span class="n">tree</span><span class="p">(</span><span class="n">lab</span><span class="p">,</span> <span class="n">lab</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span>
+  <span class="k">return</span> <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">leaf</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span><span class="o">.</span><span class="n">mu</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-42'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-42'>#</a>
       </div>
       <p><a name="fn-wins"></a>score rows 0..100: complement of regret<br />
 <small>calls <a href="#fn-ydist"><code>ydist</code></a></small></p>
@@ -750,30 +795,30 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-41'>
+  <div class='section' id='section-43'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-41'>#</a>
+        <a class='octothorpe' href='#section-43'>#</a>
       </div>
-      <p><a name="fn-holdout"></a>train on half; label only the tree&rsquo;s top picks<br />
-<small>calls <a href="#fn-acquire"><code>acquire</code></a> <a href="#fn-clone"><code>clone</code></a> <a href="#fn-tree"><code>tree</code></a> <a href="#fn-ydist"><code>ydist</code></a> <a href="#fn-leaf"><code>leaf</code></a></small></p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">holdout</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">pick</span><span class="p">:</span> <span class="n">PICKER</span> <span class="o">=</span> <span class="n">acquire</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Row</span> <span class="o">-&gt;</span> <span class="n">ROW</span><span class="p">:</span>
+      <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">holdout</span><span class="p">(</span><span class="n">tbl</span><span class="p">:</span> <span class="n">TBL</span><span class="p">,</span> <span class="n">pick</span><span class="p">:</span> <span class="n">PICKER</span> <span class="o">=</span> <span class="n">acquire</span><span class="p">,</span>
+            <span class="n">rank</span><span class="p">:</span> <span class="n">RANKER</span> <span class="o">=</span> <span class="n">ranker</span><span class="p">,</span>
+            <span class="n">label</span><span class="p">:</span> <span class="n">ORACLE</span> <span class="o">=</span> <span class="n">oracle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ROW</span><span class="p">:</span>
   <span class="n">rows</span>  <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tbl</span><span class="o">.</span><span class="n">rows</span><span class="p">))</span>
   <span class="n">n</span>     <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
   <span class="n">tr</span>    <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">rows</span><span class="p">[:</span><span class="n">n</span><span class="p">][:</span><span class="n">the</span><span class="o">.</span><span class="n">Few</span><span class="p">])</span>
-  <span class="n">lab</span>   <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">pick</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">the</span><span class="o">.</span><span class="n">Stop</span> <span class="o">-</span> <span class="n">the</span><span class="o">.</span><span class="n">Check</span><span class="p">))</span>
-  <span class="n">tt</span>    <span class="o">=</span> <span class="n">tree</span><span class="p">(</span><span class="n">lab</span><span class="p">,</span> <span class="n">lab</span><span class="o">.</span><span class="n">rows</span><span class="p">)</span>
-  <span class="n">top</span>   <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="n">n</span><span class="p">:],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">leaf</span><span class="p">(</span><span class="n">tt</span><span class="p">,</span><span class="n">r</span><span class="p">)</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
-  <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">top</span><span class="p">[:</span><span class="n">the</span><span class="o">.</span><span class="n">Check</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">ydist</span><span class="p">(</span><span class="n">lab</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span></pre></div>
+  <span class="n">lab</span>   <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">pick</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">the</span><span class="o">.</span><span class="n">Stop</span> <span class="o">-</span> <span class="n">the</span><span class="o">.</span><span class="n">Check</span><span class="p">,</span> <span class="n">label</span><span class="p">))</span>
+  <span class="n">top</span>   <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">rows</span><span class="p">[</span><span class="n">n</span><span class="p">:],</span> <span class="n">key</span><span class="o">=</span><span class="n">rank</span><span class="p">(</span><span class="n">lab</span><span class="p">))</span>
+  <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">top</span><span class="p">[:</span><span class="n">the</span><span class="o">.</span><span class="n">Check</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">ydist</span><span class="p">(</span><span class="n">lab</span><span class="p">,</span> <span class="n">label</span><span class="p">(</span><span class="n">r</span><span class="p">)))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-42'>
+  <div class='section' id='section-44'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-42'>#</a>
+        <a class='octothorpe' href='#section-44'>#</a>
       </div>
       <h2>stats</h2>
     </div>
@@ -782,12 +827,13 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-43'>
+  <div class='section' id='section-45'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-43'>#</a>
+        <a class='octothorpe' href='#section-45'>#</a>
       </div>
-      <p><a name="fn-adds"></a>Every item of VS into COL.<br />
+      <p>A leaf: it calls core, and nothing here calls it.
+<a name="fn-adds"></a>Every item of VS into COL.<br />
 <small>calls <a href="#fn-Num"><code>Num</code></a> <a href="#fn-add"><code>add</code></a></small><br />
 <small>used by <a href="#fn-cohen"><code>cohen</code></a></small></p>
     </div>
@@ -799,10 +845,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-44'>
+  <div class='section' id='section-46'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-44'>#</a>
+        <a class='octothorpe' href='#section-46'>#</a>
       </div>
       
     </div>
@@ -815,10 +861,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-45'>
+  <div class='section' id='section-47'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-45'>#</a>
+        <a class='octothorpe' href='#section-47'>#</a>
       </div>
       <p><a name="fn-cliffs"></a>Sorted in. Is the rank imbalance small enough?<br />
 <small>used by <a href="#fn-same"><code>same</code></a></small></p>
@@ -834,10 +880,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-46'>
+  <div class='section' id='section-48'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-46'>#</a>
+        <a class='octothorpe' href='#section-48'>#</a>
       </div>
       <p><a name="fn-ks"></a>Sorted in. 95% Kolmogorov-Smirnov.<br />
 <small>used by <a href="#fn-same"><code>same</code></a></small></p>
@@ -854,25 +900,26 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-47'>
+  <div class='section' id='section-49'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-47'>#</a>
+        <a class='octothorpe' href='#section-49'>#</a>
       </div>
-      <p><a name="fn-same"></a>Indistinguishable by all three. One sort, then linear.<br />
+      <p><a name="fn-same"></a>Indistinguishable. Always cliffs and ks; EPS adds cohen, and doubles as its effect size (eps=0 skips that third test).<br />
 <small>calls <a href="#fn-cliffs"><code>cliffs</code></a> <a href="#fn-ks"><code>ks</code></a> <a href="#fn-cohen"><code>cohen</code></a></small></p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span><span class="w"> </span><span class="nf">same</span><span class="p">(</span><span class="n">xs</span><span class="p">:</span> <span class="n">NUMS</span><span class="p">,</span> <span class="n">ys</span><span class="p">:</span> <span class="n">NUMS</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
   <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">xs</span><span class="p">),</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span>
-  <span class="k">return</span> <span class="n">cliffs</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span><span class="n">ys</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ks</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span><span class="n">ys</span><span class="p">)</span> <span class="ow">and</span> <span class="n">cohen</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span><span class="n">ys</span><span class="p">,</span><span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">)</span></pre></div>
+  <span class="k">return</span> <span class="p">(</span><span class="n">cliffs</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span><span class="n">ys</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ks</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span><span class="n">ys</span><span class="p">)</span>
+          <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">eps</span> <span class="ow">or</span> <span class="n">cohen</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span><span class="n">ys</span><span class="p">,</span><span class="n">d</span><span class="o">=</span><span class="n">eps</span><span class="p">)))</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-48'>
+  <div class='section' id='section-50'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-48'>#</a>
+        <a class='octothorpe' href='#section-50'>#</a>
       </div>
       <h2>start</h2>
     </div>
@@ -883,10 +930,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-49'>
+  <div class='section' id='section-51'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-49'>#</a>
+        <a class='octothorpe' href='#section-51'>#</a>
       </div>
       <p><a name="fn-run"></a>Run F. Demos may poke <code>the</code>, so always put it back.<br />
 <small>used by <a href="#fn-main"><code>main</code></a></small></p>
@@ -901,10 +948,10 @@ Faster, simpler AI. Better maps, not bigger boots.  <br />
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-50'>
+  <div class='section' id='section-52'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-50'>#</a>
+        <a class='octothorpe' href='#section-52'>#</a>
       </div>
       <p><a name="fn-main"></a>Dispatch &ndash;x to FUNCS&rsquo; eg_x; -key val updates <code>the</code>.<br />
 <small>calls <a href="#fn-run"><code>run</code></a> <a href="#fn-atom"><code>atom</code></a></small></p>
