@@ -68,11 +68,12 @@ class o(dict):
   __repr__ = say
 
 def atom(s: str) -> ATOM:
-  "'22' -> 22.  'x' -> 'x'."
-  try: return int(s)
-  except ValueError:
-    try: return float(s)
-    except ValueError: return s.strip()
+  "'22' -> 22. '3.1' -> 3.1. 'True' -> True. 'x' -> 'x'."
+  for fn in (int, float):
+    try: return fn(s)
+    except ValueError: pass
+  s = s.strip()
+  return {"True": True, "False": False}.get(s, s)
 
 def csv(file: str) -> Iterator[ROW]:
   "ROWS of FILE, each cell coerced."
@@ -108,12 +109,14 @@ def add(col: COL, v: ATOM, inc: int = 1) -> None:
       col.sd  = 0 if col.n < 2 else (col.m2/(col.n-1))**.5
 
 def mid(col: COL) -> ATOM:
-  "Middle: the mean, or the most common symbol."
-  return max(col.has,key=col.has.get) if "has" in col else col.mu
+  "Middle: the mean, or the most common symbol; ? if none."
+  return (max(col.has, key=col.has.get) if col.has else "?"
+          ) if "has" in col else col.mu
 
 def mids(tbl: TBL) -> MIDS:
-  "Every column's middle, keyed by column index."
-  return {at: mid(col) for at, col in tbl.cols.items()}
+  "Every column's middle, cached until the next addCols."
+  tbl.mids = tbl.mids or {at: mid(c) for at,c in tbl.cols.items()}
+  return tbl.mids
 
 def div(col: COL) -> float:
   "Spread: entropy, or standard deviation."
@@ -130,7 +133,8 @@ def norm(col: COL, v: ATOM) -> ATOM:
 def Tbl(src: Iterable[ROW]) -> TBL:
   "Header names the columns: X skip, +- goal, ! klass."
   src = iter(src)
-  tbl = Cols(o(rows=[], cols={}, x=[], y=[], names=next(src)))
+  tbl = Cols(o(rows=[], cols={}, x=[], y=[], mids=None,
+               names=next(src)))
   for row in src: addRow(tbl, row)
   return tbl
 
@@ -149,6 +153,7 @@ def addRow(tbl: TBL, row: ROW) -> ROW:
 
 def addCols(tbl: TBL, row: ROW, inc: int = 1) -> ROW:
   "Show ROW to my columns, without keeping it."
+  tbl.mids = None                 # a new row moves the middles
   for at, col in tbl.cols.items(): add(col, row[at], inc)
   return row
 
@@ -157,13 +162,13 @@ def clone(tbl: TBL, rows: ROWS = None) -> TBL:
   return Tbl([tbl.names] + (rows or []))
 
 #-- distance -----------------------------------------------
-def minkowski(vs: Iterable[QTY], n: int) -> float:
+def dist(vs: Iterable[QTY], n: int) -> float:
   "Root mean square of N gaps."
   return sqrt(sum(v*v for v in vs) / n)
 
 def ydist(tbl: TBL, row: ROW) -> float:
   "How far ROW's goals are from the best they could be."
-  return minkowski((abs(norm(c, row[c.at]) - c.goal)
+  return dist((abs(norm(c, row[c.at]) - c.goal)
                     for c in tbl.y), len(tbl.y))
 
 def gap(col: COL, a: ATOM, b: ATOM) -> QTY:
@@ -173,7 +178,7 @@ def gap(col: COL, a: ATOM, b: ATOM) -> QTY:
 
 def xdist(tbl: TBL, r1: ROW, r2: ROW | MIDS) -> float:
   "How far apart two rows are, over the x columns."
-  return minkowski((gap(c, r1[c.at], r2[c.at])
+  return dist((gap(c, r1[c.at], r2[c.at])
                     for c in tbl.x), len(tbl.x))
 
 #-- acquire ------------------------------------------------

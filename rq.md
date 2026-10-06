@@ -31,6 +31,26 @@ min/arm).
   pays when labels are very scarce, and hurts there if too few
   checks are held back.
 
+### RQ1a: how stable are these wins?
+
+**Fig 4, 5: sd of win** (ezr0, ezr); **Fig 6: se of the mean**
+
+![ezr0 win sd](docs/rq_sd.png)
+
+![ezr win sd](docs/rq_ezr_sd.png)
+
+![standard error of mean win](docs/rq_se.png)
+
+- **The means are solid.** Standard error is 2..5 wins almost
+  everywhere (Fig 6), so the 5-win contour steps of Figs 1..2
+  are resolved; more runs would change nothing.
+- **The spread is real, and it mirrors the mean.** Run-to-run
+  sd is 20..25 on the high-win plateau but 40..50 in the
+  label-starved corner: low-budget runs are not just worse on
+  average, they are lottery tickets. Most of that sd is
+  dataset heterogeneity (per-dataset means run 60..100), not
+  sampling noise.
+
 ## RQ2: what do interpreter, parallelism, and algorithm cost?
 
 500 runs per cell (small, so fixed costs understate the

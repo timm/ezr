@@ -8,7 +8,7 @@ whole budget at random, up front, then splits best from rest.
 
 Options:
    -decimals=2  explain: digits shown after the point
-   -Budget=50   rows we may label, all up
+   -Stop=50     rows we may label, all up
    -Check=5     of that budget, saved for the unseen rows
    -Seed=1      random number seed
    -File=~/gits/moot/optimize/misc/auto93.csv
@@ -34,24 +34,24 @@ def csv(file): # rows of FILE, one at a time; -sig drops any BOM
 the = o(**{k: atom(v) for k, v in re.findall(r"-(\w+)=(\S+)", __doc__)})
 
 #-- columns ----------------------------------------------------
-def Col(txt, at): # uppercase name = NUM, else SYM
+def Col(txt=" ", at=0): # uppercase name = NUM, else SYM
   return Num(txt, at) if txt[0].isupper() else Sym(txt, at)
 
-def Num(txt, at): # +- marks a goal; 0 = minimise, 1 = maximise
+def Num(txt=" ", at=0): # +- marks a goal; 0 = minimise, 1 = maximise
   return o(at=at, txt=txt, n=0, mu=0, m2=0, sd=0,
            goal=0 if txt[-1] == "-" else 1)
 
-def Sym(txt, at): # `has` is what tells a SYM from a NUM
+def Sym(txt=" ", at=0): # `has` is what tells a SYM from a NUM
   return o(at=at, txt=txt, n=0, has={})
 
-def add(col, v): # show V to COL.  `?` changes nothing.
+def add(col, v, inc=1): # show V to COL; INC=-1 takes it away
   if v != "?":
-    col.n += 1
-    if "has" in col: col.has[v] = col.has.get(v, 0) + 1
+    col.n += inc
+    if "has" in col: col.has[v] = col.has.get(v, 0) + inc
     else:
       d = v - col.mu                          # Welford
-      col.mu += d / col.n
-      col.m2 += d * (v - col.mu)
+      col.mu += inc * d / max(1, col.n)
+      col.m2  = max(0, col.m2 + inc * d * (v - col.mu))
       col.sd  = 0 if col.n < 2 else (col.m2 / (col.n - 1))**.5
 
 def mid(col): # middle: the mean, or the most common symbol; ? if none
@@ -87,7 +87,8 @@ def addRow(tbl, row): # keep ROW, and show it to my columns
   for at, col in tbl.cols.items(): add(col, row[at])
   return row
 
-def clone(tbl, rows): return Tbl([tbl.names] + rows) # copy structre
+def clone(tbl, rows=None): # an empty copy of TBL, plus ROWS
+  return Tbl([tbl.names] + (rows or []))
 
 #-- distance ---------------------------------------------------
 def dist(vs, n): return sqrt(sum(v*v for v in vs) / n) # distance
@@ -106,7 +107,7 @@ def xdist(tbl, r1, r2): # how far apart two rows are, over the x columns
 def oracle(row): return row # labeller: does nothing if already labelled.
 
 def model(tbl, rows, label=oracle): # return something that can rank rows
-  lab = clone(tbl, [label(r) for r in rows[:the.Budget - the.Check]])
+  lab = clone(tbl, [label(r) for r in rows[:the.Stop - the.Check]])
   lab.rows.sort(key=lambda r: ydist(lab, r))
   k    = int(sqrt(len(lab.rows)))          # sqrt best, rest rest
   best = clone(tbl, lab.rows[:k])
@@ -120,7 +121,7 @@ def holdout(tbl, label=oracle): # train on half, guess on the rest
   rows = random.sample(tbl.rows, len(tbl.rows))
   m    = model(tbl, rows[:len(rows)//2], label)
   test = sorted(rows[len(rows)//2:], key=m.key)
-  return (min(test[:the.Check], key=lambda z: ydist(m.lab, label(z))), m)
+  return min(test[:the.Check], key=lambda z: ydist(m.lab, label(z)))
 
 def explain(tbl, m): # the model is two centroids; show their gap
   say = lambda v: (f"{round(v, the.decimals):g}"
@@ -138,7 +139,11 @@ if __name__ == "__main__":
   for _k, _v in zip(sys.argv[1:], sys.argv[2:]):   # _ : no leaks
     if _k[1:] in the: the[_k[1:]] = atom(_v)
   t = Tbl(csv(the.File))
-  got, m = holdout(t)
-  print(f"labels={the.Budget}  picked={ydist(t,got):.{the.decimals}f}"
+  random.seed(the.Seed)
+  rows = random.sample(t.rows, len(t.rows))
+  m    = model(t, rows[:len(rows)//2])
+  got  = min(sorted(rows[len(rows)//2:], key=m.key)[:the.Check],
+             key=lambda z: ydist(m.lab, z))
+  print(f"labels={the.Stop}  picked={ydist(t,got):.{the.decimals}f}"
         f"  bestOfBudget={ydist(t,m.lab.rows[0]):.{the.decimals}f}")
   explain(t, m)
