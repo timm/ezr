@@ -15,6 +15,17 @@ Options:
       -Seed=1234567891 random number seed  
       -File=~/gits/moot/optimize/misc/auto93.csv   
 
+One file, five layers.  Each calls the layers above it and
+knows nothing of the ones below.  Cut on the banners to get
+five files back:    
+
+      core     columns, tables, distance.  Calls nothing.    
+      acquire  spend a label budget.    
+      tree     recursive splits, and a way to read them.    
+      rig      wins, holdout.  Takes its ranker as an argument,    
+               so the tree is its default, not its requirement.    
+      stats    cliffs, ks, cohen.  A leaf: nothing calls it.    
+
 """
 # pylint: disable=bad-indentation,multiple-statements  
 # pylint: disable=invalid-name,ungrouped-imports   
@@ -40,6 +51,8 @@ type NODE   = o                       # one node of a tree
 type GO     = Callable[[ROW], bool]   # which way does a row go?
 type PICKER = Callable[[TBL, int], ROWS]
 type ORACLE = Callable[[ROW], ROW]    # labels one row
+type RANKER = Callable[[TBL], Callable[[ROW], float]]
+                                      # ranks unlabelled rows
 
 #-- misc ---------------------------------------------------
 def say(x: Any, p: int = 2) -> str:
@@ -198,6 +211,7 @@ def grabs(tbl: TBL, cap: int | None = None,
           random.sample(tbl.rows, min(cap, len(tbl.rows)))]
 
 #-- tree ---------------------------------------------------
+# Calls core.  Nothing above this line calls down here.
 # NODE = o(rows, at, v, go, kids, mu).
 def cut(tbl: TBL, rows: ROWS) -> tuple[int,ATOM,GO]|None:
   "The (at, v, go) whose two sides have the tightest ys."
@@ -261,7 +275,15 @@ def show(tbl: TBL, node: NODE, pre: str | None = None,
   print(" ydist     n")
   walk(node, pre, edge)
 
-#-- holdout ------------------------------------------------
+
+
+#-- rig ----------------------------------------------------
+# Calls core, acquire, and one RANKER -- tree's, by default.
+def ranker(lab: TBL) -> Callable[[ROW], float]:
+  "Grow a tree on LAB; score any row by its leaf's mean ydist."
+  node = tree(lab, lab.rows)
+  return lambda r: leaf(node, r).mu
+
 def wins(tbl: TBL) -> Callable[[ROW], float]:
   "100 at the best row, 0 at an average one."
   ys = sorted(ydist(tbl, r) for r in tbl.rows)
@@ -269,17 +291,19 @@ def wins(tbl: TBL) -> Callable[[ROW], float]:
   return lambda r: max(-100, min(100, 100*(1 - (ydist(tbl,r)-lo)
                                             / (avg-lo+1e-32))))
 
-def holdout(tbl: TBL, pick: PICKER = acquire) -> ROW:
+def holdout(tbl: TBL, pick: PICKER = acquire,
+            rank: RANKER = ranker) -> ROW:
   "Train on half; of CHECK guesses on the rest, pick best."
   rows  = random.sample(tbl.rows, len(tbl.rows))
   n     = len(rows)//2
   tr    = clone(tbl, rows[:n][:the.Few])
   lab   = clone(tbl, pick(tr, the.Stop - the.Check))
-  tt    = tree(lab, lab.rows)
-  top   = sorted(rows[n:], key=lambda r: leaf(tt,r).mu)
+  top   = sorted(rows[n:], key=rank(lab))
   return min(top[:the.Check], key=lambda r: ydist(lab, r))
 
-#-- stats --------------------------------------------------
+
+#-- stats --------------------------------------------------
+# A leaf: it calls core, and nothing here calls it.
 def adds(vs: Iterable[ATOM], col: COL | None = None) -> COL:
   "Every item of VS into COL."
   col = Num() if col is None else col

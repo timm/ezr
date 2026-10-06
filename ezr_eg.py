@@ -12,13 +12,15 @@ ezr_eg.py: demos for ezr.py.  Try  ./ezr_eg.py --h
 
 import os, sys, random # pylint: disable=C0410
 import ezr
+import ezr0
 from ezr import *
 
 type CLUSTERS = list[TBL]   # what `halve` returns
 
 the.Eras, the.Draws, the.Restart = 4, 20, 30
+the.Eps = 0.35                 # cohen's floor, in score points
 the.Klass = "~/gits/moot/classify/diabetes.csv"
-the._defaults.update(Eras=4, Draws=20, Restart=30,
+the._defaults.update(Eras=4, Draws=20, Restart=30, Eps=the.Eps,
                      Klass=the.Klass)
 
 def eg_h() -> None:
@@ -80,6 +82,24 @@ def eg_vs(tbl: TBL | None = None) -> None:
   a = [w(holdout(t, acquire)) for _ in range(the.Repeats)]
   b = [w(holdout(t, grabs))   for _ in range(the.Repeats)]
   d = 0 if same(a,b) else round(sum(a)/len(a) - sum(b)/len(b))
+  print(f"{round(sum(a)/len(a)):>4} {round(sum(b)/len(b)):>4}"
+        f" {d:>4} {os.path.basename(the.File)}")
+
+def eg_ezr0() -> None:
+  """ezr versus ezr0, same budget.  0 if the same.
+  Two whole programs, not two settings: ezr0 keeps its own table
+  and its own stats.  One wins() ruler, built here, grades both,
+  so the only thing compared is which row each one found."""
+  t = Tbl(csv(the.File)); w = wins(t)
+  ezr0.the.Budget, ezr0.the.Check = the.Stop, the.Check
+  d0   = ezr0.Tbl(ezr0.csv(the.File))      # ezr0's own table
+  a, b = [], []
+  for i in range(the.Repeats):
+    random.seed(the.Seed + i)              # same seed, both arms
+    a += [w(holdout(t, acquire))]          # ezr, end to end
+    ezr0.the.Seed = the.Seed + i           # ezr0 seeds itself
+    b += [w(ezr0.holdout(d0)[0])]          # ezr0, end to end
+  d = 0 if same(a,b,eps=the.Eps) else round(sum(a)/len(a)-sum(b)/len(b))
   print(f"{round(sum(a)/len(a)):>4} {round(sum(b)/len(b)):>4}"
         f" {d:>4} {os.path.basename(the.File)}")
 

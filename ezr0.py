@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 -B
 # vim: set et sw=2 ts=2 sts=2 cc=75 :
 """
-min.py: one small corner of ezr.py -- buy a few labels, guess the best.
+ezr0.py: one small corner of ezr.py -- buy a few labels, guess the best.
 Every name below is ezr.py's, so this is a way in to reading that.
 Where ezr.py picks its next label after every label, this spends the
 whole budget at random, up front, then splits best from rest.
