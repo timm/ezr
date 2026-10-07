@@ -17,7 +17,7 @@ ezr = "ezr_eg:cli"
 ezr-eg = "ezr_eg:cli"
 
 [tool.setuptools]
-py-modules = ["ezr", "ezr0", "ezr_eg"]
+py-modules = ["ezr", "ezr0", "ezr0_eg", "ezr_eg"]
 
 [project.urls]
 Changelog = "https://github.com/timm/ezr/blob/main/docs/CHANGELOG.md"

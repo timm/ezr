@@ -7,6 +7,7 @@ Where ezr.py picks its next label after every label, this spends the
 whole budget at random, up front, then splits best from rest.
 
 Options:
+   -Cut=10      plan: ignore gaps under this % of the biggest
    -decimals=2  explain: digits shown after the point
    -Stop=50     rows we may label, all up
    -Check=5     of that budget, saved for the unseen rows
@@ -96,6 +97,12 @@ def dist(vs, n): return sqrt(sum(v*v for v in vs) / n) # distance
 def ydist(tbl, row): # how far ROW's goals are from the best they could be
   return dist((abs(norm(c,row[c.at])-c.goal) for c in tbl.y), len(tbl.y))
 
+def wins(tbl): # grader: 100 at the pool's best row, 0 at an average one.
+  ys = sorted(ydist(tbl, r) for r in tbl.rows)   # peeks at every label,
+  lo, avg = ys[0], sum(ys) / len(ys)             # so only reports use it
+  return lambda row: max(-100, min(100,
+                     100 * (1 - (ydist(tbl,row)-lo) / (avg-lo+1e-32))))
+
 def gap(col, a, b): # distance between two values of one column
   if a == "?" or b == "?": return 1       # unknown = far
   return a != b if "has" in col else abs(norm(col,a) - norm(col,b))
@@ -123,9 +130,11 @@ def holdout(tbl, label=oracle): # train on half, guess on the rest
   test = sorted(rows[len(rows)//2:], key=m.key)
   return min(test[:the.Check], key=lambda z: ydist(m.lab, label(z)))
 
+def say(v): # numbers get `decimals` digits; everything else, as is
+  return (f"{round(v, the.decimals):g}"
+          if isinstance(v, (int, float)) else str(v))
+
 def explain(tbl, m): # the model is two centroids; show their gap
-  say = lambda v: (f"{round(v, the.decimals):g}"
-                   if isinstance(v, (int, float)) else str(v))
   print(f"{'power':>6}{'best':>10}{'rest':>10}  attribute")
   cb, cr = mids(m.best), mids(m.rest)
   d = lambda c: gap(c, cb[c.at], cr[c.at])
@@ -133,7 +142,30 @@ def explain(tbl, m): # the model is two centroids; show their gap
     print(f"{int(100*d(col)):>5}{say(cb[col.at]):>10}"
           f"{say(cr[col.at]):>10}  {col.txt}")
 
+#-- plan -------------------------------------------------------
+def gaps(tbl, m): # x columns, widest best-to-rest gap first
+  cb, cr = mids(m.best), mids(m.rest)
+  out = [(gap(c, cb[c.at], cr[c.at]), c.at, cb[c.at]) for c in tbl.x]
+  return sorted(out, key=lambda z: -z[0])
+
+def worth(tbl, m): # ... and the stop rule: keep the big gaps only
+  out = gaps(tbl, m)
+  return [z for z in out if z[0] >= the.Cut/100 * out[0][0]]
+
+def plan(tbl, m, row): # walk ROW toward best; a labelled row witnesses each step
+  now, out, sofar, w0 = row[:], [], [], None
+  for _, at, v in worth(tbl, m):
+    now[at] = v                             # changes ACCUMULATE
+    sofar += [f"{tbl.names[at]}:{say(row[at])}->{say(v)}"]
+    w = min(m.lab.rows, key=lambda z: xdist(tbl, now, z))
+    out += [o(steps=list(sofar), witness=w, dx=xdist(tbl, now, w),
+              paid=w is not w0)]            # a new witness costs a label
+    w0 = w
+  return out
+
 #-- cli, main ----------------------------------------------------
+# One line out: what the budget bought.  The rigs that grade it
+# live next door, in ezr0_eg.py.
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
   for _k, _v in zip(sys.argv[1:], sys.argv[2:]):   # _ : no leaks
@@ -144,6 +176,8 @@ if __name__ == "__main__":
   m    = model(t, rows[:len(rows)//2])
   got  = min(sorted(rows[len(rows)//2:], key=m.key)[:the.Check],
              key=lambda z: ydist(m.lab, z))
+  w    = wins(t)                              # 100 = best row, 0 = average
   print(f"labels={the.Stop}  picked={ydist(t,got):.{the.decimals}f}"
-        f"  bestOfBudget={ydist(t,m.lab.rows[0]):.{the.decimals}f}")
-  explain(t, m)
+        f" (win {w(got):.0f})"
+        f"  bestOfBudget={ydist(t,m.lab.rows[0]):.{the.decimals}f}"
+        f" (win {w(m.lab.rows[0]):.0f})")

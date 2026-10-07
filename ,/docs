@@ -7,7 +7,7 @@ Here=$(cd "$(dirname "$0")/.." && pwd); cd "$Here" || exit 1
 . "$(dirname "$0")/.needs"
 needs "$1" python3 pandoc etc/lit.py etc/manual.py etc/tut.html
 
-for f in ezr ezr0 ezr_eg; do
+for f in ezr ezr0 ezr0_eg ezr_eg; do
   out_of_date docs/$f.html $f.py etc/lit.py &&
     python3 -B etc/lit.py $f.py
 done
