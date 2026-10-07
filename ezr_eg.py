@@ -112,7 +112,7 @@ def eg_ezr0() -> None:
 def interpolate(col: COL, a: ATOM, b: ATOM, c: ATOM,
                 f: float = 0.5) -> ATOM:
   "DE crossover term.  Syms, or unknowns, just pick one."
-  if "has" in col or "?" in (a, b, c):
+  if type(col) is Sym or "?" in (a, b, c):
     return random.choice([a, b, c])
   return a + f*(b - c)
 
@@ -138,7 +138,7 @@ def de(tbl: TBL, score: Callable[[ROW], float],
 
 def pick(col: COL, v: ATOM = None) -> ATOM:
   "Sample a plausible value, near V if V is known."
-  if "has" in col:
+  if type(col) is Sym:
     return random.choices(list(col.has),
                           weights=col.has.values())[0]
   mu = col.mu if v is None or v == "?" else v
@@ -228,14 +228,14 @@ def middles(tbl: TBL, ats=None) -> MIDS:
 
 def sample(col: COL) -> ATOM:
   "Generate: one plausible value from COL."
-  if "has" in col:
+  if type(col) is Sym:
     return random.choices(list(col.has),
                           weights=col.has.values())[0]
   return random.gauss(col.mu, col.sd)
 
 def delta(a: COL, b: COL):
   "Extrapolate: A earlier, B later; guess the next era."
-  if "has" in a:
+  if type(a) is Sym:
     u  = {**a.has, **b.has}
     pa = {v: a.has.get(v,0)/max(1,a.n) for v in u}
     pb = {v: b.has.get(v,0)/max(1,b.n) for v in u}

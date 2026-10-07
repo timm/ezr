@@ -43,8 +43,8 @@ type ROW    = list[ATOM]
 type MIDS   = dict[int, ATOM]         # a centroid
 type ROWS   = list[ROW]
 type NUMS   = list[QTY]
-type NUM    = o                       # base class, defined below
-type SYM    = o
+type NUM    = Num                     # classes, defined below
+type SYM    = Sym
 type COL    = NUM | SYM               # sumamry of a column
 type TBL    = o                       # rows and columns
 type NODE   = o                       # one node of a tree
@@ -87,20 +87,29 @@ def Col(txt: str = " ", at: int = 0) -> COL:
   "Factory that returns NUM or SYM."
   return Num(txt,at) if txt[0].isupper() else Sym(txt,at)
 
-def Num(txt: str = " ", at: int = 0) -> NUM:
+class Num:
   "Place to summarize stream of numbers."
-  return o(at=at, txt=txt, n=0, mu=0, m2=0, sd=0,
-           goal=0 if txt[-1] == "-" else 1)
+  __slots__ = ("at", "txt", "n", "mu", "m2", "sd", "goal")
+  def __init__(self, txt: str = " ", at: int = 0) -> None:
+    self.at, self.txt, self.n = at, txt, 0
+    self.mu = self.m2 = self.sd = 0
+    self.goal = 0 if txt[-1] == "-" else 1
+  __repr__ = lambda self: say({k: getattr(self,k)
+                               for k in self.__slots__})
 
-def Sym(txt: str = " ", at: int = 0) -> SYM:
-  "Place to summarize stream of Symbols."
-  return o(at=at, txt=txt, n=0, has={})
+class Sym:
+  "Place to summarize stream of Symbols.  The class is the tag."
+  __slots__ = ("at", "txt", "n", "has")
+  def __init__(self, txt: str = " ", at: int = 0) -> None:
+    self.at, self.txt, self.n, self.has = at, txt, 0, {}
+  __repr__ = lambda self: say({k: getattr(self,k)
+                               for k in self.__slots__})
 
 def add(col: COL, v: ATOM, inc: int = 1) -> None:
   "Show V to COL.  INC=-1 takes it away.  `?` changes nothing."
   if v != "?":
     col.n += inc
-    if "has" in col:
+    if type(col) is Sym:
       col.has[v] = col.has.get(v, 0) + inc
     else:
       d = v - col.mu                      # Welford, for `div`
@@ -111,7 +120,7 @@ def add(col: COL, v: ATOM, inc: int = 1) -> None:
 def mid(col: COL) -> ATOM:
   "Middle: the mean, or the most common symbol; ? if none."
   return (max(col.has, key=col.has.get) if col.has else "?"
-          ) if "has" in col else col.mu
+          ) if type(col) is Sym else col.mu
 
 def mids(tbl: TBL) -> MIDS:
   "Every column's middle, cached until the next addCols."
@@ -121,11 +130,11 @@ def mids(tbl: TBL) -> MIDS:
 def div(col: COL) -> float:
   "Spread: entropy, or standard deviation."
   return (-sum(v/col.n*log2(v/col.n) for v in col.has.values())
-          if "has" in col else col.sd)  # sd kept fresh by `add`
+          if type(col) is Sym else col.sd)  # sd kept by `add`
 
 def norm(col: COL, v: ATOM) -> ATOM:
   "To 0..1, by the logistic curve.  Symbols do not scale."
-  if "has" in col: return v
+  if type(col) is Sym: return v
   z = max(-3, min(3, (v - col.mu) / (1e-32 + div(col))))
   return 1 / (1 + exp(-1.7 * z))
 
@@ -174,7 +183,7 @@ def ydist(tbl: TBL, row: ROW) -> float:
 def gap(col: COL, a: ATOM, b: ATOM) -> QTY:
   "Distance between two values of one column."
   if a == "?" or b == "?": return 1    # unknown = far
-  return a!=b if "has" in col else abs(norm(col,a)-norm(col,b))
+  return a!=b if type(col) is Sym else abs(norm(col,a)-norm(col,b))
 
 def xdist(tbl: TBL, r1: ROW, r2: ROW | MIDS) -> float:
   "How far apart two rows are, over the x columns."
@@ -234,7 +243,7 @@ def cut(tbl: TBL, rows: ROWS) -> tuple[int,ATOM,GO]|None:
 def candidates(col: COL, rows: ROWS) -> Iterator[tuple[ATOM,GO]]:
   "What splits to try: one per symbol, or CUTS per num."
   at = col.at
-  if "has" in col:
+  if type(col) is Sym:
     for v in sorted({r[at] for r in rows if r[at] != "?"}):
       yield v, lambda r,v=v,at=at: r[at] == v
   else:                # by rank, not value: THESE rows are dense
@@ -272,7 +281,7 @@ def show(tbl: TBL, node: NODE, pre: str | None = None,
     m = "+" if z is ls[0] else "-" if z is ls[-1] else " "
     print(f"{m} {round(100*z.mu):>4} {len(z.rows):>5}   "
           f"{(pre or '')+edge}".rstrip())
-    op = "=" if "has" in tbl.cols[z.at or 0] else "<="
+    op = "=" if type(tbl.cols[z.at or 0]) is Sym else "<="
     no = "!=" if op == "=" else ">"
     for kid, oper in zip(z.kids, [op, no]):
       walk(kid, "" if pre is None else pre + "|  ",

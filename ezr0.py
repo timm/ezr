@@ -17,7 +17,7 @@ Options:
 import os, random, re, sys
 from math import exp, sqrt
 
-class o(dict): # a dict you can poke with a dot.
+class o(dict): # dicts with dot. Easier to use than SimpleNamespace. 
   __getattr__, __setattr__ = dict.__getitem__, dict.__setitem__
 
 def atom(s): # '22' -> 22. '3.1' -> 3.1. 'True' -> True. 'x' -> 'x'.
@@ -38,17 +38,19 @@ the = o(**{k: atom(v) for k, v in re.findall(r"-(\w+)=(\S+)", __doc__)})
 def Col(txt=" ", at=0): # uppercase name = NUM, else SYM
   return Num(txt, at) if txt[0].isupper() else Sym(txt, at)
 
-def Num(txt=" ", at=0): # +- marks a goal; 0 = minimise, 1 = maximise
-  return o(at=at, txt=txt, n=0, mu=0, m2=0, sd=0,
-           goal=0 if txt[-1] == "-" else 1)
+class Num: # +- marks a goal; 0 = minimise, 1 = maximise
+  __slots__ = ("at", "txt", "n", "mu", "m2", "sd", "goal")
+  def __init__(i, txt=" ", at=0):
+    i.at,i.txt,i.n,i.mu,i.m2,i.sd = at,txt,0,0,0,0; i.goal = txt[-1]!="-" 
 
-def Sym(txt=" ", at=0): # `has` is what tells a SYM from a NUM
-  return o(at=at, txt=txt, n=0, has={})
+class Sym: # the class is what tells a SYM from a NUM
+  __slots__ = ("at", "txt", "n", "has")
+  def __init__(i, txt=" ", at=0): i.at,i.txt,i.n,i.has = at,txt,0,{}
 
 def add(col, v, inc=1): # show V to COL; INC=-1 takes it away
   if v != "?":
     col.n += inc
-    if "has" in col: col.has[v] = col.has.get(v, 0) + inc
+    if type(col) is Sym: col.has[v] = col.has.get(v, 0) + inc
     else:
       d = v - col.mu                          # Welford
       col.mu += inc * d / max(1, col.n)
@@ -57,14 +59,14 @@ def add(col, v, inc=1): # show V to COL; INC=-1 takes it away
 
 def mid(col): # middle: the mean, or the most common symbol; ? if none
   return (max(col.has, key=col.has.get) if col.has else "?"
-          ) if "has" in col else col.mu
+          ) if type(col) is Sym else col.mu
 
 def mids(tbl): # every column's middle, cached until the next addRow
   tbl.mids = tbl.mids or {at: mid(c) for at, c in tbl.cols.items()}
   return tbl.mids
 
 def norm(col, v): # to 0..1, by the logistic curve; syms do not scale
-  if "has" in col: return v
+  if type(col) is Sym: return v
   z = max(-3, min(3, (v - col.mu) / (1e-32 + col.sd)))
   return 1 / (1 + exp(-1.7 * z))
 
@@ -105,7 +107,7 @@ def wins(tbl): # grader: 100 at the pool's best row, 0 at an average one.
 
 def gap(col, a, b): # distance between two values of one column
   if a == "?" or b == "?": return 1       # unknown = far
-  return a != b if "has" in col else abs(norm(col,a) - norm(col,b))
+  return a != b if type(col) is Sym else abs(norm(col,a)-norm(col,b))
 
 def xdist(tbl, r1, r2): # how far apart two rows are, over the x columns
   return dist((gap(c,r1[c.at],r2[c.at]) for c in tbl.x),len(tbl.x))
@@ -152,7 +154,7 @@ def worth(tbl, m): # ... and the stop rule: keep the big gaps only
   out = gaps(tbl, m)
   return [z for z in out if z[0] >= the.Cut/100 * out[0][0]]
 
-def plan(tbl, m, row): # walk ROW toward best; a labelled row witnesses each step
+def plan(tbl, m, row): # walk toward best;labelled row witnesses each step
   now, out, sofar, w0 = row[:], [], [], None
   for _, at, v in worth(tbl, m):
     now[at] = v                             # changes ACCUMULATE
@@ -176,7 +178,7 @@ if __name__ == "__main__":
   _m   = model(_t, _rows[:len(_rows)//2])
   _got = min(sorted(_rows[len(_rows)//2:], key=_m.key)[:the.Check],
              key=lambda z: ydist(_m.lab, z))
-  _w   = wins(_t)                              # 100 = best row, 0 = average
+  _w   = wins(_t)                           # 100 = best row, 0 = average
   print(f"labels={the.Stop}  picked={ydist(_t,_got):.{the.decimals}f}"
         f" (win {_w(_got):.0f})"
         f"  bestOfBudget={ydist(_t,_m.lab.rows[0]):.{the.decimals}f}"
