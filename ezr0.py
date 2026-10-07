@@ -170,14 +170,14 @@ if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
   for _k, _v in zip(sys.argv[1:], sys.argv[2:]):   # _ : no leaks
     if _k[1:] in the: the[_k[1:]] = atom(_v)
-  t = Tbl(csv(the.File))
+  _t = Tbl(csv(the.File))
   random.seed(the.Seed)
-  rows = random.sample(t.rows, len(t.rows))
-  m    = model(t, rows[:len(rows)//2])
-  got  = min(sorted(rows[len(rows)//2:], key=m.key)[:the.Check],
-             key=lambda z: ydist(m.lab, z))
-  w    = wins(t)                              # 100 = best row, 0 = average
-  print(f"labels={the.Stop}  picked={ydist(t,got):.{the.decimals}f}"
-        f" (win {w(got):.0f})"
-        f"  bestOfBudget={ydist(t,m.lab.rows[0]):.{the.decimals}f}"
-        f" (win {w(m.lab.rows[0]):.0f})")
+  _rows = random.sample(_t.rows, len(_t.rows))
+  _m   = model(_t, _rows[:len(_rows)//2])
+  _got = min(sorted(_rows[len(_rows)//2:], key=_m.key)[:the.Check],
+             key=lambda z: ydist(_m.lab, z))
+  _w   = wins(_t)                              # 100 = best row, 0 = average
+  print(f"labels={the.Stop}  picked={ydist(_t,_got):.{the.decimals}f}"
+        f" (win {_w(_got):.0f})"
+        f"  bestOfBudget={ydist(_t,_m.lab.rows[0]):.{the.decimals}f}"
+        f" (win {_w(_m.lab.rows[0]):.0f})")

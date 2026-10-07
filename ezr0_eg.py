@@ -14,6 +14,8 @@ Options:
 """
 # pylint: disable=bad-indentation,multiple-statements
 # pylint: disable=invalid-name,wildcard-import,unused-wildcard-import
+# pylint: disable=redefined-outer-name,too-many-locals
+# pylint: disable=broad-exception-caught,cell-var-from-loop
 import random, statistics as st, sys
 import ezr0
 from ezr0 import *
@@ -97,20 +99,22 @@ def eg_stop() -> None:
 
 def eg_cut() -> None:
   "How many columns survive -Cut, and does the cut cost wins?"
+  was = the.Cut
   for cut in (0, 10, 20, 40):
     the.Cut, ks, ws = cut, [], []
     for s in range(1, the.Repeats+1):
       t, pool, m = _split(s)
       w = wins(t); keep = worth(t, m); ks += [len(keep)]
-      for r0 in sorted(pool, key=lambda z: -m.key(z))[:10]:
+      for r0 in sorted(pool, key=lambda z, m=m: -m.key(z))[:10]:
         now = r0[:]; hi = w(r0)
         for _, at, v in keep:
           now[at] = v
-          hi = max(hi, w(min(m.lab.rows, key=lambda z: xdist(t,now,z))))
+          hi = max(hi, w(min(m.lab.rows,
+                   key=lambda z, t=t, now=now: xdist(t,now,z))))
         ws += [hi]
     print(f"  Cut={cut:>2}%  columns kept {sum(ks)/len(ks):4.1f}"
           f"  best-k win {sum(ws)/len(ws):4.0f}")
-  the.Cut = the._Cut
+  the.Cut = was
 
 def eg_all() -> None:
   "Run every rig; exit code counts the crashes."
@@ -123,7 +127,6 @@ def eg_all() -> None:
   sys.exit(bad)
 
 if __name__ == "__main__":
-  the._Cut = the.Cut
   _av = sys.argv[1:] or ["--h"]
   while _av:
     _s = _av.pop(0)
