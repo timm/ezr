@@ -4,6 +4,8 @@
 ezr0_cmp.py: two planners, same labels, same rows, same judge.
 
   inst  ezr0_plan.py: per-label walks, borrowed by the nearest label
+  fmap  ezr0_plan.py's clusters: fastmap leaves of ~Few labels; same
+        free walk (steps, bisect), centroid to a better centroid
   tree  ezr.py's tree, grown on the same labels. Plans go leaf to a
         better leaf and touch only columns tested on that leaf's
         path; each failed test is mended with the target leaf's
@@ -16,7 +18,8 @@ Per holdout row, per planner, in wins (100 = best row, 0 = average):
         judge = nearest of Judge rows, held out before the split:
         labelled, but never seen by either planner
   dx    xdist(row, changed row)
-  k     columns changed;  cover = share of rows with k > 0
+  k     columns changed;  gain/k = total gain / total k
+  cover share of rows with k > 0
 
 Options:
    -Repeats=20  seeds
@@ -73,10 +76,11 @@ def one(t, w, seed): # one split: per-row wins for both planners
   n     = len(rows)//2
   m     = model(t, rows[:n])
   judge = lambda r: w(min(pool, key=lambda z: xdist(t, r, z)))
-  cache, T = plans(t, m), Trees(t, m)
-  out = o(inst=[], tree=[])
+  cache, C, T = plans(t, m), Clusters(t, m), Trees(t, m)
+  out = o(inst=[], fmap=[], tree=[])
   for r in rows[n:][:the.Test]:              # rows is shuffled already
     for k, nu in (("inst", advise(t, m, cache, r).row),
+                  ("fmap", clusterAdvise(t, C, r)),
                   ("tree", treeAdvise(t, T, r)[0])):
       out[k] += [o(win0=judge(r), win1=judge(nu), dx=xdist(t, r, nu),
                    k=sum(r[c.at] != nu[c.at] for c in t.x))]
@@ -87,22 +91,24 @@ def report(R):
   f   = lambda a: f"{sum(a)/len(a):7.1f}{med(a):6.1f}"
   g   = lambda a: f"{sum(a)/len(a):7.3f}{med(a):6.3f}"
   print(f"{'':6}{'win0':>13}{'win1':>13}{'gain':>13}{'dx':>13}"
-        f"{'k':>6}{'cover':>7}   (mean, median)")
+        f"{'k':>6}{'gain/k':>8}{'cover':>7}   (mean, median)")
   for k, ss in R.items():
     print(f"{k:6}{f([s.win0 for s in ss])}{f([s.win1 for s in ss])}"
           f"{f([s.win1 - s.win0 for s in ss])}{g([s.dx for s in ss])}"
           f"{sum(s.k for s in ss)/len(ss):6.2f}"
+          f"{sum(s.win1-s.win0 for s in ss)/(sum(s.k for s in ss)+1e-32):8.1f}"
           f"{sum(s.k > 0 for s in ss)/len(ss):7.0%}")
   for x in ("win1", "dx"):
-    a, b = [s[x] for s in R["inst"]], [s[x] for s in R["tree"]]
-    print(f"  {x:<5} inst, tree same by cliffs? {E.cliffs(a, b)}")
+    for p, q in (("inst", "tree"), ("fmap", "tree"), ("inst", "fmap")):
+      a, b = [s[x] for s in R[p]], [s[x] for s in R[q]]
+      print(f"  {x:<5} {p}, {q} same by cliffs? {E.cliffs(a, b)}")
 
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
   for _k, _v in zip(sys.argv[1:], sys.argv[2:]):
     if _k[1:] in the: the[_k[1:]] = atom(_v)
   _t = Tbl(csv(the.File)); _w = wins(_t)  # load once
-  _R = o(inst=[], tree=[])
+  _R = o(inst=[], fmap=[], tree=[])
   for _s in range(1, the.Repeats + 1):
     _o = one(_t, _w, _s)
     for _k in _R: _R[_k] += _o[_k]
