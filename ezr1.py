@@ -15,6 +15,8 @@ Options:
    -Bins=5      bins per numeric column
    -Cut=10      plan: skip ranges under this % of the top score
    -Push=1      1 = take the jump when no single bin step helps
+   -Kmax=0      most columns a plan may change; 0 = no cap
+   -Earn=0      keep the shortest prefix within Earn% of the best gain
    -Enough=10   stop once the y gap left is under this % of the start
    -Stop=50     rows we may label, all up
    -Check=5     of that budget, saved for the unseen rows
@@ -193,6 +195,7 @@ def plan1(tbl, m, r0): # least change to labelled R0, most y per x
   w   = near(tbl, m, r0.bins); y0 = y(w)
   now, out, seen = r0.bins[:], [], [(0, r0.bins[:], w)]
   for z in m.tops:
+    if the.Kmax and len(out) >= the.Kmax: break        # change budget
     if now[z.at] == z.v: continue
     top = None
     for b in steps(now[z.at], z.v):      # smallest jump wins ties: dx
@@ -207,8 +210,9 @@ def plan1(tbl, m, r0): # least change to labelled R0, most y per x
     out += [o(at=z.at, was=r0.bins[z.at], to=now[z.at])]
     seen += [(y0 - y(w), now, w)]
     if y(w) - ylo <= the.Enough/100 * (y0 - ylo): break   # near enough
-  i = max(range(len(seen)), key=lambda j: (seen[j][0], -j)) # most dy,
-  if seen[i][0] <= 0: i = 0                 # then fewest changes
+  hi = max(dy for dy, *_ in seen)           # shortest prefix that earns
+  i  = next(j for j, (dy, *_) in enumerate(seen)       # near the most
+            if dy >= (1 - the.Earn/100) * hi) if hi > 0 else 0
   return o(changes=out[:i], bins=seen[i][1], witness=seen[i][2])
 
 def apply(bins, changes): # bins move by deltas; symbols get set
