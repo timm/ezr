@@ -1,0 +1,400 @@
+# 128 files, 20 repeats, 100 test rows, judge=64
+
+# gain: mean; ! = ranks first, or ties it by ezr.same
+ ,       tree, ,  bins_base, ,bins_cuts50, data
+ ,        4.1,!,       19.4, ,       13.9, WA_Fn-UseC_-HR-Employee-Attrition
+ ,        3.3,!,       42.6, ,       22.6, all_players
+ ,       -0.3,!,       25.8,!,       16.8, player_statistics_cleaned_final
+ ,        1.1,!,       17.0, ,        1.7, student_dropout
+ ,       12.6,!,       18.2, ,       17.2, FFM-1000-200-0.50-SAT-1
+ ,       20.8,!,       22.0, ,       19.1, FFM-125-25-0.50-SAT-1
+ ,       14.9,!,       20.0, ,       18.4, FFM-250-50-0.50-SAT-1
+ ,       16.7,!,       23.3, ,       19.9, FFM-500-100-0.50-SAT-1
+ ,       11.1,!,       17.9, ,       15.7, FM-500-100-0.25-SAT-1
+ ,       13.4,!,       22.0, ,       18.8, FM-500-100-0.50-SAT-1
+ ,       16.6,!,       27.1, ,       22.7, FM-500-100-0.75-SAT-1
+ ,       17.1,!,       19.8, ,       17.8, FM-500-100-1.00-SAT-1
+ ,        7.1,!,       16.0, ,       13.6, Scrum100k
+ ,       12.3,!,       15.9, ,       14.5, Scrum10k
+ ,       17.9,!,       29.3, ,       26.5, Scrum1k
+ ,       15.3,!,       21.5, ,       20.4, billing10k
+!,       61.6, ,       43.4, ,       43.4, Apache_AllMeasurements
+ ,       30.4,!,       34.2, ,       33.3, HSMGP_num
+ ,       -0.0,!,        0.7,!,        1.5, SQL_AllMeasurements
+ ,       34.8,!,       39.9, ,       38.2, SS-A
+ ,       44.3,!,       55.4,!,       50.2, SS-B
+ ,       24.4,!,       25.2, ,       22.1, SS-C
+ ,       24.1,!,       29.5, ,       23.7, SS-D
+!,        7.7, ,        7.5, ,        2.8, SS-E
+ ,       18.6,!,       23.5, ,       17.7, SS-F
+ ,       19.5,!,       28.9, ,       24.1, SS-G
+!,       39.0, ,       13.4, ,       15.4, SS-H
+ ,       26.6,!,       35.8, ,       33.2, SS-I
+ ,       11.4,!,       37.8, ,       34.3, SS-J
+ ,       14.1,!,       23.4, ,       17.3, SS-K
+!,       47.2, ,       33.0, ,       30.7, SS-L
+ ,       36.0,!,       47.5, ,       46.1, SS-M
+ ,        1.4,!,       12.4, ,       11.2, SS-N
+ ,       23.6,!,       40.8,!,       38.4, SS-O
+!,       40.5, ,       32.5, ,       30.9, SS-P
+ ,       38.4,!,       77.1, ,       74.4, SS-Q
+ ,       30.9,!,       43.9, ,       40.4, SS-R
+!,       33.5, ,       22.7, ,       20.8, SS-S
+ ,       28.0,!,       77.5,!,       75.8, SS-T
+ ,       33.3,!,       46.3, ,       39.0, SS-U
+ ,       33.9,!,       44.0, ,       35.7, SS-V
+!,       14.6, ,       12.5, ,       11.7, SS-W
+ ,       42.3,!,       60.1, ,       49.8, SS-X
+ ,       47.8,!,       64.8, ,       63.4, X264_AllMeasurements
+!,       25.3, ,       24.1, ,       21.6, rs-6d-c3_obj1
+ ,       11.6, ,       12.2,!,       12.5, rs-6d-c3_obj2
+ ,       19.9,!,       66.6, ,       58.6, sol-6d-c2-obj1
+!,       26.9, ,        8.4, ,        7.7, wc+rs-3d-c4-obj1
+!,       27.6, ,        7.1, ,        7.4, wc+sol-3d-c4-obj1
+!,       27.0, ,        7.3, ,        6.9, wc+wc-3d-c4-obj1
+ ,       13.2, ,       13.3,!,       13.6, wc-6d-c1-obj1
+ ,        0.6,!,       19.4, ,       10.2, BankChurners
+ ,        2.8,!,       12.3, ,        2.8, Loan
+ ,        9.5,!,       87.5,!,       86.9, WA_Fn-UseC_-Telco-Customer-Churn
+ ,        0.1,!,        8.2, ,        1.1, home_data_for_ml_course
+ ,        1.2,!,       19.6, ,       10.9, Data_COVID19_Indonesia
+ ,        4.0,!,       61.2, ,       53.3, Life_Expectancy_Data
+!,        0.3, ,       -1.4, ,       -0.8, Medical_Data_and_Hospital_Readmissions
+!,       47.2, ,       37.1, ,       26.6, Health-ClosedIssues0000
+ ,       31.4,!,       33.2,!,       32.9, Health-ClosedIssues0001
+!,       92.2,!,       92.3,!,       92.3, Health-ClosedIssues0002
+ ,       16.2,!,       25.7, ,       22.2, Health-ClosedIssues0003
+ ,        6.3,!,        6.4, ,        5.8, Health-ClosedIssues0004
+ ,       48.0,!,       62.8, ,       62.2, Health-ClosedIssues0005
+ ,       22.9,!,       31.9,!,       31.6, Health-ClosedIssues0006
+ ,       15.5,!,       29.3, ,       28.3, Health-ClosedIssues0007
+ ,       24.7,!,       40.9, ,       36.6, Health-ClosedIssues0008
+ ,        1.7, ,        1.3,!,        2.9, Health-ClosedIssues0009
+ ,       25.2,!,       36.6, ,       35.4, Health-ClosedIssues0010
+!,       71.8, ,       68.4, ,       68.2, Health-ClosedIssues0011
+!,       67.9,!,       67.9,!,       67.9, Health-ClosedPRs0000
+!,       78.6,!,       80.0,!,       80.0, Health-ClosedPRs0002
+!,       96.1,!,       97.0,!,       97.0, Health-ClosedPRs0003
+!,       51.3, ,       48.3, ,       48.2, Health-ClosedPRs0004
+!,       91.5,!,       92.4,!,       92.1, Health-ClosedPRs0005
+ ,       24.5,!,       28.5, ,       26.1, Health-ClosedPRs0006
+!,       47.5,!,       45.7, ,       41.2, Health-ClosedPRs0007
+!,        4.8, ,        3.6, ,        3.4, Health-ClosedPRs0008
+ ,       28.0,!,       32.1, ,       31.4, Health-ClosedPRs0009
+ ,       19.1, ,       21.6,!,       22.0, Health-ClosedPRs0010
+!,       98.8,!,       99.1,!,       99.1, Health-ClosedPRs0011
+!,       55.0, ,       41.1, ,       32.3, Health-Commits0000
+!,       90.3,!,       93.8,!,       93.8, Health-Commits0001
+!,       19.9,!,       21.2,!,       21.2, Health-Commits0002
+ ,       32.7,!,       38.2, ,       37.7, Health-Commits0003
+ ,       14.6,!,       24.3, ,       22.8, Health-Commits0004
+ ,       14.4,!,       16.7, ,       15.6, Health-Commits0005
+ ,       51.1,!,       55.6,!,       55.2, Health-Commits0006
+ ,       25.0,!,       31.6, ,       31.4, Health-Commits0007
+ ,        9.3,!,       15.4, ,       14.2, Health-Commits0008
+ ,       42.9,!,       55.2,!,       52.9, Health-Commits0009
+ ,       35.3,!,       54.3, ,       52.7, Health-Commits0010
+!,       64.3,!,       62.6, ,       60.0, Health-Commits0011
+ ,        0.4,!,       25.6, ,       15.9, Car_price_cleaned
+ ,        3.9,!,       10.4, ,        7.6, Wine_quality
+ ,       14.9, ,       34.3,!,       35.4, auto93
+ ,        2.0,!,       60.3, ,       54.3, multiLabel
+ ,        3.5,!,        6.9, ,        3.1, coc1000
+ ,        1.5,!,        4.8,!,        2.4, nasa93dem
+ ,        7.6,!,       16.0, ,        9.9, pom3a
+ ,        5.8,!,       10.5, ,        8.2, pom3b
+ ,        5.9,!,       11.2, ,       10.1, pom3c
+ ,        5.7,!,       11.9, ,        6.6, pom3d
+ ,       10.8,!,       30.4, ,       12.4, xomo_flight
+ ,       12.2,!,       25.5, ,        9.8, xomo_ground
+ ,        9.7,!,       18.2, ,        8.1, xomo_osp
+ ,        5.7,!,       19.0, ,       13.9, xomo_osp2
+ ,        1.7, ,        2.4,!,        2.7, A2C_Acrobot
+ ,        8.8,!,       12.9, ,       10.0, A2C_CartPole
+ ,        1.0,!,       16.0, ,        9.9, Marketing_Analytics
+ ,        3.3,!,        5.0, ,        0.4, accessories
+ ,       -0.9, ,       -1.2,!,       -0.3, dress-up
+!,       54.6, ,       46.8, ,       48.5, socks
+ ,       13.4,!,       45.3, ,        5.5, wallpaper
+!,       16.3, ,        9.3, ,       12.4, 7z
+!,       41.5, ,       37.6, ,       36.1, BDBC
+ ,       38.1,!,       45.1, ,       43.9, HSQLDB
+!,       50.3,!,       46.4, ,       41.7, LLVM
+ ,       32.9, ,       38.8,!,       39.3, PostgreSQL
+ ,       30.7,!,       56.6, ,       54.1, dconvert
+!,       45.0, ,       43.4,!,       40.6, deeparch
+ ,        2.0, ,        9.1,!,       12.6, exastencils
+ ,        7.2,!,       14.6, ,       11.9, javagc
+ ,       -1.4,!,       -0.2, ,       -3.1, redis
+!,       18.8, ,        8.6, ,        9.2, storm
+ ,        3.0,!,       12.7, ,       10.6, x264
+ ,        3.9,!,       12.7,!,       14.3, dataset120
+ ,        1.8,!,       21.3,!,       18.1, dataset600
+ ,         33, ,         97, ,         31, firsts
+ ,      43.74, ,     720.59, ,     561.44, secs
+
+# win1: mean; ! = ranks first, or ties it by ezr.same
+ ,       tree, ,  bins_base, ,bins_cuts50, data
+ ,        1.4,!,       16.7, ,       11.2, WA_Fn-UseC_-HR-Employee-Attrition
+ ,        4.4,!,       43.7, ,       23.7, all_players
+ ,       -3.2,!,       22.9,!,       13.9, player_statistics_cleaned_final
+ ,       -3.9,!,       11.9, ,       -3.4, student_dropout
+ ,       12.8,!,       18.4,!,       17.3, FFM-1000-200-0.50-SAT-1
+ ,       21.9,!,       23.1, ,       20.2, FFM-125-25-0.50-SAT-1
+ ,       15.1,!,       20.2,!,       18.6, FFM-250-50-0.50-SAT-1
+ ,       19.0,!,       25.6, ,       22.1, FFM-500-100-0.50-SAT-1
+ ,       11.8,!,       18.6,!,       16.4, FM-500-100-0.25-SAT-1
+ ,       14.4,!,       23.1, ,       19.9, FM-500-100-0.50-SAT-1
+ ,       17.9,!,       28.4, ,       24.0, FM-500-100-0.75-SAT-1
+ ,       19.3,!,       21.9,!,       20.0, FM-500-100-1.00-SAT-1
+ ,        6.7,!,       15.6,!,       13.2, Scrum100k
+ ,       10.7,!,       14.3,!,       12.9, Scrum10k
+ ,       17.9,!,       29.2,!,       26.4, Scrum1k
+ ,       14.4,!,       20.7,!,       19.5, billing10k
+!,       67.6, ,       49.4, ,       49.4, Apache_AllMeasurements
+ ,       57.8,!,       61.6,!,       60.8, HSMGP_num
+!,        4.7,!,        5.5,!,        6.3, SQL_AllMeasurements
+ ,       56.0,!,       61.2, ,       59.5, SS-A
+ ,       46.5,!,       57.6, ,       52.5, SS-B
+ ,       52.0,!,       52.7,!,       49.7, SS-C
+ ,       25.4,!,       30.8,!,       25.0, SS-D
+!,       10.2, ,       10.0, ,        5.3, SS-E
+ ,       23.2,!,       28.1, ,       22.3, SS-F
+ ,       23.2,!,       32.6, ,       27.8, SS-G
+!,       42.4, ,       16.9, ,       18.9, SS-H
+ ,       28.5,!,       37.7,!,       35.1, SS-I
+ ,       17.8,!,       44.2,!,       40.7, SS-J
+ ,       22.8,!,       32.1, ,       26.0, SS-K
+!,       47.5, ,       33.3, ,       31.0, SS-L
+ ,       57.3,!,       68.9,!,       67.5, SS-M
+ ,        4.0,!,       15.0,!,       13.8, SS-N
+ ,       23.9,!,       41.1, ,       38.7, SS-O
+!,       41.0, ,       33.0, ,       31.5, SS-P
+ ,       36.4,!,       75.0, ,       72.3, SS-Q
+ ,       29.9,!,       42.9, ,       39.4, SS-R
+!,       42.3, ,       31.6, ,       29.7, SS-S
+ ,       28.9,!,       78.4,!,       76.7, SS-T
+ ,       34.6,!,       47.6, ,       40.3, SS-U
+ ,       33.9,!,       43.9, ,       35.6, SS-V
+!,       13.9,!,       11.8, ,       11.0, SS-W
+ ,       41.6,!,       59.5, ,       49.1, SS-X
+ ,       51.2,!,       68.2,!,       66.8, X264_AllMeasurements
+!,       37.3, ,       36.1, ,       33.6, rs-6d-c3_obj1
+ ,       72.0,!,       72.6,!,       72.8, rs-6d-c3_obj2
+ ,       13.4,!,       60.1, ,       52.1, sol-6d-c2-obj1
+!,       30.9, ,       12.3, ,       11.7, wc+rs-3d-c4-obj1
+!,       32.3, ,       11.8, ,       12.1, wc+sol-3d-c4-obj1
+!,       33.3, ,       13.7, ,       13.2, wc+wc-3d-c4-obj1
+ ,       11.7,!,       11.8,!,       12.2, wc-6d-c1-obj1
+ ,       -1.1,!,       17.7, ,        8.5, BankChurners
+ ,        2.2,!,       11.7, ,        2.2, Loan
+ ,        9.8,!,       87.8,!,       87.2, WA_Fn-UseC_-Telco-Customer-Churn
+ ,       -2.2,!,        5.9, ,       -1.2, home_data_for_ml_course
+ ,       -1.3,!,       17.1, ,        8.3, Data_COVID19_Indonesia
+ ,        3.8,!,       61.0, ,       53.1, Life_Expectancy_Data
+!,       13.5,!,       11.8,!,       12.4, Medical_Data_and_Hospital_Readmissions
+!,       47.5, ,       37.3, ,       26.9, Health-ClosedIssues0000
+ ,       31.4,!,       33.2,!,       32.8, Health-ClosedIssues0001
+!,       92.8,!,       92.9,!,       92.9, Health-ClosedIssues0002
+ ,       17.3,!,       26.9, ,       23.4, Health-ClosedIssues0003
+ ,        8.0,!,        8.0,!,        7.5, Health-ClosedIssues0004
+ ,       47.8,!,       62.6,!,       62.0, Health-ClosedIssues0005
+ ,       26.5,!,       35.6,!,       35.2, Health-ClosedIssues0006
+ ,       16.6,!,       30.4,!,       29.4, Health-ClosedIssues0007
+ ,       23.9,!,       40.1, ,       35.8, Health-ClosedIssues0008
+ ,        2.5,!,        2.1,!,        3.7, Health-ClosedIssues0009
+ ,       25.2,!,       36.6,!,       35.4, Health-ClosedIssues0010
+!,       71.6,!,       68.1,!,       67.9, Health-ClosedIssues0011
+!,      100.0,!,      100.0,!,      100.0, Health-ClosedPRs0000
+!,       79.2,!,       80.6,!,       80.6, Health-ClosedPRs0002
+!,       96.8,!,       97.7,!,       97.7, Health-ClosedPRs0003
+!,       51.0, ,       47.9, ,       47.8, Health-ClosedPRs0004
+!,       92.9,!,       93.8,!,       93.5, Health-ClosedPRs0005
+ ,       25.2,!,       29.2,!,       26.9, Health-ClosedPRs0006
+!,       48.6,!,       46.7, ,       42.3, Health-ClosedPRs0007
+!,        4.6, ,        3.4, ,        3.2, Health-ClosedPRs0008
+ ,       28.4,!,       32.5,!,       31.8, Health-ClosedPRs0009
+ ,       19.6, ,       22.1,!,       22.5, Health-ClosedPRs0010
+!,       99.5,!,       99.8,!,       99.8, Health-ClosedPRs0011
+!,       55.3, ,       41.4, ,       32.6, Health-Commits0000
+!,       91.1,!,       94.6,!,       94.6, Health-Commits0001
+!,       20.0,!,       21.4,!,       21.4, Health-Commits0002
+ ,       34.0,!,       39.5,!,       38.9, Health-Commits0003
+ ,       16.3,!,       25.9,!,       24.4, Health-Commits0004
+ ,       14.0,!,       16.4, ,       15.3, Health-Commits0005
+ ,       50.2,!,       54.7,!,       54.2, Health-Commits0006
+ ,       26.3,!,       32.8,!,       32.6, Health-Commits0007
+ ,        8.9,!,       15.0, ,       13.8, Health-Commits0008
+ ,       48.0,!,       60.3,!,       58.0, Health-Commits0009
+ ,       36.4,!,       55.4, ,       53.8, Health-Commits0010
+!,       65.4,!,       63.7, ,       61.0, Health-Commits0011
+ ,       -0.6,!,       24.7, ,       15.0, Car_price_cleaned
+ ,        7.1,!,       13.6,!,       10.8, Wine_quality
+ ,       16.8, ,       36.3,!,       37.3, auto93
+ ,       -0.2,!,       58.2, ,       52.2, multiLabel
+ ,        6.9,!,       10.3, ,        6.5, coc1000
+ ,       28.0,!,       31.3,!,       28.9, nasa93dem
+ ,        6.3,!,       14.6, ,        8.5, pom3a
+ ,        5.6,!,       10.2,!,        8.0, pom3b
+ ,        6.4,!,       11.8,!,       10.7, pom3c
+ ,        8.4,!,       14.5, ,        9.3, pom3d
+ ,       13.3,!,       33.0, ,       15.0, xomo_flight
+ ,       13.0,!,       26.3, ,       10.6, xomo_ground
+ ,        9.0,!,       17.5, ,        7.4, xomo_osp
+ ,        4.1,!,       17.5, ,       12.3, xomo_osp2
+!,        2.8,!,        3.5,!,        3.8, A2C_Acrobot
+ ,        7.3,!,       11.5, ,        8.6, A2C_CartPole
+ ,       -1.1,!,       13.8, ,        7.7, Marketing_Analytics
+ ,        4.5,!,        6.3, ,        1.7, accessories
+!,        0.1, ,       -0.1,!,        0.8, dress-up
+!,       55.4, ,       47.5, ,       49.2, socks
+ ,       13.6,!,       45.5, ,        5.8, wallpaper
+!,       32.1, ,       25.1, ,       28.2, 7z
+!,       69.4, ,       65.5, ,       64.1, BDBC
+ ,       65.9,!,       73.0,!,       71.7, HSQLDB
+!,       47.9, ,       44.0, ,       39.3, LLVM
+ ,       66.4,!,       72.3,!,       72.8, PostgreSQL
+ ,       35.0,!,       60.9,!,       58.4, dconvert
+!,       49.0,!,       47.4, ,       44.6, deeparch
+ ,        1.5,!,        8.6,!,       12.1, exastencils
+ ,       55.7,!,       63.1,!,       60.4, javagc
+ ,       -1.6,!,       -0.4,!,       -3.2, redis
+!,       47.3, ,       37.1, ,       37.8, storm
+ ,        4.9,!,       14.6, ,       12.5, x264
+ ,        7.6,!,       16.4,!,       18.1, dataset120
+ ,        8.2,!,       27.7,!,       24.5, dataset600
+ ,         36, ,        106, ,         62, firsts
+ ,      43.74, ,     720.59, ,     561.44, secs
+
+# k: mean; ! = ranks first, or ties it by ezr.same
+ ,       tree, ,  bins_base, ,bins_cuts50, data
+!,       1.35, ,       8.73, ,       4.41, WA_Fn-UseC_-HR-Employee-Attrition
+!,       1.27, ,      19.08, ,       7.62, all_players
+!,       0.54, ,       6.90, ,       5.04, player_statistics_cleaned_final
+ ,       0.94, ,       7.15,!,       0.70, student_dropout
+!,       1.51, ,       3.01, ,       2.35, FFM-1000-200-0.50-SAT-1
+!,       1.44, ,       3.10, ,       2.51, FFM-125-25-0.50-SAT-1
+!,       1.53, ,       3.05, ,       2.44, FFM-250-50-0.50-SAT-1
+!,       1.50, ,       3.07, ,       2.46, FFM-500-100-0.50-SAT-1
+!,       1.48, ,       2.97, ,       2.48, FM-500-100-0.25-SAT-1
+!,       1.51, ,       3.09, ,       2.32, FM-500-100-0.50-SAT-1
+!,       1.53, ,       3.23, ,       2.62, FM-500-100-0.75-SAT-1
+!,       1.57, ,       3.18, ,       2.59, FM-500-100-1.00-SAT-1
+!,       1.51, ,       4.65, ,       3.73, Scrum100k
+!,       1.49, ,       3.84, ,       2.97, Scrum10k
+!,       1.59, ,       3.39, ,       2.92, Scrum1k
+!,       1.32, ,       3.07, ,       2.46, billing10k
+ ,       1.39, ,       1.61,!,       1.36, Apache_AllMeasurements
+!,       1.34, ,       2.85, ,       2.45, HSMGP_num
+!,       1.12, ,       3.48, ,       3.18, SQL_AllMeasurements
+!,       1.22, ,       1.34,!,       1.16, SS-A
+!,       1.19, ,       1.63, ,       1.44, SS-B
+ ,       1.17, ,       1.14,!,       0.86, SS-C
+ ,       1.26, ,       1.38,!,       1.19, SS-D
+ ,       1.26, ,       1.27,!,       1.10, SS-E
+ ,       1.22, ,       1.41,!,       1.21, SS-F
+ ,       1.20, ,       1.41,!,       1.20, SS-G
+ ,       1.02, ,       1.51,!,       0.95, SS-H
+!,       1.25, ,       1.91, ,       1.37, SS-I
+!,       1.20, ,       1.71, ,       1.42, SS-J
+!,       1.34, ,       2.02, ,       1.60, SS-K
+!,       1.46, ,       2.33, ,       1.90, SS-L
+!,       1.27, ,       2.75, ,       2.36, SS-M
+!,       1.39, ,       4.17, ,       3.22, SS-N
+!,       1.25, ,       2.70, ,       2.28, SS-O
+!,       1.47, ,       2.17, ,       1.83, SS-P
+!,       1.33, ,       2.96, ,       1.93, SS-Q
+!,       1.41, ,       2.77, ,       2.18, SS-R
+ ,       1.25, ,       1.57,!,       1.17, SS-S
+!,       1.04, ,       2.23, ,       1.98, SS-T
+!,       1.48, ,       2.99, ,       2.20, SS-U
+!,       1.34, ,       3.75, ,       2.45, SS-V
+!,       1.49, ,       3.43, ,       2.64, SS-W
+!,       1.33, ,       3.23, ,       1.80, SS-X
+!,       1.41, ,       2.20, ,       1.70, X264_AllMeasurements
+ ,       1.24, ,       1.61,!,       1.05, rs-6d-c3_obj1
+ ,       1.26, ,       1.47,!,       1.04, rs-6d-c3_obj2
+!,       1.00, ,       1.47, ,       1.06, sol-6d-c2-obj1
+ ,       0.92, ,       1.12,!,       0.66, wc+rs-3d-c4-obj1
+ ,       0.91, ,       1.15,!,       0.65, wc+sol-3d-c4-obj1
+ ,       0.93, ,       1.10,!,       0.62, wc+wc-3d-c4-obj1
+ ,       1.24, ,       1.73,!,       1.21, wc-6d-c1-obj1
+!,       1.17, ,       6.01, ,       2.71, BankChurners
+!,       1.33, ,      12.87, ,       2.43, Loan
+!,       1.42, ,       5.78, ,       5.46, WA_Fn-UseC_-Telco-Customer-Churn
+!,       1.20, ,      17.29, ,       4.18, home_data_for_ml_course
+!,       1.11, ,      12.96, ,       3.85, Data_COVID19_Indonesia
+!,       1.25, ,       7.49, ,       5.38, Life_Expectancy_Data
+!,       0.93, ,       2.18, ,       1.86, Medical_Data_and_Hospital_Readmissions
+ ,       1.11, ,       1.86,!,       0.62, Health-ClosedIssues0000
+!,       1.27, ,       1.95, ,       1.60, Health-ClosedIssues0001
+ ,       0.92,!,       0.67,!,       0.67, Health-ClosedIssues0002
+!,       1.34, ,       2.12, ,       1.42, Health-ClosedIssues0003
+!,       1.25, ,       1.95, ,       1.37, Health-ClosedIssues0004
+ ,       1.20, ,       1.37,!,       0.80, Health-ClosedIssues0005
+!,       1.29, ,       2.04, ,       1.76, Health-ClosedIssues0006
+ ,       1.29, ,       1.86,!,       1.00, Health-ClosedIssues0007
+!,       1.29, ,       2.07, ,       1.44, Health-ClosedIssues0008
+!,       1.29, ,       2.27, ,       1.75, Health-ClosedIssues0009
+ ,       1.24, ,       2.03,!,       1.05, Health-ClosedIssues0010
+ ,       1.24, ,       1.02,!,       0.82, Health-ClosedIssues0011
+ ,       0.55,!,       0.51,!,       0.51, Health-ClosedPRs0000
+ ,       0.97,!,       0.66,!,       0.66, Health-ClosedPRs0002
+ ,       0.95,!,       0.67,!,       0.67, Health-ClosedPRs0003
+ ,       1.45, ,       1.96,!,       0.96, Health-ClosedPRs0004
+ ,       1.08,!,       0.73,!,       0.69, Health-ClosedPRs0005
+ ,       1.31, ,       1.97,!,       1.04, Health-ClosedPRs0006
+ ,       1.32, ,       1.51,!,       0.96, Health-ClosedPRs0007
+!,       1.30, ,       1.97, ,       1.50, Health-ClosedPRs0008
+ ,       1.34, ,       1.66,!,       1.10, Health-ClosedPRs0009
+ ,       1.23, ,       1.96,!,       1.18, Health-ClosedPRs0010
+ ,       0.99,!,       0.66,!,       0.66, Health-ClosedPRs0011
+ ,       1.04, ,       1.65,!,       0.63, Health-Commits0000
+ ,       0.96,!,       0.68,!,       0.67, Health-Commits0001
+ ,       1.00,!,       0.66,!,       0.66, Health-Commits0002
+ ,       1.31, ,       1.88,!,       1.02, Health-Commits0003
+ ,       1.20, ,       1.92,!,       0.81, Health-Commits0004
+!,       1.21, ,       2.22, ,       1.49, Health-Commits0005
+!,       1.33, ,       1.85, ,       1.65, Health-Commits0006
+ ,       1.32, ,       1.94,!,       0.97, Health-Commits0007
+!,       1.26, ,       2.17, ,       1.75, Health-Commits0008
+!,       1.29, ,       1.95, ,       1.64, Health-Commits0009
+ ,       1.25, ,       1.94,!,       0.93, Health-Commits0010
+ ,       1.26, ,       1.16,!,       0.80, Health-Commits0011
+!,       1.27, ,      17.98, ,      10.23, Car_price_cleaned
+!,       1.33, ,       4.01, ,       2.19, Wine_quality
+!,       1.14, ,       2.07, ,       1.64, auto93
+!,       1.08, ,       6.69, ,       5.89, multiLabel
+!,       1.39, ,       7.79, ,       3.19, coc1000
+!,       0.55, ,       2.77, ,       2.29, nasa93dem
+!,       1.28, ,       3.45, ,       1.95, pom3a
+!,       1.39, ,       3.73, ,       2.56, pom3b
+!,       1.52, ,       3.52, ,       2.34, pom3c
+!,       1.46, ,       3.68, ,       1.80, pom3d
+!,       1.37, ,       8.33, ,       2.61, xomo_flight
+!,       1.43, ,       9.11, ,       2.38, xomo_ground
+!,       1.42, ,       8.08, ,       2.71, xomo_osp
+!,       1.33, ,       6.89, ,       4.10, xomo_osp2
+!,       1.37, ,       3.74, ,       2.36, A2C_Acrobot
+!,       1.37, ,       2.82, ,       1.85, A2C_CartPole
+!,       1.18, ,       7.08, ,       4.28, Marketing_Analytics
+ ,       1.20, ,       3.51,!,       0.42, accessories
+ ,       1.17, ,       5.66,!,       0.80, dress-up
+ ,       1.11, ,       0.96,!,       0.78, socks
+!,       1.21, ,       7.84, ,       1.29, wallpaper
+!,       1.36, ,       2.36, ,       1.98, 7z
+!,       1.24, ,       2.31, ,       1.96, BDBC
+!,       1.31, ,       2.79, ,       2.41, HSQLDB
+!,       1.41, ,       1.96, ,       1.62, LLVM
+ ,       1.35, ,       1.90,!,       1.21, PostgreSQL
+!,       1.22, ,       2.83, ,       2.39, dconvert
+!,       1.28, ,       2.42, ,       2.00, deeparch
+!,       1.15, ,       3.44, ,       2.16, exastencils
+!,       1.42, ,       7.25, ,       4.50, javagc
+!,       1.26, ,       3.07, ,       2.16, redis
+!,       1.23, ,       2.49, ,       1.35, storm
+!,       1.34, ,       4.42, ,       3.07, x264
+!,       1.20, ,       2.81, ,       2.35, dataset120
+!,       1.22, ,       2.76, ,       2.25, dataset600
+ ,         85, ,          8, ,         44, firsts
+ ,      43.74, ,     720.59, ,     561.44, secs
