@@ -6,7 +6,8 @@ ezr0_plan.py: plan by least change, on top of ezr0.py.
 For each labelled row: walk the x columns in power order (widest
 best-to-rest gap first). On each column, try Steps moves toward two
 targets (the best label's x, and mid(best)); keep the move with the
-biggest dy/dx; lock it in; go to the next column. Cache that plan.
+biggest dy/dx; bisect back to the least move that keeps that gain;
+lock it in; go to the next column. Cache that plan.
 To plan any other row, borrow the cached plan of its nearest label.
 
 Stop a walk when the next column's power < Cut% of the top power,
@@ -14,16 +15,17 @@ or when the y gap left is within Enough% of the y gap at the start.
 
 Options:
    -Steps=4     moves tried, per target, per column
+   -Bisect=6    halvings, to find the least move that still helps
    -Enough=10   stop once the y gap left is under this % of the start
 """
 import random, sys
 from ezr0 import *
 
-the.Steps, the.Enough = 4, 10
+the.Steps, the.Bisect, the.Enough = 4, 6, 10
 
-def towards(col, a, b, k, n): # K/N of the way from A to B
+def towards(col, a, b, f): # fraction F of the way from A to B
   if type(col) is Sym or a == "?" or b == "?": return b
-  return a + (b - a) * k / n
+  return a + (b - a) * f
 
 def near(tbl, m, row): # nearest labelled row: what we know about ROW
   return min(m.lab.rows, key=lambda z: xdist(tbl, row, z))
@@ -38,14 +40,22 @@ def plan1(tbl, m, r0): # least change to labelled R0, most y per x
     col, top = tbl.cols[at], None
     for g in goals:
       for k in range(1, the.Steps + 1):
-        new = now[:]; new[at] = towards(col, now[at], g[at], k, the.Steps)
+        new = now[:]
+        new[at] = towards(col, now[at], g[at], k/the.Steps)
         if new[at] == now[at]: continue
         w2 = near(tbl, m, new)
         dy, dx = y(w) - y(w2), xdist(tbl, now, new)     # marginal
         if dy > 0 and (top is None or dy/dx > top[0]):
-          top = (dy/dx, new, w2)
+          top = (dy/dx, new, w2, g, k)
     if top is None: continue                  # no move helps: skip col
-    _, now, w = top                                         # lock it
+    _, new, w2, g, k = top
+    lo, hi = (k-1)/the.Steps, k/the.Steps     # bisect: least move that
+    for _ in range(the.Bisect):               # still reaches w2
+      f = (lo + hi) / 2
+      tmp = now[:]; tmp[at] = towards(col, now[at], g[at], f)
+      if tmp[at] != now[at] and near(tbl, m, tmp) is w2: hi, new = f, tmp
+      else: lo = f
+    now, w = new, w2                                        # lock it
     out += [o(at=at, was=r0[at], to=now[at])]
     if y(w) - ylo <= the.Enough/100 * (y0 - ylo): break   # near enough
   return o(changes=out, row=now, witness=w)
