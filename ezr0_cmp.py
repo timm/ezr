@@ -6,6 +6,8 @@ ezr0_cmp.py: two planners, same labels, same rows, same judge.
   inst  ezr0_plan.py: per-label walks, borrowed by the nearest label
   fmap  ezr0_plan.py's clusters: fastmap leaves of ~Few labels; same
         free walk (steps, bisect), centroid to a better centroid
+  bins  ezr1.py: binned rows, columns ranked by b^2/(b+r), bin jumps
+        (bins = Cut 10, bins50 = Cut 50)
   tree  ezr.py's tree, grown on the same labels. Plans go leaf to a
         better leaf and touch only columns tested on that leaf's
         path; each failed test is mended with the target leaf's
@@ -21,13 +23,16 @@ Per holdout row, per planner, in wins (100 = best row, 0 = average):
   k     columns changed;  gain/k = total gain / total k
   cover share of rows with k > 0
 
+Usage: ./ezr0_cmp.py [-Option value].. [--rank file.csv..]
+
 Options:
    -Repeats=20  seeds
    -Test=100    holdout rows planned, per seed (sampled)
    -Judge=64    rows held out for the judge, per seed
 """
-import random, sys
+import os, random, sys
 import ezr as E
+import ezr1 as B
 from ezr0_plan import *
 
 the.Repeats, the.Test, the.Judge = 20, 100, 64
@@ -69,18 +74,35 @@ def treeAdvise(tbl, T, row):
   new = mend(tbl, row, *p)
   return new, E.leaf(T.node, new)
 
-def one(t, w, seed): # one split: per-row wins for both planners
+def binsAdvise(t1, m1, cache, r1): # a bins plan, back in raw cells
+  nu = B.apply(r1.bins, cache[id(B.near(t1, m1, r1.bins))].changes)
+  return [v if nu[at] == r1.bins[at] else B.rebin(t1.cols[at], nu[at])
+          for at, v in enumerate(r1.raw)]
+
+KEYS = ("inst", "fmap", "bins", "bins50", "tree")
+
+def one(t, t1, w, seed): # one split: per-row wins for every planner
   random.seed(seed); the.Seed = seed
-  rows  = random.sample(t.rows, len(t.rows))
-  pool, rows = rows[:the.Judge], rows[the.Judge:]   # judge, then 50:50
+  idx   = random.sample(range(len(t.rows)), len(t.rows))
+  rows, rows1 = [t.rows[i] for i in idx], [t1.rows[i] for i in idx]
+  pool, rows  = rows[:the.Judge], rows[the.Judge:]  # judge, then 50:50
+  rows1 = rows1[the.Judge:]
   n     = len(rows)//2
   m     = model(t, rows[:n])
   judge = lambda r: w(min(pool, key=lambda z: xdist(t, r, z)))
   cache, C, T = plans(t, m), Clusters(t, m), Trees(t, m)
-  out = o(inst=[], fmap=[], tree=[])
-  for r in rows[n:][:the.Test]:              # rows is shuffled already
+  B.the.Stop, B.the.Check = the.Stop, the.Check   # same label budget
+  m1, bc = B.model(t1, rows1[:n]), {}
+  for k, cut in (("bins", 10), ("bins50", 50)):
+    B.the.Cut = cut; m1.tops = B.tops(m1.ranges)
+    bc[k] = (m1.tops, {id(r): B.plan1(t1, m1, r) for r in m1.lab.rows})
+  out = o({k: [] for k in KEYS})
+  for j, r in enumerate(rows[n:][:the.Test]):  # rows is shuffled already
+    r1 = rows1[n + j]
     for k, nu in (("inst", advise(t, m, cache, r).row),
                   ("fmap", clusterAdvise(t, C, r)),
+                  ("bins", binsAdvise(t1, m1, bc["bins"][1], r1)),
+                  ("bins50", binsAdvise(t1, m1, bc["bins50"][1], r1)),
                   ("tree", treeAdvise(t, T, r)[0])):
       out[k] += [o(win0=judge(r), win1=judge(nu), dx=xdist(t, r, nu),
                    k=sum(r[c.at] != nu[c.at] for c in t.x))]
@@ -98,19 +120,45 @@ def report(R):
           f"{sum(s.k for s in ss)/len(ss):6.2f}"
           f"{sum(s.win1-s.win0 for s in ss)/(sum(s.k for s in ss)+1e-32):8.1f}"
           f"{sum(s.k > 0 for s in ss)/len(ss):7.0%}")
-  for x in ("win1", "dx"):
-    for p, q in (("inst", "tree"), ("fmap", "tree"), ("inst", "fmap")):
-      a, b = [s[x] for s in R[p]], [s[x] for s in R[q]]
-      print(f"  {x:<5} {p}, {q} same by cliffs? {E.cliffs(a, b)}")
+  print("  + = ties the best mean, by ezr.same (cliffs and ks)")
+  for x, sign in (("win1", 1), ("gain", 1), ("k", -1)):
+    print(f"  {x:<5}", "  ".join(f"{k}{m}" for k, m in marks(R, x, sign)))
+
+def get(s, x): return s.win1 - s.win0 if x == "gain" else s[x]
+
+def marks(R, x, sign): # (treatment, '+' if it ties the best mean)
+  v   = {k: [get(s, x) for s in ss] for k, ss in R.items()}
+  top = max(v, key=lambda k: sign * sum(v[k]) / len(v[k]))
+  return [(k, "+" if k == top or E.same(v[k], v[top]) else " ")
+          for k in v]
+
+def rank1(f): # one data file: R, as the cli would build it
+  the.File = f
+  t, t1 = Tbl(csv(f)), B.Tbl(csv(f))
+  w, R  = wins(t), o({k: [] for k in KEYS})
+  for s in range(1, the.Repeats + 1):
+    for k, v in one(t, t1, w, s).items(): R[k] += v
+  return R
+
+def rank(files): # one table per measure: data down, treatments across
+  from concurrent.futures import ProcessPoolExecutor
+  with ProcessPoolExecutor() as ex: Rs = list(ex.map(rank1, files))
+  for x, sign, fmt in (("win1", 1, "{:6.1f}"), ("gain", 1, "{:6.1f}"),
+                       ("k", -1, "{:6.2f}")):
+    print(f"\n{x} (mean; + = ties the best, by ezr.same)")
+    print(f"{'':26}" + "".join(f"{k:>8}" for k in KEYS))
+    for f, R in zip(files, Rs):
+      ms = dict(marks(R, x, sign))
+      print(f"{os.path.basename(f)[:-4]:26}" + "".join(
+        fmt.format(sum(get(s, x) for s in R[k]) / len(R[k])) + ms[k] + " "
+        for k in KEYS))
 
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
   for _k, _v in zip(sys.argv[1:], sys.argv[2:]):
     if _k[1:] in the: the[_k[1:]] = atom(_v)
-  _t = Tbl(csv(the.File)); _w = wins(_t)  # load once
-  _R = o(inst=[], fmap=[], tree=[])
-  for _s in range(1, the.Repeats + 1):
-    _o = one(_t, _w, _s)
-    for _k in _R: _R[_k] += _o[_k]
+  if "--rank" in sys.argv:          # ./ezr0_cmp.py [-Opt v].. --rank f..
+    rank(sys.argv[sys.argv.index("--rank") + 1:]); sys.exit()
+  _R = rank1(the.File)
   print(f"{the.File}  seeds={the.Repeats}  rows={len(_R.inst)}")
   report(_R)
