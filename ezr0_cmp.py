@@ -149,30 +149,45 @@ def rank1(f): # one data file: per-row results, and secs, per planner
     for k in KEYS: R[k] += out[k]; S[k] += secs[k]
   return R, S
 
-def rank(files): # csv: data,,tree,,..; "!" = ranks first (or ties it)
+def safe(f): # rank1, or None if F crashes
+  try: return rank1(f)
+  except Exception as e: print(f"# {f}: {e}", file=sys.stderr)
+
+def rank(files, out=sys.stdout): # aligned csv; "!" = ranks first or ties
   from concurrent.futures import ProcessPoolExecutor
-  with ProcessPoolExecutor() as ex: RS = list(ex.map(rank1, files))
+  with ProcessPoolExecutor() as ex: RS = list(ex.map(safe, files))
+  bad   = [f for f, r in zip(files, RS) if r is None]
+  files = [f for f, r in zip(files, RS) if r is not None]
+  RS    = [r for r in RS if r is not None]
+  W   = max(len(k) for k in KEYS)
+  row = lambda pairs, name: ",".join(f"{m:1},{v:>{W}}" for m, v in pairs
+                                     ) + f", {name}"
+  say = lambda *a: print(*a, file=out)
+  say(f"# {len(files)} files, {the.Repeats} repeats, "
+      f"{the.Test} test rows, judge={the.Judge}")
+  if bad: say("# skipped (crashed):", *map(os.path.basename, bad))
   for x, sign, fmt in (("gain", 1, "{:.1f}"), ("win1", 1, "{:.1f}"),
                        ("k", -1, "{:.2f}")):
-    print(f"\n# {x}: mean; ! = ranks first, or ties it by ezr.same")
-    print("data,," + ",,".join(KEYS))
+    say(f"\n# {x}: mean; ! = ranks first, or ties it by ezr.same")
+    say(row([("", k) for k in KEYS], "data"))
     firsts = o({k: 0 for k in KEYS})
     for f, (R, _) in zip(files, RS):
-      ms, cells = dict(marks(R, x, sign)), []
+      ms, pairs = dict(marks(R, x, sign)), []
       for k in KEYS:
         bang = "!" if ms[k] == "+" else ""; firsts[k] += bool(bang)
-        cells += [bang, fmt.format(sum(get(s, x) for s in R[k])/len(R[k]))]
-      print(",".join([os.path.basename(f)[:-4]] + cells))
-    print(",".join(["firsts"] + [c for k in KEYS for c in ("", str(firsts[k]))]))
-    print(",".join(["secs"] + [c for k in KEYS
-                     for c in ("", f"{sum(S[k] for _, S in RS):.2f}")]))
+        pairs += [(bang, fmt.format(sum(get(s, x) for s in R[k])/len(R[k])))]
+      say(row(pairs, os.path.basename(f)[:-4]))
+    say(row([("", firsts[k]) for k in KEYS], "firsts"))
+    say(row([("", f"{sum(S[k] for _, S in RS):.2f}") for k in KEYS], "secs"))
 
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
   for _k, _v in zip(sys.argv[1:], sys.argv[2:]):
     if _k[1:] in the: the[_k[1:]] = atom(_v)
   if "--rank" in sys.argv:          # ./ezr0_cmp.py [-Opt v].. --rank f..
-    rank(sys.argv[sys.argv.index("--rank") + 1:]); sys.exit()
+    _fs = sys.argv[sys.argv.index("--rank") + 1:]
+    with open("etc/run.txt", "w") as _f: rank(_fs, _f)
+    print(open("etc/run.txt").read()); sys.exit()
   _R, _ = rank1(the.File)
   print(f"{the.File}  seeds={the.Repeats}  rows={len(_R.tree)}")
   report(_R)
