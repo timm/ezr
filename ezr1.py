@@ -49,6 +49,10 @@ class Settings: # one attribute per -key=value in a docstring
     i.__dict__.update({k: atom(v)
                        for k, v in re.findall(r"-(\w+)=(\S+)", doc)})
   def __repr__(i): return f"Settings{i.__dict__}"
+  def cli(i, args): # -key value pairs, for keys I already have
+    for k, v in zip(args, args[1:]):
+      if k[:1] == "-" and k[1:] in vars(i): setattr(i, k[1:], atom(v))
+    return i
 
 class Num: # +- marks a goal; 0 = minimise, 1 = maximise
   __slots__ = ("at", "txt", "n", "mu", "m2", "sd", "goal")
@@ -297,8 +301,7 @@ def report(ss): # ss: (win0, win1, dx, k) per planned row
 
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
-  for _k, _v in zip(sys.argv[1:], sys.argv[2:]):
-    if _k[1:] in vars(the): setattr(the, _k[1:], atom(_v))
+  the.cli(sys.argv[1:])
   _t = load(csv(the.File))
   if "--explain" in sys.argv:
     random.seed(the.Seed)
