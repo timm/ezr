@@ -46,11 +46,12 @@ def csv(file): # rows of FILE, one at a time; -sig drops any BOM
     for ln in f:
       if ln.strip(): yield [atom(s) for s in ln.split(",")]
 
-the = o(**{k: atom(v) for k, v in re.findall(r"-(\w+)=(\S+)", __doc__)})
-
-#-- columns, rows ----------------------------------------------
-def Col(txt=" ", at=0): # uppercase name = NUM, else SYM
-  return Num(txt, at) if txt[0].isupper() else Sym(txt, at)
+#-- classes ----------------------------------------------------
+class Settings: # one attribute per -key=value in a docstring
+  def __init__(i, doc):
+    i.__dict__.update({k: atom(v)
+                       for k, v in re.findall(r"-(\w+)=(\S+)", doc)})
+  def __repr__(i): return f"Settings{i.__dict__}"
 
 class Num: # +- marks a goal; 0 = minimise, 1 = maximise
   __slots__ = ("at", "txt", "n", "mu", "m2", "sd", "goal")
@@ -65,6 +66,25 @@ class Row: # raw cells, and (after `discretize`) their bins
   __slots__ = ("raw", "bins")
   def __init__(i, raw): i.raw, i.bins = raw, None
 
+class Cols: # column roles, from the header: X skip, +-! goal
+  __slots__ = ("names", "all", "x", "y")
+  def __init__(i, names):
+    i.names, i.all, i.x, i.y = names, {}, [], []
+    for at, s in enumerate(names):
+      if s[-1] == "X": continue             # skip me entirely
+      col = i.all[at] = Col(s, at)
+      (i.y if s[-1] in "+-!" else i.x).append(col)
+
+class Tbl: # rows, and the columns that summarise them
+  __slots__ = ("rows", "cols")
+  def __init__(i, names): i.rows, i.cols = [], Cols(names)
+
+def Col(txt=" ", at=0): # uppercase name = NUM, else SYM
+  return Num(txt, at) if txt[0].isupper() else Sym(txt, at)
+
+the = Settings(__doc__)
+
+#-- columns: add, norm, bin ------------------------------------
 def add(col, v): # show V to COL
   if v != "?":
     col.n += 1
@@ -85,31 +105,24 @@ def bin1(col, v): # the one place that asks NUM or SYM
   return min(the.Bins - 1, int(the.Bins * norm(col, v))) / the.Bins
 
 #-- tables -----------------------------------------------------
-def Tbl(src): # header names the columns: X skip, +-! goal
+def load(src): # header names the columns; then rows, then bins
   src = iter(src)
-  tbl = Cols(o(rows=[], cols={}, x=[], y=[], names=next(src)))
+  tbl = Tbl(next(src))
   for raw in src: addRow(tbl, Row(raw))
   return discretize(tbl)
 
-def Cols(tbl): # create column roles
-  for at, s in enumerate(tbl.names):
-    if s[-1] == "X": continue             # skip me entirely
-    (tbl.y if s[-1] in "+-!" else tbl.x).append(
-      tbl.cols.setdefault(at, Col(s, at)))
-  return tbl
-
 def addRow(tbl, row): # keep ROW, and show its raw cells to my columns
   tbl.rows += [row]
-  for at, col in tbl.cols.items(): add(col, row.raw[at])
+  for at, col in tbl.cols.all.items(): add(col, row.raw[at])
   return row
 
 def discretize(tbl): # bins, from this table's stats, once
   for r in tbl.rows:
-    r.bins = [bin1(tbl.cols.get(at), v) for at, v in enumerate(r.raw)]
+    r.bins = [bin1(tbl.cols.all.get(at), v) for at, v in enumerate(r.raw)]
   return tbl
 
 def clone(tbl, rows=None): # an empty copy of TBL, plus ROWS (bins kept)
-  out = Cols(o(rows=[], cols={}, x=[], y=[], names=tbl.names))
+  out = Tbl(tbl.cols.names)
   for r in rows or []: addRow(out, r)
   return out
 
@@ -117,15 +130,15 @@ def clone(tbl, rows=None): # an empty copy of TBL, plus ROWS (bins kept)
 def dist(vs, n): return sqrt(sum(v*v for v in vs) / n)
 
 def ydist(tbl, row): # how far ROW's goals are from the best they could be
-  return dist((abs(norm(c, row.raw[c.at]) - c.goal) for c in tbl.y),
-              len(tbl.y))
+  return dist((abs(norm(c, row.raw[c.at]) - c.goal) for c in tbl.cols.y),
+              len(tbl.cols.y))
 
 def gap(a, b): # two bins: floats are numbers, the rest symbols
   if a == "?" or b == "?": return 1
   return abs(a - b) if type(a) is float is type(b) else a != b
 
 def xdist(tbl, b1, b2): # how far apart two bin lists are
-  return dist((gap(b1[c.at], b2[c.at]) for c in tbl.x), len(tbl.x))
+  return dist((gap(b1[c.at], b2[c.at]) for c in tbl.cols.x), len(tbl.cols.x))
 
 def wins(tbl): # grader: 100 at the pool's best row, 0 at an average one
   ys = sorted(ydist(tbl, r) for r in tbl.rows)
@@ -136,7 +149,7 @@ def wins(tbl): # grader: 100 at the pool's best row, 0 at an average one
 #-- model: best, rest, and their ranges ------------------------
 def ranges(tbl, best, rest): # (column, bin) ranges, by b^2/(b+r)
   out = []
-  for c in tbl.x:
+  for c in tbl.cols.x:
     nb, nr = {}, {}
     for rows, n in ((best, nb), (rest, nr)):
       for r in rows:
@@ -170,7 +183,7 @@ def explain(tbl, m): # per column, b^2/(b+r) of each bin; top first
   bins = [i / the.Bins for i in range(the.Bins)]
   print(" ".join(f"{say(b):>2}" for b in bins), " top  attribute")
   for z in m.tops:
-    c, s = tbl.cols[z.at], {r.v: r.score for r in m.ranges
+    c, s = tbl.cols.all[z.at], {r.v: r.score for r in m.ranges
                             if r.at == z.at}
     if type(z.v) is float:
       strip = " ".join(f"{min(99, int(100*s.get(b, 0))) or '':>2}"
@@ -183,7 +196,7 @@ def explain(tbl, m): # per column, b^2/(b+r) of each bin; top first
 #-- plan -------------------------------------------------------
 def near(tbl, m, bins): # nearest labelled row (exact g2 sums: ties go first)
   return min(m.lab.rows,
-             key=lambda z: sum(g2(bins[c.at], z.bins[c.at]) for c in tbl.x))
+             key=lambda z: sum(g2(bins[c.at], z.bins[c.at]) for c in tbl.cols.x))
 
 def g2(a, b): # squared gap, in bin widths: exact ints, so sums can update
   if a == "?" or b == "?": return the.Bins ** 2
@@ -200,7 +213,7 @@ def plan1(tbl, m, r0): # least change to labelled R0, most y per x
   ylo = y(m.lab.rows[0])
   L   = m.lab.rows                  # ss[j]: now to L[j], summed g2s;
   now = r0.bins[:]                  # a one-column move updates it in
-  ss  = [sum(g2(now[c.at], z.bins[c.at]) for c in tbl.x) for z in L]
+  ss  = [sum(g2(now[c.at], z.bins[c.at]) for c in tbl.cols.x) for z in L]
   best = lambda s2: L[min(range(len(L)), key=s2.__getitem__)]
   def peek(at, b): # ss, and nearest label, if now[at] became B
     s2 = [s - g2(now[at], z.bins[at]) + g2(b, z.bins[at])
@@ -254,7 +267,7 @@ def rawdist(t, a, b): # ezr0's xdist, on raw cells: the judge's ruler
   def g(c, u, v):
     if u == "?" or v == "?": return 1
     return abs(norm(c,u) - norm(c,v)) if type(c) is Num else u != v
-  return dist((g(c, a[c.at], b[c.at]) for c in t.x), len(t.x))
+  return dist((g(c, a[c.at], b[c.at]) for c in t.cols.x), len(t.cols.x))
 
 def one(t, w, seed): # judge rows out first, then 50:50; plan Test rows
   random.seed(seed)
@@ -267,10 +280,10 @@ def one(t, w, seed): # judge rows out first, then 50:50; plan Test rows
   out   = []
   for r in rows[n:][:the.Test]:
     nu  = apply(r.bins, cache[id(near(t, m, r.bins))].changes)
-    raw = [v if nu[at] == r.bins[at] else rebin(t.cols[at], nu[at])
+    raw = [v if nu[at] == r.bins[at] else rebin(t.cols.all[at], nu[at])
            for at, v in enumerate(r.raw)]
     out += [o(win0=judge(r.raw), win1=judge(raw), dx=rawdist(t, r.raw, raw),
-              k=sum(r.bins[c.at] != nu[c.at] for c in t.x))]
+              k=sum(r.bins[c.at] != nu[c.at] for c in t.cols.x))]
   return out
 
 def report(ss):
@@ -288,8 +301,8 @@ def report(ss):
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
   for _k, _v in zip(sys.argv[1:], sys.argv[2:]):
-    if _k[1:] in the: the[_k[1:]] = atom(_v)
-  _t = Tbl(csv(the.File))
+    if _k[1:] in vars(the): setattr(the, _k[1:], atom(_v))
+  _t = load(csv(the.File))
   if "--explain" in sys.argv:
     random.seed(the.Seed)
     explain(_t, model(_t, random.sample(_t.rows, len(_t.rows))))
