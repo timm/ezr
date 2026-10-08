@@ -11,23 +11,23 @@ ezr0_cmp.py: two planners, same labels, same rows, same judge.
         centroid, by most dy/dx) and cached before any row is seen.
 
 Per holdout row, per planner, in wins (100 = best row, 0 = average):
-  win0  the row as it is
-  win1  the changed row, as one shared judge sees it: the nearest of
-        Judge rows sampled from the whole table, plus the row itself
-        (benchmark only; it reads labels, as `wins` does)
+  win0  the row, as the judge sees it
+  win1  the changed row, as the judge sees it
+        judge = nearest of Judge rows, held out before the split:
+        labelled, but never seen by either planner
   dx    xdist(row, changed row)
   k     columns changed;  cover = share of rows with k > 0
 
 Options:
    -Repeats=20  seeds
    -Test=100    holdout rows planned, per seed (sampled)
-   -Judge=1000  rows the judge searches, per seed (sampled)
+   -Judge=64    rows held out for the judge, per seed
 """
 import random, sys
 import ezr as E
 from ezr0_plan import *
 
-the.Repeats, the.Test, the.Judge = 20, 100, 1000
+the.Repeats, the.Test, the.Judge = 20, 100, 64
 
 def paths(node, conds=()): # (leaf, [(at, go, wanted)]) for each leaf
   if not node.kids: yield node, list(conds); return
@@ -68,15 +68,17 @@ def treeAdvise(tbl, T, row):
 
 def one(t, w, seed): # one split: per-row wins for both planners
   random.seed(seed); the.Seed = seed
-  rows = random.sample(t.rows, len(t.rows)); n = len(rows)//2
-  m, pool = model(t, rows[:n]), rows[:the.Judge]
-  judge = lambda r, nu: w(min(pool + [r], key=lambda z: xdist(t,nu,z)))
+  rows  = random.sample(t.rows, len(t.rows))
+  pool, rows = rows[:the.Judge], rows[the.Judge:]   # judge, then 50:50
+  n     = len(rows)//2
+  m     = model(t, rows[:n])
+  judge = lambda r: w(min(pool, key=lambda z: xdist(t, r, z)))
   cache, T = plans(t, m), Trees(t, m)
   out = o(inst=[], tree=[])
   for r in rows[n:][:the.Test]:              # rows is shuffled already
     for k, nu in (("inst", advise(t, m, cache, r).row),
                   ("tree", treeAdvise(t, T, r)[0])):
-      out[k] += [o(win0=w(r), win1=judge(r, nu), dx=xdist(t, r, nu),
+      out[k] += [o(win0=judge(r), win1=judge(nu), dx=xdist(t, r, nu),
                    k=sum(r[c.at] != nu[c.at] for c in t.x))]
   return out
 
