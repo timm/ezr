@@ -21,12 +21,13 @@ Per holdout row, per planner:
 
 Options:
    -Repeats=20  seeds
+   -Test=100    holdout rows planned, per seed (sampled)
 """
 import random, sys
 import ezr as E
 from ezr0_plan import *
 
-the.Repeats = 20
+the.Repeats, the.Test = 20, 100
 
 def paths(node, conds=()): # (leaf, [(at, go, wanted)]) for each leaf
   if not node.kids: yield node, list(conds); return
@@ -72,7 +73,7 @@ def one(seed): # one split: per-row stats for both planners
                  t.rows, key=lambda z: xdist(t, r, z)))
   cache, T, yl = plans(t, m), Trees(t, m), lambda r: ydist(m.lab, r)
   out = o(inst=[], tree=[])
-  for r in rows[n:]:
+  for r in rows[n:][:the.Test]:              # rows is shuffled already
     a = advise(t, m, cache, r)
     new, lf = treeAdvise(t, T, r)
     for k, nu, own in (
