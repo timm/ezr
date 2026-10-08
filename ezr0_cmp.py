@@ -75,7 +75,7 @@ def treeAdvise(tbl, T, row):
   return new, E.leaf(T.node, new)
 
 def binsAdvise(t1, m1, cache, r1): # a bins plan, back in raw cells
-  nu = B.apply(r1.bins, cache[id(B.near(t1, m1, r1.bins))].changes)
+  nu = B.apply(r1.bins, cache[id(B.near(t1, m1, r1.bins))])
   return [v if nu[at] == r1.bins[at] else B.rebin(t1.cols.all[at], nu[at])
           for at, v in enumerate(r1.raw)]
 

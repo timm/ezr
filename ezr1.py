@@ -31,9 +31,6 @@ Usage: ./ezr1.py [--explain] [-Option value]...
 import os, random, re, sys
 from math import exp, log, sqrt
 
-class o(dict): # dicts with dot. Easier to use than SimpleNamespace.
-  __getattr__, __setattr__ = dict.__getitem__, dict.__setitem__
-
 def atom(s): # '22' -> 22. '3.1' -> 3.1. 'True' -> True. 'x' -> 'x'.
   for fn in (int, float):
     try: return fn(s)
@@ -78,6 +75,10 @@ class Cols: # column roles, from the header: X skip, +-! goal
 class Tbl: # rows, and the columns that summarise them
   __slots__ = ("rows", "cols")
   def __init__(i, names): i.rows, i.cols = [], Cols(names)
+
+class Model: # the labels; their (score, at, bin) ranges; each column's top
+  __slots__ = ("lab", "ranges", "tops")
+  def __init__(i, lab, ranges, tops): i.lab,i.ranges,i.tops = lab,ranges,tops
 
 def Col(txt=" ", at=0): # uppercase name = NUM, else SYM
   return Num(txt, at) if txt[0].isupper() else Sym(txt, at)
@@ -156,22 +157,21 @@ def ranges(tbl, best, rest): # (column, bin) ranges, by b^2/(b+r)
         if (v := r.bins[c.at]) != "?": n[v] = n.get(v, 0) + 1
     for v in sorted(nb, key=str):      # bins best never visits score 0
       b, r = nb[v] / len(best), nr.get(v, 0) / len(rest)
-      out += [o(score=b*b/(b+r), at=c.at, v=v)]
-  return sorted(out, key=lambda z: -z.score)
+      out += [(b*b/(b+r), c.at, v)]
+  return sorted(out, key=lambda z: -z[0])
 
 def tops(rs): # each column's top range, strongest first, minus weak
   seen, out = set(), []
   for z in rs:
-    if z.at not in seen: seen.add(z.at); out += [z]
-  return [z for z in out if z.score >= the.Cut/100 * out[0].score]
+    if z[1] not in seen: seen.add(z[1]); out += [z]
+  return [z for z in out if z[0] >= the.Cut/100 * out[0][0]]
 
 def model(tbl, rows): # label a budget at random, split best from rest
   lab = clone(tbl, rows[:the.Stop - the.Check])
   lab.rows.sort(key=lambda r: ydist(lab, r))
   k   = int(sqrt(len(lab.rows)))           # sqrt best, rest rest
   rs  = ranges(tbl, lab.rows[:k], lab.rows[k:])
-  return o(lab=lab, best=lab.rows[:k], rest=lab.rows[k:],
-           ranges=rs, tops=tops(rs))
+  return Model(lab, rs, tops(rs))
 
 #-- explain ----------------------------------------------------
 def say(v): # a bin, two wide: -- - . + ++ (Bins=5), else its index
@@ -182,16 +182,15 @@ def say(v): # a bin, two wide: -- - . + ++ (Bins=5), else its index
 def explain(tbl, m): # per column, b^2/(b+r) of each bin; top first
   bins = [i / the.Bins for i in range(the.Bins)]
   print(" ".join(f"{say(b):>2}" for b in bins), " top  attribute")
-  for z in m.tops:
-    c, s = tbl.cols.all[z.at], {r.v: r.score for r in m.ranges
-                            if r.at == z.at}
-    if type(z.v) is float:
+  for score, at, v in m.tops:
+    c, s = tbl.cols.all[at], {v1: s1 for s1, at1, v1 in m.ranges if at1 == at}
+    if type(v) is float:
       strip = " ".join(f"{min(99, int(100*s.get(b, 0))) or '':>2}"
                        for b in bins)
     else:
       strip = " ".join(f"{'':>2}" for _ in bins)
-    print(strip, f"{say(z.v):>4}  {c.txt}"
-          + ("" if type(z.v) is float else f"  ({100*z.score:.0f})"))
+    print(strip, f"{say(v):>4}  {c.txt}"
+          + ("" if type(v) is float else f"  ({100*score:.0f})"))
 
 #-- plan -------------------------------------------------------
 def near(tbl, m, bins): # nearest labelled row (exact g2 sums: ties go first)
@@ -221,36 +220,35 @@ def plan1(tbl, m, r0): # least change to labelled R0, most y per x
     return s2, best(s2)
   w = best(ss); y0 = y(w)
   out, seen = [], [(0, now[:], w)]
-  for z in m.tops:
+  for _, at, v in m.tops:
     if the.Kmax and len(out) >= the.Kmax: break        # change budget
-    if now[z.at] == z.v: continue
+    if now[at] == v: continue
     top = None
-    for b in steps(now[z.at], z.v):      # smallest jump wins ties: dx
-      new = now[:]; new[z.at] = b
-      s2, w2 = peek(z.at, b)
+    for b in steps(now[at], v):          # smallest jump wins ties: dx
+      new = now[:]; new[at] = b
+      s2, w2 = peek(at, b)
       dy, dx = y(w) - y(w2), xdist(tbl, now, new)
       if dy > 0 and (top is None or dy/dx > top[0]):
         top = (dy/dx, new, w2, s2)
     if top is None:                       # no single step helps
       if not the.Push: continue
-      new = now[:]; new[z.at] = z.v; top = (0, new, *peek(z.at, z.v)[::-1])
+      new = now[:]; new[at] = v; top = (0, new, *peek(at, v)[::-1])
     _, now, w, ss = top                                     # lock it
-    out += [o(at=z.at, was=r0.bins[z.at], to=now[z.at])]
+    out += [(at, r0.bins[at], now[at])]          # (at, was, to)
     seen += [(y0 - y(w), now, w)]
     if y(w) - ylo <= the.Enough/100 * (y0 - ylo): break   # near enough
   hi = max(dy for dy, *_ in seen)           # shortest prefix that earns
   i  = next(j for j, (dy, *_) in enumerate(seen)       # near the most
             if dy >= (1 - the.Earn/100) * hi) if hi > 0 else 0
-  return o(changes=out[:i], bins=seen[i][1], witness=seen[i][2])
+  return out[:i]
 
 def apply(bins, changes): # bins move by deltas; symbols get set
   new, top = bins[:], (the.Bins - 1) / the.Bins
-  for c in changes:
-    a = new[c.at]
-    if all(type(v) is float for v in (a, c.was, c.to)):
-      new[c.at] = max(0, min(top, round((a + c.to - c.was)*the.Bins)
-                                  / the.Bins))
-    else: new[c.at] = c.to
+  for at, was, to in changes:
+    a = new[at]
+    if all(type(v) is float for v in (a, was, to)):
+      new[at] = max(0, min(top, round((a + to - was) * the.Bins) / the.Bins))
+    else: new[at] = to
   return new
 
 #-- rig: same protocol, same judge as ezr0_cmp.py ---------------
@@ -279,24 +277,23 @@ def one(t, w, seed): # judge rows out first, then 50:50; plan Test rows
   cache = {id(r): plan1(t, m, r) for r in m.lab.rows}
   out   = []
   for r in rows[n:][:the.Test]:
-    nu  = apply(r.bins, cache[id(near(t, m, r.bins))].changes)
+    nu  = apply(r.bins, cache[id(near(t, m, r.bins))])
     raw = [v if nu[at] == r.bins[at] else rebin(t.cols.all[at], nu[at])
            for at, v in enumerate(r.raw)]
-    out += [o(win0=judge(r.raw), win1=judge(raw), dx=rawdist(t, r.raw, raw),
-              k=sum(r.bins[c.at] != nu[c.at] for c in t.cols.x))]
+    out += [(judge(r.raw), judge(raw), rawdist(t, r.raw, raw),
+             sum(r.bins[c.at] != nu[c.at] for c in t.cols.x))]
   return out
 
-def report(ss):
+def report(ss): # ss: (win0, win1, dx, k) per planned row
   med = lambda xs: sorted(xs)[len(xs)//2]
+  w0, w1, dx, k = zip(*ss)
+  gain = [b - a for a, b in zip(w0, w1)]
   f   = lambda a: f"{sum(a)/len(a):7.1f}{med(a):6.1f}"
   g   = lambda a: f"{sum(a)/len(a):7.3f}{med(a):6.3f}"
   print(f"{'':6}{'win0':>13}{'win1':>13}{'gain':>13}{'dx':>13}"
         f"{'k':>6}{'gain/k':>8}{'cover':>7}   (mean, median)")
-  print(f"{'bins':6}{f([s.win0 for s in ss])}{f([s.win1 for s in ss])}"
-        f"{f([s.win1 - s.win0 for s in ss])}{g([s.dx for s in ss])}"
-        f"{sum(s.k for s in ss)/len(ss):6.2f}"
-        f"{sum(s.win1-s.win0 for s in ss)/(sum(s.k for s in ss)+1e-32):8.1f}"
-        f"{sum(s.k > 0 for s in ss)/len(ss):7.0%}")
+  print(f"{'bins':6}{f(w0)}{f(w1)}{f(gain)}{g(dx)}{sum(k)/len(k):6.2f}"
+        f"{sum(gain)/(sum(k)+1e-32):8.1f}{sum(x > 0 for x in k)/len(k):7.0%}")
 
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
