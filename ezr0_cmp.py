@@ -30,7 +30,7 @@ Options:
    -Test=100    holdout rows planned, per seed (sampled)
    -Judge=64    rows held out for the judge, per seed
 """
-import os, random, sys
+import os, random, sys, time
 import ezr as E
 import ezr1 as B
 from ezr0_plan import *
@@ -79,9 +79,9 @@ def binsAdvise(t1, m1, cache, r1): # a bins plan, back in raw cells
   return [v if nu[at] == r1.bins[at] else B.rebin(t1.cols[at], nu[at])
           for at, v in enumerate(r1.raw)]
 
-KEYS = ("inst", "fmap", "bins", "bins50", "tree")
+KEYS = ("tree", "bins_base", "bins_cuts50")   # add "inst", "fmap" too
 
-def one(t, t1, w, seed): # one split: per-row wins for every planner
+def one(t, t1, w, seed): # one split: per-row wins, and secs, per planner
   random.seed(seed); the.Seed = seed
   idx   = random.sample(range(len(t.rows)), len(t.rows))
   rows, rows1 = [t.rows[i] for i in idx], [t1.rows[i] for i in idx]
@@ -90,32 +90,40 @@ def one(t, t1, w, seed): # one split: per-row wins for every planner
   n     = len(rows)//2
   m     = model(t, rows[:n])
   judge = lambda r: w(min(pool, key=lambda z: xdist(t, r, z)))
-  cache, C, T = plans(t, m), Clusters(t, m), Trees(t, m)
+  test  = list(zip(rows[n:], rows1[n:]))[:the.Test]
   B.the.Stop, B.the.Check = the.Stop, the.Check   # same label budget
-  m1, bc = B.model(t1, rows1[:n]), {}
-  for k, cut in (("bins", 10), ("bins50", 50)):
-    B.the.Cut = cut; m1.tops = B.tops(m1.ranges)
-    bc[k] = (m1.tops, {id(r): B.plan1(t1, m1, r) for r in m1.lab.rows})
-  out = o({k: [] for k in KEYS})
-  for j, r in enumerate(rows[n:][:the.Test]):  # rows is shuffled already
-    r1 = rows1[n + j]
-    for k, nu in (("inst", advise(t, m, cache, r).row),
-                  ("fmap", clusterAdvise(t, C, r)),
-                  ("bins", binsAdvise(t1, m1, bc["bins"][1], r1)),
-                  ("bins50", binsAdvise(t1, m1, bc["bins50"][1], r1)),
-                  ("tree", treeAdvise(t, T, r)[0])):
-      out[k] += [o(win0=judge(r), win1=judge(nu), dx=xdist(t, r, nu),
-                   k=sum(r[c.at] != nu[c.at] for c in t.x))]
-  return out
+  def bins(cut):
+    def build():
+      B.the.Cut = cut; m1 = B.model(t1, rows1[:n])
+      cache = {id(r): B.plan1(t1, m1, r) for r in m1.lab.rows}
+      return lambda r, r1: binsAdvise(t1, m1, cache, r1)
+    return build
+  def inst():
+    cache = plans(t, m); return lambda r, _: advise(t, m, cache, r).row
+  def fmap():
+    C = Clusters(t, m); return lambda r, _: clusterAdvise(t, C, r)
+  def tree():
+    T = Trees(t, m); return lambda r, _: treeAdvise(t, T, r)[0]
+  make = dict(inst=inst, fmap=fmap, tree=tree,
+              bins_base=bins(10), bins_cuts50=bins(50))
+  out, secs = o(), o()
+  for k in KEYS:                          # secs = build + plan Test rows
+    t0  = time.perf_counter()
+    adv = make[k](); nus = [adv(r, r1) for r, r1 in test]
+    secs[k] = time.perf_counter() - t0
+    out[k] = [o(win0=judge(r), win1=judge(nu), dx=xdist(t, r, nu),
+                k=sum(r[c.at] != nu[c.at] for c in t.x))
+              for (r, _), nu in zip(test, nus)]
+  return out, secs
 
 def report(R):
   med = lambda xs: sorted(xs)[len(xs)//2]
   f   = lambda a: f"{sum(a)/len(a):7.1f}{med(a):6.1f}"
   g   = lambda a: f"{sum(a)/len(a):7.3f}{med(a):6.3f}"
-  print(f"{'':6}{'win0':>13}{'win1':>13}{'gain':>13}{'dx':>13}"
+  print(f"{'':12}{'win0':>13}{'win1':>13}{'gain':>13}{'dx':>13}"
         f"{'k':>6}{'gain/k':>8}{'cover':>7}   (mean, median)")
   for k, ss in R.items():
-    print(f"{k:6}{f([s.win0 for s in ss])}{f([s.win1 for s in ss])}"
+    print(f"{k:12}{f([s.win0 for s in ss])}{f([s.win1 for s in ss])}"
           f"{f([s.win1 - s.win0 for s in ss])}{g([s.dx for s in ss])}"
           f"{sum(s.k for s in ss)/len(ss):6.2f}"
           f"{sum(s.win1-s.win0 for s in ss)/(sum(s.k for s in ss)+1e-32):8.1f}"
@@ -132,26 +140,32 @@ def marks(R, x, sign): # (treatment, '+' if it ties the best mean)
   return [(k, "+" if k == top or E.same(v[k], v[top]) else " ")
           for k in v]
 
-def rank1(f): # one data file: R, as the cli would build it
+def rank1(f): # one data file: per-row results, and secs, per planner
   the.File = f
   t, t1 = Tbl(csv(f)), B.Tbl(csv(f))
-  w, R  = wins(t), o({k: [] for k in KEYS})
+  w, R, S = wins(t), o({k: [] for k in KEYS}), o({k: 0 for k in KEYS})
   for s in range(1, the.Repeats + 1):
-    for k, v in one(t, t1, w, s).items(): R[k] += v
-  return R
+    out, secs = one(t, t1, w, s)
+    for k in KEYS: R[k] += out[k]; S[k] += secs[k]
+  return R, S
 
-def rank(files): # one table per measure: data down, treatments across
+def rank(files): # csv: data,,tree,,..; "!" = ranks first (or ties it)
   from concurrent.futures import ProcessPoolExecutor
-  with ProcessPoolExecutor() as ex: Rs = list(ex.map(rank1, files))
-  for x, sign, fmt in (("win1", 1, "{:6.1f}"), ("gain", 1, "{:6.1f}"),
-                       ("k", -1, "{:6.2f}")):
-    print(f"\n{x} (mean; + = ties the best, by ezr.same)")
-    print(f"{'':26}" + "".join(f"{k:>8}" for k in KEYS))
-    for f, R in zip(files, Rs):
-      ms = dict(marks(R, x, sign))
-      print(f"{os.path.basename(f)[:-4]:26}" + "".join(
-        fmt.format(sum(get(s, x) for s in R[k]) / len(R[k])) + ms[k] + " "
-        for k in KEYS))
+  with ProcessPoolExecutor() as ex: RS = list(ex.map(rank1, files))
+  for x, sign, fmt in (("gain", 1, "{:.1f}"), ("win1", 1, "{:.1f}"),
+                       ("k", -1, "{:.2f}")):
+    print(f"\n# {x}: mean; ! = ranks first, or ties it by ezr.same")
+    print("data,," + ",,".join(KEYS))
+    firsts = o({k: 0 for k in KEYS})
+    for f, (R, _) in zip(files, RS):
+      ms, cells = dict(marks(R, x, sign)), []
+      for k in KEYS:
+        bang = "!" if ms[k] == "+" else ""; firsts[k] += bool(bang)
+        cells += [bang, fmt.format(sum(get(s, x) for s in R[k])/len(R[k]))]
+      print(",".join([os.path.basename(f)[:-4]] + cells))
+    print(",".join(["firsts"] + [c for k in KEYS for c in ("", str(firsts[k]))]))
+    print(",".join(["secs"] + [c for k in KEYS
+                     for c in ("", f"{sum(S[k] for _, S in RS):.2f}")]))
 
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
@@ -159,6 +173,6 @@ if __name__ == "__main__":
     if _k[1:] in the: the[_k[1:]] = atom(_v)
   if "--rank" in sys.argv:          # ./ezr0_cmp.py [-Opt v].. --rank f..
     rank(sys.argv[sys.argv.index("--rank") + 1:]); sys.exit()
-  _R = rank1(the.File)
-  print(f"{the.File}  seeds={the.Repeats}  rows={len(_R.inst)}")
+  _R, _ = rank1(the.File)
+  print(f"{the.File}  seeds={the.Repeats}  rows={len(_R.tree)}")
   report(_R)
