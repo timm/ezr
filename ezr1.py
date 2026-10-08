@@ -9,13 +9,21 @@ float is a bin, anything else is a symbol.  Ys stay raw.
 
 Explain and plan score (column, bin) ranges by b^2/(b+r), where b, r
 are the shares of best and rest rows in that bin.  Plans jump a row,
-one bin width at a time, toward each column's top range.  The rig
-that grades this lives next door, in ezr1_eg.py.
+one bin width at a time, toward each column's top range.
+
+WHICH: start from those ranges as one-range rules, sorted by score.
+Merge two (picked at random, favouring the top) and sort the new
+rule back in; Which times.  A rule holds bins per column (OR within
+a column, AND across), so merging on a column widens it.  The top
+rule is the plan: move each row's broken columns to the rule's
+nearest bin.  The rig that grades all this is in ezr1_eg.py.
 
 Options:
    -Bins=5      bins per numeric column
    -Cut=10      plan: skip ranges under this % of the top score
    -Enough=10   stop once the y gap left is under this % of the start
+   -Which=100   which: merges
+   -Pay=0       which: % off the score per column past the first
    -Stop=50     rows we may label, all up
    -Check=5     of that budget, saved for the unseen rows
    -Seed=1      random number seed
@@ -75,9 +83,10 @@ class Tbl: # rows, and the columns that summarise them
   __slots__ = ("rows", "cols")
   def __init__(i, names): i.rows, i.cols = [], Cols(names)
 
-class Model: # the labels; their (score, at, bin) ranges; each column's top
-  __slots__ = ("lab", "ranges", "tops")
-  def __init__(i, lab, ranges, tops): i.lab,i.ranges,i.tops = lab,ranges,tops
+class Model: # labels; (score, at, bin) ranges; columns' tops; which rule
+  __slots__ = ("lab", "ranges", "tops", "rule")
+  def __init__(i, lab, ranges, tops, rule):
+    i.lab, i.ranges, i.tops, i.rule = lab, ranges, tops, rule
 
 def Col(txt=" ", at=0): # uppercase name = NUM, else SYM
   return Num(txt, at) if txt[0].isupper() else Sym(txt, at)
@@ -167,7 +176,37 @@ def model(tbl, rows): # label a budget, split best from rest
   lab.rows.sort(key=lambda r: ydist(lab, r))
   k   = int(sqrt(len(lab.rows)))           # sqrt best, rest rest
   rs  = ranges(tbl, lab.rows[:k], lab.rows[k:])
-  return Model(lab, rs, tops(rs))
+  return Model(lab, rs, tops(rs), which(lab.rows[:k], lab.rows[k:], rs))
+
+#-- which: rules of ranges, merged ------------------------------
+def selects(rule, row): # rule = {at: {bins}}: OR within, AND across
+  return all(row.bins[at] in vs for at, vs in rule.items())  # "?" fails
+
+def score(rule, best, rest): # b^2/(b+r), less Pay% per extra column
+  b = sum(selects(rule, z) for z in best) / len(best)
+  r = sum(selects(rule, z) for z in rest) / len(rest)
+  return b*b / (b + r + 1e-32) * (1 - the.Pay/100) ** (len(rule) - 1)
+
+def merge(a, b): # same column: more bins (wider); new column: narrower
+  return {at: a.get(at, set()) | b.get(at, set()) for at in a | b}
+
+def which(best, rest, rs): # good rules rise, useless ones sink
+  key  = lambda z: (-z[0], len(z[1]))     # ties: fewer columns first
+  todo = sorted(((score({at: {v}}, best, rest), {at: {v}})
+                 for _, at, v in rs), key=key)
+  pick = lambda: todo[int(len(todo) * random.random() ** 2)][1]
+  for _ in range(the.Which):
+    new = merge(pick(), pick())
+    if all(new != r for _, r in todo):
+      todo = sorted(todo + [(score(new, best, rest), new)], key=key)
+  return todo[0][1]
+
+def plan(rule, bins): # least change: each broken column to its nearest bin
+  new = bins[:]
+  for at, vs in rule.items():
+    if new[at] not in vs:
+      new[at] = min(sorted(vs, key=str), key=lambda v: g2(new[at], v))
+  return new
 
 #-- explain ----------------------------------------------------
 def say(v): # a bin, two wide: -- - . + ++ (Bins=5), else its index
@@ -184,6 +223,9 @@ def explain(tbl, m): # per column, b^2/(b+r) of each bin; top first
                      if type(v) is float else "  " for b in bins)
     print(strip, f"{say(v):>4}  {tbl.cols.all[at].txt}"
           + ("" if type(v) is float else f"  ({100*score:.0f})"))
+  print("\nwhich:", " and ".join(
+    f"{tbl.cols.all[at].txt} in {{{' '.join(say(v) for v in sorted(vs,key=str))}}}"
+    for at, vs in m.rule.items()))
 
 #-- plan -------------------------------------------------------
 def steps(a, v): # bins from A to V, one bin width at a time

@@ -7,7 +7,9 @@ ezr0_cmp.py: two planners, same labels, same rows, same judge.
   fmap  ezr0_plan.py's clusters: fastmap leaves of ~Few labels; same
         free walk (steps, bisect), centroid to a better centroid
   bins  ezr1.py: binned rows, columns ranked by b^2/(b+r), bin jumps
-        (bins = Cut 10, bins50 = Cut 50)
+        (bins_base = Cut 10, bins_cuts50 = Cut 50)
+  which ezr1.py: one WHICH rule (Which merges); rows move to its
+        nearest bins (which_pay10: 10% off per extra column)
   tree  ezr.py's tree, grown on the same labels. Plans go leaf to a
         better leaf and touch only columns tested on that leaf's
         path; each failed test is mended with the target leaf's
@@ -76,11 +78,13 @@ def treeAdvise(tbl, T, row):
   return new, E.leaf(T.node, new)
 
 def binsAdvise(t1, m1, cache, r1): # a bins plan, back in raw cells
-  nu = B.apply(r1.bins, cache[id(B.near(t1, m1, r1.bins))])
+  return unbins(t1, r1, B.apply(r1.bins, cache[id(B.near(t1, m1, r1.bins))]))
+
+def unbins(t1, r1, nu): # changed bins NU of row R1, back in raw cells
   return [v if nu[at] == r1.bins[at] else E1.rebin(t1.cols.all[at], nu[at])
           for at, v in enumerate(r1.raw)]
 
-KEYS = ("tree", "bins_base", "bins_cuts50")   # add "inst", "fmap" too
+KEYS = ("tree", "bins_base", "bins_cuts50", "which", "which_pay10")   # add "inst", "fmap" too
 
 def one(t, t1, w, seed): # one split: per-row wins, and secs, per planner
   random.seed(seed); the.Seed = seed
@@ -99,6 +103,11 @@ def one(t, t1, w, seed): # one split: per-row wins, and secs, per planner
       cache = {id(r): B.plan1(t1, m1, r) for r in m1.lab.rows}
       return lambda r, r1: binsAdvise(t1, m1, cache, r1)
     return build
+  def which(pay):
+    def build():
+      B.the.Pay = pay; m1 = B.model(t1, rows1[:n]); B.the.Pay = 0
+      return lambda r, r1: unbins(t1, r1, B.plan(m1.rule, r1.bins))
+    return build
   def inst():
     cache = plans(t, m); return lambda r, _: advise(t, m, cache, r).row
   def fmap():
@@ -106,7 +115,8 @@ def one(t, t1, w, seed): # one split: per-row wins, and secs, per planner
   def tree():
     T = Trees(t, m); return lambda r, _: treeAdvise(t, T, r)[0]
   make = dict(inst=inst, fmap=fmap, tree=tree,
-              bins_base=bins(10), bins_cuts50=bins(50))
+              bins_base=bins(10), bins_cuts50=bins(50),
+              which=which(0), which_pay10=which(10))
   out, secs = o(), o()
   for k in KEYS:                          # secs = build + plan Test rows
     t0  = time.perf_counter()
