@@ -181,8 +181,14 @@ def explain(tbl, m): # per column, b^2/(b+r) of each bin; top first
           + ("" if type(z.v) is float else f"  ({100*z.score:.0f})"))
 
 #-- plan -------------------------------------------------------
-def near(tbl, m, bins): # nearest labelled row
-  return min(m.lab.rows, key=lambda z: xdist(tbl, bins, z.bins))
+def near(tbl, m, bins): # nearest labelled row (exact g2 sums: ties go first)
+  return min(m.lab.rows,
+             key=lambda z: sum(g2(bins[c.at], z.bins[c.at]) for c in tbl.x))
+
+def g2(a, b): # squared gap, in bin widths: exact ints, so sums can update
+  if a == "?" or b == "?": return the.Bins ** 2
+  if type(a) is float is type(b): return round((a - b) * the.Bins) ** 2
+  return the.Bins ** 2 * (a != b)
 
 def steps(a, v): # bins from A to V, one bin width at a time
   if type(a) is not float or type(v) is not float: return [v]
@@ -192,21 +198,30 @@ def steps(a, v): # bins from A to V, one bin width at a time
 def plan1(tbl, m, r0): # least change to labelled R0, most y per x
   y   = lambda r: ydist(m.lab, r)
   ylo = y(m.lab.rows[0])
-  w   = near(tbl, m, r0.bins); y0 = y(w)
-  now, out, seen = r0.bins[:], [], [(0, r0.bins[:], w)]
+  L   = m.lab.rows                  # ss[j]: now to L[j], summed g2s;
+  now = r0.bins[:]                  # a one-column move updates it in
+  ss  = [sum(g2(now[c.at], z.bins[c.at]) for c in tbl.x) for z in L]
+  best = lambda s2: L[min(range(len(L)), key=s2.__getitem__)]
+  def peek(at, b): # ss, and nearest label, if now[at] became B
+    s2 = [s - g2(now[at], z.bins[at]) + g2(b, z.bins[at])
+          for s, z in zip(ss, L)]
+    return s2, best(s2)
+  w = best(ss); y0 = y(w)
+  out, seen = [], [(0, now[:], w)]
   for z in m.tops:
     if the.Kmax and len(out) >= the.Kmax: break        # change budget
     if now[z.at] == z.v: continue
     top = None
     for b in steps(now[z.at], z.v):      # smallest jump wins ties: dx
       new = now[:]; new[z.at] = b
-      w2  = near(tbl, m, new)
+      s2, w2 = peek(z.at, b)
       dy, dx = y(w) - y(w2), xdist(tbl, now, new)
-      if dy > 0 and (top is None or dy/dx > top[0]): top = (dy/dx, new, w2)
+      if dy > 0 and (top is None or dy/dx > top[0]):
+        top = (dy/dx, new, w2, s2)
     if top is None:                       # no single step helps
       if not the.Push: continue
-      new = now[:]; new[z.at] = z.v; top = (0, new, near(tbl, m, new))
-    _, now, w = top                                         # lock it
+      new = now[:]; new[z.at] = z.v; top = (0, new, *peek(z.at, z.v)[::-1])
+    _, now, w, ss = top                                     # lock it
     out += [o(at=z.at, was=r0.bins[z.at], to=now[z.at])]
     seen += [(y0 - y(w), now, w)]
     if y(w) - ylo <= the.Enough/100 * (y0 - ylo): break   # near enough
