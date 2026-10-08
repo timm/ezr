@@ -33,6 +33,7 @@ Options:
 import os, random, sys, time
 import ezr as E
 import ezr1 as B
+import ezr1_eg as E1
 from ezr0_plan import *
 
 the.Repeats, the.Test, the.Judge = 20, 100, 64
@@ -76,7 +77,7 @@ def treeAdvise(tbl, T, row):
 
 def binsAdvise(t1, m1, cache, r1): # a bins plan, back in raw cells
   nu = B.apply(r1.bins, cache[id(B.near(t1, m1, r1.bins))])
-  return [v if nu[at] == r1.bins[at] else B.rebin(t1.cols.all[at], nu[at])
+  return [v if nu[at] == r1.bins[at] else E1.rebin(t1.cols.all[at], nu[at])
           for at, v in enumerate(r1.raw)]
 
 KEYS = ("tree", "bins_base", "bins_cuts50")   # add "inst", "fmap" too
