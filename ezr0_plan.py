@@ -1,0 +1,86 @@
+#!/usr/bin/env python3 -B
+# vim: set et sw=2 ts=2 sts=2 cc=75 :
+"""
+ezr0_plan.py: plan by least change, on top of ezr0.py.
+
+For each labelled row: walk the x columns in power order (widest
+best-to-rest gap first). On each column, try Steps moves toward two
+targets (the best label's x, and mid(best)); keep the move with the
+biggest dy/dx; lock it in; go to the next column. Cache that plan.
+To plan any other row, borrow the cached plan of its nearest label.
+
+Stop a walk when the next column's power < Cut% of the top power,
+or when the y gap left is within Enough% of the y gap at the start.
+
+Options:
+   -Steps=4     moves tried, per target, per column
+   -Enough=10   stop once the y gap left is under this % of the start
+"""
+import random, sys
+from ezr0 import *
+
+the.Steps, the.Enough = 4, 10
+
+def towards(col, a, b, k, n): # K/N of the way from A to B
+  if type(col) is Sym or a == "?" or b == "?": return b
+  return a + (b - a) * k / n
+
+def near(tbl, m, row): # nearest labelled row: what we know about ROW
+  return min(m.lab.rows, key=lambda z: xdist(tbl, row, z))
+
+def plan1(tbl, m, r0): # least change to labelled R0, most y per x
+  goals = (m.lab.rows[0], mids(m.best))      # row1's x, mid(best)
+  y     = lambda r: ydist(m.lab, r)
+  y0, ylo = y(r0), y(m.lab.rows[0])
+  now, w, out, gs = r0[:], r0, [], gaps(tbl, m)
+  for power, at, _ in gs:
+    if power < the.Cut/100 * gs[0][0]: break           # too weak
+    col, top = tbl.cols[at], None
+    for g in goals:
+      for k in range(1, the.Steps + 1):
+        new = now[:]; new[at] = towards(col, now[at], g[at], k, the.Steps)
+        if new[at] == now[at]: continue
+        w2 = near(tbl, m, new)
+        dy, dx = y(w) - y(w2), xdist(tbl, now, new)     # marginal
+        if dy > 0 and (top is None or dy/dx > top[0]):
+          top = (dy/dx, new, w2)
+    if top is None: continue                  # no move helps: skip col
+    _, now, w = top                                         # lock it
+    out += [o(at=at, was=r0[at], to=now[at])]
+    if y(w) - ylo <= the.Enough/100 * (y0 - ylo): break   # near enough
+  return o(changes=out, row=now, witness=w)
+
+def plans(tbl, m): # one cached plan per labelled row
+  return {id(r): plan1(tbl, m, r) for r in m.lab.rows}
+
+def advise(tbl, m, cache, row): # borrow the nearest label's plan
+  p, new = cache[id(near(tbl, m, row))], row[:]
+  for c in p.changes:
+    col = tbl.cols[c.at]
+    num = type(col) is Num and "?" not in (c.was, row[c.at])
+    new[c.at] = row[c.at] + (c.to - c.was) if num else c.to   # deltas
+  return o(row=new, changes=p.changes, witness=near(tbl, m, new))
+
+#-- cli ----------------------------------------------------------
+if __name__ == "__main__":
+  if "-h" in sys.argv: print(__doc__); sys.exit()
+  for _k, _v in zip(sys.argv[1:], sys.argv[2:]):
+    if _k[1:] in the: the[_k[1:]] = atom(_v)
+  _t = Tbl(csv(the.File))
+  random.seed(the.Seed)
+  _rows  = random.sample(_t.rows, len(_t.rows))
+  _m     = model(_t, _rows[:len(_rows)//2])
+  _cache = plans(_t, _m)
+  _w     = wins(_t)                        # grader only: peeks at all
+  _b4, _af, _ks = [], [], []
+  for _r in _rows[len(_rows)//2:]:
+    _a = advise(_t, _m, _cache, _r)
+    _b4 += [_w(_r)]; _af += [_w(_a.witness)]; _ks += [len(_a.changes)]
+  _n = len(_b4)
+  print(f"rows={_n}  mean changes={sum(_ks)/_n:.1f}"
+        f"  win before={sum(_b4)/_n:.0f}  after={sum(_af)/_n:.0f}")
+  _r = max(_rows[len(_rows)//2:], key=_m.key)            # a rest row
+  _a = advise(_t, _m, _cache, _r)
+  print(f"eg: win {_w(_r):.0f} -> {_w(_a.witness):.0f} via",
+        " and ".join(f"{_t.names[c.at]}:{say(_r[c.at])}"
+                     f"->{say(_a.row[c.at])}" for c in _a.changes))
