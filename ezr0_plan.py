@@ -13,15 +13,21 @@ To plan any other row, borrow the cached plan of its nearest label.
 Stop a walk when the next column's power < Cut% of the top power,
 or when the y gap left is within Enough% of the y gap at the start.
 
+With Push=1, a column where no single step helps still moves (all
+the way to mid(best)), since in many dimensions one column rarely
+moves a labelled row off itself. The walk is then cut back to the
+prefix with the most total dy (fewest changes, on ties).
+
 Options:
    -Steps=4     moves tried, per target, per column
    -Bisect=6    halvings, to find the least move that still helps
    -Enough=10   stop once the y gap left is under this % of the start
+   -Push=1      1 = move anyway when no step helps; 0 = skip the column
 """
 import random, sys
 from ezr0 import *
 
-the.Steps, the.Bisect, the.Enough = 4, 6, 10
+the.Steps, the.Bisect, the.Enough, the.Push = 4, 6, 10, 1
 
 def towards(col, a, b, f): # fraction F of the way from A to B
   if type(col) is Sym or a == "?" or b == "?": return b
@@ -35,6 +41,7 @@ def plan1(tbl, m, r0): # least change to labelled R0, most y per x
   y     = lambda r: ydist(m.lab, r)
   y0, ylo = y(r0), y(m.lab.rows[0])
   now, w, out, gs = r0[:], r0, [], gaps(tbl, m)
+  seen = [(0, 0, now, w)]                   # (dy, dx, row, witness)
   for power, at, _ in gs:
     if power < the.Cut/100 * gs[0][0]: break           # too weak
     col, top = tbl.cols[at], None
@@ -47,7 +54,11 @@ def plan1(tbl, m, r0): # least change to labelled R0, most y per x
         dy, dx = y(w) - y(w2), xdist(tbl, now, new)     # marginal
         if dy > 0 and (top is None or dy/dx > top[0]):
           top = (dy/dx, new, w2, g, k)
-    if top is None: continue                  # no move helps: skip col
+    if top is None:                           # no single step helps
+      if not the.Push or now[at] == goals[1][at]: continue
+      top = (0, now[:], None, goals[1], the.Steps)
+      top[1][at] = goals[1][at]
+      top = top[:2] + (near(tbl, m, top[1]),) + top[3:]
     _, new, w2, g, k = top
     lo, hi = (k-1)/the.Steps, k/the.Steps     # bisect: least move that
     for _ in range(the.Bisect):               # still reaches w2
@@ -57,8 +68,11 @@ def plan1(tbl, m, r0): # least change to labelled R0, most y per x
       else: lo = f
     now, w = new, w2                                        # lock it
     out += [o(at=at, was=r0[at], to=now[at])]
+    seen += [(y0 - y(w), xdist(tbl, r0, now), now, w)]
     if y(w) - ylo <= the.Enough/100 * (y0 - ylo): break   # near enough
-  return o(changes=out, row=now, witness=w)
+  i = max(range(len(seen)), key=lambda j: (seen[j][0], -j)) # most dy,
+  if seen[i][0] <= 0: i = 0                 # then fewest changes
+  return o(changes=out[:i], row=seen[i][2], witness=seen[i][3])
 
 def plans(tbl, m): # one cached plan per labelled row
   return {id(r): plan1(tbl, m, r) for r in m.lab.rows}
