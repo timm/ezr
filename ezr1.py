@@ -224,11 +224,19 @@ def show(tbl, rule): # e.g. Volume in {-- -} and origin in {2}
                       f"{{{' '.join(say(v) for v in sorted(vs, key=str))}}}"
                       for at, vs in rule.items())
 
-def explain(tbl, m): # the ranges by b^2/(b+r); then the top rules
-  print("score  bin  attribute")
-  for s, at, v in m.ranges:
-    if s < the.Cut/100 * m.ranges[0][0]: break
-    print(f"{100*s:5.0f}  {say(v):>3}  {tbl.cols.all[at].txt}")
+def explain(tbl, m): # per column: top score, each bin's score; rules
+  bins, cut = [i / the.Bins for i in range(the.Bins)], m.ranges[0][0]
+  print("score", " ".join(f"{say(b):>2}" for b in bins), " attribute")
+  for at in dict.fromkeys(at for _, at, _ in m.ranges):   # best first
+    s = {v: sc for sc, at1, v in m.ranges if at1 == at}
+    if max(s.values()) < the.Cut/100 * cut: break
+    num = all(type(v) is float for v in s)
+    strip = " ".join(f"{min(99, round(100*s[b])) if b in s else '':>2}"
+                     if num else "  " for b in bins)
+    syms  = "" if num else "  " + " ".join(
+              f"{v}:{100*sc:.0f}" for v, sc in sorted(s.items(),
+                                                     key=lambda z: -z[1]))
+    print(f"{100*max(s.values()):5.0f}", strip, "", tbl.cols.all[at].txt + syms)
   print("\nscore   mu  rule")
   for s, rule, mu in m.stack[:5]:
     print(f"{100*s:5.0f} {mu:4.2f}  {show(tbl, rule)}")
