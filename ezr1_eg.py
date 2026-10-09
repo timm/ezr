@@ -19,7 +19,11 @@ Options:
    -Test=100    holdout rows planned, per seed
    -Repeats=20  seeds
 
-Usage: ./ezr1_eg.py [-Option value]... [--holdout]
+--budget: that holdout at Stop = 20, 50, 100.  Per Stop, prints the
+mean wins (ezr1 ezr0 ezr), a mark each (! = best or tied with it,
+by ezr.same over the Repeats seeds), their seconds, then FILE.
+
+Usage: ./ezr1_eg.py [-Option value]... [--holdout | --budget]
 """
 import os, random, sys
 from math import log
@@ -110,6 +114,25 @@ if __name__ == "__main__":
       _out += [(sum(_ws) / len(_ws), time.perf_counter() - _clk)]
     print(*[f"{w:.0f}" for w, _ in _out], *[f"{t:.2f}" for _, t in _out],
           os.path.basename(the.File)); sys.exit()
+  if "--budget" in sys.argv:        # holdout at Stop = 20, 50, 100
+    import time, ezr0, ezr as E
+    _t0, _tE = ezr0.Tbl(ezr0.csv(the.File)), E.Tbl(E.csv(the.File))
+    _w0, _wE = ezr0.wins(_t0), E.wins(_tE)
+    for _stop in (20, 50, 100):
+      the.Stop = ezr0.the.Stop = E.the.Stop = _stop
+      _ws, _secs = [], []
+      for _f in (lambda s: holdout(_t, _w, s),
+                 lambda s: holdout0(_t0, _w0, s),
+                 lambda s: holdoutE(_tE, _wE, s)):
+        _clk = time.perf_counter()
+        _ws  += [[_f(s) for s in range(1, the.Repeats + 1)]]
+        _secs += [time.perf_counter() - _clk]
+      _mu  = [sum(w) / len(w) for w in _ws]
+      _top = _ws[max(range(3), key=lambda i: _mu[i])]
+      _bang = ["!" if w is _top or E.same(w, _top) else "." for w in _ws]
+      print(_stop, *[f"{m:.1f}" for m in _mu], "".join(_bang),
+            *[f"{x:.2f}" for x in _secs], os.path.basename(the.File))
+    sys.exit()
   for _s in range(1, the.Repeats + 1): _ss += one(_t, _w, _s)
   print(f"{the.File}  seeds={the.Repeats}  rows={len(_ss)}")
   report(_ss)
