@@ -49,51 +49,41 @@ def csv(file): # rows of FILE, one at a time; -sig drops any BOM
     for ln in f:
       if ln.strip(): yield [atom(s) for s in ln.split(",")]
 
-#-- classes ----------------------------------------------------
-class Settings: # one attribute per -key=value in a docstring
-  def __init__(i, doc):
-    i.__dict__.update({k: atom(v)
-                       for k, v in re.findall(r"-(\w+)=(\S+)", doc)})
-  def __repr__(i): return f"Settings{i.__dict__}"
-  def cli(i, args): # -key value pairs, for keys I already have
-    for k, v in zip(args, args[1:]):
-      if k[:1] == "-" and k[1:] in vars(i): setattr(i, k[1:], atom(v))
-    return i
+#-- structs -----------------------------------------------------
+def struct(name, **d): # a __slots__ class; type defaults (dict, list) fresh per object
+  def init(i, **kw):
+    for k, v in d.items():
+      setattr(i, k, kw[k] if k in kw else v() if type(v) is type else v)
+  return type(name, (), dict(__slots__=tuple(d), __init__=init))
 
-class Num: # +- marks a goal; 0 = minimise, 1 = maximise
-  __slots__ = ("at", "txt", "n", "mu", "m2", "sd", "goal")
-  def __init__(i, txt=" ", at=0):
-    i.at,i.txt,i.n,i.mu,i.m2,i.sd = at,txt,0,0,0,0; i.goal = txt[-1]!="-"
+def opts(doc): # -key=value pairs in DOC, as a dict
+  return {k: atom(v) for k, v in re.findall(r"-(\w+)=(\S+)", doc)}
 
-class Sym: # the class is what tells a SYM from a NUM
-  __slots__ = ("at", "txt", "n", "has")
-  def __init__(i, txt=" ", at=0): i.at,i.txt,i.n,i.has = at,txt,0,{}
+def cli(s, args): # -key value pairs, for keys S already has
+  for k, v in zip(args, args[1:]):
+    if k[:1] == "-" and k[1:] in s.__slots__: setattr(s, k[1:], atom(v))
+  return s
 
-class Row: # raw cells, and (after `discretize`) their bins
-  __slots__ = ("raw", "bins")
-  def __init__(i, raw): i.raw, i.bins = raw, None
+Num   = struct("Num",   at=0, txt=" ", n=0, mu=0, m2=0, sd=0, goal=1)
+Sym   = struct("Sym",   at=0, txt=" ", n=0, has=dict)  # type tells SYM/NUM
+Row   = struct("Row",   raw=list, bins=None)  # raw cells; later, bins
+Cols  = struct("Cols",  names=list, all=dict, x=list, y=list)
+Tbl   = struct("Tbl",   rows=list, cols=None)
+Model = struct("Model", lab=None, ranges=list, stack=list)
 
-class Cols: # column roles, from the header: X skip, +-! goal
-  __slots__ = ("names", "all", "x", "y")
-  def __init__(i, names):
-    i.names, i.all, i.x, i.y = names, {}, [], []
-    for at, s in enumerate(names):
-      if s[-1] == "X": continue             # skip me entirely
-      col = i.all[at] = Col(s, at)
-      (i.y if s[-1] in "+-!" else i.x).append(col)
+def Col(txt=" ", at=0): # uppercase name = NUM, else SYM; +- marks a goal
+  return (Num(at=at, txt=txt, goal=txt[-1] != "-") if txt[0].isupper()
+          else Sym(at=at, txt=txt))
 
-class Tbl: # rows, and the columns that summarise them
-  __slots__ = ("rows", "cols")
-  def __init__(i, names): i.rows, i.cols = [], Cols(names)
+def table(names): # an empty Tbl; header names its columns: X skip, +-! goal
+  cs = Cols(names=names)
+  for at, s in enumerate(names):
+    if s[-1] == "X": continue               # skip me entirely
+    col = cs.all[at] = Col(s, at)
+    (cs.y if s[-1] in "+-!" else cs.x).append(col)
+  return Tbl(cols=cs)
 
-class Model: # labels; (score, at, bin) ranges; (score, rule) stack
-  __slots__ = ("lab", "ranges", "stack")
-  def __init__(i, lab, ranges, stack): i.lab,i.ranges,i.stack=lab,ranges,stack
-
-def Col(txt=" ", at=0): # uppercase name = NUM, else SYM
-  return Num(txt, at) if txt[0].isupper() else Sym(txt, at)
-
-the = Settings(__doc__)
+the = struct("The", **opts(__doc__))()
 
 #-- columns: add, norm, bin ------------------------------------
 def add(col, v): # show V to COL
@@ -118,8 +108,8 @@ def bin1(col, v): # the one place that asks NUM or SYM
 #-- tables -----------------------------------------------------
 def load(src): # header names the columns; then rows, then bins
   src = iter(src)
-  tbl = Tbl(next(src))
-  for raw in src: addRow(tbl, Row(raw))
+  tbl = table(next(src))
+  for raw in src: addRow(tbl, Row(raw=raw))
   return discretize(tbl)
 
 def addRow(tbl, row): # keep ROW, and show its raw cells to my columns
@@ -133,7 +123,7 @@ def discretize(tbl): # bins, from this table's stats, once
   return tbl
 
 def clone(tbl, rows=None): # an empty copy of TBL, plus ROWS (bins kept)
-  out = Tbl(tbl.cols.names)
+  out = table(tbl.cols.names)
   for r in rows or []: addRow(out, r)
   return out
 
@@ -185,7 +175,7 @@ def model(tbl, rows): # label a budget, split best from rest, learn rules
   k   = int(sqrt(len(lab.rows)))           # sqrt best, rest rest
   best, rest = lab.rows[:k], lab.rows[k:]
   rs  = ranges(tbl, best, rest)
-  return Model(lab, rs, which(best, rest, rs))
+  return Model(lab=lab, ranges=rs, stack=which(best, rest, rs))
 
 #-- plan -------------------------------------------------------
 def mend(rule, bins): # each column BINS breaks, to the rule's nearest bin
@@ -231,7 +221,7 @@ def explain(tbl, m): # per column: top score, each bin's score; rules
 
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
-  the.cli(sys.argv[1:])
+  cli(the, sys.argv[1:])
   _t = load(csv(the.File))
   random.seed(the.Seed)
   explain(_t, model(_t, random.sample(_t.rows, len(_t.rows))))

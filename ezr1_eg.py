@@ -25,7 +25,7 @@ from math import log
 import ezr1
 from ezr1 import *
 
-the.__dict__.update(vars(Settings(__doc__)))   # ezr1's options, plus mine
+ezr1.the = the = struct("The", **opts(ezr1.__doc__), **opts(__doc__))()
 
 def wins(tbl): # grader: 100 at the pool's best row, 0 at an average one
   ys = sorted(ydist(tbl, r) for r in tbl.rows)
@@ -90,7 +90,7 @@ def report(ss): # ss: (win0, win1, dx, k) per planned row
 
 if __name__ == "__main__":
   if "-h" in sys.argv: print(ezr1.__doc__, __doc__); sys.exit()
-  the.cli(sys.argv[1:])
+  cli(the, sys.argv[1:])
   _t, _ss = load(csv(the.File)), []
   _w = wins(_t)
   if "--holdout" in sys.argv:
