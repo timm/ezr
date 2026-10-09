@@ -11,7 +11,8 @@ row, 0 at an average one.
 
 --holdout: as ezr0's holdout: train on half, sort the other half by
 rank(), label the top Check, keep the best.  Prints the mean win
-over Repeats seeds for ezr1, ezr0, ezr (same splits), then FILE.
+over Repeats seeds for ezr1, ezr0, ezr (same splits); then their
+seconds (ezr0, ezr reload the table each seed); then FILE.
 
 Options:
    -Judge=64    rows held out for the judge, per seed
@@ -100,11 +101,14 @@ if __name__ == "__main__":
   _t, _ss = load(csv(the.File)), []
   _w = wins(_t)
   if "--holdout" in sys.argv:
-    _a = [holdout(_t, _w, s) for s in range(1, the.Repeats + 1)]
-    _b = [holdout0(the.File, s) for s in range(1, the.Repeats + 1)]
-    _c = [holdoutE(the.File, s) for s in range(1, the.Repeats + 1)]
-    print(f"{sum(_a)/len(_a):.0f} {sum(_b)/len(_b):.0f} "
-          f"{sum(_c)/len(_c):.0f}",
+    import time
+    _out = []
+    for _f in (lambda s: holdout(_t, _w, s), lambda s: holdout0(the.File, s),
+               lambda s: holdoutE(the.File, s)):
+      _t0 = time.perf_counter()
+      _ws = [_f(s) for s in range(1, the.Repeats + 1)]
+      _out += [(sum(_ws) / len(_ws), time.perf_counter() - _t0)]
+    print(*[f"{w:.0f}" for w, _ in _out], *[f"{t:.2f}" for _, t in _out],
           os.path.basename(the.File)); sys.exit()
   for _s in range(1, the.Repeats + 1): _ss += one(_t, _w, _s)
   print(f"{the.File}  seeds={the.Repeats}  rows={len(_ss)}")
