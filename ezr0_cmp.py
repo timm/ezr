@@ -7,7 +7,8 @@ ezr0_cmp.py: two planners, same labels, same rows, same judge.
   fmap  ezr0_plan.py's clusters: fastmap leaves of ~Few labels; same
         free walk (steps, bisect), centroid to a better centroid
   which ezr1.py: a stack of WHICH rules; per row, the rule with most
-        benefit per broken column (which_top: always the top rule)
+        benefit per broken column (which_top: always the top rule;
+        which_score: most b^2/(b+r) per broken column)
   tree  ezr.py's tree, grown on the same labels. Plans go leaf to a
         better leaf and touch only columns tested on that leaf's
         path; each failed test is mended with the target leaf's
@@ -79,7 +80,7 @@ def unbins(t1, r1, nu): # changed bins NU of row R1, back in raw cells
   return [v if nu[at] == r1.bins[at] else E1.rebin(t1.cols.all[at], nu[at])
           for at, v in enumerate(r1.raw)]
 
-KEYS = ("tree", "which", "which_top")   # add "inst", "fmap" too
+KEYS = ("tree", "which", "which_top", "which_score")   # add "inst", "fmap" too
 
 def one(t, t1, w, seed): # one split: per-row wins, and secs, per planner
   random.seed(seed); the.Seed = seed
@@ -95,6 +96,15 @@ def one(t, t1, w, seed): # one split: per-row wins, and secs, per planner
   def which():                  # per row: best benefit per broken column
     m1 = B.model(t1, rows1[:n])
     return lambda r, r1: unbins(t1, r1, B.plan(t1, m1, r1))
+  def which_score():            # per row: most b^2/(b+r) per broken column
+    m1 = B.model(t1, rows1[:n])
+    def adv(r, r1):
+      cost = lambda rule: sum(r1.bins[at] not in vs for at, vs in rule.items())
+      if not cost(m1.stack[0][1]): return r1.raw[:]   # meets the top rule
+      _, rule = max(((s / c, rule) for s, rule, _ in m1.stack
+                     if (c := cost(rule))), key=lambda z: z[0])
+      return unbins(t1, r1, B.mend(rule, r1.bins))
+    return adv
   def which_top():              # every row: just the top rule
     m1 = B.model(t1, rows1[:n])
     return lambda r, r1: unbins(t1, r1, B.mend(m1.stack[0][1], r1.bins))
@@ -105,7 +115,7 @@ def one(t, t1, w, seed): # one split: per-row wins, and secs, per planner
   def tree():
     T = Trees(t, m); return lambda r, _: treeAdvise(t, T, r)[0]
   make = dict(inst=inst, fmap=fmap, tree=tree,
-              which=which, which_top=which_top)
+              which=which, which_top=which_top, which_score=which_score)
   out, secs = o(), o()
   for k in KEYS:                          # secs = build + plan Test rows
     t0  = time.perf_counter()
