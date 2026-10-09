@@ -65,12 +65,13 @@ def cli(s, args): # -key value pairs, for keys S already has
   return s
 
 #-- structs ----------------------------------------------------
+# Camel = a plain struct. UPPER = a struct built by a Camel def.
 the   = struct("The", **opts(__doc__))()
 Num   = struct("Num",   at=0, txt=" ", n=0, mu=0, m2=0, sd=0, goal=1)
 Sym   = struct("Sym",   at=0, txt=" ", n=0, has=dict)
 Row   = struct("Row",   raw=list, bins=None)
-Cols  = struct("Cols",  names=list, all=dict, x=list, y=list)
-Tbl   = struct("Tbl",   rows=list, cols=None)
+COLS  = struct("COLS",  names=list, all=dict, x=list, y=list)
+TBL   = struct("TBL",   rows=list, cols=None)
 Model = struct("Model", lab=None, ranges=list, stack=list)
 
 #-- columns ----------------------------------------------------
@@ -97,26 +98,29 @@ def bin1(col, v): # the one place that asks NUM or SYM
   return min(the.Bins - 1, int(the.Bins * norm(col, v))) / the.Bins
 
 #-- tables -----------------------------------------------------
-def table(names): # an empty Tbl; header: X skip, +-! goal
-  cs = Cols(names=names)
+def Cols(names): # COLS from a header: X skip, +-! goal
+  cs = COLS(names=names)
   for at, s in enumerate(names):
     if s[-1] != "X":
       col = cs.all[at] = Col(s, at)
       (cs.y if s[-1] in "+-!" else cs.x).append(col)
-  return Tbl(cols=cs)
+  return cs
+
+def Tbl(names): # an empty TBL
+  return TBL(cols=Cols(names))
 
 def addRow(tbl, row): # keep ROW; show its raw cells to my columns
   tbl.rows += [row]
   for at, col in tbl.cols.all.items(): add(col, row.raw[at])
 
 def clone(tbl, rows=()): # an empty copy of TBL, plus ROWS (bins kept)
-  out = table(tbl.cols.names)
+  out = Tbl(tbl.cols.names)
   for r in rows: addRow(out, r)
   return out
 
 def load(src): # header, then rows; then bin them all, once
   src = iter(src)
-  tbl = table(next(src))
+  tbl = Tbl(next(src))
   for raw in src: addRow(tbl, Row(raw=raw))
   for r in tbl.rows:
     r.bins = [bin1(tbl.cols.all.get(at), v) for at, v in enumerate(r.raw)]
