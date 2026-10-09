@@ -51,10 +51,9 @@ def one(t, w, seed): # (win0, win1, dx, k) per planned row
   n     = len(rows) // 2
   m     = model(t, rows[:n])
   judge = lambda raw: w(min(pool, key=lambda z: rawdist(t, raw, z.raw)))
-  cache = {id(r): plan1(t, m, r) for r in m.lab.rows}
   out   = []
   for r in rows[n:][:the.Test]:
-    nu  = apply(r.bins, cache[id(near(t, m, r.bins))])
+    nu  = plan(t, m, r)
     raw = [v if nu[at] == r.bins[at] else rebin(t.cols.all[at], nu[at])
            for at, v in enumerate(r.raw)]
     out += [(judge(r.raw), judge(raw), rawdist(t, r.raw, raw),

@@ -7,29 +7,34 @@ symbol, the symbol as a string.  Bins are set once, from the whole
 table, so nothing past `discretize` needs to know NUM from SYM: a
 float is a bin, anything else is a symbol.  Ys stay raw.
 
-Explain and plan score (column, bin) ranges by b^2/(b+r), where b, r
-are the shares of best and rest rows in that bin.  Plans jump a row,
-one bin width at a time, toward each column's top range.
+Explain shows (column, bin) ranges, scored by b^2/(b+r), where b, r
+are the shares of best and rest rows in that bin.
 
 WHICH: start from those ranges as one-range rules, sorted by score.
 Merge two (picked at random, favouring the top) and sort the new
-rule back in; Which times.  A rule holds bins per column (OR within
-a column, AND across), so merging on a column widens it.  The top
-rule is the plan: move each row's broken columns to the rule's
-nearest bin.  The rig that grades all this is in ezr1_eg.py.
+rule back in, keeping the top Stack; Which times.  A rule holds bins
+per column (OR within a column, AND across), so merging on a column
+widens it.
+
+Plan, per row: from the stack, pick the rule with the most benefit
+per cost.  Cost = columns the row breaks; benefit = the row's
+expected y (its nearest label's) less the mean y of the labels the
+rule selects.  Skip rules the row already meets, or that do not
+help.  Move just the broken columns, each to the rule's nearest bin.
+The rig that grades all this is in ezr1_eg.py.
 
 Options:
    -Bins=5      bins per numeric column
-   -Cut=10      plan: skip ranges under this % of the top score
-   -Enough=10   stop once the y gap left is under this % of the start
+   -Cut=10      explain: skip ranges under this % of the top score
    -Which=100   which: merges
+   -Stack=32    which: rules kept
    -Pay=0       which: % off the score per column past the first
    -Stop=50     rows we may label, all up
    -Check=5     of that budget, saved for the unseen rows
    -Seed=1      random number seed
    -File=~/gits/moot/optimize/misc/auto93.csv
 
-Usage: ./ezr1.py [-Option value]...      (prints the explain table)
+Usage: ./ezr1.py [-Option value]...      (prints explain)
 """
 import os, random, re, sys
 from math import exp, sqrt
@@ -83,10 +88,9 @@ class Tbl: # rows, and the columns that summarise them
   __slots__ = ("rows", "cols")
   def __init__(i, names): i.rows, i.cols = [], Cols(names)
 
-class Model: # labels; (score, at, bin) ranges; columns' tops; which rule
-  __slots__ = ("lab", "ranges", "tops", "rule")
-  def __init__(i, lab, ranges, tops, rule):
-    i.lab, i.ranges, i.tops, i.rule = lab, ranges, tops, rule
+class Model: # labels; (score, at, bin) ranges; (score, rule, mu) stack
+  __slots__ = ("lab", "ranges", "stack")
+  def __init__(i, lab, ranges, stack): i.lab,i.ranges,i.stack=lab,ranges,stack
 
 def Col(txt=" ", at=0): # uppercase name = NUM, else SYM
   return Num(txt, at) if txt[0].isupper() else Sym(txt, at)
@@ -152,33 +156,14 @@ def near(tbl, m, bins): # nearest label: least summed g2 (ties go first)
              key=lambda z: sum(g2(bins[c.at], z.bins[c.at])
                                for c in tbl.cols.x))
 
-#-- model: best, rest, and their ranges ------------------------
+#-- model: best, rest, their ranges, and rules of ranges --------
 def ranges(tbl, best, rest): # (score, at, bin) ranges, by b^2/(b+r)
   out = []
   for c in tbl.cols.x:
-    nb, nr = {}, {}
-    for rows, n in ((best, nb), (rest, nr)):
-      for r in rows:
-        if (v := r.bins[c.at]) != "?": n[v] = n.get(v, 0) + 1
-    for v in sorted(nb, key=str):      # bins best never visits score 0
-      b, r = nb[v] / len(best), nr.get(v, 0) / len(rest)
-      out += [(b*b/(b+r), c.at, v)]
+    for v in sorted({z.bins[c.at] for z in best} - {"?"}, key=str):
+      out += [(score({c.at: {v}}, best, rest), c.at, v)]
   return sorted(out, key=lambda z: -z[0])
 
-def tops(rs): # each column's top range, strongest first, minus weak
-  seen, out = set(), []
-  for z in rs:
-    if z[1] not in seen: seen.add(z[1]); out += [z]
-  return [z for z in out if z[0] >= the.Cut/100 * out[0][0]]
-
-def model(tbl, rows): # label a budget, split best from rest
-  lab = clone(tbl, rows[:the.Stop - the.Check])
-  lab.rows.sort(key=lambda r: ydist(lab, r))
-  k   = int(sqrt(len(lab.rows)))           # sqrt best, rest rest
-  rs  = ranges(tbl, lab.rows[:k], lab.rows[k:])
-  return Model(lab, rs, tops(rs), which(lab.rows[:k], lab.rows[k:], rs))
-
-#-- which: rules of ranges, merged ------------------------------
 def selects(rule, row): # rule = {at: {bins}}: OR within, AND across
   return all(row.bins[at] in vs for at, vs in rule.items())  # "?" fails
 
@@ -192,21 +177,41 @@ def merge(a, b): # same column: more bins (wider); new column: narrower
 
 def which(best, rest, rs): # good rules rise, useless ones sink
   key  = lambda z: (-z[0], len(z[1]))     # ties: fewer columns first
-  todo = sorted(((score({at: {v}}, best, rest), {at: {v}})
-                 for _, at, v in rs), key=key)
+  todo = sorted(((s, {at: {v}}) for s, at, v in rs), key=key)[:the.Stack]
   pick = lambda: todo[int(len(todo) * random.random() ** 2)][1]
   for _ in range(the.Which):
     new = merge(pick(), pick())
     if all(new != r for _, r in todo):
-      todo = sorted(todo + [(score(new, best, rest), new)], key=key)
-  return todo[0][1]
+      todo = sorted(todo + [(score(new, best, rest), new)],
+                    key=key)[:the.Stack]
+  return todo
 
-def plan(rule, bins): # least change: each broken column to its nearest bin
+def model(tbl, rows): # label a budget, split best from rest, learn rules
+  lab = clone(tbl, rows[:the.Stop - the.Check])
+  lab.rows.sort(key=lambda r: ydist(lab, r))
+  k   = int(sqrt(len(lab.rows)))           # sqrt best, rest rest
+  best, rest = lab.rows[:k], lab.rows[k:]
+  rs, stack = ranges(tbl, best, rest), []
+  for s, rule in which(best, rest, rs):   # mu = mean y of rows selected
+    if ys := [ydist(lab, z) for z in lab.rows if selects(rule, z)]:
+      stack += [(s, rule, sum(ys) / len(ys))]
+  return Model(lab, rs, stack)
+
+#-- plan -------------------------------------------------------
+def mend(rule, bins): # each column BINS breaks, to the rule's nearest bin
   new = bins[:]
   for at, vs in rule.items():
     if new[at] not in vs:
       new[at] = min(sorted(vs, key=str), key=lambda v: g2(new[at], v))
   return new
+
+def plan(tbl, m, row): # the stack rule with most benefit per broken column
+  y0, top = ydist(m.lab, near(tbl, m, row.bins)), None
+  for _, rule, mu in m.stack:
+    cost = sum(row.bins[at] not in vs for at, vs in rule.items())
+    if cost and y0 > mu and (top is None or (y0 - mu)/cost > top[0]):
+      top = ((y0 - mu) / cost, rule)
+  return mend(top[1], row.bins) if top else row.bins[:]
 
 #-- explain ----------------------------------------------------
 def say(v): # a bin, two wide: -- - . + ++ (Bins=5), else its index
@@ -214,65 +219,19 @@ def say(v): # a bin, two wide: -- - . + ++ (Bins=5), else its index
   i = round(v * the.Bins)
   return ("--", "-", ".", "+", "++")[i] if the.Bins == 5 else str(i)
 
-def explain(tbl, m): # per column, b^2/(b+r) of each bin; top first
-  bins = [i / the.Bins for i in range(the.Bins)]
-  print(" ".join(f"{say(b):>2}" for b in bins), " top  attribute")
-  for score, at, v in m.tops:
-    s = {v1: s1 for s1, at1, v1 in m.ranges if at1 == at}
-    strip = " ".join(f"{min(99, int(100*s.get(b, 0))) or '':>2}"
-                     if type(v) is float else "  " for b in bins)
-    print(strip, f"{say(v):>4}  {tbl.cols.all[at].txt}"
-          + ("" if type(v) is float else f"  ({100*score:.0f})"))
-  print("\nwhich:", " and ".join(
-    f"{tbl.cols.all[at].txt} in {{{' '.join(say(v) for v in sorted(vs,key=str))}}}"
-    for at, vs in m.rule.items()))
+def show(tbl, rule): # e.g. Volume in {-- -} and origin in {2}
+  return " and ".join(f"{tbl.cols.all[at].txt} in "
+                      f"{{{' '.join(say(v) for v in sorted(vs, key=str))}}}"
+                      for at, vs in rule.items())
 
-#-- plan -------------------------------------------------------
-def steps(a, v): # bins from A to V, one bin width at a time
-  if type(a) is not float or type(v) is not float: return [v]
-  n = round((v - a) * the.Bins); s = 1 if n > 0 else -1
-  return [round(a * the.Bins + s*k) / the.Bins for k in range(1, abs(n)+1)]
-
-def plan1(tbl, m, r0): # least change to labelled R0, most y per x
-  """Per column, top range first: take the bin step with most dy/dx
-  (dx = bins moved), or, if none helps, jump to the top bin anyway.
-  Return the shortest prefix of those changes with the most dy."""
-  y   = lambda r: ydist(m.lab, r)
-  ylo = y(m.lab.rows[0])
-  L   = m.lab.rows                  # ss[j]: now to L[j], summed g2s;
-  now = r0.bins[:]                  # a one-column move updates it in
-  ss  = [sum(g2(now[c.at], z.bins[c.at]) for c in tbl.cols.x) for z in L]
-  best = lambda s2: L[min(range(len(L)), key=s2.__getitem__)]
-  def peek(at, b): # ss, and nearest label, if now[at] became B
-    s2 = [s - g2(now[at], z.bins[at]) + g2(b, z.bins[at])
-          for s, z in zip(ss, L)]
-    return s2, best(s2)
-  w = best(ss); y0 = y(w)
-  out, seen = [], [(0, w)]
-  for _, at, v in m.tops:
-    if now[at] == v: continue
-    top = None
-    for b in steps(now[at], v):          # smallest jump wins ties: dx
-      s2, w2 = peek(at, b)
-      dy = y(w) - y(w2)
-      dx = abs(b - now[at]) if type(b) is float is type(now[at]) else 1
-      if dy > 0 and (top is None or dy/dx > top[0]): top = (dy/dx, b, w2, s2)
-    if top is None: top = (0, v, *peek(at, v)[::-1])   # jump anyway
-    _, now[at], w, ss = top                                 # lock it
-    out += [(at, r0.bins[at], now[at])]          # (at, was, to)
-    seen += [(y0 - y(w), w)]
-    if y(w) - ylo <= the.Enough/100 * (y0 - ylo): break   # near enough
-  i = max(range(len(seen)), key=lambda j: (seen[j][0], -j))   # most dy,
-  return out[:i] if seen[i][0] > 0 else []                # fewest steps
-
-def apply(bins, changes): # bins move by deltas; symbols get set
-  new, top = bins[:], (the.Bins - 1) / the.Bins
-  for at, was, to in changes:
-    a = new[at]
-    if all(type(v) is float for v in (a, was, to)):
-      new[at] = max(0, min(top, round((a + to - was) * the.Bins) / the.Bins))
-    else: new[at] = to
-  return new
+def explain(tbl, m): # the ranges by b^2/(b+r); then the top rules
+  print("score  bin  attribute")
+  for s, at, v in m.ranges:
+    if s < the.Cut/100 * m.ranges[0][0]: break
+    print(f"{100*s:5.0f}  {say(v):>3}  {tbl.cols.all[at].txt}")
+  print("\nscore   mu  rule")
+  for s, rule, mu in m.stack[:5]:
+    print(f"{100*s:5.0f} {mu:4.2f}  {show(tbl, rule)}")
 
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
