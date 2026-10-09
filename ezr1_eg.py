@@ -9,14 +9,18 @@ from one half, plan Test rows from the other.  Judge = the nearest
 held-out row (ezr0's distance, on raw cells); wins = 100 at the best
 row, 0 at an average one.
 
+--holdout: as ezr0's holdout: train on half, sort the other half by
+rank(), label the top Check, keep the best.  Prints the mean win
+over Repeats seeds for ezr1, then for ezr0 (same splits), then FILE.
+
 Options:
    -Judge=64    rows held out for the judge, per seed
    -Test=100    holdout rows planned, per seed
    -Repeats=20  seeds
 
-Usage: ./ezr1_eg.py [-Option value]...
+Usage: ./ezr1_eg.py [-Option value]... [--holdout]
 """
-import random, sys
+import os, random, sys
 from math import log
 import ezr1
 from ezr1 import *
@@ -53,12 +57,25 @@ def one(t, w, seed): # (win0, win1, dx, k) per planned row
   judge = lambda raw: w(min(pool, key=lambda z: rawdist(t, raw, z.raw)))
   out   = []
   for r in rows[n:][:the.Test]:
-    nu  = plan(t, m, r)
+    nu  = plan(m, r)
     raw = [v if nu[at] == r.bins[at] else rebin(t.cols.all[at], nu[at])
            for at, v in enumerate(r.raw)]
     out += [(judge(r.raw), judge(raw), rawdist(t, r.raw, raw),
              sum(r.bins[c.at] != nu[c.at] for c in t.cols.x))]
   return out
+
+def holdout(t, w, seed): # win of the best of Check labels, ranked by rules
+  random.seed(seed)
+  rows = random.sample(t.rows, len(t.rows))
+  m    = model(t, rows[:len(rows)//2])
+  test = sorted(rows[len(rows)//2:], key=rank(m))
+  return w(min(test[:the.Check], key=lambda z: ydist(m.lab, z)))
+
+def holdout0(f, seed): # ezr0's holdout, on the same split
+  import ezr0
+  ezr0.the.Seed, ezr0.the.File = seed, f
+  t0 = ezr0.Tbl(ezr0.csv(f))
+  return ezr0.wins(t0)(ezr0.holdout(t0))
 
 def report(ss): # ss: (win0, win1, dx, k) per planned row
   med = lambda xs: sorted(xs)[len(xs)//2]
@@ -76,6 +93,11 @@ if __name__ == "__main__":
   the.cli(sys.argv[1:])
   _t, _ss = load(csv(the.File)), []
   _w = wins(_t)
+  if "--holdout" in sys.argv:
+    _a = [holdout(_t, _w, s) for s in range(1, the.Repeats + 1)]
+    _b = [holdout0(the.File, s) for s in range(1, the.Repeats + 1)]
+    print(f"{sum(_a)/len(_a):.0f} {sum(_b)/len(_b):.0f}",
+          os.path.basename(the.File)); sys.exit()
   for _s in range(1, the.Repeats + 1): _ss += one(_t, _w, _s)
   print(f"{the.File}  seeds={the.Repeats}  rows={len(_ss)}")
   report(_ss)

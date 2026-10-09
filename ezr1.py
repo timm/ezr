@@ -16,18 +16,16 @@ rule back in, keeping the top Stack; Which times.  A rule holds bins
 per column (OR within a column, AND across), so merging on a column
 widens it.
 
-Plan, per row: from the stack, pick the rule with the most benefit
-per cost.  Cost = columns the row breaks; benefit = the row's
-expected y (its nearest label's) less the mean y of the labels the
-rule selects.  Skip rules the row already meets, or that do not
-help.  Move just the broken columns, each to the rule's nearest bin.
-The rig that grades all this is in ezr1_eg.py.
+Plan: move each column a row breaks, in the top rule, to that rule's
+nearest bin.  Rank: score a row by the summed scores of the top Rank
+rules it meets.  The rig that grades all this is in ezr1_eg.py.
 
 Options:
    -Bins=5      bins per numeric column
    -Cut=10      explain: skip ranges under this % of the top score
    -Which=100   which: merges
    -Stack=32    which: rules kept
+   -Rank=10     rank: top rules used to score a row
    -Pay=0       which: % off the score per column past the first
    -Stop=50     rows we may label, all up
    -Check=5     of that budget, saved for the unseen rows
@@ -88,7 +86,7 @@ class Tbl: # rows, and the columns that summarise them
   __slots__ = ("rows", "cols")
   def __init__(i, names): i.rows, i.cols = [], Cols(names)
 
-class Model: # labels; (score, at, bin) ranges; (score, rule, mu) stack
+class Model: # labels; (score, at, bin) ranges; (score, rule) stack
   __slots__ = ("lab", "ranges", "stack")
   def __init__(i, lab, ranges, stack): i.lab,i.ranges,i.stack=lab,ranges,stack
 
@@ -151,11 +149,6 @@ def g2(a, b): # squared gap, in bin widths: exact ints, so sums can update
   if type(a) is float is type(b): return round((a - b) * the.Bins) ** 2
   return the.Bins ** 2 * (a != b)
 
-def near(tbl, m, bins): # nearest label: least summed g2 (ties go first)
-  return min(m.lab.rows,
-             key=lambda z: sum(g2(bins[c.at], z.bins[c.at])
-                               for c in tbl.cols.x))
-
 #-- model: best, rest, their ranges, and rules of ranges --------
 def ranges(tbl, best, rest): # (score, at, bin) ranges, by b^2/(b+r)
   out = []
@@ -191,11 +184,8 @@ def model(tbl, rows): # label a budget, split best from rest, learn rules
   lab.rows.sort(key=lambda r: ydist(lab, r))
   k   = int(sqrt(len(lab.rows)))           # sqrt best, rest rest
   best, rest = lab.rows[:k], lab.rows[k:]
-  rs, stack = ranges(tbl, best, rest), []
-  for s, rule in which(best, rest, rs):   # mu = mean y of rows selected
-    if ys := [ydist(lab, z) for z in lab.rows if selects(rule, z)]:
-      stack += [(s, rule, sum(ys) / len(ys))]
-  return Model(lab, rs, stack)
+  rs  = ranges(tbl, best, rest)
+  return Model(lab, rs, which(best, rest, rs))
 
 #-- plan -------------------------------------------------------
 def mend(rule, bins): # each column BINS breaks, to the rule's nearest bin
@@ -205,13 +195,12 @@ def mend(rule, bins): # each column BINS breaks, to the rule's nearest bin
       new[at] = min(sorted(vs, key=str), key=lambda v: g2(new[at], v))
   return new
 
-def plan(tbl, m, row): # the stack rule with most benefit per broken column
-  y0, top = ydist(m.lab, near(tbl, m, row.bins)), None
-  for _, rule, mu in m.stack:
-    cost = sum(row.bins[at] not in vs for at, vs in rule.items())
-    if cost and y0 > mu and (top is None or (y0 - mu)/cost > top[0]):
-      top = ((y0 - mu) / cost, rule)
-  return mend(top[1], row.bins) if top else row.bins[:]
+def plan(m, row): # ROW's bins, mended to meet the top rule
+  return mend(m.stack[0][1], row.bins)
+
+def rank(m): # sort key: rows meeting more (and better) top rules first
+  return lambda row: -sum(s for s, rule in m.stack[:the.Rank]
+                          if selects(rule, row))
 
 #-- explain ----------------------------------------------------
 def say(v): # a bin, two wide: -- - . + ++ (Bins=5), else its index
@@ -237,9 +226,8 @@ def explain(tbl, m): # per column: top score, each bin's score; rules
               f"{v}:{100*sc:.0f}" for v, sc in sorted(s.items(),
                                                      key=lambda z: -z[1]))
     print(f"{100*max(s.values()):5.0f}", strip, "", tbl.cols.all[at].txt + syms)
-  print("\nscore   mu  rule")
-  for s, rule, mu in m.stack[:5]:
-    print(f"{100*s:5.0f} {mu:4.2f}  {show(tbl, rule)}")
+  print("\nscore  rule")
+  for s, rule in m.stack[:5]: print(f"{100*s:5.0f}  {show(tbl, rule)}")
 
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
