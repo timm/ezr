@@ -1,129 +1,130 @@
-# spearman(guess, true ydist): stack bands tree knn1 (! = best or tied, ezr.same), file; 20 repeats, 100 test rows
-0.20. 0.15. 0.52! 0.22. WA_Fn-UseC_-HR-Employee-Attrition.csv
-0.43. 0.39. 0.57! 0.63! all_players.csv
-0.30. 0.32. 0.59! 0.51. player_statistics_cleaned_final.csv
-0.65. 0.62. 0.84! 0.21. student_dropout.csv
-0.48. 0.38. 0.53! 0.44. FFM-1000-200-0.50-SAT-1.csv
-0.53. 0.50. 0.63! 0.48. FFM-125-25-0.50-SAT-1.csv
-0.49! 0.33. 0.54! 0.49. FFM-250-50-0.50-SAT-1.csv
-0.42. 0.40. 0.50! 0.46. FFM-500-100-0.50-SAT-1.csv
-0.33. 0.30. 0.40. 0.48! FM-500-100-0.25-SAT-1.csv
-0.36. 0.40. 0.50! 0.46. FM-500-100-0.50-SAT-1.csv
-0.47. 0.36. 0.62! 0.57. FM-500-100-0.75-SAT-1.csv
-0.50. 0.41. 0.60! 0.45. FM-500-100-1.00-SAT-1.csv
-0.29. 0.25. 0.36! 0.39! Scrum100k.csv
-0.32. 0.31. 0.37! 0.38! Scrum10k.csv
-0.37. 0.37. 0.54! 0.49. Scrum1k.csv
-0.50. 0.38. 0.63! 0.49. billing10k.csv
-0.66. 0.64. 0.90! 0.66. Apache_AllMeasurements.csv
-0.53. 0.54. 0.79! 0.69. HSMGP_num.csv
-0.11. 0.09. 0.17! 0.15! SQL_AllMeasurements.csv
-0.43. 0.67. 0.77! 0.68. SS-A.csv
-0.58. 0.64. 0.88! 0.89! SS-B.csv
-0.40. 0.40. 0.90! 0.46. SS-C.csv
-0.23. 0.31. 0.68! 0.35. SS-D.csv
-0.15. 0.08. 0.76! 0.11. SS-E.csv
-0.22. 0.31. 0.71! 0.31. SS-F.csv
-0.24. 0.31. 0.70! 0.33. SS-G.csv
-0.73. 0.66. 0.98! 0.59. SS-H.csv
-0.61. 0.70. 0.84! 0.71. SS-I.csv
-0.20. 0.25. 0.88! 0.29. SS-J.csv
-0.21. 0.19. 0.64! 0.26. SS-K.csv
-0.61. 0.57. 0.70! 0.59. SS-L.csv
-0.61. 0.69. 0.88! 0.70. SS-M.csv
-0.24. 0.25. 0.72! 0.18. SS-N.csv
-0.46. 0.34. 0.58! 0.51. SS-O.csv
-0.61. 0.57. 0.70! 0.57. SS-P.csv
-0.78. 0.71. 0.91! 0.82. SS-Q.csv
-0.54. 0.61. 0.82! 0.74. SS-R.csv
-0.56. 0.36. 0.86! 0.43. SS-S.csv
-0.50. 0.41. 0.73! 0.60. SS-T.csv
-0.66. 0.51. 0.85! 0.64. SS-U.csv
-0.78. 0.58. 0.83! 0.51. SS-V.csv
-0.38. 0.28. 0.46! 0.31. SS-W.csv
-0.83. 0.80. 0.90! 0.82. SS-X.csv
-0.82. 0.79. 0.96! 0.77. X264_AllMeasurements.csv
-0.50. 0.40. 0.84! 0.32. rs-6d-c3_obj1.csv
-0.32. 0.36. 0.83! 0.44. rs-6d-c3_obj2.csv
-0.54. 0.61. 0.90! 0.44. sol-6d-c2-obj1.csv
-0.27. 0.33. 0.79! 0.22. wc+rs-3d-c4-obj1.csv
-0.27. 0.31. 0.78! 0.25. wc+sol-3d-c4-obj1.csv
-0.33. 0.36. 0.77! 0.25. wc+wc-3d-c4-obj1.csv
-0.30. 0.27. 0.79! 0.18. wc-6d-c1-obj1.csv
-0.36. 0.23. 0.46! 0.28. BankChurners.csv
-0.20. 0.16. 0.56! 0.29. Loan.csv
-0.56. 0.60. 0.77. 0.85! WA_Fn-UseC_-Telco-Customer-Churn.csv
-0.16. 0.17. 0.26! 0.29! home_data_for_ml_course.csv
-0.21. 0.36. 0.91! 0.33. Data_COVID19_Indonesia.csv
-0.68. 0.62. 0.76! 0.76! Life_Expectancy_Data.csv
-0.09! 0.00. 0.03. 0.02. Medical_Data_and_Hospital_Readmissions.csv
-0.57. 0.71. 0.88! 0.59. Health-ClosedIssues0000.csv
-0.39. 0.57. 0.70! 0.68! Health-ClosedIssues0001.csv
-0.70! 0.62. 0.70! 0.69! Health-ClosedIssues0002.csv
-0.13. 0.10. 0.29! 0.28! Health-ClosedIssues0003.csv
-0.20. 0.14. 0.43! 0.37. Health-ClosedIssues0004.csv
-0.69. 0.68. 0.79! 0.77. Health-ClosedIssues0005.csv
-0.30. 0.27. 0.66! 0.55. Health-ClosedIssues0006.csv
-0.56! 0.37. 0.50. 0.47. Health-ClosedIssues0007.csv
-0.33. 0.32. 0.38! 0.35. Health-ClosedIssues0008.csv
-0.09. 0.08. 0.20! 0.13. Health-ClosedIssues0009.csv
-0.55! 0.49. 0.57! 0.50. Health-ClosedIssues0010.csv
-0.69! 0.61. 0.69! 0.68. Health-ClosedIssues0011.csv
-0.57. 0.73. 0.96. 1.00! Health-ClosedPRs0000.csv
-0.70! 0.61. 0.70! 0.70! Health-ClosedPRs0002.csv
-0.70! 0.62. 0.69! 0.69! Health-ClosedPRs0003.csv
-0.67! 0.58. 0.67! 0.65. Health-ClosedPRs0004.csv
-0.69! 0.63. 0.69! 0.69! Health-ClosedPRs0005.csv
-0.35! 0.41! 0.37! 0.32! Health-ClosedPRs0006.csv
-0.60. 0.56. 0.67! 0.65! Health-ClosedPRs0007.csv
-0.30. 0.41. 0.54! 0.45. Health-ClosedPRs0008.csv
-0.59. 0.56. 0.67! 0.65. Health-ClosedPRs0009.csv
-0.55. 0.54. 0.71! 0.66. Health-ClosedPRs0010.csv
-0.71! 0.64. 0.69! 0.71! Health-ClosedPRs0011.csv
-0.63. 0.68. 0.83! 0.53. Health-Commits0000.csv
-0.69! 0.64. 0.70! 0.70! Health-Commits0001.csv
-0.69. 0.64. 0.70. 0.73! Health-Commits0002.csv
-0.58. 0.62. 0.69! 0.64. Health-Commits0003.csv
-0.46. 0.60. 0.67! 0.62. Health-Commits0004.csv
-0.46. 0.48. 0.65! 0.54. Health-Commits0005.csv
-0.45. 0.63. 0.90! 0.83. Health-Commits0006.csv
-0.62. 0.58. 0.68! 0.61. Health-Commits0007.csv
-0.14. 0.24. 0.49! 0.39. Health-Commits0008.csv
-0.31. 0.51. 0.80! 0.67. Health-Commits0009.csv
-0.63! 0.59. 0.66! 0.61. Health-Commits0010.csv
-0.64. 0.59. 0.68! 0.66! Health-Commits0011.csv
-0.48. 0.42. 0.63! 0.62! Car_price_cleaned.csv
-0.01. 0.06. 0.10. 0.17! Wine_quality.csv
-0.69. 0.73. 0.85! 0.78. auto93.csv
-0.70. 0.77. 0.87! 0.87! multiLabel.csv
-0.03. 0.05. 0.20! 0.14. coc1000.csv
-0.32. 0.22. 0.40! 0.41! nasa93dem.csv
-0.17. 0.21! 0.25! 0.25! pom3a.csv
-0.21. 0.24. 0.37! 0.22. pom3b.csv
-0.20. 0.15. 0.32! 0.26. pom3c.csv
-0.09. 0.11. 0.22! 0.23! pom3d.csv
-0.43. 0.38. 0.52! 0.38. xomo_flight.csv
-0.38. 0.29. 0.54! 0.34. xomo_ground.csv
-0.39. 0.32. 0.54! 0.33. xomo_osp.csv
-0.14. 0.14. 0.28! 0.30! xomo_osp2.csv
-0.08. 0.08! 0.14! 0.10! A2C_Acrobot.csv
-0.23. 0.18. 0.41! 0.28. A2C_CartPole.csv
-0.16. 0.34. 0.56! 0.36. Marketing_Analytics.csv
-0.11! -0.01. 0.07! 0.06. accessories.csv
--0.08. 0.11! 0.01. -0.08. dress-up.csv
-0.78. 0.84. 0.97! 0.88. socks.csv
-0.47. 0.50. 0.66! 0.60. wallpaper.csv
-0.28. 0.53. 0.83! 0.36. 7z.csv
-0.86. 0.66. 0.91! 0.54. BDBC.csv
-0.57. 0.70. 0.91! 0.69. HSQLDB.csv
-0.53. 0.50. 0.78! 0.56. LLVM.csv
-0.79! 0.59. 0.74. 0.66. PostgreSQL.csv
-0.72. 0.64. 0.89! 0.68. dconvert.csv
-0.67. 0.55. 0.84! 0.52. deeparch.csv
-0.25. 0.32. 0.52! 0.16. exastencils.csv
-0.46. 0.37. 0.79! 0.38. javagc.csv
-0.04! 0.00. 0.05! 0.03! redis.csv
-0.79. 0.56. 0.82! 0.39. storm.csv
-0.19. 0.08. 0.80! 0.10. x264.csv
-0.25! 0.22! 0.25! 0.23! dataset120.csv
-0.27! 0.17. 0.32! 0.30! dataset600.csv
+# spearman(guess, true ydist), 128 files x 20 repeats, 100 test rows, 45 labels; ! = best or tied by ezr.same
+# rmean = ezr1.predict (columns mixed by best range score); rvar = mixed by y-variance reduction; stack = closest stack rule; knn1; tree = ezr leaf means
+rmean=0.54 rvar=0.59! stack=0.20 knn1=0.22 tree=0.52 WA_Fn-UseC_-HR-Employee-Attrition.csv
+rmean=0.65! rvar=0.68! stack=0.43 knn1=0.63 tree=0.57 all_players.csv
+rmean=0.62! rvar=0.62! stack=0.30 knn1=0.51 tree=0.59! player_statistics_cleaned_final.csv
+rmean=0.61 rvar=0.62 stack=0.65 knn1=0.21 tree=0.84! student_dropout.csv
+rmean=0.70! rvar=0.64 stack=0.48 knn1=0.44 tree=0.53 FFM-1000-200-0.50-SAT-1.csv
+rmean=0.77! rvar=0.76! stack=0.53 knn1=0.48 tree=0.63 FFM-125-25-0.50-SAT-1.csv
+rmean=0.77! rvar=0.70 stack=0.49 knn1=0.49 tree=0.54 FFM-250-50-0.50-SAT-1.csv
+rmean=0.74! rvar=0.69 stack=0.42 knn1=0.46 tree=0.50 FFM-500-100-0.50-SAT-1.csv
+rmean=0.70! rvar=0.62 stack=0.33 knn1=0.48 tree=0.40 FM-500-100-0.25-SAT-1.csv
+rmean=0.75! rvar=0.69 stack=0.36 knn1=0.46 tree=0.50 FM-500-100-0.50-SAT-1.csv
+rmean=0.79! rvar=0.74 stack=0.47 knn1=0.57 tree=0.62 FM-500-100-0.75-SAT-1.csv
+rmean=0.75! rvar=0.74! stack=0.50 knn1=0.45 tree=0.60 FM-500-100-1.00-SAT-1.csv
+rmean=0.58! rvar=0.52 stack=0.29 knn1=0.39 tree=0.36 Scrum100k.csv
+rmean=0.64! rvar=0.57 stack=0.32 knn1=0.38 tree=0.37 Scrum10k.csv
+rmean=0.71! rvar=0.65 stack=0.37 knn1=0.49 tree=0.54 Scrum1k.csv
+rmean=0.74! rvar=0.73! stack=0.50 knn1=0.49 tree=0.63 billing10k.csv
+rmean=0.84 rvar=0.83 stack=0.66 knn1=0.66 tree=0.90! Apache_AllMeasurements.csv
+rmean=0.67 rvar=0.70 stack=0.53 knn1=0.69 tree=0.79! HSMGP_num.csv
+rmean=0.15! rvar=0.17! stack=0.11 knn1=0.15! tree=0.17! SQL_AllMeasurements.csv
+rmean=0.77! rvar=0.74! stack=0.43 knn1=0.68 tree=0.77! SS-A.csv
+rmean=0.88! rvar=0.90! stack=0.58 knn1=0.89 tree=0.88 SS-B.csv
+rmean=0.51 rvar=0.48 stack=0.40 knn1=0.46 tree=0.90! SS-C.csv
+rmean=0.35 rvar=0.33 stack=0.23 knn1=0.35 tree=0.68! SS-D.csv
+rmean=0.10 rvar=0.12 stack=0.15 knn1=0.11 tree=0.76! SS-E.csv
+rmean=0.36 rvar=0.33 stack=0.22 knn1=0.31 tree=0.71! SS-F.csv
+rmean=0.37 rvar=0.34 stack=0.24 knn1=0.33 tree=0.70! SS-G.csv
+rmean=0.77 rvar=0.78 stack=0.73 knn1=0.59 tree=0.98! SS-H.csv
+rmean=0.81 rvar=0.85! stack=0.61 knn1=0.71 tree=0.84! SS-I.csv
+rmean=0.43 rvar=0.47 stack=0.20 knn1=0.29 tree=0.88! SS-J.csv
+rmean=0.40 rvar=0.41 stack=0.21 knn1=0.26 tree=0.64! SS-K.csv
+rmean=0.73! rvar=0.72! stack=0.61 knn1=0.59 tree=0.70 SS-L.csv
+rmean=0.80 rvar=0.82 stack=0.61 knn1=0.70 tree=0.88! SS-M.csv
+rmean=0.29 rvar=0.24 stack=0.24 knn1=0.18 tree=0.72! SS-N.csv
+rmean=0.61! rvar=0.62! stack=0.46 knn1=0.51 tree=0.58! SS-O.csv
+rmean=0.73! rvar=0.72! stack=0.61 knn1=0.57 tree=0.70 SS-P.csv
+rmean=0.80 rvar=0.84 stack=0.78 knn1=0.82 tree=0.91! SS-Q.csv
+rmean=0.75 rvar=0.73 stack=0.54 knn1=0.74 tree=0.82! SS-R.csv
+rmean=0.54 rvar=0.53 stack=0.56 knn1=0.43 tree=0.86! SS-S.csv
+rmean=0.72! rvar=0.71! stack=0.50 knn1=0.60 tree=0.73! SS-T.csv
+rmean=0.83 rvar=0.84 stack=0.66 knn1=0.64 tree=0.85! SS-U.csv
+rmean=0.82 rvar=0.86! stack=0.78 knn1=0.51 tree=0.83 SS-V.csv
+rmean=0.57! rvar=0.55! stack=0.38 knn1=0.31 tree=0.46 SS-W.csv
+rmean=0.90! rvar=0.88 stack=0.83 knn1=0.82 tree=0.90! SS-X.csv
+rmean=0.93 rvar=0.92 stack=0.82 knn1=0.77 tree=0.96! X264_AllMeasurements.csv
+rmean=0.52 rvar=0.53 stack=0.50 knn1=0.32 tree=0.84! rs-6d-c3_obj1.csv
+rmean=0.51 rvar=0.49 stack=0.32 knn1=0.44 tree=0.83! rs-6d-c3_obj2.csv
+rmean=0.74 rvar=0.75 stack=0.54 knn1=0.44 tree=0.90! sol-6d-c2-obj1.csv
+rmean=0.46 rvar=0.42 stack=0.27 knn1=0.22 tree=0.79! wc+rs-3d-c4-obj1.csv
+rmean=0.48 rvar=0.44 stack=0.27 knn1=0.25 tree=0.78! wc+sol-3d-c4-obj1.csv
+rmean=0.48 rvar=0.46 stack=0.33 knn1=0.25 tree=0.77! wc+wc-3d-c4-obj1.csv
+rmean=0.42 rvar=0.41 stack=0.30 knn1=0.18 tree=0.79! wc-6d-c1-obj1.csv
+rmean=0.54! rvar=0.53! stack=0.36 knn1=0.28 tree=0.46! BankChurners.csv
+rmean=0.63 rvar=0.69! stack=0.20 knn1=0.29 tree=0.56 Loan.csv
+rmean=0.92! rvar=0.92! stack=0.56 knn1=0.85 tree=0.77 WA_Fn-UseC_-Telco-Customer-Churn.csv
+rmean=0.48! rvar=0.47! stack=0.16 knn1=0.29 tree=0.26 home_data_for_ml_course.csv
+rmean=0.59 rvar=0.64 stack=0.21 knn1=0.33 tree=0.91! Data_COVID19_Indonesia.csv
+rmean=0.83! rvar=0.84! stack=0.68 knn1=0.76 tree=0.76 Life_Expectancy_Data.csv
+rmean=0.09! rvar=0.08! stack=0.09! knn1=0.02 tree=0.03 Medical_Data_and_Hospital_Readmissions.csv
+rmean=0.73 rvar=0.72 stack=0.57 knn1=0.59 tree=0.88! Health-ClosedIssues0000.csv
+rmean=0.68! rvar=0.68! stack=0.39 knn1=0.68! tree=0.70! Health-ClosedIssues0001.csv
+rmean=0.67 rvar=0.68 stack=0.70! knn1=0.69! tree=0.70! Health-ClosedIssues0002.csv
+rmean=0.21 rvar=0.21 stack=0.13 knn1=0.28! tree=0.29! Health-ClosedIssues0003.csv
+rmean=0.37 rvar=0.39 stack=0.20 knn1=0.37 tree=0.43! Health-ClosedIssues0004.csv
+rmean=0.75 rvar=0.77 stack=0.69 knn1=0.77 tree=0.79! Health-ClosedIssues0005.csv
+rmean=0.47 rvar=0.53 stack=0.30 knn1=0.55 tree=0.66! Health-ClosedIssues0006.csv
+rmean=0.61! rvar=0.53 stack=0.56 knn1=0.47 tree=0.50 Health-ClosedIssues0007.csv
+rmean=0.43! rvar=0.42! stack=0.33 knn1=0.35 tree=0.38! Health-ClosedIssues0008.csv
+rmean=0.16 rvar=0.16 stack=0.09 knn1=0.13 tree=0.20! Health-ClosedIssues0009.csv
+rmean=0.57! rvar=0.58! stack=0.55! knn1=0.50 tree=0.57! Health-ClosedIssues0010.csv
+rmean=0.67 rvar=0.67 stack=0.69! knn1=0.68 tree=0.69! Health-ClosedIssues0011.csv
+rmean=0.81 rvar=0.81 stack=0.57 knn1=1.00! tree=0.96 Health-ClosedPRs0000.csv
+rmean=0.67 rvar=0.67 stack=0.70! knn1=0.70! tree=0.70! Health-ClosedPRs0002.csv
+rmean=0.69! rvar=0.68! stack=0.70! knn1=0.69! tree=0.69! Health-ClosedPRs0003.csv
+rmean=0.65 rvar=0.66! stack=0.67! knn1=0.65 tree=0.67! Health-ClosedPRs0004.csv
+rmean=0.66 rvar=0.67 stack=0.69! knn1=0.69! tree=0.69! Health-ClosedPRs0005.csv
+rmean=0.48! rvar=0.50! stack=0.35 knn1=0.32 tree=0.37! Health-ClosedPRs0006.csv
+rmean=0.65! rvar=0.64! stack=0.60 knn1=0.65! tree=0.67! Health-ClosedPRs0007.csv
+rmean=0.47 rvar=0.52! stack=0.30 knn1=0.45 tree=0.54! Health-ClosedPRs0008.csv
+rmean=0.66 rvar=0.67! stack=0.59 knn1=0.65 tree=0.67! Health-ClosedPRs0009.csv
+rmean=0.67 rvar=0.68 stack=0.55 knn1=0.66 tree=0.71! Health-ClosedPRs0010.csv
+rmean=0.69! rvar=0.69! stack=0.71! knn1=0.71! tree=0.69! Health-ClosedPRs0011.csv
+rmean=0.71 rvar=0.71 stack=0.63 knn1=0.53 tree=0.83! Health-Commits0000.csv
+rmean=0.68! rvar=0.68! stack=0.69! knn1=0.70! tree=0.70! Health-Commits0001.csv
+rmean=0.69 rvar=0.69 stack=0.69 knn1=0.73! tree=0.70 Health-Commits0002.csv
+rmean=0.65 rvar=0.66 stack=0.58 knn1=0.64 tree=0.69! Health-Commits0003.csv
+rmean=0.64! rvar=0.65! stack=0.46 knn1=0.62 tree=0.67! Health-Commits0004.csv
+rmean=0.62 rvar=0.64! stack=0.46 knn1=0.54 tree=0.65! Health-Commits0005.csv
+rmean=0.74 rvar=0.76 stack=0.45 knn1=0.83 tree=0.90! Health-Commits0006.csv
+rmean=0.66 rvar=0.65 stack=0.62 knn1=0.61 tree=0.68! Health-Commits0007.csv
+rmean=0.34 rvar=0.35 stack=0.14 knn1=0.39 tree=0.49! Health-Commits0008.csv
+rmean=0.73 rvar=0.75 stack=0.31 knn1=0.67 tree=0.80! Health-Commits0009.csv
+rmean=0.64 rvar=0.65 stack=0.63! knn1=0.61 tree=0.66! Health-Commits0010.csv
+rmean=0.67! rvar=0.66! stack=0.64 knn1=0.66! tree=0.68! Health-Commits0011.csv
+rmean=0.68! rvar=0.69! stack=0.48 knn1=0.62 tree=0.63 Car_price_cleaned.csv
+rmean=0.15! rvar=0.15! stack=0.01 knn1=0.17! tree=0.10 Wine_quality.csv
+rmean=0.84! rvar=0.85! stack=0.69 knn1=0.78 tree=0.85! auto93.csv
+rmean=0.87! rvar=0.88! stack=0.70 knn1=0.87! tree=0.87! multiLabel.csv
+rmean=0.29! rvar=0.29! stack=0.03 knn1=0.14 tree=0.20 coc1000.csv
+rmean=0.48! rvar=0.47! stack=0.32 knn1=0.41 tree=0.40 nasa93dem.csv
+rmean=0.33! rvar=0.35! stack=0.17 knn1=0.25 tree=0.25 pom3a.csv
+rmean=0.38 rvar=0.43! stack=0.21 knn1=0.22 tree=0.37 pom3b.csv
+rmean=0.38! rvar=0.39! stack=0.20 knn1=0.26 tree=0.32 pom3c.csv
+rmean=0.27! rvar=0.27! stack=0.09 knn1=0.23! tree=0.22! pom3d.csv
+rmean=0.63! rvar=0.65! stack=0.43 knn1=0.38 tree=0.52 xomo_flight.csv
+rmean=0.59 rvar=0.65! stack=0.38 knn1=0.34 tree=0.54 xomo_ground.csv
+rmean=0.55 rvar=0.62! stack=0.39 knn1=0.33 tree=0.54 xomo_osp.csv
+rmean=0.43! rvar=0.42! stack=0.14 knn1=0.30 tree=0.28 xomo_osp2.csv
+rmean=0.14 rvar=0.20! stack=0.08 knn1=0.10 tree=0.14 A2C_Acrobot.csv
+rmean=0.35 rvar=0.46! stack=0.23 knn1=0.28 tree=0.41 A2C_CartPole.csv
+rmean=0.57 rvar=0.59! stack=0.16 knn1=0.36 tree=0.56! Marketing_Analytics.csv
+rmean=0.10! rvar=0.13! stack=0.11! knn1=0.06 tree=0.07 accessories.csv
+rmean=0.00! rvar=-0.00! stack=-0.08! knn1=-0.08! tree=0.01! dress-up.csv
+rmean=0.88 rvar=0.87 stack=0.78 knn1=0.88 tree=0.97! socks.csv
+rmean=0.66! rvar=0.63 stack=0.47 knn1=0.60 tree=0.66! wallpaper.csv
+rmean=0.75 rvar=0.79 stack=0.28 knn1=0.36 tree=0.83! 7z.csv
+rmean=0.88 rvar=0.90! stack=0.86 knn1=0.54 tree=0.91! BDBC.csv
+rmean=0.81 rvar=0.79 stack=0.57 knn1=0.69 tree=0.91! HSQLDB.csv
+rmean=0.77! rvar=0.75 stack=0.53 knn1=0.56 tree=0.78! LLVM.csv
+rmean=0.73 rvar=0.74 stack=0.79! knn1=0.66 tree=0.74 PostgreSQL.csv
+rmean=0.84 rvar=0.87! stack=0.72 knn1=0.68 tree=0.89! dconvert.csv
+rmean=0.86! rvar=0.85! stack=0.67 knn1=0.52 tree=0.84! deeparch.csv
+rmean=0.59 rvar=0.66! stack=0.25 knn1=0.16 tree=0.52 exastencils.csv
+rmean=0.55 rvar=0.53 stack=0.46 knn1=0.38 tree=0.79! javagc.csv
+rmean=0.05! rvar=0.06! stack=0.04! knn1=0.03! tree=0.05! redis.csv
+rmean=0.84! rvar=0.74 stack=0.79 knn1=0.39 tree=0.82 storm.csv
+rmean=0.19 rvar=0.16 stack=0.19 knn1=0.10 tree=0.80! x264.csv
+rmean=0.39! rvar=0.39! stack=0.25 knn1=0.23 tree=0.25 dataset120.csv
+rmean=0.42! rvar=0.42! stack=0.27 knn1=0.30 tree=0.32 dataset600.csv

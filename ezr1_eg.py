@@ -24,7 +24,7 @@ mean wins (ezr1 ezr0 ezr), a mark each (! = best or tied with it,
 by ezr.same over the Repeats seeds), their seconds, then FILE.
 
 --predict: Spearman correlation of guessed and true ydist over Test
-held-out rows, for stack, bands, tree (ezr's leaf means), knn1; mean
+held-out rows, for ezr1, tree (ezr's leaf means), knn1; mean
 over Repeats seeds, ! = best or tied by ezr.same; then FILE.
 
 Usage: ./ezr1_eg.py [-Option value]... [--holdout|--budget|--predict]
@@ -119,8 +119,8 @@ def preds(t, seed): # spearman(guess, true ydist) per predictor
            g2(r.bins[c.at], z.bins[c.at]) for c in t.cols.x)))]
   truth = [ydist(t, r) for r in test]
   out   = {}
-  for k, f in (("stack", predict(m)), ("bands", bands(m)),
-               ("tree", lambda r: tree(r.raw)), ("knn1", knn)):
+  for k, f in (("ezr1", predict(m)), ("tree", lambda r: tree(r.raw)),
+               ("knn1", knn)):
     out[k] = spearman([f(r) for r in test], truth)
   return out
 

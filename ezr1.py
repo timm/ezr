@@ -15,7 +15,8 @@ times, merge two (picked at random, favouring the top) and sort the
 new rule back in (Stack = 0 keeps all; picks fall off as Geo^i).
 
 Plan: move each column a row breaks, in the top rule, to the rule's
-nearest bin.  Rank: score a row by the top Rank rules it meets;
+nearest bin.  Predict y: per column, the labels' mean y in the row's
+bin, mixed by that column's best range score.  Rank: score a row by the top Rank rules it meets;
 ties go to rows nearest the best rows' modal bins.  The
 rig that grades all this is ezr1_eg.py.
 
@@ -195,28 +196,18 @@ def rank(m): # sort key: most (and best) top rules met; ties: nearest
                       sum(g2(a, b) for a, b in zip(row.bins, mode)))
 
 #-- predict ----------------------------------------------------
-def closest(rules, row): # rules ROW meets (best score first), else the
-  met = [z for z in rules if selects(z[1], row)]       # fewest broken
-  return met[0] if met else min(rules, key=lambda z: (
-    sum(row.bins[at] not in vs for at, vs in z[1].items()), -z[0]))
-
-def predict(m): # y guess: mean ydist of labels the closest rule selects
-  ys = [ydist(m.lab, z) for z in m.lab.rows]
-  mu = lambda rule: (lambda v: sum(v) / len(v) if v else sum(ys)/len(ys))(
-         [y for z, y in zip(m.lab.rows, ys) if selects(rule, z)])
-  return lambda row: mu(closest(m.stack, row)[1])
-
-def bands(m): # one stack per band of sqrt(N) labels: that band vs rest
-  L, k = m.lab.rows, int(sqrt(len(m.lab.rows)))
-  out  = []
-  for i in range(0, len(L), k):
-    band, rest = L[i:i+k], L[:i] + L[i+k:]
-    if band and rest:
-      out += [(sum(ydist(m.lab, z) for z in band) / len(band),
-               which(band, rest, ranges(m.lab, band, rest)))]
-  def guess(row): # the band whose closest rule matches ROW best
-    fit = lambda st: (lambda z: (selects(z[1], row), z[0]))(closest(st, row))
-    return max(out, key=lambda b: fit(b[1]))[0]
+def predict(m): # y guess: per column, the labels' mean y in ROW's bin
+  L  = m.lab.rows                  # (shrunk to the overall mean), mixed
+  ys = [ydist(m.lab, z) for z in L]          # by each column's power
+  mu, pw = sum(ys) / len(ys), {}
+  for s, at, _ in m.ranges: pw[at] = max(pw.get(at, 0), s)
+  def guess(row):
+    num = den = 0
+    for at, w in pw.items():
+      v = [y for z, y in zip(L, ys)
+           if row.bins[at] != "?" and z.bins[at] == row.bins[at]]
+      num += w * (sum(v) + 2 * mu) / (len(v) + 2); den += w
+    return num / den if den else mu
   return guess
 
 #-- explain ----------------------------------------------------
