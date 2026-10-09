@@ -12,7 +12,7 @@ Ranges: each (column, bin), scored b^2/(b+r), where b and r are the
 shares of best and rest rows in it.  Rules: bins per column (OR in a
 column, AND across).  WHICH: start from one-range rules, sorted; Which
 times, merge two (picked at random, favouring the top) and sort the
-new rule back in, keeping the top Stack.
+new rule back in (Stack = 0 keeps all; picks fall off as Geo^i).
 
 Plan: move each column a row breaks, in the top rule, to the rule's
 nearest bin.  Rank: score a row by the top Rank rules it meets;
@@ -22,8 +22,8 @@ rig that grades all this is ezr1_eg.py.
 Options:
    -Bins=5      bins per numeric column
    -Which=100   merges
-   -Stack=32    rules kept (0 = keep all)
-   -Geo=0       pick: 0 = r^2 over the stack; else P(i) ~ Geo^i
+   -Stack=0     rules kept (0 = keep all)
+   -Geo=0.9     pick: 0 = r^2 over the stack; else P(i) ~ Geo^i
    -Rank=10     top rules used to rank a row
    -Cut=10      explain: skip ranges under this % of the top score
    -Stop=50     rows we may label, all up
