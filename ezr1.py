@@ -22,7 +22,8 @@ rig that grades all this is ezr1_eg.py.
 Options:
    -Bins=5      bins per numeric column
    -Which=100   merges
-   -Stack=32    rules kept
+   -Stack=32    rules kept (0 = keep all)
+   -Geo=0       pick: 0 = r^2 over the stack; else P(i) ~ Geo^i
    -Rank=10     top rules used to rank a row
    -Cut=10      explain: skip ranges under this % of the top score
    -Stop=50     rows we may label, all up
@@ -33,7 +34,7 @@ Options:
 Usage: ./ezr1.py [-Option value]...      (prints explain)
 """
 import os, random, re, sys
-from math import exp, sqrt
+from math import exp, log, sqrt
 
 #-- lib --------------------------------------------------------
 def atom(s): # '22' -> 22. '3.1' -> 3.1. 'True' -> True. 'x' -> 'x'.
@@ -153,13 +154,16 @@ def merge(a, b): # same column: more bins (wider); new column: narrower
 
 def which(best, rest, rs): # good rules rise, useless ones sink
   key  = lambda z: (-z[0], len(z[1]))       # ties: fewer columns first
-  todo = sorted(((s, {at: {v}}) for s, at, v in rs), key=key)[:the.Stack]
-  pick = lambda: todo[int(len(todo) * random.random() ** 2)][1]
+  cut  = lambda xs: xs[:the.Stack] if the.Stack else xs
+  todo = cut(sorted(((s, {at: {v}}) for s, at, v in rs), key=key))
+  def pick():
+    if not the.Geo: return todo[int(len(todo) * random.random() ** 2)][1]
+    i = int(log(1 - random.random()) / log(the.Geo))   # geometric
+    return todo[min(i, len(todo) - 1)][1]
   for _ in range(the.Which):
     new = merge(pick(), pick())
     if all(new != r for _, r in todo):
-      todo = sorted(todo + [(score(new, best, rest), new)],
-                    key=key)[:the.Stack]
+      todo = cut(sorted(todo + [(score(new, best, rest), new)], key=key))
   return todo
 
 def model(tbl, rows): # label a budget; sqrt best, rest rest; rules
