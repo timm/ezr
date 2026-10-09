@@ -1,129 +1,129 @@
-# ezr1 ezr0 file: mean win, 20 repeats
-80 85 WA_Fn-UseC_-HR-Employee-Attrition.csv
-80 93 all_players.csv
-88 88 player_statistics_cleaned_final.csv
-100 100 student_dropout.csv
-58 66 FFM-1000-200-0.50-SAT-1.csv
-65 74 FFM-125-25-0.50-SAT-1.csv
-59 71 FFM-250-50-0.50-SAT-1.csv
-54 74 FFM-500-100-0.50-SAT-1.csv
-50 68 FM-500-100-0.25-SAT-1.csv
-65 81 FM-500-100-0.50-SAT-1.csv
-56 85 FM-500-100-0.75-SAT-1.csv
-64 82 FM-500-100-1.00-SAT-1.csv
-47 73 Scrum100k.csv
-53 73 Scrum10k.csv
-58 80 Scrum1k.csv
-55 77 billing10k.csv
-97 97 Apache_AllMeasurements.csv
-93 99 HSMGP_num.csv
-76 67 SQL_AllMeasurements.csv
-96 94 SS-A.csv
-97 98 SS-B.csv
-93 94 SS-C.csv
-82 69 SS-D.csv
-89 64 SS-E.csv
-88 66 SS-F.csv
-84 69 SS-G.csv
-71 88 SS-H.csv
-90 94 SS-I.csv
-96 95 SS-J.csv
-81 84 SS-K.csv
-96 95 SS-L.csv
-99 99 SS-M.csv
-69 64 SS-N.csv
-89 93 SS-O.csv
-96 96 SS-P.csv
-94 96 SS-Q.csv
-67 76 SS-R.csv
-91 91 SS-S.csv
-96 95 SS-T.csv
-90 89 SS-U.csv
-89 83 SS-V.csv
-70 67 SS-W.csv
-83 88 SS-X.csv
-99 99 X264_AllMeasurements.csv
-99 99 rs-6d-c3_obj1.csv
-100 100 rs-6d-c3_obj2.csv
-95 96 sol-6d-c2-obj1.csv
-76 86 wc+rs-3d-c4-obj1.csv
-78 82 wc+sol-3d-c4-obj1.csv
-84 88 wc+wc-3d-c4-obj1.csv
-96 92 wc-6d-c1-obj1.csv
-55 48 BankChurners.csv
-51 76 Loan.csv
-98 100 WA_Fn-UseC_-Telco-Customer-Churn.csv
-27 45 home_data_for_ml_course.csv
-64 88 Data_COVID19_Indonesia.csv
-92 94 Life_Expectancy_Data.csv
-100 100 Medical_Data_and_Hospital_Readmissions.csv
-96 99 Health-ClosedIssues0000.csv
-53 53 Health-ClosedIssues0001.csv
-93 93 Health-ClosedIssues0002.csv
-69 85 Health-ClosedIssues0003.csv
-28 29 Health-ClosedIssues0004.csv
-67 67 Health-ClosedIssues0005.csv
-86 88 Health-ClosedIssues0006.csv
-40 41 Health-ClosedIssues0007.csv
-81 80 Health-ClosedIssues0008.csv
-33 32 Health-ClosedIssues0009.csv
-58 61 Health-ClosedIssues0010.csv
-100 100 Health-ClosedIssues0011.csv
-100 100 Health-ClosedPRs0000.csv
-81 81 Health-ClosedPRs0002.csv
-98 98 Health-ClosedPRs0003.csv
-78 72 Health-ClosedPRs0004.csv
-100 100 Health-ClosedPRs0005.csv
-38 27 Health-ClosedPRs0006.csv
-95 86 Health-ClosedPRs0007.csv
-8 9 Health-ClosedPRs0008.csv
-53 50 Health-ClosedPRs0009.csv
-29 27 Health-ClosedPRs0010.csv
-100 100 Health-ClosedPRs0011.csv
-96 97 Health-Commits0000.csv
-99 99 Health-Commits0001.csv
-30 21 Health-Commits0002.csv
-65 65 Health-Commits0003.csv
-41 39 Health-Commits0004.csv
-33 30 Health-Commits0005.csv
-69 71 Health-Commits0006.csv
-58 51 Health-Commits0007.csv
-57 52 Health-Commits0008.csv
-90 90 Health-Commits0009.csv
-74 75 Health-Commits0010.csv
-100 100 Health-Commits0011.csv
-59 66 Car_price_cleaned.csv
-47 60 Wine_quality.csv
-85 80 auto93.csv
-100 100 multiLabel.csv
-37 46 coc1000.csv
-66 67 nasa93dem.csv
-59 80 pom3a.csv
-51 78 pom3b.csv
-57 71 pom3c.csv
-69 72 pom3d.csv
-94 98 xomo_flight.csv
-82 95 xomo_ground.csv
-80 94 xomo_osp.csv
-63 84 xomo_osp2.csv
-39 58 A2C_Acrobot.csv
-46 41 A2C_CartPole.csv
-44 56 Marketing_Analytics.csv
-20 15 accessories.csv
-7 8 dress-up.csv
-93 95 socks.csv
-88 81 wallpaper.csv
-95 95 7z.csv
-99 99 BDBC.csv
-99 99 HSQLDB.csv
-97 97 LLVM.csv
-92 93 PostgreSQL.csv
-92 94 dconvert.csv
-97 96 deeparch.csv
-76 75 exastencils.csv
-92 89 javagc.csv
-67 63 redis.csv
-100 100 storm.csv
-53 88 x264.csv
-85 88 dataset120.csv
-92 85 dataset600.csv
+# mean win (ezr1 ezr0 ezr), secs (ezr1 ezr0 ezr), file; 20 repeats
+83 85 87 0.83 1.60 8.61 WA_Fn-UseC_-HR-Employee-Attrition.csv
+84 93 87 8.88 28.15 17.83 all_players.csv
+90 88 90 0.11 0.07 1.77 player_statistics_cleaned_final.csv
+100 100 94 0.44 0.34 6.48 student_dropout.csv
+67 66 58 34.81 76.05 77.35 FFM-1000-200-0.50-SAT-1.csv
+79 74 74 6.43 10.57 9.64 FFM-125-25-0.50-SAT-1.csv
+77 71 57 11.65 19.89 19.28 FFM-250-50-0.50-SAT-1.csv
+81 74 73 18.68 36.75 38.00 FFM-500-100-0.50-SAT-1.csv
+76 68 61 19.88 39.11 39.00 FM-500-100-0.25-SAT-1.csv
+81 81 61 17.81 37.37 38.31 FM-500-100-0.50-SAT-1.csv
+80 85 59 19.13 40.12 32.94 FM-500-100-0.75-SAT-1.csv
+81 82 65 18.89 37.47 28.81 FM-500-100-1.00-SAT-1.csv
+73 73 44 53.02 68.57 9.91 Scrum100k.csv
+74 73 69 6.51 9.40 8.89 Scrum10k.csv
+87 80 75 0.62 0.73 6.38 Scrum1k.csv
+75 77 61 4.45 5.43 5.24 billing10k.csv
+98 97 98 0.08 0.03 0.51 Apache_AllMeasurements.csv
+98 99 96 0.74 0.76 1.82 HSMGP_num.csv
+75 67 81 1.17 1.10 2.42 SQL_AllMeasurements.csv
+96 94 96 0.25 0.16 1.08 SS-A.csv
+97 98 98 0.06 0.03 0.78 SS-B.csv
+95 94 95 0.24 0.17 0.96 SS-C.csv
+84 69 80 0.06 0.03 0.74 SS-D.csv
+90 64 89 0.12 0.08 0.97 SS-E.csv
+90 66 76 0.05 0.03 0.89 SS-F.csv
+87 69 81 0.05 0.03 0.74 SS-G.csv
+76 88 93 0.07 0.04 1.26 SS-H.csv
+91 94 98 0.16 0.17 1.53 SS-I.csv
+97 95 93 0.59 0.69 1.80 SS-J.csv
+91 84 89 0.42 0.46 1.74 SS-K.csv
+93 95 98 0.21 0.28 3.05 SS-L.csv
+99 99 98 0.19 0.12 1.09 SS-M.csv
+73 64 74 11.24 22.14 6.42 SS-N.csv
+91 93 88 0.19 0.18 1.53 SS-O.csv
+93 96 98 0.20 0.11 0.88 SS-P.csv
+98 96 98 0.61 0.48 1.90 SS-Q.csv
+79 76 77 0.56 0.49 1.67 SS-R.csv
+93 91 96 0.63 0.71 2.21 SS-S.csv
+95 95 95 1.00 0.92 1.76 SS-T.csv
+89 89 89 0.90 0.72 1.47 SS-U.csv
+83 83 92 1.04 0.97 1.54 SS-V.csv
+75 67 59 11.01 8.56 3.28 SS-W.csv
+89 88 93 12.78 9.58 3.80 SS-X.csv
+99 99 100 0.27 0.14 1.06 X264_AllMeasurements.csv
+99 99 99 0.50 0.70 1.78 rs-6d-c3_obj1.csv
+100 100 100 0.54 0.60 1.73 rs-6d-c3_obj2.csv
+95 96 96 0.41 0.55 1.68 sol-6d-c2-obj1.csv
+82 86 99 0.06 0.03 0.72 wc+rs-3d-c4-obj1.csv
+84 82 99 0.09 0.03 0.70 wc+sol-3d-c4-obj1.csv
+89 88 100 0.06 0.03 0.68 wc+wc-3d-c4-obj1.csv
+97 92 100 0.37 0.44 1.64 wc-6d-c1-obj1.csv
+54 48 63 2.18 4.04 4.07 BankChurners.csv
+68 76 63 5.74 13.78 8.22 Loan.csv
+100 100 99 1.29 1.32 1.77 WA_Fn-UseC_-Telco-Customer-Churn.csv
+30 45 46 0.77 1.55 12.27 home_data_for_ml_course.csv
+71 88 91 7.27 14.23 8.25 Data_COVID19_Indonesia.csv
+94 94 94 0.70 1.37 5.32 Life_Expectancy_Data.csv
+100 100 90 9.51 13.98 6.45 Medical_Data_and_Hospital_Readmissions.csv
+96 99 98 1.37 1.32 1.75 Health-ClosedIssues0000.csv
+56 53 54 1.41 1.41 1.82 Health-ClosedIssues0001.csv
+93 93 94 1.50 1.53 1.95 Health-ClosedIssues0002.csv
+84 85 79 1.45 1.59 1.77 Health-ClosedIssues0003.csv
+30 29 28 1.58 1.50 1.78 Health-ClosedIssues0004.csv
+68 67 68 1.31 1.48 1.91 Health-ClosedIssues0005.csv
+89 88 84 1.35 1.55 1.90 Health-ClosedIssues0006.csv
+40 41 35 1.64 1.67 1.73 Health-ClosedIssues0007.csv
+81 80 81 1.43 1.67 1.97 Health-ClosedIssues0008.csv
+39 32 27 1.62 1.51 1.65 Health-ClosedIssues0009.csv
+62 61 57 1.61 1.46 1.78 Health-ClosedIssues0010.csv
+100 100 100 1.43 1.34 1.77 Health-ClosedIssues0011.csv
+100 100 100 1.36 1.41 1.83 Health-ClosedPRs0000.csv
+81 81 82 1.33 1.58 1.68 Health-ClosedPRs0002.csv
+98 98 98 1.47 1.55 1.79 Health-ClosedPRs0003.csv
+69 72 85 1.34 1.66 1.58 Health-ClosedPRs0004.csv
+100 100 100 1.30 1.59 1.84 Health-ClosedPRs0005.csv
+23 27 64 1.66 1.58 1.58 Health-ClosedPRs0006.csv
+95 86 88 1.45 1.40 1.64 Health-ClosedPRs0007.csv
+8 9 7 1.44 1.41 1.63 Health-ClosedPRs0008.csv
+54 50 56 1.48 1.60 1.62 Health-ClosedPRs0009.csv
+30 27 39 1.32 1.69 1.75 Health-ClosedPRs0010.csv
+100 100 100 1.42 1.45 1.85 Health-ClosedPRs0011.csv
+97 97 97 1.34 1.45 1.99 Health-Commits0000.csv
+99 99 99 1.48 1.46 1.89 Health-Commits0001.csv
+21 21 29 1.44 1.56 1.53 Health-Commits0002.csv
+67 65 65 1.42 1.42 1.52 Health-Commits0003.csv
+40 39 40 1.36 1.37 1.49 Health-Commits0004.csv
+32 30 45 1.32 1.39 1.73 Health-Commits0005.csv
+69 71 73 1.59 1.37 1.70 Health-Commits0006.csv
+37 51 60 1.39 1.30 1.42 Health-Commits0007.csv
+61 52 49 1.39 1.36 1.65 Health-Commits0008.csv
+91 90 90 1.37 1.32 1.64 Health-Commits0009.csv
+78 75 76 1.33 1.79 1.75 Health-Commits0010.csv
+100 100 89 1.35 1.51 1.80 Health-Commits0011.csv
+68 66 68 0.20 0.22 8.55 Car_price_cleaned.csv
+50 60 59 0.32 0.41 2.97 Wine_quality.csv
+86 80 88 0.09 0.06 1.17 auto93.csv
+100 100 100 0.27 0.49 12.99 multiLabel.csv
+37 46 50 0.31 0.67 5.91 coc1000.csv
+75 67 71 0.13 0.04 0.60 nasa93dem.csv
+71 80 57 3.28 6.36 3.22 pom3a.csv
+68 78 69 3.22 5.80 3.81 pom3b.csv
+66 71 64 3.52 5.45 4.05 pom3c.csv
+69 72 61 0.14 0.13 2.51 pom3d.csv
+94 98 96 3.25 5.79 6.19 xomo_flight.csv
+86 95 82 2.59 5.61 6.34 xomo_ground.csv
+85 94 87 2.85 5.65 6.39 xomo_osp.csv
+79 84 66 2.81 5.54 6.91 xomo_osp2.csv
+43 58 54 0.11 0.07 2.23 A2C_Acrobot.csv
+47 41 47 0.15 0.07 1.87 A2C_CartPole.csv
+60 56 53 0.84 1.71 9.14 Marketing_Analytics.csv
+17 15 11 0.25 0.25 1.76 accessories.csv
+4 8 7 0.25 0.17 1.84 dress-up.csv
+89 95 94 0.16 0.23 6.01 socks.csv
+85 81 79 0.15 0.06 2.40 wallpaper.csv
+95 95 95 11.63 12.09 3.77 7z.csv
+99 99 99 0.59 0.38 1.36 BDBC.csv
+99 99 99 0.20 0.16 1.18 HSQLDB.csv
+98 97 98 0.20 0.12 0.93 LLVM.csv
+94 93 94 2.62 2.66 1.82 PostgreSQL.csv
+95 94 95 1.03 0.87 1.29 dconvert.csv
+97 96 98 0.64 0.39 0.94 deeparch.csv
+93 75 86 13.36 14.58 4.39 exastencils.csv
+92 89 93 45.55 107.51 15.29 javagc.csv
+73 63 76 0.59 0.96 2.48 redis.csv
+100 100 100 0.32 0.38 2.79 storm.csv
+79 88 85 10.55 19.43 5.55 x264.csv
+98 88 95 0.87 1.31 2.51 dataset120.csv
+96 85 84 0.82 1.22 2.57 dataset600.csv
