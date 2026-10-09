@@ -15,7 +15,8 @@ times, merge two (picked at random, favouring the top) and sort the
 new rule back in, keeping the top Stack.
 
 Plan: move each column a row breaks, in the top rule, to the rule's
-nearest bin.  Rank: score a row by the top Rank rules it meets.  The
+nearest bin.  Rank: score a row by the top Rank rules it meets;
+ties go to rows nearest the best rows' modal bins.  The
 rig that grades all this is ezr1_eg.py.
 
 Options:
@@ -180,9 +181,14 @@ def mend(rule, bins): # each column BINS breaks, to the rule's nearest bin
 def plan(m, row): # ROW's bins, mended to meet the top rule
   return mend(m.stack[0][1], row.bins)
 
-def rank(m): # sort key: rows meeting more (and better) top rules first
-  return lambda row: -sum(s for s, rule in m.stack[:the.Rank]
-                          if selects(rule, row))
+def rank(m): # sort key: most (and best) top rules met; ties: nearest
+  k    = int(sqrt(len(m.lab.rows)))        # the best rows' modal bins
+  mode = [max(c, key=c.count) if (c := [r.bins[at] for r in
+          m.lab.rows[:k] if r.bins[at] != "?"]) else "?"
+          for at in range(len(m.lab.rows[0].bins))]
+  return lambda row: (-sum(s for s, rule in m.stack[:the.Rank]
+                           if selects(rule, row)),
+                      sum(g2(a, b) for a, b in zip(row.bins, mode)))
 
 #-- explain ----------------------------------------------------
 def say(v): # a bin, two wide: -- - . + ++ (Bins=5), else its index

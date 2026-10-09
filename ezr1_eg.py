@@ -11,7 +11,7 @@ row, 0 at an average one.
 
 --holdout: as ezr0's holdout: train on half, sort the other half by
 rank(), label the top Check, keep the best.  Prints the mean win
-over Repeats seeds for ezr1, then for ezr0 (same splits), then FILE.
+over Repeats seeds for ezr1, ezr0, ezr (same splits), then FILE.
 
 Options:
    -Judge=64    rows held out for the judge, per seed
@@ -77,6 +77,12 @@ def holdout0(f, seed): # ezr0's holdout, on the same split
   t0 = ezr0.Tbl(ezr0.csv(f))
   return ezr0.wins(t0)(ezr0.holdout(t0))
 
+def holdoutE(f, seed): # ezr.py's holdout (acquire + tree), same budget
+  import ezr as E
+  random.seed(seed)
+  t = E.Tbl(E.csv(f))
+  return E.wins(t)(E.holdout(t))
+
 def report(ss): # ss: (win0, win1, dx, k) per planned row
   med = lambda xs: sorted(xs)[len(xs)//2]
   w0, w1, dx, k = zip(*ss)
@@ -96,7 +102,9 @@ if __name__ == "__main__":
   if "--holdout" in sys.argv:
     _a = [holdout(_t, _w, s) for s in range(1, the.Repeats + 1)]
     _b = [holdout0(the.File, s) for s in range(1, the.Repeats + 1)]
-    print(f"{sum(_a)/len(_a):.0f} {sum(_b)/len(_b):.0f}",
+    _c = [holdoutE(the.File, s) for s in range(1, the.Repeats + 1)]
+    print(f"{sum(_a)/len(_a):.0f} {sum(_b)/len(_b):.0f} "
+          f"{sum(_c)/len(_c):.0f}",
           os.path.basename(the.File)); sys.exit()
   for _s in range(1, the.Repeats + 1): _ss += one(_t, _w, _s)
   print(f"{the.File}  seeds={the.Repeats}  rows={len(_ss)}")
