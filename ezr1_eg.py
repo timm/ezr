@@ -23,7 +23,11 @@ Options:
 mean wins (ezr1 ezr0 ezr), a mark each (! = best or tied with it,
 by ezr.same over the Repeats seeds), their seconds, then FILE.
 
-Usage: ./ezr1_eg.py [-Option value]... [--holdout | --budget]
+--predict: Spearman correlation of guessed and true ydist over Test
+held-out rows, for stack, bands, tree (ezr's leaf means), knn1; mean
+over Repeats seeds, ! = best or tied by ezr.same; then FILE.
+
+Usage: ./ezr1_eg.py [-Option value]... [--holdout|--budget|--predict]
 """
 import os, random, sys
 from math import log
@@ -86,6 +90,40 @@ def holdoutE(tE, wE, seed): # ezr.py's holdout (acquire + tree), same budget
   random.seed(seed)
   return wE(E.holdout(tE))
 
+def spearman(xs, ys): # rank correlation; ties get their mean rank
+  def rk(v):
+    o, r = sorted(range(len(v)), key=v.__getitem__), [0]*len(v)
+    i = 0
+    while i < len(o):
+      j = i
+      while j + 1 < len(o) and v[o[j+1]] == v[o[i]]: j += 1
+      for q in range(i, j + 1): r[o[q]] = (i + j) / 2
+      i = j + 1
+    return r
+  a, b = rk(xs), rk(ys); n = len(a); ma, mb = sum(a)/n, sum(b)/n
+  num = sum((p - ma) * (q - mb) for p, q in zip(a, b))
+  den = (sum((p-ma)**2 for p in a) * sum((q-mb)**2 for q in b)) ** .5
+  return num / den if den else 0
+
+def preds(t, seed): # spearman(guess, true ydist) per predictor
+  import ezr as E
+  random.seed(seed)
+  rows = random.sample(t.rows, len(t.rows))
+  n    = len(rows) // 2
+  m    = model(t, rows[:n])
+  test = rows[n:][:the.Test]
+  lab0 = E.clone(E.Tbl([t.cols.names]), [z.raw for z in m.lab.rows])
+  tree = E.ranker(lab0)
+  ys   = {id(z): ydist(m.lab, z) for z in m.lab.rows}
+  knn  = lambda r: ys[id(min(m.lab.rows, key=lambda z: sum(
+           g2(r.bins[c.at], z.bins[c.at]) for c in t.cols.x)))]
+  truth = [ydist(t, r) for r in test]
+  out   = {}
+  for k, f in (("stack", predict(m)), ("bands", bands(m)),
+               ("tree", lambda r: tree(r.raw)), ("knn1", knn)):
+    out[k] = spearman([f(r) for r in test], truth)
+  return out
+
 def report(ss): # ss: (win0, win1, dx, k) per planned row
   med = lambda xs: sorted(xs)[len(xs)//2]
   w0, w1, dx, k = zip(*ss)
@@ -114,6 +152,15 @@ if __name__ == "__main__":
       _out += [(sum(_ws) / len(_ws), time.perf_counter() - _clk)]
     print(*[f"{w:.0f}" for w, _ in _out], *[f"{t:.2f}" for _, t in _out],
           os.path.basename(the.File)); sys.exit()
+  if "--predict" in sys.argv:       # spearman(guess, truth), Repeats seeds
+    import ezr as E
+    _r = {}
+    for _s in range(1, the.Repeats + 1):
+      for _k, _v in preds(_t, _s).items(): _r.setdefault(_k, []).append(_v)
+    _mu  = {k: sum(v) / len(v) for k, v in _r.items()}
+    _top = max(_mu, key=_mu.get)
+    print(*[f"{_mu[k]:.2f}{'!' if k == _top or E.same(_r[k], _r[_top]) else '.'}"
+            for k in _r], os.path.basename(the.File)); sys.exit()
   if "--budget" in sys.argv:        # holdout at Stop = 20, 50, 100
     import time, ezr0, ezr as E
     _t0, _tE = ezr0.Tbl(ezr0.csv(the.File)), E.Tbl(E.csv(the.File))
