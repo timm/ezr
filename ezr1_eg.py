@@ -31,8 +31,14 @@ over Repeats seeds, ! = best or tied by ezr.same; then FILE.
 256 rows) for nb (ezr1.nb), tree (entropy tree on the same bins), and
 the majority class; ! = best or tied by ezr.same; then FILE.
 
+--learn: like --classify, but for any "!" column: accuracy for a
+symbolic class, spearman(guess, truth) for a numeric one; learners are
+knn1, knn5, wknn5 (columns weighted by info gain or variance cut),
+proto (nearest training row's unlabelled fastmap leaf), and nb, tree,
+major (class) or rmeans, tree (number).
+
 Usage: ./ezr1_eg.py [-Option value]... [--holdout|--budget|--predict|
-                                        --classify]
+                                        --classify|--learn]
 """
 import os, random, sys
 from math import log
@@ -156,6 +162,80 @@ def btree(tbl, rows, klass, leaf=4): # entropy tree on bins: guess class
     return lambda r: y(r) if go(r) else n(r)
   return grow(rows)
 
+#-- knn and friends: no trees, no extra labels -------------------
+def weights(t, rows, y, num): # per column: info gain (class) or
+  mean = lambda v: sum(v) / len(v)          # variance cut (number)
+  def spread(v):
+    if num: m = mean(v); return mean([(x - m) ** 2 for x in v])
+    n = {}
+    for x in v: n[x] = n.get(x, 0) + 1
+    return -sum(c/len(v) * log(c/len(v), 2) for c in n.values())
+  s0, w = spread([y(r) for r in rows]), {}
+  for c in t.cols.x:
+    g = {}
+    for r in rows:
+      if r.bins[c.at] != "?": g.setdefault(r.bins[c.at], []).append(y(r))
+    left = sum(len(v) * spread(v) for v in g.values()) / len(rows)
+    w[c.at] = max(1e-6, s0 - left)
+  return w
+
+def gist(v, num): # a group's guess: mean, or most common
+  return sum(v) / len(v) if num else max(set(v), key=v.count)
+
+def knn(t, rows, y, num, k=1, w=None):
+  d = lambda a, b: sum((w[c.at] if w else 1) * g2(a.bins[c.at], b.bins[c.at])
+                       for c in t.cols.x)
+  return lambda r: gist([y(z) for z in sorted(rows, key=lambda z: d(r, z))[:k]],
+                        num)
+
+def proto(t, rows, y, num, few=4): # unlabelled fastmap leaves; predict
+  d = lambda a, b: sum(g2(a.bins[c.at], b.bins[c.at]) for c in t.cols.x)
+  leaf = {}                          # the nearest training row's leaf
+  def split(rs):
+    if len(rs) < 2 * few:
+      g = gist([y(z) for z in rs], num)
+      for z in rs: leaf[id(z)] = g
+      return
+    far = lambda r: max(rs, key=lambda z: d(r, z))
+    a = far(random.choice(rs)); b = far(a); c = d(a, b) or 1
+    rs = sorted(rs, key=lambda r: (d(r, a) - d(r, b)) / c)
+    split(rs[:len(rs) // 2]); split(rs[len(rs) // 2:])
+  split(rows)
+  return lambda r: leaf[id(min(rows, key=lambda z: d(r, z)))]
+
+def rmeans(t, rows, y): # range means on a numeric target
+  w, ys = weights(t, rows, y, True), [y(r) for r in rows]
+  mu = sum(ys) / len(ys)
+  def guess(r):
+    num = den = 0
+    for at, wt in w.items():
+      v = [y(z) for z in rows if r.bins[at] != "?" and z.bins[at] == r.bins[at]]
+      num += wt * (sum(v) + 2 * mu) / (len(v) + 2); den += wt
+    return num / den
+  return guess
+
+def learn(t, seed, cap=256): # score per learner, one split
+  import ezr as E
+  k   = next(c for c in t.cols.y if c.txt[-1] == "!")
+  num = type(k) is Num
+  y   = lambda r: r.raw[k.at]
+  random.seed(seed)
+  rows = [r for r in random.sample(t.rows, len(t.rows)) if y(r) != "?"]
+  n    = len(rows) // 2
+  tr, te = rows[:n][:cap], rows[n:][:the.Test]
+  w    = weights(t, tr, y, num)
+  fs   = dict(knn1=knn(t, tr, y, num), knn5=knn(t, tr, y, num, 5),
+              wknn5=knn(t, tr, y, num, 5, w), proto=proto(t, tr, y, num))
+  if num:
+    lab0 = E.clone(E.Tbl([t.cols.names]), [z.raw for z in tr])
+    tree = E.ranker(lab0)
+    fs.update(rmeans=rmeans(t, tr, y), tree=lambda r: -tree(r.raw))
+    truth = [y(r) for r in te]
+    return {k: spearman([f(r) for r in te], truth) for k, f in fs.items()}
+  maj = gist([y(r) for r in tr], False)
+  fs.update(nb=nb(t, tr, y), tree=btree(t, tr, y), major=lambda r: maj)
+  return {k: sum(f(r) == y(r) for r in te) / len(te) for k, f in fs.items()}
+
 def classify(t, seed, cap=256): # accuracy per classifier, one split
   k    = next(c.at for c in t.cols.y if c.txt[-1] == "!")
   kl   = lambda r: r.raw[k]
@@ -185,6 +265,15 @@ if __name__ == "__main__":
   if "-h" in sys.argv: print(ezr1.__doc__, __doc__); sys.exit()
   cli(the, sys.argv[1:])
   _t, _ss = load(csv(the.File)), []
+  if "--learn" in sys.argv:         # classify (accuracy) or regress
+    import ezr as E                 # (spearman), by the "!" column's type
+    _r = {}
+    for _s in range(1, the.Repeats + 1):
+      for _k, _v in learn(_t, _s).items(): _r.setdefault(_k, []).append(_v)
+    _mu  = {k: sum(v) / len(v) for k, v in _r.items()}
+    _top = max(_mu, key=_mu.get)
+    print(*[f"{k}={_mu[k]:.2f}{'!' if k == _top or E.same(_r[k], _r[_top]) else ''}"
+            for k in _r], os.path.basename(the.File)); sys.exit()
   if "--classify" in sys.argv:      # accuracy: nb, tree, majority
     import time, ezr as E
     _r, _secs = {}, {}
