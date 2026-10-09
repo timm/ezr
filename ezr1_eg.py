@@ -27,7 +27,12 @@ by ezr.same over the Repeats seeds), their seconds, then FILE.
 held-out rows, for ezr1, tree (ezr's leaf means), knn1; mean
 over Repeats seeds, ! = best or tied by ezr.same; then FILE.
 
-Usage: ./ezr1_eg.py [-Option value]... [--holdout|--budget|--predict]
+--classify: accuracy over Test held-out rows, trained on half (at most
+256 rows) for nb (ezr1.nb), tree (entropy tree on the same bins), and
+the majority class; ! = best or tied by ezr.same; then FILE.
+
+Usage: ./ezr1_eg.py [-Option value]... [--holdout|--budget|--predict|
+                                        --classify]
 """
 import os, random, sys
 from math import log
@@ -124,6 +129,47 @@ def preds(t, seed): # spearman(guess, true ydist) per predictor
     out[k] = spearman([f(r) for r in test], truth)
   return out
 
+def btree(tbl, rows, klass, leaf=4): # entropy tree on bins: guess class
+  def ent(rs):
+    n = {}
+    for r in rs: n[klass(r)] = n.get(klass(r), 0) + 1
+    return -sum(v/len(rs) * log(v/len(rs), 2) for v in n.values())
+  def major(rs):
+    n = {}
+    for r in rs: n[klass(r)] = n.get(klass(r), 0) + 1
+    return max(n, key=n.get)
+  def grow(rs):
+    best = None
+    for c in tbl.cols.x:
+      vs = sorted({r.bins[c.at] for r in rs} - {"?"}, key=str)
+      for v in vs:
+        go = ((lambda r, at=c.at, v=v: r.bins[at] != "?" and r.bins[at] <= v)
+              if type(v) is float else
+              (lambda r, at=c.at, v=v: r.bins[at] == v))
+        yes = [r for r in rs if go(r)]; no = [r for r in rs if not go(r)]
+        if len(yes) >= leaf and len(no) >= leaf:
+          e = (len(yes) * ent(yes) + len(no) * ent(no)) / len(rs)
+          if best is None or e < best[0]: best = (e, go, yes, no)
+    if best is None or best[0] >= ent(rs): return lambda r, k=major(rs): k
+    _, go, yes, no = best
+    y, n = grow(yes), grow(no)
+    return lambda r: y(r) if go(r) else n(r)
+  return grow(rows)
+
+def classify(t, seed, cap=256): # accuracy per classifier, one split
+  k    = next(c.at for c in t.cols.y if c.txt[-1] == "!")
+  kl   = lambda r: r.raw[k]
+  random.seed(seed)
+  rows = random.sample(t.rows, len(t.rows))
+  n    = len(rows) // 2
+  tr, te = rows[:n][:cap], rows[n:][:the.Test]
+  maj  = max({kl(r) for r in tr}, key=[kl(r) for r in tr].count)
+  out  = {}
+  for name, f in (("nb", nb(t, tr, kl)), ("tree", btree(t, tr, kl)),
+                  ("major", lambda r: maj)):
+    out[name] = sum(f(r) == kl(r) for r in te) / len(te)
+  return out
+
 def report(ss): # ss: (win0, win1, dx, k) per planned row
   med = lambda xs: sorted(xs)[len(xs)//2]
   w0, w1, dx, k = zip(*ss)
@@ -139,6 +185,15 @@ if __name__ == "__main__":
   if "-h" in sys.argv: print(ezr1.__doc__, __doc__); sys.exit()
   cli(the, sys.argv[1:])
   _t, _ss = load(csv(the.File)), []
+  if "--classify" in sys.argv:      # accuracy: nb, tree, majority
+    import time, ezr as E
+    _r, _secs = {}, {}
+    for _s in range(1, the.Repeats + 1):
+      for _k, _v in classify(_t, _s).items(): _r.setdefault(_k, []).append(_v)
+    _mu  = {k: sum(v) / len(v) for k, v in _r.items()}
+    _top = max(_mu, key=_mu.get)
+    print(*[f"{_mu[k]:.2f}{'!' if k == _top or E.same(_r[k], _r[_top]) else '.'}"
+            for k in _r], os.path.basename(the.File)); sys.exit()
   _w = wins(_t)
   if "--holdout" in sys.argv:
     import time, ezr0, ezr as E

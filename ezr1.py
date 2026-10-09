@@ -214,6 +214,21 @@ def predict(m): # y guess: per column, the labels' mean y in ROW's bin
     return num / den if den else mu
   return guess
 
+#-- classify ---------------------------------------------------
+def nb(tbl, rows, klass): # naive bayes on bins: class = KLASS(row)
+  n, f = {}, {}                             # n[class], f[class,at,bin]
+  for r in rows:
+    k = klass(r); n[k] = n.get(k, 0) + 1
+    for c in tbl.cols.x:
+      if (b := r.bins[c.at]) != "?": f[k,c.at,b] = f.get((k,c.at,b), 0) + 1
+  def guess(row): # most likely class; m-estimate (m=2) per bin
+    def like(k):
+      return log(n[k] / len(rows)) + sum(
+        log((f.get((k,c.at,row.bins[c.at]), 0) + 2/the.Bins) / (n[k] + 2))
+        for c in tbl.cols.x if row.bins[c.at] != "?")
+    return max(n, key=like)
+  return guess
+
 #-- explain ----------------------------------------------------
 def say(v): # a bin, two wide: -- - . + ++ (Bins=5), else its index
   if type(v) is not float: return str(v)
