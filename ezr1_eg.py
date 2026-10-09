@@ -12,7 +12,7 @@ row, 0 at an average one.
 --holdout: as ezr0's holdout: train on half, sort the other half by
 rank(), label the top Check, keep the best.  Prints the mean win
 over Repeats seeds for ezr1, ezr0, ezr (same splits); then their
-seconds (ezr0, ezr reload the table each seed); then FILE.
+seconds (tables loaded once, outside the timing); then FILE.
 
 Options:
    -Judge=64    rows held out for the judge, per seed
@@ -72,17 +72,15 @@ def holdout(t, w, seed): # win of the best of Check labels, ranked by rules
   test = sorted(rows[len(rows)//2:], key=rank(m))
   return w(min(test[:the.Check], key=lambda z: ydist(m.lab, z)))
 
-def holdout0(f, seed): # ezr0's holdout, on the same split
+def holdout0(t0, w0, seed): # ezr0's holdout, on the same split
   import ezr0
-  ezr0.the.Seed, ezr0.the.File = seed, f
-  t0 = ezr0.Tbl(ezr0.csv(f))
-  return ezr0.wins(t0)(ezr0.holdout(t0))
+  ezr0.the.Seed = seed
+  return w0(ezr0.holdout(t0))
 
-def holdoutE(f, seed): # ezr.py's holdout (acquire + tree), same budget
+def holdoutE(tE, wE, seed): # ezr.py's holdout (acquire + tree), same budget
   import ezr as E
   random.seed(seed)
-  t = E.Tbl(E.csv(f))
-  return E.wins(t)(E.holdout(t))
+  return wE(E.holdout(tE))
 
 def report(ss): # ss: (win0, win1, dx, k) per planned row
   med = lambda xs: sorted(xs)[len(xs)//2]
@@ -101,13 +99,15 @@ if __name__ == "__main__":
   _t, _ss = load(csv(the.File)), []
   _w = wins(_t)
   if "--holdout" in sys.argv:
-    import time
+    import time, ezr0, ezr as E
+    _t0, _tE = ezr0.Tbl(ezr0.csv(the.File)), E.Tbl(E.csv(the.File))
+    _w0, _wE = ezr0.wins(_t0), E.wins(_tE)
     _out = []
-    for _f in (lambda s: holdout(_t, _w, s), lambda s: holdout0(the.File, s),
-               lambda s: holdoutE(the.File, s)):
-      _t0 = time.perf_counter()
+    for _f in (lambda s: holdout(_t, _w, s), lambda s: holdout0(_t0, _w0, s),
+               lambda s: holdoutE(_tE, _wE, s)):
+      _clk = time.perf_counter()
       _ws = [_f(s) for s in range(1, the.Repeats + 1)]
-      _out += [(sum(_ws) / len(_ws), time.perf_counter() - _t0)]
+      _out += [(sum(_ws) / len(_ws), time.perf_counter() - _clk)]
     print(*[f"{w:.0f}" for w, _ in _out], *[f"{t:.2f}" for _, t in _out],
           os.path.basename(the.File)); sys.exit()
   for _s in range(1, the.Repeats + 1): _ss += one(_t, _w, _s)
