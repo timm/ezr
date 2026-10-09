@@ -1,4 +1,4 @@
-# rq: research questions for ezr/ezr0
+# rq: research questions for ezr/ezr0/ezr1
 
 Data: `rq.py`; each run draws a random moot/optimize dataset,
 Budget (10..200 labels), Check (1..10 test probes); score = win
@@ -89,10 +89,43 @@ Cells are seconds:
   pypy3.12, ezr0, slots): **11x** (135.6s to 12.0s).  Without
   `__slots__` that same span is 8.6x (135.6s to 15.7s).
 
+## RQ3: does contrast (ezr1) optimise as well as ezr and ezr0?
+
+`ezr1.py`: bin every x value once (5 bins; symbols as is); score
+each (column, bin) range by b^2/(b+r) (b, r = shares of best and
+rest labels in it); merge ranges into rules with WHICH (100 merges,
+top 32 kept; OR within a column, AND across). To optimise, rank
+unlabelled rows by the summed scores of the top 10 rules they meet
+(ties: nearest the best rows' modal bins), label the top Check,
+keep the best. The same rules also explain (the ranges table, the
+top rule) and plan (move a row's broken columns to the top rule).
+
+Holdout: train on half, rank the other half, Check=5; Stop = total
+labels; 128 moot files x 20 repeats, same splits for all three.
+Best-or-tied = best mean, or indistinguishable from it by
+`ezr.same` (cliffs + ks) over the 20 repeats. Data:
+`etc/budget.txt` (`./ezr1_eg.py --budget`).
+
+| Stop | mean win (ezr1 / ezr0 / ezr) | best-or-tied files | secs |
+|---|---|---|---|
+| 20  | 71.3 / **72.5** / 69.0 | **101** / 97 / 75 | 402 / 680 / **201** |
+| 50  | **78.4** / 77.7 / 77.9 | **90** / **90** / 85 | **408** / 683 / 578 |
+| 100 | **81.4** / 79.8 / 81.3 | **92** / 66 / 87 | **424** / 691 / 1001 |
+
+- **ezr1 is recommended.** Best-or-tied on the most files at
+  every budget (70-79% of files); means level with or above both.
+- **Its cost is flat.** ezr1 takes ~400s at any budget; ezr's
+  active learning grows 5x from 20 to 100 labels.
+- Planning (from `etc/run.txt`, `ezr0_cmp.py --rank`): ezr1's top
+  rule matches ezr's tree on gain (24.9 vs 24.1 mean wins) with
+  fewer columns changed (0.99 vs 1.25), 2.9x faster.
+
 ## Conclusion
 
 Label a few dozen rows any way at all, hold back a handful of
 checks, and pick on validation: that simple recipe matches the
 clever one except in the label-starved corner (RQ1). And the
 whole study is cheap: pypy plus ten processes turns an
-afternoon of compute into minutes (RQ2).
+afternoon of compute into minutes (RQ2). And contrast alone
+(ezr1: ranges, rules of ranges) optimises as well as either,
+at a flat cost, while also explaining and planning (RQ3).
