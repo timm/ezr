@@ -42,37 +42,36 @@ def atom(s): # '22' -> 22. '3.1' -> 3.1. 'True' -> True. 'x' -> 'x'.
   for fn in (int, float):
     try: return fn(s)
     except ValueError: pass
-  s = s.strip()
-  return {"True": True, "False": False}.get(s, s)
+  return s=="True" or (s!="False" and s) # or False
 
 def csv(file): # rows of FILE, one at a time; -sig drops any BOM
   with open(os.path.expanduser(file), encoding="utf-8-sig") as f:
     for ln in f:
-      if ln.strip(): yield [atom(s) for s in ln.split(",")]
+      if ln.strip(): 
+        lst = [atom(s.strip()) for s in ln.split(",")
+        yield Row(cells=lst,bins=lst[:])
 
-def struct(name, **d): # a __slots__ class; type defaults fresh per object
+def say(x): print(saw(x)); return x
+def saw(x):
+  if type(x) is float: x = round(x,2)
+  if type(x) is dict : x = {k:saw(v) for k,v in x.items()}
+  if type(x) in (list,tuple): x = type(x)(saw(v) for v in x)
+  return str(x)
+
+def struct(s, **d): # a __slots__ class; type defaults fresh per object
   def init(i, **kw):
     for k, v in d.items():
       setattr(i, k, kw[k] if k in kw else v() if type(v) is type else v)
-  return type(name, (), dict(__slots__=tuple(d), __init__=init))
-
-def opts(doc): # -key=value pairs in DOC, as a dict
-  return {k: atom(v) for k, v in re.findall(r"-(\w+)=(\S+)", doc)}
-
-def cli(s, args): # -key value pairs, for keys S already has
-  for k, v in zip(args, args[1:]):
-    if k[:1] == "-" and k[1:] in s.__slots__: setattr(s, k[1:], atom(v))
-  return s
+  return type(s, (),dict(__slots__=tuple(d), __repr__=say, __init__=init))
 
 #-- structs ----------------------------------------------------
 # Camel = a plain struct. UPPER = a struct built by a Camel def.
-the   = struct("The", **opts(__doc__))()
-Num   = struct("Num",   at=0, txt=" ", n=0, mu=0, m2=0, sd=0, goal=1)
-Sym   = struct("Sym",   at=0, txt=" ", n=0, has=dict)
-Row   = struct("Row",   raw=list, bins=None)
-COLS  = struct("COLS",  names=list, all=dict, x=list, y=list)
-TBL   = struct("TBL",   rows=list, cols=None)
-Model = struct("Model", lab=None, ranges=list, stack=list)
+the =         struct("The", **opts(__doc__))()
+NUM = Num   = struct("NUM", at=0, txt=" ", n=0, mu=0, m2=0, sd=0, goal=1)
+SYM = Sym   = struct("SYM", at=0, txt=" ", n=0, has=dict)
+ROW = Row   = struct("ROW", raw=list, bins=None)
+COLS = Cols = struct("COLS",names=list, all=dict, x=list, y=list)
+TBL  =        struct("TBL", rows=list, cols=None)
 
 #-- columns ----------------------------------------------------
 def Col(txt=" ", at=0): # uppercase = NUM, else SYM; "-" ends a minimise
@@ -82,8 +81,8 @@ def Col(txt=" ", at=0): # uppercase = NUM, else SYM; "-" ends a minimise
 def add(col, v): # show V to COL
   if v == "?": return
   col.n += 1
-  if type(col) is Sym: col.has[v] = col.has.get(v, 0) + 1; return
-  d = v - col.mu                            # Welford
+  if type(col) is SYM: col.has[v] = col.has.get(v, 0) + 1; return
+  d = v - col.mu 
   col.mu += d / col.n
   col.m2 += d * (v - col.mu)
   col.sd  = 0 if col.n < 2 else (col.m2 / (col.n - 1)) ** .5
@@ -91,6 +90,8 @@ def add(col, v): # show V to COL
 def norm(col, v): # to 0..1, by the logistic curve
   z = max(-3, min(3, (v - col.mu) / (1e-32 + col.sd)))
   return 1 / (1 + exp(-1.7 * z))
+
+               def bins(all, row): row.bins ['
 
 def bin1(col, v): # the one place that asks NUM or SYM
   if col is None or v == "?": return v      # skipped column, unknown
@@ -258,6 +259,14 @@ def explain(tbl, m): # per column: top score, each bin's; then top rules
           tbl.cols.all[at].txt + syms)
   print("\nscore  rule")
   for s, rule in m.stack[:5]: print(f"{100*s:5.0f}  {show(tbl, rule)}")
+
+def opts(doc): # -key=value pairs in DOC, as a dict
+  return {k: atom(v) for k, v in re.findall(r"-(\w+)=(\S+)", doc)}
+
+def cli(s, args): # -key value pairs, for keys S already has
+  for k, v in zip(args, args[1:]):
+    if k[:1] == "-" and k[1:] in s.__slots__: setattr(s, k[1:], atom(v))
+  return s
 
 if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()

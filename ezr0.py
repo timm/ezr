@@ -8,6 +8,7 @@ whole budget at random, up front, then splits best from rest.
 
 Options:
    -Cut=10      plan: ignore gaps under this % of the biggest
+   -L=2         explain: Laplace smoothing for rare symbols
    -decimals=2  explain: digits shown after the point
    -Stop=50     rows we may label, all up
    -Check=5     of that budget, saved for the unseen rows
@@ -15,7 +16,7 @@ Options:
    -File=~/gits/moot/optimize/misc/auto93.csv
 """
 import os, random, re, sys
-from math import exp, sqrt
+from math import exp, pi, sqrt
 
 class o(dict): # dicts with dot. Easier to use than SimpleNamespace. 
   __getattr__, __setattr__ = dict.__getitem__, dict.__setitem__
@@ -136,13 +137,25 @@ def say(v): # numbers get `decimals` digits; everything else, as is
   return (f"{round(v, the.decimals):g}"
           if isinstance(v, (int, float)) else str(v))
 
-def explain(tbl, m): # the model is two centroids; show their gap
-  print(f"{'power':>6}{'best':>10}{'rest':>10}  attribute")
-  cb, cr = mids(m.best), mids(m.rest)
-  d = lambda c: gap(c, cb[c.at], cr[c.at])
-  for col in sorted(tbl.x, key=lambda c: -d(c)):
-    print(f"{int(100*d(col)):>5}{say(cb[col.at]):>10}"
-          f"{say(cr[col.at]):>10}  {col.txt}")
+def explain(tbl, m): # rank columns by b*b/(b+r): how telling is best?
+  nb, nr = len(m.best.rows), len(m.rest.rows)
+  pb, pr = nb/(nb+nr+1e-32), nr/(nb+nr+1e-32)
+  def like(col, v, prior):             # gaussian for NUMs, Laplace for SYMs
+    if type(col) is Sym:
+      return (col.has.get(v, 0) + the.L*prior) / (col.n + the.L)
+    sd = max(col.sd, tbl.cols[col.at].sd/the.L**3)  # a pure cluster has
+    z  = 2 * sd**2 + 1e-32                 # sd 0, and 1/0 densities
+    return min(1, exp(-(v - col.mu)**2 / z) / (pi*z)**.5)
+  def score(at):                       # judge best's own middle, both ways
+    v = mid(m.best.cols[at])
+    if v == "?": return (0, v, "?")
+    b = like(m.best.cols[at], v, pb)
+    r = like(m.rest.cols[at], v, pr)
+    return (b*b/(b + r + 1e-32), v, mid(m.rest.cols[at]))
+  print(f"{'b^2/(b+r)':>10}{'best':>10}{'rest':>10}  attribute")
+  for (s, vb, vr), col in sorted(((score(c.at), c) for c in tbl.x),
+                                 key=lambda z: -z[0][0]):
+    print(f"{s:10.{the.decimals}f}{say(vb):>10}{say(vr):>10}  {col.txt}")
 
 #-- plan -------------------------------------------------------
 def gaps(tbl, m): # x columns, widest best-to-rest gap first
