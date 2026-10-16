@@ -13,6 +13,7 @@ Options:
    -Geo=0.9     pick: 0 = r^2 over the stack; else P(i) ~ Geo^i
    -Rank=10     top rules used to rank a row
    -Cut=10      explain: skip ranges under this % of the top score
+   -Train=.75   fraction of the rows we train on
    -Stop=50     rows we may label, all up
    -Check=5     of that budget, saved for the unseen rows
    -Seed=1      random number seed
@@ -108,7 +109,7 @@ def clone(tbl, rows=None): # an empty copy of TBL, plus ROWS (bins kept)
   return Tbl([Row(raw=tbl.cols.names)] + (rows or []))
 
 def binRow(tbl, row): # discretize ROW by TBL's cols (train's, at test)
-  row.bins = [bin(col, row.raw[col.at]) for col in tbl.cols.all]
+  row.bins = {col.at: bin(col, row.raw[col.at]) for col in tbl.cols.all}
   return row
 
 def bins(tbl):
@@ -179,7 +180,7 @@ def eg_h(): print(__doc__)         # --h : the usage text above
 
 def eg_nb(): # --nb : train on half, guess the rest, score it
   t = Tbl(csv(the.File))
-  train, test = split(t)
+  train, test = split(t, the.Train)
   bins(train)                            # train's bins, from train
   klass = lambda row: row.raw[t.cols.klass.at]
   guess = nb(train, train.rows, klass)
