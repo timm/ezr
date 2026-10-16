@@ -65,3 +65,16 @@ $(TMP)/rq1_ezr.txt: rq.py ezr0.py ezr.py
 	cat $(TMP)/rq1_ezr_*.txt > $@
 
 .PHONY: rq00 rq0 rq1 rq2 help
+
+#-- percent-rank sweep (min.py --rank) --------------------------------
+PY2    := $(shell command -v pypy3.12 || command -v pypy3 || echo python3)
+RANKN  := 20
+RANKS  := 20
+
+rank: ## --rank over $(RANKN) optimize sets x $(RANKS) seeds, $(J) cores
+	@find $(DIR) -name '*.csv' | sort | awk -v n=$(RANKN) \
+	   '{a[NR]=$$0} END{for(i=0;i<n;i++) print a[1+int(i*(NR-1)/(n-1))]}' | \
+	 xargs -P $(J) -n1 sh -c 'for s in $$(seq 1 $(RANKS)); do \
+	    $(PY2) min.py -File "$$0" -Seed $$s -Stop 37 -Check  5 --rank; \
+	    $(PY2) min.py -File "$$0" -Seed $$s -Stop 25 -Check 20 --rank; \
+	  done'

@@ -14,6 +14,7 @@ Options:
    -Rank=10     top rules used to rank a row
    -Cut=10      explain: skip ranges under this % of the top score
    -Train=.75   fraction of the rows we train on
+   -Any=2048    test rows we score (0 = all of them)
    -Stop=50     rows we may label, all up
    -Check=5     of that budget, saved for the unseen rows
    -Seed=1      random number seed
@@ -36,6 +37,19 @@ def csv(file): # rows of FILE, one at a time; -sig drops any BOM
       if ln.strip(): 
         lst = [atom(s.strip()) for s in ln.split(",")]
         yield Row(raw=lst,bins=lst[:])
+
+def some(file, n): # n rows at random, parsing only the ones we keep
+  """csv() pays atom() on every cell of every line.  At 167k rows that
+  is 2.1s, against 0.08s to actually rank 2048 of them.  So reservoir
+  the raw lines first; a line is cheap until you parse it."""
+  src = iter(open(os.path.expanduser(file), encoding="utf-8-sig"))
+  out, i = [next(src)], 0                # the header is never dropped
+  for ln in src:
+    if not ln.strip(): continue
+    if i < n: out += [ln]
+    elif (j := int(random.random() * (i + 1))) < n: out[j + 1] = ln
+    i += 1
+  return [Row(raw=[atom(c.strip()) for c in ln.split(",")]) for ln in out]
 
 def say(x): print(saw(x)); return x
 def saw(x):
@@ -182,11 +196,11 @@ def near(tbl, row):   # the labelled row that looks most like this one
   return min(tbl.rows, key=lambda r: xdist(tbl, r, row))
 
 def eg_rank(): # --rank : label Stop, shortlist Check, report the truth
-  t = Tbl(csv(the.File))
+  t = Tbl(some(the.File, the.Any) if the.Any else csv(the.File))
   rows = t.rows[:]
   random.shuffle(rows)
   k = the.Stop - the.Check               # team A pays for this many
-  train, todo = clone(t, rows[:k]), rows[k:]
+  todo, train = rows[k:], clone(t, rows[:k])
   look = sorted(todo, key=lambda r: ydist(train, near(train, r)))
   pick = min(look[:the.Check], key=lambda r: ydist(t, r))  # team B pays
   ys = sorted(ydist(t, r) for r in todo) # what we could not have known
