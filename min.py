@@ -1,6 +1,6 @@
 #!/usr/bin/env python3 -B
 # vim: set et sw=2 ts=2 sts=2 cc=75 :
-"""
+"""  
 min.py: label a few rows, learn rules of ranges, plan by them.
 (c) 2026, Tim Menzies (timm@ieee.org) MIT License
 
@@ -107,9 +107,18 @@ def addRow(tbl, row): # keep ROW; show its raw cells to my columns
 def clone(tbl, rows=None): # an empty copy of TBL, plus ROWS (bins kept)
   return Tbl([Row(raw=tbl.cols.names)] + (rows or []))
 
+def binRow(tbl, row): # discretize ROW by TBL's cols (train's, at test)
+  row.bins = [bin(col, row.raw[col.at]) for col in tbl.cols.all]
+  return row
+
 def bins(tbl):
-  for row in tbl.rows:
-    row.bins = [bin(col, row.raw[col.at]) for col in tbl.cols.all]
+  for row in tbl.rows: binRow(tbl, row)
+
+def split(tbl, p=.5): # shuffle, then the first p as train, rest as test
+  rows = tbl.rows[:]
+  random.shuffle(rows)
+  m = int(p * len(rows))
+  return clone(tbl, rows[:m]), clone(tbl, rows[m:])
 
 #-- distance ---------------------------------------------------
 def dist(vs, n): return sqrt(sum(v*v for v in vs) / n)
@@ -128,7 +137,6 @@ def _xdist(col,a, b): # squared gap, in bin widths
   a, b = norm(col,a), norm(col,b)
   return a - b
 
-
 #-- classify ---------------------------------------------------
 def nb(tbl, rows, klass): # naive bayes on bins: class = KLASS(row)
   n, f = {}, {}                             # n[class], f[class,at,bin]
@@ -144,14 +152,50 @@ def nb(tbl, rows, klass): # naive bayes on bins: class = KLASS(row)
     return max(n, key=like)
   return guess
 
+#-- report -----------------------------------------------------
+def abcd(pairs): # (guess,actual) pairs -> a row per class, best pd first
+  n, got, want, hit = 0, {}, {}, {}
+  for g,a in pairs:
+    n += 1
+    got[g]  = got.get(g,0)  + 1
+    want[a] = want.get(a,0) + 1
+    hit[g]  = hit.get(g,0)  + (g==a)
+  print("   n,  tn,  fn,  fp,  tp, acc, pre,  pf,  pd, class")
+  out = []
+  for x in want:
+    tp = hit.get(x,0)
+    fp = got.get(x,0) - tp
+    fn = want[x] - tp
+    tn = n - fn - fp - tp
+    out += [(want[x], tn, fn, fp, tp, pc(tn+tp,n), pc(tp,fp+tp),
+             pc(fp,tn+fp), pc(tp,fn+tp), x)]
+  for r in sorted(out, key=lambda r: -r[8]):
+    print(("%4d,"*9 + " %s") % r)
+
+def pc(x,y): return 100*x/y if y else 0
+
 #-- main ----------------------------------------------------
 def eg_h(): print(__doc__)         # --h : the usage text above
 
-def run(fun):
-  global the; the = The()
+def eg_nb(): # --nb : train on half, guess the rest, score it
+  t = Tbl(csv(the.File))
+  train, test = split(t)
+  bins(train)                            # train's bins, from train
+  klass = lambda row: row.raw[t.cols.klass.at]
+  guess = nb(train, train.rows, klass)
+  pairs = [(guess(binRow(train, row)), klass(row)) for row in test.rows]
+  ok = sum(g == a for g, a in pairs)
+  print(f"$ {the.File.split('/')[-1]}: {len(train.cols.klass.has)} classes,"
+        f" {len(train.rows)} train, {len(pairs)} guesses,"
+        f" {100*ok//len(pairs)}% right")
+  abcd(pairs)
+
+def run(fun): # FUN sees the options main parsed; undo its edits after
+  b4 = {k: getattr(the, k) for k in the.__slots__}
   random.seed(the.Seed)
   try: fun()
   except Exception as e: traceback.print_exception(e); return 1
+  finally: [setattr(the, k, v) for k, v in b4.items()]
   return 0
 
 def main(args):
@@ -159,10 +203,10 @@ def main(args):
   out = 0
   while args:
     s = args.pop(0)
-    if   s[:2] == "--":
-      out += 1run(funs.get("eg_" + s[2:], funs["eg_h"]))
+    if   "eg_" + s.lstrip("-") in funs:  # -nb or --nb runs eg_nb
+      out += run(funs["eg_" + s.lstrip("-")])
     elif hasattr(the, s[1:]): setattr(the, s[1:], atom(args.pop(0)))
     else: print(f"unknown arg: {s}")
   sys.exit(out)
 
-if __name__=="__main__": main(sys.argv[1:])
+if __name__=="__main__": main(sys.argv[1:] or ["-h"])
