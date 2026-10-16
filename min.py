@@ -98,14 +98,15 @@ def Col(txt=" ", at=0): # uppercase = NUM, else SYM; "-" ends a minimise
   return (Num(at=at, txt=txt, goal=txt[-1] != "-") if txt[0].isupper()
           else Sym(at=at, txt=txt))
 
-def add(col, v): # show V to COL
+def add(col, v, inc=1): # show V to COL; inc=-1 takes it back out
   if v == "?": return
-  col.n += 1
-  if type(col) is SYM: col.has[v] = col.has.get(v, 0) + 1; return
-  d = v - col.mu 
-  col.mu += d / col.n
-  col.m2 += d * (v - col.mu)
-  col.sd  = 0 if col.n < 2 else (col.m2 / (col.n - 1)) ** .5
+  col.n += inc
+  if type(col) is SYM: col.has[v] = col.has.get(v, 0) + inc; return
+  if col.n < 1: col.mu = col.m2 = col.sd = 0; return   # nothing left
+  d = v - col.mu
+  col.mu += inc * (d / col.n)
+  col.m2 += inc * (d * (v - col.mu))
+  col.sd  = 0 if col.n < 2 else (max(0, col.m2) / (col.n - 1)) ** .5
 
 def norm(col, v): # to 0..1, by the logistic curve
   z = (v - col.mu) / (1e-32 + col.sd)

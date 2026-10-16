@@ -66,12 +66,15 @@ def struct(s, **d): # a __slots__ class; type defaults fresh per object
 
 #-- structs ----------------------------------------------------
 # Camel = a plain struct. UPPER = a struct built by a Camel def.
-the =         struct("The", **opts(__doc__))()
-NUM = Num   = struct("NUM", at=0, txt=" ", n=0, mu=0, m2=0, sd=0, goal=1)
-SYM = Sym   = struct("SYM", at=0, txt=" ", n=0, has=dict)
-ROW = Row   = struct("ROW", raw=list, bins=None)
-COLS = Cols = struct("COLS",names=list, all=dict, x=list, y=list)
-TBL  =        struct("TBL", rows=list, cols=None)
+the = struct("The", **opts(__doc__))()
+NUM = struct("NUM", at=0, txt=" ", n=0, mu=0, m2=0, sd=0, goal=1)
+SYM = struct("SYM", at=0, txt=" ", n=0, has=dict)
+ROW = struct("ROW", raw=list, bins=None)
+COLS = struct("COLS",names=list, all=dict, x=list, y=list)
+TBL  = struct("TBL", rows=list, cols=None)
+
+# constuctirs
+Num,Sym,Row,= NUN,SYM,ROW # Cos,Tbl defined below
 
 #-- columns ----------------------------------------------------
 def Col(txt=" ", at=0): # uppercase = NUM, else SYM; "-" ends a minimise
@@ -90,8 +93,6 @@ def add(col, v): # show V to COL
 def norm(col, v): # to 0..1, by the logistic curve
   z = max(-3, min(3, (v - col.mu) / (1e-32 + col.sd)))
   return 1 / (1 + exp(-1.7 * z))
-
-               def bins(all, row): row.bins ['
 
 def bin1(col, v): # the one place that asks NUM or SYM
   if col is None or v == "?": return v      # skipped column, unknown
