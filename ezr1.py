@@ -73,8 +73,8 @@ ROW = struct("ROW", raw=list, bins=None)
 COLS = struct("COLS",names=list, all=dict, x=list, y=list)
 TBL  = struct("TBL", rows=list, cols=None)
 
-# constuctirs
-Num,Sym,Row,= NUN,SYM,ROW # Cos,Tbl defined below
+# Constructors have Leadingletters; usually just a TYPE. 
+Num,Sym,Row,= NUM,SYM,ROW # Cols,Tbl defined below
 
 #-- columns ----------------------------------------------------
 def Col(txt=" ", at=0): # uppercase = NUM, else SYM; "-" ends a minimise
@@ -261,8 +261,8 @@ def explain(tbl, m): # per column: top score, each bin's; then top rules
   print("\nscore  rule")
   for s, rule in m.stack[:5]: print(f"{100*s:5.0f}  {show(tbl, rule)}")
 
-def opts(doc): # -key=value pairs in DOC, as a dict
-  return {k: atom(v) for k, v in re.findall(r"-(\w+)=(\S+)", doc)}
+def opts(): # -key=value pairs in DOC, as a dict
+  return {k: atom(v) for k, v in re.findall(r"-(\w+)=(\S+)", __doc__)}
 
 def cli(s, args): # -key value pairs, for keys S already has
   for k, v in zip(args, args[1:]):
