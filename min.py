@@ -15,6 +15,7 @@ Options:
    -Cut=10      explain: skip ranges under this % of the top score
    -Train=.75   fraction of the rows we train on
    -Any=2048    test rows we score (0 = all of them)
+   -Rand=0      >0: skip the model, label this many at random
    -Stop=50     rows we may label, all up
    -Check=5     of that budget, saved for the unseen rows
    -Seed=1      random number seed
@@ -201,8 +202,10 @@ def eg_rank(): # --rank : label Stop, shortlist Check, report the truth
   random.shuffle(rows)
   k = the.Stop - the.Check               # team A pays for this many
   todo, train = rows[k:], clone(t, rows[:k])
-  look = sorted(todo, key=lambda r: ydist(train, near(train, r)))
-  pick = min(look[:the.Check], key=lambda r: ydist(t, r))  # team B pays
+  look = (random.sample(todo, the.Rand) if the.Rand else      # no model
+          sorted(todo, key=lambda r: ydist(train, near(train, r)))
+          [:the.Check])
+  pick = min(look, key=lambda r: ydist(t, r))        # what team B pays
   ys = sorted(ydist(t, r) for r in todo) # what we could not have known
   print(f"{the.File.split('/')[-1]}: {k}+{the.Check} labels,"
         f" rank {int(100 * ys.index(ydist(t, pick)) / len(ys))}%"
