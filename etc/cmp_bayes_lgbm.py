@@ -172,6 +172,19 @@ def chart(out, d, secs):
             fill=MUTED),
         "</svg>"]
   open(SVG, "w").write("\n".join(o) + "\n")
+  png()
+
+def png():                            # the chart uses six colours, so
+  """a 16-colour palette is lossless to the eye and 5x smaller than
+  rgb: 63k not 342k.  Needs rsvg-convert; Pillow is optional."""
+  if not shutil.which("rsvg-convert"): return
+  out = SVG[:-4] + ".png"
+  subprocess.run(["rsvg-convert", "-w", "1800", SVG, "-o", out])
+  try:
+    from PIL import Image
+    Image.open(out).convert("RGB").quantize(colors=16).save(
+      out, optimize=True)
+  except ImportError: pass
 
 #-- main ---------------------------------------------------------
 def ok(file):                         # a file we can actually classify

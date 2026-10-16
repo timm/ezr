@@ -15,6 +15,3 @@ _minted-*/
 # editors, os, tools
 .DS_Store
 .claude/
-
-# a pure render of the committed svg: rsvg-convert -w 1800 x.svg -o x.png
-etc/cmp_bayes_lgbm.png
