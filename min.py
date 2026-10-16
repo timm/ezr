@@ -178,6 +178,22 @@ def pc(x,y): return 100*x/y if y else 0
 #-- main ----------------------------------------------------
 def eg_h(): print(__doc__)         # --h : the usage text above
 
+def near(tbl, row):   # the labelled row that looks most like this one
+  return min(tbl.rows, key=lambda r: xdist(tbl, r, row))
+
+def eg_rank(): # --rank : label Stop, shortlist Check, report the truth
+  t = Tbl(csv(the.File))
+  rows = t.rows[:]
+  random.shuffle(rows)
+  k = the.Stop - the.Check               # team A pays for this many
+  train, todo = clone(t, rows[:k]), rows[k:]
+  look = sorted(todo, key=lambda r: ydist(train, near(train, r)))
+  pick = min(look[:the.Check], key=lambda r: ydist(t, r))  # team B pays
+  ys = sorted(ydist(t, r) for r in todo) # what we could not have known
+  print(f"{the.File.split('/')[-1]}: {k}+{the.Check} labels,"
+        f" rank {int(100 * ys.index(ydist(t, pick)) / len(ys))}%"
+        f" of {len(todo)}")
+
 def eg_nb(): # --nb : train on half, guess the rest, score it
   t = Tbl(csv(the.File))
   train, test = split(t, the.Train)
