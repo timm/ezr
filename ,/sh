@@ -24,7 +24,7 @@ needs "$1" bash tput '?nvim' '?eza' '?tree' '?tmux' '?column'
 Here=$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)
 PATH="$Here/,:$PATH"        # so `lint ezr` works, not just ,/lint
 
-export EDITOR="nvim -u $Here/etc/nviminit.lua"
+export EDITOR="nvim --clean -u $Here/etc/nviminit.lua"
 export BASH_SILENCE_DEPRECATION_WARNING=1
 export PYTHONDONTWRITEBYTECODE=1  # py3.13 ignores the -B flag
 export HISTSIZE=10000
