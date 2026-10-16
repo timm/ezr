@@ -1,0 +1,82 @@
+/* one 1920x1080 slide per page; rendered to png by `make slides` */
+:root {
+  --ink:    #202124;
+  --muted:  #5f6368;
+  --rule:   #d8dbdf;
+  --card:   #eef0ef;
+  --code:   14px;
+  --com:    #7a8c87;   /* comments      */
+  --kw:     #137a46;   /* keywords      */
+  --str:    #1559b3;   /* strings, nums */
+  --var:    #8250c4;   /* make vars     */
+  --warm:   #cc7000;
+  --hot:    #c0392b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  width: 1920px; height: 1080px; margin: 0; padding: 30px 56px 0;
+  background: #fff; color: var(--ink);
+  font: 400 20px/1.45 system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 { margin: 0; font-size: 40px; font-weight: 700; letter-spacing: -.5px; }
+p.sub { margin: 6px 0 22px; font-size: 21px; color: #3c4043; }
+h2 { margin: 0 0 9px; font-size: 19px; font-weight: 700; }
+h3 { margin: 26px 0 9px; font-size: 20px; font-weight: 700; }
+p.note { margin: 9px 0 0; font-size: 16px; color: var(--muted); }
+
+/* ------------------------------------------------------------------ layout */
+.grid { display: grid; gap: 30px; align-items: start; }
+.cols-2 .grid { grid-template-columns: 1fr 1fr; }
+.cols-21 .grid { grid-template-columns: 1.08fr 1fr; }
+.cols-3 .grid { grid-template-columns: 1fr 1.22fr 1fr; }
+.stack > * + * { margin-top: 22px; }
+
+/* ------------------------------------------------------------------- code */
+pre {
+  margin: 0; padding: 16px 20px; border-radius: 10px; background: var(--card);
+  font: 400 var(--code)/1.5 Menlo, "DejaVu Sans Mono", monospace;
+  white-space: pre; overflow: hidden;
+}
+pre.out { background: #f6f8f8; }
+
+.com, .doc { color: var(--com); font-style: italic; }
+.kw   { color: var(--kw); font-weight: 600; }
+.str, .re, .num { color: var(--str); }
+.var, .tgt { color: var(--var); }
+.call { font-weight: 700; }
+
+/* `make nb` report columns */
+pre.out .a  { color: var(--hot); }
+pre.out .b  { color: var(--warm); }
+pre.out .d  { color: var(--str); }
+pre.out .pd { font-weight: 700; }
+
+/* ------------------------------------------------------------------ tables */
+table { width: 100%; border-collapse: collapse; font-size: 19px; }
+caption { text-align: left; font-weight: 700; font-size: 18px; padding-bottom: 9px; }
+th { font-weight: 700; text-align: right; padding: 4px 10px; }
+th:first-child { text-align: left; }
+td { text-align: right; padding: 5px 10px; border-top: 1px solid var(--rule); }
+td:first-child { text-align: left; font-family: Menlo, monospace; font-size: 17px; }
+thead th { border-bottom: 1px solid #9aa0a6; }
+td.b { font-weight: 700; }
+tr.mean td { font-style: italic; border-top: 1px solid #9aa0a6; }
+tr.mean td:first-child { font-family: inherit; font-size: 19px; }
+
+/* ------------------------------------------------- nav (screen only, never
+   in the png: it sits below the 1080px fold that the screenshot clips) */
+.nav {
+  position: absolute; top: 1104px; left: 56px; right: 56px;
+  display: flex; align-items: center; gap: 18px;
+  font-size: 18px; padding-bottom: 30px;
+}
+.nav a {
+  color: var(--ink); text-decoration: none; padding: 7px 16px;
+  border: 1px solid var(--rule); border-radius: 8px; background: #fafbfb;
+}
+.nav a:hover { background: var(--card); }
+.nav span { color: var(--muted); font-size: 15px; }

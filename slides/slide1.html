@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Naive Bayes vs LightGBM</title>
+<link rel="stylesheet" href="../style.css">
+<style> body { --code: 10px; } p.note { font-size: 13px; }
+        .stack > * + * { margin-top: 8px; } </style>
+</head>
+<body>
+
+<h1>1. Counting vs boosting: 4 points, 6x the speed</h1>
+<p class="sub">50 MOOT data sets &times; 20 shuffles.  Both learners see the
+same first 75% of the same shuffle and are scored on the same last 25%.
+&lowast; = statistically the same as the best, by cliff&rsquo;s delta and
+Kolmogorov&ndash;Smirnov.</p>
+
+<div data-raw="slides/fig/classify.svg"></div>
+
+<p class="note">Blue = min.py ahead, orange = LightGBM.  Every outright win
+for counting is a small file; the two worst losses are
+<code>letter</code> at 20000 rows and <code>tic-tac-toe</code>.  That is the
+generative/discriminative crossover: counting wins while data is scarce,
+boosting wins once it is not.  Seconds are the learning only &mdash;
+interpreter start-up is charged to neither.</p>
+
+</body>
+</html>

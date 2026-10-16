@@ -15,6 +15,9 @@ Options:
    -Cut=10      explain: skip ranges under this % of the top score
    -Train=.75   fraction of the rows we train on
    -Any=2048    test rows we score (0 = all of them)
+   -Top=64      words kept, by tf*idf
+   -Warm=10     labelled rows we start from, half of them yes
+   -Budget=50   labels the active learner may spend, all up
    -Rand=0      >0: skip the model, label this many at random
    -Stop=50     rows we may label, all up
    -Check=5     of that budget, saved for the unseen rows
@@ -32,12 +35,25 @@ def atom(s): # '22' -> 22. '3.1' -> 3.1. 'True' -> True. 'x' -> 'x'.
     except ValueError: pass
   return s=="True" or (s!="False" and s) # or False
 
+def cells(s): # split on commas, but not the ones inside "quotes"
+  if '"' not in s: return s.split(",")      # the common case, fast
+  out, now, q = [], "", False
+  for c in s:
+    if c == '"': q = not q
+    elif c == "," and not q: out += [now]; now = ""
+    else: now += c
+  return out + [now]
+
 def csv(file): # rows of FILE, one at a time; -sig drops any BOM
   with open(os.path.expanduser(file), encoding="utf-8-sig") as f:
+    buf = ""
     for ln in f:
-      if ln.strip(): 
-        lst = [atom(s.strip()) for s in ln.split(",")]
+      buf += ln                        # a quoted cell can hold a line
+      if '"' in buf and buf.count('"') % 2: continue   # break, so wait
+      if buf.strip():
+        lst = [atom(c.strip()) for c in cells(buf)]
         yield Row(raw=lst,bins=lst[:])
+      buf = ""
 
 def some(file, n): # n rows at random, parsing only the ones we keep
   """csv() pays atom() on every cell of every line.  At 167k rows that
@@ -153,6 +169,46 @@ def _xdist(col,a, b): # squared gap, in bin widths
   a, b = norm(col,a), norm(col,b)
   return a - b
 
+#-- text -------------------------------------------------------
+STOP = set("""that this with from have which their these been such more
+  were also they than into""".split())
+
+def Text(file): # raw SLR csv -> a TBL of counts of the top Top words
+  src = csv(file)                      # cells() keeps quoted commas
+  at = {s: i for i, s in enumerate(next(src).raw)}
+  tf, df = [], {}
+  for r in src:
+    c = {}
+    for w in re.findall(r"[a-z]+", str(r.raw[at["abstract"]]).lower()):
+      if len(w) > 2 and w not in STOP: c[w] = c.get(w, 0) + 1
+    for w in c: df[w] = df.get(w, 0) + 1
+    tf += [(c, r.raw[at["label"]])]
+  n = len(tf)
+  top = sorted(df, key=lambda w: -sum(c.get(w, 0) * log(n / df[w])
+                                      for c, _ in tf))[:the.Top]
+  return Tbl([Row(raw=[w.capitalize() for w in top] + ["klass!"])] +
+             [Row(raw=[c.get(w, 0) for w in top] + [k]) for c, k in tf])
+
+def cnb(tbl, rows): # complement naive bayes: what a class is NOT like
+  f, tot, all = {}, {}, 0
+  for r in rows:
+    k = r.raw[tbl.cols.klass.at]
+    f.setdefault(k, {})
+    for col in tbl.cols.x:
+      v = r.raw[col.at]
+      f[k][col.at] = f[k].get(col.at, 0) + v
+      tot[col.at] = tot.get(col.at, 0) + v
+  all, n = sum(tot.values()), len(tbl.cols.x)
+  w = {}
+  for k in f:
+    den = all + n - sum(f[k].values()) + 1E-32
+    w[k] = {a: -log((tot[a] + 1 - f[k].get(a, 0) + 1E-32) / den)
+            for a in tot}      # no L1 norm here: it did not help, and
+  return w                     # the rows it rescales are not the same
+
+def cnbs(w, tbl, row, k): # how much this row looks like class K
+  return sum(row.raw[a] * w[k].get(a, 0) for a in w[k])
+
 #-- classify ---------------------------------------------------
 def nb(tbl, rows, klass): # naive bayes on bins: class = KLASS(row)
   n, f = {}, {}                             # n[class], f[class,at,bin]
@@ -210,6 +266,50 @@ def eg_rank(): # --rank : label Stop, shortlist Check, report the truth
   print(f"{the.File.split('/')[-1]}: {k}+{the.Check} labels,"
         f" rank {int(100 * ys.index(ydist(t, pick)) / len(ys))}%"
         f" of {len(todo)}")
+
+def eg_cnb(): # --cnb : warm start, then ask for the likeliest yes
+  t = Text(the.File)
+  key, out = t.cols.klass.at, []
+  all = sum(r.raw[key] == "yes" for r in t.rows)
+  for _ in range(20):
+    rows = t.rows[:]
+    random.shuffle(rows)               # half we may label, half we
+    half = len(rows) // 2              # only ever score on
+    pool, test = rows[:half], rows[half:]
+    hot = [r for r in test if r.raw[key] == "yes"]
+    yes = [r for r in pool if r.raw[key] == "yes"]
+    lab = set(random.sample(yes, min(the.Warm // 2, len(yes))))
+    lab |= set(random.sample(pool, the.Warm - len(lab)))
+    trail = []
+    while True:
+      w = cnb(t, list(lab))
+      trail += [score(w, t, test, key)]      # a test set that never
+      rest = [r for r in pool if r not in lab]    # changes, so the
+      if len(lab) >= the.Budget or not rest: break   # curve is real
+      lab.add(max(rest, key=lambda r: cnbs(w, t, r, "yes")))
+    out += [trail]
+  n = min(len(x) for x in out)
+  print(f"{the.File.split('/')[-1]}: {len(t.rows)} papers, {all} yes"
+        f" ({100*all/len(t.rows):.1f}%), top {the.Top} words;"
+        f" label from half, score on the other half")
+  print(f'{"labelled":>9}{"pd":>5}{"prec":>6}')
+  for i in range(n):
+    print(f"{the.Warm + i:>9}{median([x[i][0] for x in out]):>5.0f}"
+          f"{median([x[i][1] for x in out]):>6.0f}")
+
+def score(w, t, test, key): # recall, and what it costs to get it
+  """pd alone is not enough: shout "yes" at everything and pd is 100.
+  So also report prec -- of the papers we hand over, how many are
+  really a yes."""
+  tp = fp = fn = 0
+  for r in test:
+    got, want = max(w, key=lambda k: cnbs(w, t, r, k)), r.raw[key]
+    tp += got == want == "yes"
+    fp += got == "yes" != want
+    fn += want == "yes" != got
+  return (100 * tp / (tp + fn + 1E-32), 100 * tp / (tp + fp + 1E-32))
+
+def median(a): a = sorted(a); return a[len(a) // 2]
 
 def eg_nb(): # --nb : train on half, guess the rest, score it
   t = Tbl(csv(the.File))

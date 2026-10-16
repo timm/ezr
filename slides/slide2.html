@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Few labels? Rank with a weak learner</title>
+<link rel="stylesheet" href="../style.css">
+<style> body { --code: 10px; } p.note { font-size: 13px; }
+        pre.out { font-size: 11px; }
+        .stack > * + * { margin-top: 10px; } </style>
+</head>
+<body class="cols-2">
+
+<h1>2. Few labels? Rank with a weak learner</h1>
+<p class="sub">x is free, y is dear: one label is one build, one benchmark,
+one expert hour.  So never ask the model for a number &mdash; ask it for a
+shortlist.  Optimization needs the tail, not the function, and a guesser too
+weak to predict is still strong enough to rank.</p>
+
+<div class="grid">
+  <section>
+    <h2>min.py &mdash; label Stop, shortlist Check, report the truth</h2>
+    <pre class="py" data-src="min.py" data-lines="252-268"></pre>
+    <p class="note">Team A labels 45 rows once.  Team B reuses that work and
+    pays for 5 more.  <code>clone()</code> is the whole train/test boundary:
+    a clone&rsquo;s column summaries are built only from the rows we paid
+    for, so <code>ydist(train,..)</code> cannot see what
+    <code>ydist(t,..)</code> knows.</p>
+  </section>
+  <section class="stack">
+    <div>
+      <h2>where the pick really sits, % (0 = the best row)</h2>
+      <pre class="out" data-src="slides/fig/rank.txt"></pre>
+    </div>
+    <p class="note">20 MOOT files &times; 20 shuffles, all rows scored.
+    <b>rand 5</b> is team B working alone: label 5 held-out rows at random,
+    keep the best.  The model beats it on 18 of 20.  Median 2% against 12%
+    &mdash; 50 labels, and the pick lands in the top 2% of everything we
+    never looked at.</p>
+  </section>
+</div>
+
+</body>
+</html>

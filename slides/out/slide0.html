@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Small Python, big baselines</title>
+<link rel="stylesheet" href="../style.css">
+<style> body { --code: 11px; } p.note { font-size: 14px; }
+        .stack > * + * { margin-top: 10px; } </style>
+</head>
+<body class="cols-2">
+
+<h1>Small Python, big baselines</h1>
+<p class="sub">One 292-line file, standard library only, run under pypy.
+Four jobs &mdash; classify, optimize, rank rare text, count the cost &mdash;
+each measured against the thing people reach for instead.</p>
+
+<div class="grid">
+  <section>
+    <h2>min.py &mdash; the whole contract</h2>
+    <pre class="txt" data-src="min.py" data-lines="4-21">min.py: label a few rows, learn rules of ranges, plan by them.
+(c) 2026, Tim Menzies (timm@ieee.org) MIT License
+
+Usage: ./min.py [-Option value]...      (prints explain)
+
+Options:
+   -Bins=5      bins per numeric column
+   -Which=100   merges
+   -Stack=0     rules kept (0 = keep all)
+   -Geo=0.9     pick: 0 = r^2 over the stack; else P(i) ~ Geo^i
+   -Rank=10     top rules used to rank a row
+   -Cut=10      explain: skip ranges under this % of the top score
+   -Train=.75   fraction of the rows we train on
+   -Any=2048    test rows we score (0 = all of them)
+   -Top=64      words kept, by tf*idf
+   -Warm=10     labelled rows we start from, half of them yes
+   -Budget=50   labels the active learner may spend, all up
+   -Rand=0      &gt;0: skip the model, label this many at random</pre>
+  </section>
+  <section class="stack">
+    <div>
+      <h2>what the next four slides say</h2>
+      <pre class="out">classify   50 data sets   nb 81   LightGBM 85   -4
+           20s vs 118s,<span class="a"> so 6x faster and 4 points worse</span>
+
+optimize   20 data sets   45+5 labels lands at rank 2%
+           labelling 5 at random lands at 12%
+
+text       4 SLR corpora  10 labels -&gt; recall 85-93%
+           read 36-45% of the pile,<span class="a"> not 85-93%: 2.5x less</span>
+
+code       min.py 292 lines,<span class="a"> no imports beyond stdlib</span>
+           sklearn does it in 125 + numpy + scipy</pre>
+    </div>
+    <p class="note">Every number here was produced by the file on the left,
+    on <code>~/gits/moot</code> data, with <code>xargs -P 10</code>.  No
+    result is quoted from a paper.</p>
+  </section>
+</div>
+
+
+<nav class="nav">
+  <a href="slide4.html" title="previous">&larr;</a>
+  <a href="index.html" title="all slides">1 / 5</a>
+  <a href="slide1.html" title="next">&rarr;</a>
+  <span>&larr; &rarr; keys work too</span>
+</nav>
+<script>
+document.addEventListener("keydown", function (e) {
+  if (e.key === "ArrowLeft")  location.href = "slide4.html";
+  if (e.key === "ArrowRight") location.href = "slide1.html";
+  if (e.key === "Escape")     location.href = "index.html";
+});
+</script>
+</body>
+</html>

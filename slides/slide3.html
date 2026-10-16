@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rare classes: read less, find more</title>
+<link rel="stylesheet" href="../style.css">
+<style> body { --code: 10px; } p.note { font-size: 13px; }
+        table { font-size: 15px; } caption { font-size: 15px; padding-bottom: 6px; }
+        td { padding: 2px 9px; }
+        .stack > * + * { margin-top: 10px; } </style>
+</head>
+<body class="cols-2">
+
+<h1>3. Rare classes: read a third, find nine tenths</h1>
+<p class="sub">About 1% of these papers are a &ldquo;yes&rdquo;.  Accuracy is
+useless &mdash; say &ldquo;no&rdquo; to everything and score 99%.  Precision is
+useless too, and unavoidably so: at that base rate, catching nearly every hit
+means handing over a lot of misses.  The question a reviewer actually asks is
+<i>how much must I read?</i></p>
+
+<div class="grid">
+  <section>
+    <h2>min.py &mdash; complement naive bayes</h2>
+    <pre class="py" data-src="min.py" data-lines="192-210"></pre>
+    <p class="note">Score a class by what it is <i>not</i> like.  With 45 yes
+    against 1659 no, the complement of &ldquo;yes&rdquo; is estimated from
+    plenty of data; the class itself is not.  Features are the 64 words with
+    the most tf&middot;idf.</p>
+  </section>
+  <section class="stack">
+    <div>
+      <table>
+        <caption>10 labels (5 of them known hits), then screen.  20 repeats,
+        median.  Label from one half, score on the other.</caption>
+        <thead><tr><th>data</th><th>test</th><th>yes</th><th>recall</th>
+          <th>read</th><th>vs random</th></tr></thead>
+        <tbody>
+          <tr><td>Hall</td>      <td>4455</td><td>52</td><td class="b">93%</td><td>36%</td><td class="b">2.6&times;</td></tr>
+          <tr><td>Kitchenham</td><td>852</td> <td>22</td><td>85%</td>          <td>45%</td><td>1.9&times;</td></tr>
+          <tr><td>Radjenovic</td><td>3000</td><td>24</td><td class="b">93%</td><td>37%</td><td class="b">2.5&times;</td></tr>
+          <tr><td>Wahono</td>    <td>3501</td><td>31</td><td>89%</td>          <td>39%</td><td>2.3&times;</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note"><b>read</b> = the share of the held-out papers the model
+    hands over.  <b>vs random</b> = recall divided by that share: screening at
+    random, reading 36% finds 36%.  So Hall costs a third of the reading for
+    93% of the hits.</p>
+    <p class="note">Spending more than ten labels does not help, and on
+    Kitchenham it hurts (85% &rarr; 55% at 50 labels).  The learner asks for
+    whatever looks most like a yes, so the labelled set fills with yeses and
+    the &ldquo;no&rdquo; side &mdash; the side complement NB actually
+    estimates &mdash; starves.</p>
+  </section>
+</div>
+
+</body>
+</html>

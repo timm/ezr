@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Few labels? Rank with a weak learner</title>
+<link rel="stylesheet" href="../style.css">
+<style> body { --code: 10px; } p.note { font-size: 13px; }
+        pre.out { font-size: 11px; }
+        .stack > * + * { margin-top: 10px; } </style>
+</head>
+<body class="cols-2">
+
+<h1>2. Few labels? Rank with a weak learner</h1>
+<p class="sub">x is free, y is dear: one label is one build, one benchmark,
+one expert hour.  So never ask the model for a number &mdash; ask it for a
+shortlist.  Optimization needs the tail, not the function, and a guesser too
+weak to predict is still strong enough to rank.</p>
+
+<div class="grid">
+  <section>
+    <h2>min.py &mdash; label Stop, shortlist Check, report the truth</h2>
+    <pre class="py" data-src="min.py" data-lines="252-268"><span class="kw">def</span> near(tbl, row):   <span class="com"># the labelled row that looks most like this one</span>
+  <span class="kw">return</span> min(tbl.rows, key=<span class="kw">lambda</span> r: xdist(tbl, r, row))
+
+<span class="kw">def</span> eg_rank(): <span class="com"># --rank : label Stop, shortlist Check, report the truth</span>
+  t = Tbl(some(the.File, the.Any) <span class="kw">if</span> the.Any <span class="kw">else</span> csv(the.File))
+  rows = t.rows[:]
+  random.shuffle(rows)
+  k = the.Stop - the.Check               <span class="com"># team A pays for this many</span>
+  todo, train = rows[k:], clone(t, rows[:k])
+  look = (random.sample(todo, the.Rand) <span class="kw">if</span> the.Rand <span class="kw">else</span>      <span class="com"># no model</span>
+          sorted(todo, key=<span class="kw">lambda</span> r: ydist(train, near(train, r)))
+          [:the.Check])
+  pick = min(look, key=<span class="kw">lambda</span> r: ydist(t, r))        <span class="com"># what team B pays</span>
+  ys = sorted(ydist(t, r) <span class="kw">for</span> r <span class="kw">in</span> todo) <span class="com"># what we could not have known</span>
+  print(f<span class="str">&quot;{the.File.split(&#x27;/&#x27;)[-1]}: {k}+{the.Check} labels,&quot;</span>
+        f<span class="str">&quot; rank {int(100 * ys.index(ydist(t, pick)) / len(ys))}%&quot;</span>
+        f<span class="str">&quot; of {len(todo)}&quot;</span>)</pre>
+    <p class="note">Team A labels 45 rows once.  Team B reuses that work and
+    pays for 5 more.  <code>clone()</code> is the whole train/test boundary:
+    a clone&rsquo;s column summaries are built only from the rows we paid
+    for, so <code>ydist(train,..)</code> cannot see what
+    <code>ydist(t,..)</code> knows.</p>
+  </section>
+  <section class="stack">
+    <div>
+      <h2>where the pick really sits, % (0 = the best row)</h2>
+      <pre class="out" data-src="slides/fig/rank.txt">data                         rows   med    q25-q75   rand 5
+nasa93dem                      93     0        0-6       12
+Apache_AllMeasurements        192     0        0-1        8
+socks                         350     0        0-0        8
+dataset120                   5160     0        0-0        0
+SS-M                          864     1        0-4       18
+BDBC                         2560     1        0-5       15
+HSQLDB                        864     1        0-3       18
+auto93                        398     2        0-7       14
+xomo_flight                 10000     2        1-6        9
+SS-A                         1343     2        0-4       14
+SS-D                          196     2        1-7       21
+HSMGP_num                    3456     2        0-6       13
+7z                          68640     2        1-3        9
+SS-K                         2880     3        0-7        9
+A2C_CartPole                  317     3       1-12       19
+pom3d                         500     4       1-12       11
+Wine_quality                 1599     4       2-13       13
+SQL_AllMeasurements          4653     5       1-10       12
+pom3a                       20000     6       3-10       15
+coc1000                      1000     8       3-20        9
+median,<span class="a"> all 20                        2                  12</span></pre>
+    </div>
+    <p class="note">20 MOOT files &times; 20 shuffles, all rows scored.
+    <b>rand 5</b> is team B working alone: label 5 held-out rows at random,
+    keep the best.  The model beats it on 18 of 20.  Median 2% against 12%
+    &mdash; 50 labels, and the pick lands in the top 2% of everything we
+    never looked at.</p>
+  </section>
+</div>
+
+
+<nav class="nav">
+  <a href="slide1.html" title="previous">&larr;</a>
+  <a href="index.html" title="all slides">3 / 5</a>
+  <a href="slide3.html" title="next">&rarr;</a>
+  <span>&larr; &rarr; keys work too</span>
+</nav>
+<script>
+document.addEventListener("keydown", function (e) {
+  if (e.key === "ArrowLeft")  location.href = "slide1.html";
+  if (e.key === "ArrowRight") location.href = "slide3.html";
+  if (e.key === "Escape")     location.href = "index.html";
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Small Python, big baselines</title>
+<link rel="stylesheet" href="../style.css">
+<style> body { --code: 11px; } p.note { font-size: 14px; }
+        .stack > * + * { margin-top: 10px; } </style>
+</head>
+<body class="cols-2">
+
+<h1>Small Python, big baselines</h1>
+<p class="sub">One 292-line file, standard library only, run under pypy.
+Four jobs &mdash; classify, optimize, rank rare text, count the cost &mdash;
+each measured against the thing people reach for instead.</p>
+
+<div class="grid">
+  <section>
+    <h2>min.py &mdash; the whole contract</h2>
+    <pre class="txt" data-src="min.py" data-lines="4-21"></pre>
+  </section>
+  <section class="stack">
+    <div>
+      <h2>what the next four slides say</h2>
+      <pre class="out">classify   50 data sets   nb 81   LightGBM 85   -4
+           20s vs 118s, so 6x faster and 4 points worse
+
+optimize   20 data sets   45+5 labels lands at rank 2%
+           labelling 5 at random lands at 12%
+
+text       4 SLR corpora  10 labels -> recall 85-93%
+           read 36-45% of the pile, not 85-93%: 2.5x less
+
+code       min.py 292 lines, no imports beyond stdlib
+           sklearn does it in 125 + numpy + scipy</pre>
+    </div>
+    <p class="note">Every number here was produced by the file on the left,
+    on <code>~/gits/moot</code> data, with <code>xargs -P 10</code>.  No
+    result is quoted from a paper.</p>
+  </section>
+</div>
+
+</body>
+</html>

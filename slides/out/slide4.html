@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>How much code is that?</title>
+<link rel="stylesheet" href="../style.css">
+<style> body { --code: 11px; } p.note { font-size: 14px; }
+        table { font-size: 16px; } td { padding: 4px 12px; }
+        tr.tot td { font-weight: 700; border-top: 1px solid #9aa0a6; } </style>
+</head>
+<body class="cols-2">
+
+<h1>4. How much code is that?</h1>
+<p class="sub">Lines = non-blank, non-comment.  min.py imports
+<code>os, random, re, sys</code> and three names from <code>math</code>.
+Nothing else.</p>
+
+<div class="grid">
+  <section>
+    <table>
+      <thead><tr><th>section of min.py</th><th>lines</th><th>what it buys</th></tr></thead>
+      <tbody>
+        <tr><td>lib</td>      <td>47</td><td>csv, quoted cells, coerce</td></tr>
+        <tr><td>structs</td>  <td>8</td> <td>box(): __slots__ classes</td></tr>
+        <tr><td>columns</td>  <td>18</td><td>NUM, SYM, discretize</td></tr>
+        <tr><td>tables</td>   <td>28</td><td>Tbl, Cols, clone, split</td></tr>
+        <tr><td>distance</td> <td>12</td><td>x and y distance</td></tr>
+        <tr><td>classify</td> <td>13</td><td>naive bayes</td></tr>
+        <tr><td>text</td>     <td>35</td><td>tf&middot;idf + complement NB</td></tr>
+        <tr><td>report</td>   <td>19</td><td>the per-class table</td></tr>
+        <tr><td>main</td>     <td>88</td><td>knobs, demos, the four results</td></tr>
+        <tr class="tot"><td>total</td><td>292</td><td>one file, no deps</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <h2>the honest comparison</h2>
+    <pre class="out">min.py           292 lines   stdlib only
+scikit-learn     125 lines   + numpy + scipy + sklearn
+                             (~2M lines behind the import)</pre>
+    <p class="note">So calling sklearn is <i>less</i> code to write &mdash;
+    2.3&times; less.  The 292 lines buy something else: every number in this
+    deck came out of code you can read in an afternoon, with no version to
+    pin, no wheel to build, and nothing that changes under you.</p>
+    <p class="note">The four results, again: 4 points behind LightGBM at 6&times;
+    the speed; a pick in the top 2% from 50 labels; 93% of the rare papers for
+    a third of the reading.  None of that needed the 2M lines.</p>
+    <p class="note">Run it all:
+    <code>pypy3 min.py -File &lt;csv&gt; --nb | --rank | --cnb</code></p>
+  </section>
+</div>
+
+
+<nav class="nav">
+  <a href="slide3.html" title="previous">&larr;</a>
+  <a href="index.html" title="all slides">5 / 5</a>
+  <a href="slide0.html" title="next">&rarr;</a>
+  <span>&larr; &rarr; keys work too</span>
+</nav>
+<script>
+document.addEventListener("keydown", function (e) {
+  if (e.key === "ArrowLeft")  location.href = "slide3.html";
+  if (e.key === "ArrowRight") location.href = "slide0.html";
+  if (e.key === "Escape")     location.href = "index.html";
+});
+</script>
+</body>
+</html>
