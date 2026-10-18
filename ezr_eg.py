@@ -7,7 +7,7 @@ Options, on top of ezr.py's:
       -Eras=4          era: train/test splits over time
       -Draws=20        era: samples per draw
       -Restart=30      anneal: steps before a restart
-      -Eps=0.35        cohen's floor, in score points
+      -Cohen=0.35      cohen's d: pooled sds, not points
       -Klass=~/gits/moot/classify/diabetes.csv
 """
 
@@ -107,7 +107,7 @@ def eg_ezr0() -> None:
     a += [w(holdout(t, acquire))]          # ezr, end to end
     ezr0.the.Seed = the.Seed + i           # ezr0 seeds itself
     b += [w(ezr0.holdout(d0))]          # ezr0, end to end
-  d = 0 if same(a,b,eps=the.Eps) else round(sum(a)/len(a)-sum(b)/len(b))
+  d = 0 if same(a,b,d=the.Cohen) else round(sum(a)/len(a)-sum(b)/len(b))
   print(f"{round(sum(a)/len(a)):>4} {round(sum(b)/len(b)):>4}"
         f" {d:>4} {os.path.basename(the.File)}")
 
@@ -551,11 +551,11 @@ def eg_fft() -> None:
       if e < least: best, least = path[:], e
       most = max(most, e)
     print(f"{d:3} {N:5} | {least:6.3f} {most:6.3f} |"
-          f" {fmae(best,te,te.rows):6.3f}")
+          f" {fmae(best,tr,te.rows):6.3f}")   # tr: train's scaler
   for txt, f in [("tree0, every leaf", lambda r: leaf(root,r).pred),
                  ("one leaf (the mean)", lambda r: root.pred)]:
     print(f"{txt:>25} | {base(f,tr,tr.rows):6.3f}"
-          f" {base(f,te,te.rows):6.3f}")
+          f" {base(f,tr,te.rows):6.3f}")
 
 def eg_all() -> None:
   "Run every demo; exit code counts the crashes."

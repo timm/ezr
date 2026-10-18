@@ -78,3 +78,16 @@ rank: ## --rank over $(RANKN) optimize sets x $(RANKS) seeds, $(J) cores
 	    $(PY2) min.py -File "$$0" -Seed $$s -Stop 37 -Check  5 --rank; \
 	    $(PY2) min.py -File "$$0" -Seed $$s -Stop 25 -Check 20 --rank; \
 	  done'
+
+#-- ezr trees vs LightGBM (etc/cmp_fft_lgbm.py) -----------------------
+REG  := $(HOME)/gits/moot/regression
+
+fft: ## ezr vs lgbm over moot/regression, $(J) cores
+	@find $(REG) -name '*.csv' | sort | tr '\n' '\0' | \
+	 xargs -0 -P $(J) -n1 sh -c \
+	   'SEEDS=20 RAW=1 PRUNE=any BUDGET=256 \
+	    python3 etc/cmp_fft_lgbm.py "$$0"' 2>/dev/null | \
+	 python3 etc/cmp_fft_lgbm.py --stats
+
+fig: ## redraw docs/ezr_vs_lgbm.png from the cached run
+	@python3 etc/plot_ezr_lgbm.py etc/big50.tsv docs/ezr_vs_lgbm.png

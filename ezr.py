@@ -8,11 +8,11 @@ Options:
       -Start=4         acquire: initial random labels   
       -Stop=50         acquire: total labelling budget   
       -Few=128         holdout: max training rows   
-      -Cuts=8          tree: splits to try, per num   
       -Leaf=4          tree: min rows in any leaf  
       -Check=5         holdout: top picks to label  
       -Frugal=2        frugal: most collapses per node (1 or 2)  
       -Depth=4         frugal: longest spine (so <= 3^Depth trees)  
+      -Hold=.25        frugal: labels kept back to pick the spine  
       -Repeats=20      holdout: how many train/test splits  
       -Seed=1234567891 random number seed  
       -File=~/gits/moot/optimize/misc/auto93.csv   
@@ -97,7 +97,7 @@ SYM = struct("SYM", txt=" ", at=0, n=0, has=dict)
 COLS= struct("COLS", names=list, all=dict, x=list, y=list, klass=None)
 TBL = struct("TBL", rows=list, cols=COLS, mids=None)
 NODE= struct("NODE", rows=list, at=None, v=None, go=None, kids=list,
-             mu=0, pred=0, err=0)      # pred, err: set by `fit`
+             mu=0, pred=0, err=0, verr=0)   # pred,err,verr: `fit*`
 
 # Constructors are the TYPE itself, unless named here.
 Num,Sym,Node = NUM,SYM,NODE          # Tbl and Cols are defined below
@@ -133,6 +133,18 @@ def div(col: COL) -> float:
   "Spread: entropy, or standard deviation."
   return (-sum(v/col.n*log2(v/col.n) for v in col.has.values())
           if type(col) is Sym else col.sd)  # sd kept by `add`
+
+def adds(vs: Iterable[ATOM], col: COL | None = None) -> COL:
+  "Every item of VS into COL."
+  col = Num() if col is None else col
+  for v in vs: add(col, v)
+  return col
+
+def copy(col: COL) -> COL:
+  "A COL with the same counts.  Sym also needs its dict copied."
+  out = type(col)(**{k: getattr(col,k) for k in type(col).__slots__})
+  if type(col) is Sym: out.has = dict(col.has)
+  return out
 
 def norm(col: COL, v: ATOM) -> ATOM:
   "To 0..1, by the logistic curve.  Symbols do not scale."
@@ -229,40 +241,58 @@ def grabs(tbl: TBL, cap: int | None = None,
 #-- tree ---------------------------------------------------
 # Calls core.  Nothing above this line calls down here.
 def cut(tbl: TBL, rows: ROWS) -> tuple[int,ATOM,GO]|None:
-  "The (at, v, go) whose two sides have the tightest ys."
-  ys = [ydist(tbl, r) for r in rows]
+  """The (at, v, go) whose two sides have the tightest ys.
+
+  A num tries EVERY value, not a sample of them, and still costs
+  one pass: sort by x, then walk left adding each y to the left
+  side and taking it back out of the right.  RHS is the same for
+  every column, so it is paid for once and copied."""
+  ys  = {id(r): ydist(tbl, r) for r in rows}
+  rhs = adds(ys.values())               # every y, counted once
   out, least = None, 1e30
   for col in tbl.cols.x:
-    for v, go in candidates(col, rows):
-      a, b = Num(), Num()   # one pass, so one `go` per row
-      for r,y in zip(rows,ys): add(a if go(r) else b, y)
-      if a.n >= the.Leaf and b.n >= the.Leaf:
-        score = (div(a)*a.n + div(b)*b.n) / (a.n + b.n)
-        if score < least: out, least = (col.at, v, go), score
-  return out
+    at = col.at
+    if type(col) is Sym:
+      g = {}
+      for r in rows:
+        if (v := r[at]) != "?": g.setdefault(v,[]).append(ys[id(r)])
+      for v, vs in sorted(g.items()):
+        a, b = adds(vs), copy(rhs)      # b is everything else,
+        for y in vs: add(b, y, -1)      # "?" rows included
+        least, out = better(a, b, at, v, 1, least, out)
+    else:
+      a, b = Num(), copy(rhs)           # "?" rows stay in b
+      xs = sorted((r for r in rows if r[at] != "?"),
+                  key=lambda r: r[at])
+      for i, r in enumerate(xs[:-1]):
+        add(a, ys[id(r)]); add(b, ys[id(r)], -1)
+        if r[at] != xs[i+1][at]:        # no cutting inside a tie
+          least, out = better(a, b, at, r[at], 0, least, out)
+  if out is None: return None
+  at, v, sym = out
+  return at, v, ((lambda r: r[at] == v) if sym else
+                 (lambda r: r[at] != "?" and r[at] <= v))
 
-def candidates(col: COL, rows: ROWS) -> Iterator[tuple[ATOM,GO]]:
-  "What splits to try: one per symbol, or CUTS per num."
-  at = col.at
-  if type(col) is Sym:
-    for v in sorted({r[at] for r in rows if r[at] != "?"}):
-      yield v, lambda r,v=v,at=at: r[at] == v
-  else:                # by rank, not value: THESE rows are dense
-    xs = sorted(r[at] for r in rows if r[at] != "?")
-    k  = max(1, len(xs)//the.Cuts)     # cuts, spaced by rank
-    for v in xs[k-1:-1:k]:
-      yield v, (lambda r,v=v,at=at: r[at] != "?" and r[at] <= v)
+def better(a, b, at, v, sym, least, out):
+  "Keep this split if its two sides are tighter than the best so far."
+  if a.n >= the.Leaf and b.n >= the.Leaf:
+    s = (div(a)*a.n + div(b)*b.n) / (a.n + b.n)
+    if s < least: return s, (at, v, sym)
+  return least, out
 
-def tree(tbl: TBL, rows: ROWS) -> NODE:
-  "Split while a split keeps both sides big enough."
+
+def tree(tbl: TBL, rows: ROWS, most: int = 1000) -> NODE:
+  """Split while a split keeps both sides big enough.  MOST caps
+  the depth: frugal never reads past its spine, and building what
+  it will not read is the whole cost on a wide file."""
   node = NODE(rows=rows,
               mu=sum(ydist(tbl,r) for r in rows)/len(rows))
-  if len(rows) > the.Leaf and (found := cut(tbl, rows)):
+  if most and len(rows) > the.Leaf and (found := cut(tbl, rows)):
     at, v, go = found
     yes, no = [], []
     for r in rows: (yes if go(r) else no).append(r)
     node.at, node.v, node.go = at, v, go # cut kepts sides big
-    node.kids = [tree(tbl, yes), tree(tbl, no)]
+    node.kids = [tree(tbl, yes, most-1), tree(tbl, no, most-1)]
   return node
 
 def leaf(node: NODE, row: ROW) -> NODE:
@@ -312,6 +342,25 @@ def fit(node: NODE, Y: dict) -> NODE:
   for kid in node.kids: fit(kid, Y)
   return node
 
+def nodes(z: NODE) -> Iterator[NODE]:
+  "Every node of a tree, root first."
+  yield z
+  for k in z.kids: yield from nodes(k)
+
+def fitv(root: NODE, Y: dict, rows: ROWS) -> NODE:
+  """What the grown-in predictions cost on held-out ROWS, counted
+  at every node a row passes through.  A variant\'s exits are
+  disjoint and cover everything, so a row is counted once at
+  whichever exit it reaches -- summing VERR over them is exact."""
+  for z in nodes(root): z.verr = 0
+  for r in rows:
+    z = root
+    while True:
+      z.verr += abs(Y[id(r)] - z.pred)
+      if not z.kids: break
+      z = z.kids[0 if z.go(r) else 1]
+  return root
+
 def frugals(node: NODE, n: int = 2, d: int = 4,
             path: list | None = None) -> Iterator[list]:
   """Every frugal variant, as a list of (node, side) steps: side
@@ -336,14 +385,23 @@ def exits(path: list) -> Iterator[NODE]:
     else:           yield z.kids[s]
 
 def frugal(tbl: TBL, rows: ROWS = None) -> list:
-  "Of up to 3^Depth frugal trees, the one training likes best."
-  rows = rows or tbl.rows
-  root = fit(tree(tbl, rows), ys(tbl, rows))
+  """Of up to 3^Depth frugal trees, the one a held-out slice of
+  the labels likes best.  Picking on the rows that grew the tree
+  rewards the most elaborate spine, which is how it used to get
+  WORSE as the budget rose."""
+  rows = random.sample(rows or tbl.rows, len(rows or tbl.rows))
+  n    = int((1 - the.Hold) * len(rows))
+  grow, pick = (rows[:n], rows[n:]) if n < len(rows) else (rows, [])
+  Y    = ys(tbl, rows)
+  root = fit(tree(tbl, grow, the.Depth), Y)
+  cost = (lambda p: sum(x.err for x in exits(p)))     # no holdout
+  if pick:
+    fitv(root, Y, pick)
+    cost = lambda p: sum(x.verr for x in exits(p))
   best, least = None, 1e30                # only ever two paths in
   for path in frugals(root, the.Frugal, the.Depth):   # hand: this
-    err = sum(x.err for x in exits(path))             # one, and
-    if err < least: best, least = path[:], err        # the best
-  return best
+    if (err := cost(path)) < least: best, least = path[:], err
+  return best, root
 
 def fleaf(path: list, row: ROW) -> QTY:
   "Walk ROW along the spine; the first exit it meets answers."
@@ -387,18 +445,11 @@ def holdout(tbl: TBL, pick: PICKER = acquire,
 
 #-- stats --------------------------------------------------
 # A leaf: it calls core, and nothing here calls it.
-def adds(vs: Iterable[ATOM], col: COL | None = None) -> COL:
-  "Every item of VS into COL."
-  col = Num() if col is None else col
-  for v in vs: add(col, v)
-  return col
-
-def cohen(xs: NUMS, ys: NUMS, d: float = 0.35,
-          eps: float = 0) -> bool:
+def cohen(xs: NUMS, ys: NUMS, d: float = 0.35) -> bool:
   "Are the means within D pooled standard deviations?"
   a, b = adds(xs), adds(ys)
   pool = ((a.n-1)*div(a)**2 + (b.n-1)*div(b)**2)/(a.n+b.n-2)
-  return abs(a.mu - b.mu) <= max(eps, d * sqrt(pool))
+  return abs(a.mu - b.mu) <= d * sqrt(pool)
 
 def cliffs(xs: NUMS, ys: NUMS, d: float = 0.197) -> bool:
   "Sorted in.  Is the rank imbalance small enough?"
@@ -419,12 +470,12 @@ def ks(xs: NUMS, ys: NUMS, a: float = 1.36) -> bool:
     d = max(d, abs(i/n - j/m))
   return d <= a * sqrt((n + m) / (n * m))
 
-def same(xs: NUMS, ys: NUMS, eps: float = 0) -> bool:
-  """Indistinguishable.  Always cliffs and ks; EPS adds cohen, and
-  doubles as its effect size (eps=0 skips that third test)."""
+def same(xs: NUMS, ys: NUMS, d: float = 0) -> bool:
+  """Indistinguishable.  Always cliffs and ks; a non-zero D adds
+  cohen, and is its effect size -- a multiple of the pooled sd,
+  NOT an absolute floor.  d=0 skips that third test."""
   xs, ys = sorted(xs), sorted(ys)
-  return (cliffs(xs,ys) and ks(xs,ys)
-          and (not eps or cohen(xs,ys,d=eps)))
+  return cliffs(xs,ys) and ks(xs,ys) and (not d or cohen(xs,ys,d))
 
 #-- start --------------------------------------------------
 DEFAULTS = opts(__doc__ or "")   # an extension adds its own, then

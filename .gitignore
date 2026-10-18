@@ -15,3 +15,6 @@ _minted-*/
 # editors, os, tools
 .DS_Store
 .claude/
+
+# scratch runs of etc/cmp_fft_lgbm.py
+etc/.*.tsv
