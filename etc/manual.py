@@ -16,7 +16,7 @@ GROUPS = [
  ("Columns",  "one running summary per column; `?` never counts",
   "Col Num Sym add mid mids div norm"),
  ("Tables",   "a header row routes every column to x, y or skip",
-  "Tbl Cols addRow addCols clone"),
+  "Tbl Cols addRow clone"),
  ("Distance", "how far two rows are, and how far a row is from perfect",
   "minkowski ydist gap xdist"),
  ("Acquire",  "spend the labelling budget where it buys the most",

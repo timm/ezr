@@ -10,9 +10,6 @@ Options:
       -Few=128         holdout: max training rows   
       -Leaf=4          tree: min rows in any leaf  
       -Check=5         holdout: top picks to label  
-      -Frugal=2        frugal: most collapses per node (1 or 2)  
-      -Depth=4         frugal: longest spine (so <= 3^Depth trees)  
-      -Hold=.25        frugal: labels kept back to pick the spine  
       -Repeats=20      holdout: how many train/test splits  
       -Seed=1234567891 random number seed  
       -File=~/gits/moot/optimize/misc/auto93.csv   
@@ -24,7 +21,6 @@ five files back:
       core     columns, tables, distance.  Calls nothing.    
       acquire  spend a label budget.    
       tree     recursive splits, and a way to read them.    
-      frugal   collapse subtrees; keep the best of the bunch.    
       rig      wins, holdout.  Takes its ranker as an argument,    
                so the tree is its default, not its requirement.    
       stats    cliffs, ks, cohen.  A leaf: nothing calls it.    
@@ -37,22 +33,22 @@ five files back:
 # pylint: disable=no-member,assigning-non-slot  # `type()` structs
 from typing import Any
 import os, re, sys, random, traceback # pylint: disable=C0410
+from copy import copy
+from itertools import groupby
 from math import exp, log2, sqrt
 from collections.abc import Callable, Iterable, Iterator
 
 #-- types --------------------------------------------------
-type QTY    = int | float             # any number
-type ATOM   = QTY | str               # one cell; "?" = unknown
-type ROW    = list[ATOM]
-type MIDS   = dict[int, ATOM]         # a centroid
-type ROWS   = list[ROW]
-type NUMS   = list[QTY]
-type COL    = NUM | SYM               # summary of a column
-type GO     = Callable[[ROW], bool]   # which way does a row go?
-type ORACLE = Callable[[ROW], ROW]    # labels one row
-type PICKER = Callable[[TBL, int, ORACLE], ROWS]
-type RANKER = Callable[[TBL], Callable[[ROW], float]]
-                                      # ranks unlabelled rows
+# Plain aliases, not `type X = ...`: that is 3.12 syntax, and pypy
+# is on 3.11.  So the ones naming a struct wait until it exists.
+QTY    = int | float                  # any number
+ATOM   = QTY | str                    # one cell; "?" = unknown
+ROW    = list[ATOM]
+MIDS   = dict[int, ATOM]              # a centroid
+ROWS   = list[ROW]
+NUMS   = list[QTY]
+GO     = Callable[[ROW], bool]        # which way does a row go?
+ORACLE = Callable[[ROW], ROW]         # labels one row
 
 #-- misc ---------------------------------------------------
 def say(x: Any, p: int = 2) -> str:
@@ -101,6 +97,11 @@ NODE= struct("NODE", rows=list, at=None, v=None, go=None, kids=list,
 
 # Constructors are the TYPE itself, unless named here.
 Num,Sym,Node = NUM,SYM,NODE          # Tbl and Cols are defined below
+
+COL    = NUM | SYM                    # the aliases that needed one
+PICKER = Callable[[TBL, int, ORACLE], ROWS]
+RANKER = Callable[[TBL], Callable[[ROW], float]]
+                                      # ranks unlabelled rows
 #-- columns ------------------------------------------------
 def Col(txt: str = " ", at: int = 0) -> COL:
   "Factory that returns NUM or SYM.  A trailing `-` minimises."
@@ -125,7 +126,7 @@ def mid(col: COL) -> ATOM:
           ) if type(col) is Sym else col.mu
 
 def mids(tbl: TBL) -> MIDS:
-  "Every column's middle, cached until the next addCols."
+  "Every column's middle, cached until the next addRow."
   tbl.mids = tbl.mids or {at: mid(c) for at,c in tbl.cols.all.items()}
   return tbl.mids
 
@@ -139,12 +140,6 @@ def adds(vs: Iterable[ATOM], col: COL | None = None) -> COL:
   col = Num() if col is None else col
   for v in vs: add(col, v)
   return col
-
-def copy(col: COL) -> COL:
-  "A COL with the same counts.  Sym also needs its dict copied."
-  out = type(col)(**{k: getattr(col,k) for k in type(col).__slots__})
-  if type(col) is Sym: out.has = dict(col.has)
-  return out
 
 def norm(col: COL, v: ATOM) -> ATOM:
   "To 0..1, by the logistic curve.  Symbols do not scale."
@@ -170,13 +165,11 @@ def Cols(names: list[str]) -> COLS:
     (cols.y if s[-1] in "+-!" else cols.x).append(col)
   return cols
 
-def addRow(tbl: TBL, row: ROW) -> ROW:
-  "Keep ROW, and show it to my columns."
-  tbl.rows += [row]
-  return addCols(tbl, row)
-
-def addCols(tbl: TBL, row: ROW, inc: int = 1) -> ROW:
-  "Show ROW to my columns, without keeping it."
+def addRow(tbl: TBL, row: ROW, inc: int = 1,
+           keep: bool = True) -> ROW:
+  """Show ROW to my columns.  KEEP also files it under tbl.rows;
+  INC=-1 takes it back out of the columns, and wants keep=False."""
+  if keep: tbl.rows += [row]
   tbl.mids = None                 # a new row moves the middles
   for at, col in tbl.cols.all.items(): add(col, row[at], inc)
   return row
@@ -186,14 +179,14 @@ def clone(tbl: TBL, rows: ROWS = None) -> TBL:
   return Tbl([tbl.cols.names] + (rows or []))
 
 #-- distance -----------------------------------------------
-def dist(vs: Iterable[QTY], n: int) -> float:
-  "Root mean square of N gaps."
-  return sqrt(sum(v*v for v in vs) / n)
+def dist(vs: Iterable[QTY]) -> float:
+  "Root mean square of the gaps.  VS is counted, not asked for n."
+  vs = list(vs)
+  return sqrt(sum(v*v for v in vs) / len(vs))
 
 def ydist(tbl: TBL, row: ROW) -> float:
   "How far ROW's goals are from the best they could be."
-  return dist((abs(norm(c, row[c.at]) - c.goal)
-                    for c in tbl.cols.y), len(tbl.cols.y))
+  return dist(abs(norm(c, row[c.at]) - c.goal) for c in tbl.cols.y)
 
 def gap(col: COL, a: ATOM, b: ATOM) -> QTY:
   "Distance between two values of one column."
@@ -202,8 +195,7 @@ def gap(col: COL, a: ATOM, b: ATOM) -> QTY:
 
 def xdist(tbl: TBL, r1: ROW, r2: ROW | MIDS) -> float:
   "How far apart two rows are, over the x columns."
-  return dist((gap(c, r1[c.at], r2[c.at])
-                    for c in tbl.cols.x), len(tbl.cols.x))
+  return dist(gap(c, r1[c.at], r2[c.at]) for c in tbl.cols.x)
 
 #-- acquire ------------------------------------------------
 
@@ -228,7 +220,7 @@ def acquire(tbl: TBL, cap: int | None = None,
     addRow(best, addRow(both, label(todo.pop())))
     best.rows.sort(key=lambda z: ydist(both, z))  # no y leak
     if len(best.rows) > sqrt(len(both.rows)): # best stays small
-      addRow(rest, addCols(best, best.rows.pop(), -1))
+      addRow(rest, addRow(best, best.rows.pop(), -1, keep=False))
   return both.rows
 
 def grabs(tbl: TBL, cap: int | None = None,
@@ -241,50 +233,46 @@ def grabs(tbl: TBL, cap: int | None = None,
 #-- tree ---------------------------------------------------
 # Calls core.  Nothing above this line calls down here.
 def cut(tbl: TBL, rows: ROWS) -> tuple[int,ATOM,GO]|None:
-  """The (at, v, go) whose two sides have the tightest ys.
-
-  A num tries EVERY value, not a sample of them, and still costs
-  one pass: sort by x, then walk left adding each y to the left
-  side and taking it back out of the right.  RHS is the same for
-  every column, so it is paid for once and copied."""
-  ys  = {id(r): ydist(tbl, r) for r in rows}
-  rhs = adds(ys.values())               # every y, counted once
-  out, least = None, 1e30
+  "The (at, v, go) whose two sides have the tightest ys."
+  Y   = {id(r): ydist(tbl, r) for r in rows}   # ydist, ALWAYS: a
+  tot = adds(Y.values())      # tree splits on how good a row is,
+  out, least = None, 1e30     # not on what `ys` would regress
   for col in tbl.cols.x:
-    at = col.at
-    if type(col) is Sym:
-      g = {}
-      for r in rows:
-        if (v := r[at]) != "?": g.setdefault(v,[]).append(ys[id(r)])
-      for v, vs in sorted(g.items()):
-        a, b = adds(vs), copy(rhs)      # b is everything else,
-        for y in vs: add(b, y, -1)      # "?" rows included
-        least, out = better(a, b, at, v, 1, least, out)
-    else:
-      a, b = Num(), copy(rhs)           # "?" rows stay in b
-      xs = sorted((r for r in rows if r[at] != "?"),
-                  key=lambda r: r[at])
-      for i, r in enumerate(xs[:-1]):
-        add(a, ys[id(r)]); add(b, ys[id(r)], -1)
-        if r[at] != xs[i+1][at]:        # no cutting inside a tie
-          least, out = better(a, b, at, r[at], 0, least, out)
-  if out is None: return None
-  at, v, sym = out
-  return at, v, ((lambda r: r[at] == v) if sym else
-                 (lambda r: r[at] != "?" and r[at] <= v))
+    at = col.at                 # this column as sorted (x,y) pairs:
+    vs = sorted((r[at], Y[id(r)])         # a num cuts between them,
+                for r in rows if r[at] != "?")   # a sym groups by
+    for v, a, b in candidates(col, vs, copy(tot)):          # them
+      if a.n >= the.Leaf and b.n >= the.Leaf:
+        s = (div(a)*a.n + div(b)*b.n) / (a.n + b.n)
+        if s < least: out, least = (col, v), s
+  if out: return out[0].at, out[1], gate(*out)
 
-def better(a, b, at, v, sym, least, out):
-  "Keep this split if its two sides are tighter than the best so far."
-  if a.n >= the.Leaf and b.n >= the.Leaf:
-    s = (div(a)*a.n + div(b)*b.n) / (a.n + b.n)
-    if s < least: return s, (at, v, sym)
-  return least, out
+def candidates(col: COL, vs: list, tot: NUM) -> Iterator:
+  """Every split of COL as (v, left, right): the ys each side would
+  hold.  VS is this column\'s (x,y) pairs, sorted; TOT is every y of
+  every row, the "?" ones too, and is consumed here -- which is why
+  the caller hands over a copy.  LEFT and RIGHT are reused between
+  yields, so score them before asking for the next one."""
+  if type(col) is Sym:
+    for v, g in groupby(vs, lambda z: z[0]):   # one symbol, and
+      a, b = Num(), copy(tot)                  # then all the rest
+      for _, y in g: add(a, y); add(b, y, -1)
+      yield v, a, b
+  else:
+    a = Num()
+    for (v, y), (nxt, _) in zip(vs, vs[1:]):
+      add(a, y); add(tot, y, -1)      # one row moves right to left
+      if v != nxt: yield v, a, tot    # no cutting inside a tie
 
+def gate(col: COL, v: ATOM) -> GO:
+  "The test that sends a row to the left kid."
+  return ((lambda r: r[col.at] == v) if type(col) is Sym else
+          (lambda r: r[col.at] != "?" and r[col.at] <= v))
 
 def tree(tbl: TBL, rows: ROWS, most: int = 1000) -> NODE:
   """Split while a split keeps both sides big enough.  MOST caps
-  the depth: frugal never reads past its spine, and building what
-  it will not read is the whole cost on a wide file."""
+  the depth, for a caller that will not read past it: building
+  what nobody looks at is the whole cost on a wide file."""
   node = NODE(rows=rows,
               mu=sum(ydist(tbl,r) for r in rows)/len(rows))
   if most and len(rows) > the.Leaf and (found := cut(tbl, rows)):
@@ -322,100 +310,30 @@ def show(tbl: TBL, node: NODE, pre: str | None = None,
 
 
 
-#-- frugal -------------------------------------------------
-# Calls tree.  A fast and frugal tree exits on ONE side of every
-# test, so it is a spine, not a bush.  Which side, at each depth,
-# is a different inductive bias -- so one tree0 hides up to 3^d
-# of them, and we can go shopping.
-def ys(tbl: TBL, rows: ROWS) -> dict:
-  "The thing to regress: the lone y column, else ydist."
-  c = tbl.cols.y
-  f = (lambda r: r[c[0].at]) if len(c)==1 else lambda r: ydist(tbl,r)
-  return {id(r): f(r) for r in rows}
+#-- regress ------------------------------------------------
+# Calls tree.  A tree splits on ydist; these two let it predict a
+# number instead, and say what that prediction costs.
+def ys(tbl: TBL) -> Callable[[ROW], QTY]:
+  """A row\'s y: its lone y column, or else its ydist.  Returns a
+  FUNCTION, and one that remembers -- ydist is not cheap and a row
+  is asked for its y once per level of a tree.  Not cached on the
+  row itself: ydist reads TBL\'s columns, so the same row has a
+  different y in another table."""
+  c    = tbl.cols.y
+  f    = (lambda r: r[c[0].at]) if len(c)==1 else lambda r: ydist(tbl,r)
+  memo = {}
+  def y(row):
+    if id(row) not in memo: memo[id(row)] = f(row)
+    return memo[id(row)]
+  return y
 
-def fit(node: NODE, Y: dict) -> NODE:
-  """What this node would predict, and what that costs.  Pay it
-  once here, and a variant costs O(depth), not O(rows)."""
-  vs = [Y[id(r)] for r in node.rows]
+def fit(node: NODE, Y: Callable[[ROW], QTY]) -> NODE:
+  "What this node would predict (PRED), and what that costs (ERR)."
+  vs = [Y(r) for r in node.rows]
   node.pred = sum(vs) / len(vs)
   node.err  = sum(abs(v - node.pred) for v in vs)
   for kid in node.kids: fit(kid, Y)
   return node
-
-def nodes(z: NODE) -> Iterator[NODE]:
-  "Every node of a tree, root first."
-  yield z
-  for k in z.kids: yield from nodes(k)
-
-def fitv(root: NODE, Y: dict, rows: ROWS) -> NODE:
-  """What the grown-in predictions cost on held-out ROWS, counted
-  at every node a row passes through.  A variant\'s exits are
-  disjoint and cover everything, so a row is counted once at
-  whichever exit it reaches -- summing VERR over them is exact."""
-  for z in nodes(root): z.verr = 0
-  for r in rows:
-    z = root
-    while True:
-      z.verr += abs(Y[id(r)] - z.pred)
-      if not z.kids: break
-      z = z.kids[0 if z.go(r) else 1]
-  return root
-
-def frugals(node: NODE, n: int = 2, d: int = 4,
-            path: list | None = None) -> Iterator[list]:
-  """Every frugal variant, as a list of (node, side) steps: side
-  0 or 1 collapses that kid and walks on into the other, 2
-  collapses both and stops, None is a leaf of tree0.  PATH is one
-  reused list -- copy it if you mean to keep it."""
-  path = [] if path is None else path
-  if not node.kids or d < 1:
-    path += [(node, None)]; yield path; path.pop(); return
-  for side in (0, 1):
-    path += [(node, side)]
-    yield from frugals(node.kids[1-side], n, d-1, path)
-    path.pop()
-  if n > 1:
-    path += [(node, 2)]; yield path; path.pop()
-
-def exits(path: list) -> Iterator[NODE]:
-  "A frugal tree\'s leaves: whatever it collapsed.  No overlaps."
-  for z, s in path:
-    if   s is None: yield z
-    elif s == 2:    yield from z.kids
-    else:           yield z.kids[s]
-
-def frugal(tbl: TBL, rows: ROWS = None) -> list:
-  """Of up to 3^Depth frugal trees, the one a held-out slice of
-  the labels likes best.  Picking on the rows that grew the tree
-  rewards the most elaborate spine, which is how it used to get
-  WORSE as the budget rose."""
-  rows = random.sample(rows or tbl.rows, len(rows or tbl.rows))
-  n    = int((1 - the.Hold) * len(rows))
-  grow, pick = (rows[:n], rows[n:]) if n < len(rows) else (rows, [])
-  Y    = ys(tbl, rows)
-  root = fit(tree(tbl, grow, the.Depth), Y)
-  cost = (lambda p: sum(x.err for x in exits(p)))     # no holdout
-  if pick:
-    fitv(root, Y, pick)
-    cost = lambda p: sum(x.verr for x in exits(p))
-  best, least = None, 1e30                # only ever two paths in
-  for path in frugals(root, the.Frugal, the.Depth):   # hand: this
-    if (err := cost(path)) < least: best, least = path[:], err
-  return best, root
-
-def fleaf(path: list, row: ROW) -> QTY:
-  "Walk ROW along the spine; the first exit it meets answers."
-  for z, s in path:                  # the last step always exits,
-    if s is None: return z.pred      # so this cannot fall through
-    k = 0 if z.go(row) else 1
-    if s in (2, k): return z.kids[k].pred
-
-def fmae(path: list, tbl: TBL, rows: ROWS) -> float:
-  "MAE, over how far the mean y sits above the best y."
-  Y  = ys(tbl, rows)
-  vs = list(Y.values())
-  return (sum(abs(Y[id(r)] - fleaf(path,r)) for r in rows) / len(rows)
-          / (sum(vs)/len(vs) - min(vs) + 1E-32))
 
 #-- rig ----------------------------------------------------
 # Calls core, acquire, and one RANKER -- tree's, by default.
@@ -478,9 +396,8 @@ def same(xs: NUMS, ys: NUMS, d: float = 0) -> bool:
   return cliffs(xs,ys) and ks(xs,ys) and (not d or cohen(xs,ys,d))
 
 #-- start --------------------------------------------------
-DEFAULTS = opts(__doc__ or "")   # an extension adds its own, then
-Settings = struct("Settings", **DEFAULTS)   # rebuilds this struct
-the      = Settings()
+Settings = struct("Settings", **opts(__doc__))  # an extension adds
+the      = Settings()       # its own, then rebuilds this from both
 
 def run(f: Callable) -> int:
   "Run F. Demos may poke `the`, so always put it back."

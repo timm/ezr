@@ -13,6 +13,7 @@ import os, re, sys, time, random, statistics as S
 sys.path.insert(0, os.path.dirname(os.path.dirname(
                    os.path.abspath(__file__))))
 import ezr as E
+import attic as A
 
 SEEDS = int(os.environ.get("SEEDS", 5))
 DEPTH  = 5
@@ -31,8 +32,8 @@ def split(f, seed):
 
 def scale(tr, rows):
   "Test y, and what to divide its errors by.  Train's columns."
-  Y  = E.ys(tr, rows)
-  vs = list(Y.values())
+  Y  = E.ys(tr)
+  vs = [Y(r) for r in rows]
   return Y, sum(vs)/len(vs) - min(vs) + 1E-32
 
 def fft(tr, te):
@@ -40,12 +41,12 @@ def fft(tr, te):
   TR's labels; frugal just spends a quarter of them picking its
   spine instead of growing with them."""
   t0        = time.time()
-  best, _   = E.frugal(tr, tr.rows)
+  best, _   = A.frugal(tr, tr.rows)
   secs      = time.time() - t0
-  root      = E.fit(E.tree(tr, tr.rows, DEPTH), E.ys(tr, tr.rows))
+  root      = E.fit(E.tree(tr, tr.rows, DEPTH), E.ys(tr))
   Y, d      = scale(tr, te.rows)
-  err = sum(abs(Y[id(r)] - E.fleaf(best,r)) for r in te.rows)
-  big = sum(abs(Y[id(r)] - E.leaf(root,r).pred) for r in te.rows)
+  err = sum(abs(Y(r) - A.fleaf(best,r)) for r in te.rows)
+  big = sum(abs(Y(r) - E.leaf(root,r).pred) for r in te.rows)
   return err/len(te.rows)/d, big/len(te.rows)/d, secs, len(best)
 
 def lgbm(tr, te):
@@ -64,15 +65,15 @@ def lgbm(tr, te):
       [[cats[at].get(r[at], np.nan) if at in cats else
         (np.nan if r[at] == "?" else r[at]) for at in xs]
        for r in rows], dtype=float)
-  Ytr    = E.ys(tr, tr.rows)
+  Ytr    = E.ys(tr)
   Yte, d = scale(tr, te.rows)
   t0 = time.time()
   m  = lgb.LGBMRegressor(verbose=-1, n_estimators=100)
-  m.fit(X(tr.rows), [Ytr[id(r)] for r in tr.rows],
+  m.fit(X(tr.rows), [Ytr(r) for r in tr.rows],
         categorical_feature=[i for i,at in enumerate(xs) if at in cats])
   secs = time.time() - t0
   p = m.predict(X(te.rows))
-  err = sum(abs(Yte[id(r)] - v) for r,v in zip(te.rows, p))
+  err = sum(abs(Yte(r) - v) for r,v in zip(te.rows, p))
   return err/len(te.rows)/d, secs
 
 def prune(tr, how):

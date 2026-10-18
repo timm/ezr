@@ -27,7 +27,8 @@ type CLUSTERS = list[TBL]   # what `halve` returns
 
 # A struct's slots are fixed, so adding options means a new struct.
 # ezr.run resets `the` in place, so both modules must name one object.
-ezr.Settings = struct("Settings", **(DEFAULTS | opts(__doc__)))
+ezr.Settings = struct("Settings",
+                      **(opts(ezr.__doc__) | opts(__doc__)))
 the = ezr.the = ezr.Settings()
 
 def eg_h() -> None:
@@ -524,38 +525,6 @@ def eg_distinguish() -> None:
   print("x~x", DISTINGUISHABILITY(x, x),
         " x~z", DISTINGUISHABILITY(x, z))
   eg_same()
-
-def eg_fft() -> None:
-  """Frugal trees: one tree0, many biases, shop for the best."""
-  random.seed(the.Seed)
-  t      = Tbl(csv(the.File))
-  rows   = random.sample(t.rows, len(t.rows)); n = len(rows)//2
-  tr, te = clone(t, rows[:n]), clone(t, rows[n:])
-  root   = fit(tree(tr, tr.rows), ys(tr, tr.rows))
-  def base(f, tb, rs):       # same scale as fmae, for a reference
-    Y  = ys(tb, rs); vs = list(Y.values())
-    return (sum(abs(Y[id(r)] - f(r)) for r in rs) / len(rs)
-            / (sum(vs)/len(vs) - min(vs) + 1E-32))
-  c   = t.cols.y          # name the target: a 0.2 on one of them
-  tgt = c[0].txt if len(c)==1 else f"ydist of {len(c)} goals"
-  print(f"{os.path.basename(the.File)}: {n} train,"     # is not a
-        f" {len(te.rows)} test, Frugal={the.Frugal}"    # 0.2 on
-        f"\ntarget: {tgt}, MAE over (mean - min)")       # another
-  Y  = ys(tr, tr.rows); vs = list(Y.values())
-  sc = n * (sum(vs)/len(vs) - min(vs))    # fmae's scale, precomputed
-  print("  d     N |   best  worst |   test")
-  for d in (1, 2, 3, 4, 5):
-    best, least, most, N = None, 1e30, -1e30, 0
-    for path in frugals(root, the.Frugal, d):
-      e = sum(x.err for x in exits(path)) / sc; N += 1
-      if e < least: best, least = path[:], e
-      most = max(most, e)
-    print(f"{d:3} {N:5} | {least:6.3f} {most:6.3f} |"
-          f" {fmae(best,tr,te.rows):6.3f}")   # tr: train's scaler
-  for txt, f in [("tree0, every leaf", lambda r: leaf(root,r).pred),
-                 ("one leaf (the mean)", lambda r: root.pred)]:
-    print(f"{txt:>25} | {base(f,tr,tr.rows):6.3f}"
-          f" {base(f,tr,te.rows):6.3f}")
 
 def eg_all() -> None:
   "Run every demo; exit code counts the crashes."
