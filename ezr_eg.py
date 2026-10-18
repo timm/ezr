@@ -2,6 +2,13 @@
 """
 ezr_eg.py: demos for ezr.py.  Try  ./ezr_eg.py --h
 (c) 2026 Tim Menzies <timm@ieee.org> MIT license
+
+Options, on top of ezr.py's:
+      -Eras=4          era: train/test splits over time
+      -Draws=20        era: samples per draw
+      -Restart=30      anneal: steps before a restart
+      -Eps=0.35        cohen's floor, in score points
+      -Klass=~/gits/moot/classify/diabetes.csv
 """
 
 # pylint: disable=bad-indentation,multiple-statements
@@ -9,6 +16,7 @@ ezr_eg.py: demos for ezr.py.  Try  ./ezr_eg.py --h
 # pylint: disable=wildcard-import,unused-wildcard-import
 # pylint: disable=too-many-locals,missing-function-docstring
 # pylint: disable=protected-access,redefined-outer-name
+# pylint: disable=no-member,assigning-non-slot  # `type()` structs
 
 import os, sys, random # pylint: disable=C0410
 import ezr
@@ -17,16 +25,16 @@ from ezr import *
 
 type CLUSTERS = list[TBL]   # what `halve` returns
 
-the.Eras, the.Draws, the.Restart = 4, 20, 30
-the.Eps = 0.35                 # cohen's floor, in score points
-the.Klass = "~/gits/moot/classify/diabetes.csv"
-the._defaults.update(Eras=4, Draws=20, Restart=30, Eps=the.Eps,
-                     Klass=the.Klass)
+# A struct's slots are fixed, so adding options means a new struct.
+# ezr.run resets `the` in place, so both modules must name one object.
+ezr.Settings = struct("Settings", **(DEFAULTS | opts(__doc__)))
+the = ezr.the = ezr.Settings()
 
 def eg_h() -> None:
   "Show the options and the demos."
-  print(ezr.__doc__, "Demos:", *[f"  --{k[3:]:<9} {f.__doc__}"
-        for k,f in globals().items() if k[:3]=="eg_"], sep="\n")
+  print(ezr.__doc__, __doc__, "Demos:",
+        *[f"  --{k[3:]:<9} {f.__doc__}"
+          for k,f in globals().items() if k[:3]=="eg_"], sep="\n")
 
 def eg_num() -> None:
   "Welford matches the textbook mean and sd."
@@ -43,8 +51,8 @@ def eg_sym() -> None:
 def eg_tbl() -> None:
   "The header routes each column."
   t = Tbl([["Age","job!","SkipX","Weight-"],[2,"a",3,80]])
-  assert [c.at for c in t.x]==[0] and [c.at for c in t.y]==[1,3]
-  print(f"x {[c.at for c in t.x]} y {[c.at for c in t.y]}")
+  assert [c.at for c in t.cols.x]==[0] and [c.at for c in t.cols.y]==[1,3]
+  print(f"x {[c.at for c in t.cols.x]} y {[c.at for c in t.cols.y]}")
 
 def eg_dist() -> None:
   "A row is nearest itself, and ydist orders the data."
@@ -127,8 +135,8 @@ def de(tbl: TBL, score: Callable[[ROW], float],
       if h >= the.Stop: break
       a, b, c = random.sample(pop, 3)
       sn   = s[:]
-      keep = random.choice(tbl.x).at   # sn keeps >= 1 of s
-      for col in tbl.x:
+      keep = random.choice(tbl.cols.x).at   # sn keeps >= 1 of s
+      for col in tbl.cols.x:
         if col.at != keep and random.random() < cr:
           sn[col.at] = interpolate(col, a[col.at],
                                    b[col.at], c[col.at])
@@ -166,7 +174,7 @@ def oneplus1(tbl: TBL, mutate, accept, score,
 def ls(tbl: TBL, score, tries: int = 20) -> ROW:
   "Local search: nudge one column; keep only improvements."
   def mutate(s):
-    col = random.choice(tbl.x)
+    col = random.choice(tbl.cols.x)
     for _ in range(tries):
       s2 = s[:]; s2[col.at] = pick(col, s[col.at])
       yield s2
@@ -181,7 +189,7 @@ def sa(tbl: TBL, score, m: float = 0.5) -> ROW:
       (e - en) / (1 - h/b + 1e-32))
   def mutate(s):
     s2 = s[:]
-    for col in tbl.x:
+    for col in tbl.cols.x:
       if random.random() < m:
         s2[col.at] = pick(col, s2[col.at])
     yield s2
@@ -223,7 +231,7 @@ def eg_seek() -> None:
 
 def middles(tbl: TBL, ats=None) -> MIDS:
   "Mids of all columns (or just ATS), keyed by position."
-  return {at: mid(c) for at, c in tbl.cols.items()
+  return {at: mid(c) for at, c in tbl.cols.all.items()
           if ats is None or at in ats}
 
 def sample(col: COL) -> ATOM:
@@ -244,8 +252,8 @@ def delta(a: COL, b: COL):
     return {v: c/n for v, c in p.items() if c > 0}
   n = max(2, round(2*b.n - a.n))
   s = max(0, 2*b.sd - a.sd)
-  return o(at=b.at, txt=b.txt, n=n, mu=2*b.mu - a.mu,
-           m2=s*s*(n-1), sd=s)
+  return Num(at=b.at, txt=b.txt, n=n, mu=2*b.mu - a.mu,
+             m2=s*s*(n-1), sd=s)
 
 def project(tbl: TBL, a: ROW, b: ROW):
   "Place rows on the line from pole A to pole B."
@@ -267,23 +275,23 @@ def halve(tbl: TBL, rows=None, stop=None) -> CLUSTERS:
 
 def xats(tbl: TBL) -> list:
   "Positions of the x columns."
-  return [c.at for c in tbl.x]
+  return [c.at for c in tbl.cols.x]
 
 def klass(tbl: TBL):
   "Position of the `!` column, or None."
-  return next((c.at for c in tbl.y if c.txt[-1]=="!"), None)
+  return next((c.at for c in tbl.cols.y if c.txt[-1]=="!"), None)
 
 def targets(tbl: TBL) -> list:
   "The columns predictions should talk about."
   k = klass(tbl)
-  return [k] if k is not None else [c.at for c in tbl.y]
+  return [k] if k is not None else [c.at for c in tbl.cols.y]
 
 def ymu(tbl: TBL, rows: ROWS) -> float:
   "Mean ydist of ROWS."
   return sum(ydist(tbl, r) for r in rows) / len(rows)
 
 def blank(tbl: TBL) -> ROW:
-  return ["?" for _ in tbl.names]
+  return ["?" for _ in tbl.cols.names]
 
 def eras(tbl: TBL, at: int, n=None) -> CLUSTERS:
   "Split rows, ordered by column AT, into N equal slices."
@@ -302,14 +310,14 @@ def relevant(tbl: TBL, row: ROW, cs: CLUSTERS) -> TBL:
 def DISTINGUISH(tbl: TBL, a: TBL, b: TBL, ats=None):
   "The x column that best tells cluster A from B."
   ats = ats or xats(tbl)
-  at  = max(ats, key=lambda at: gap(tbl.cols[at],
-                                    mid(a.cols[at]),
-                                    mid(b.cols[at])))
-  return at, mid(b.cols[at])
+  at  = max(ats, key=lambda at: gap(tbl.cols.all[at],
+                                    mid(a.cols.all[at]),
+                                    mid(b.cols.all[at])))
+  return at, mid(b.cols.all[at])
 
 def impute(row: ROW, c: TBL, ats) -> ROW:
   "Write cluster C's expectations into ROW at ATS."
-  return [sample(c.cols[at]) if at in ats else v
+  return [sample(c.cols.all[at]) if at in ats else v
           for at, v in enumerate(row)]
 
 #-- how: the applications -----------------------------------
@@ -319,11 +327,11 @@ def SUMMARIZATION(tbl: TBL, c: TBL | None = None) -> MIDS:
 
 def CLASSIFICATION(tbl: TBL, row: ROW,
                    cs: CLUSTERS) -> ATOM:
-  return mid(relevant(tbl, row, cs).cols[klass(tbl)])
+  return mid(relevant(tbl, row, cs).cols.all[klass(tbl)])
 
 def REGRESSION(tbl: TBL, row: ROW, cs: CLUSTERS) -> MIDS:
   return middles(relevant(tbl, row, cs),
-                 [c.at for c in tbl.y])
+                 [c.at for c in tbl.cols.y])
 
 def ANOMALY(tbl: TBL, row: ROW, cs: CLUSTERS) -> float:
   return xdist(tbl, row, middles(relevant(tbl, row, cs)))
@@ -334,17 +342,17 @@ def RETRIEVAL(tbl: TBL, row: ROW, cs: CLUSTERS) -> ROWS:
 def SPREAD(tbl: TBL, row: ROW, cs: CLUSTERS,
            n: int | None = None) -> dict[int, list[ATOM]]:
   c = relevant(tbl, row, cs)        # table's unnamed row
-  return {at: sorted(sample(c.cols[at])
+  return {at: sorted(sample(c.cols.all[at])
                      for _ in range(n or the.Draws))
           for at in targets(tbl)}
 
 def SYNTHESIS(tbl: TBL, c: TBL) -> ROW:
-  return impute(blank(tbl), c, set(c.cols))
+  return impute(blank(tbl), c, set(c.cols.all))
 
 def REPAIR(tbl: TBL, row: ROW, cs: CLUSTERS) -> ROW:
   c = relevant(tbl, row, cs)
   return impute(row, c,
-                {at for at in c.cols if row[at] == "?"})
+                {at for at in c.cols.all if row[at] == "?"})
 
 type ADVICE = tuple[str, ATOM, ATOM]  # column, old, new
 
@@ -354,7 +362,7 @@ def PLANNING(tbl: TBL, row: ROW, cs: CLUSTERS,
   better = min(cs, key=lambda c: ymu(tbl, c.rows))
   if better is here: return None
   at, v = DISTINGUISH(tbl, here, better, can)
-  return (tbl.names[at], row[at], v)
+  return (tbl.cols.names[at], row[at], v)
 
 def PLANNING_TOTAL(tbl: TBL, row: ROW, cs: CLUSTERS,
                    can: list | None = None) -> ROW:
@@ -366,11 +374,11 @@ def MONITORING(tbl: TBL, row: ROW, cs: CLUSTERS,
   here  = relevant(tbl, row, cs)
   worse = max(cs, key=lambda c: ymu(tbl, c.rows))
   at, v = DISTINGUISH(tbl, here, worse, can)
-  return (tbl.names[at], row[at], v)
+  return (tbl.cols.names[at], row[at], v)
 
 def EXPLANATION(tbl: TBL, a: TBL, b: TBL) -> str:
   at, v = DISTINGUISH(tbl, a, b)
-  return f"{tbl.names[at]} = {say(v)}"
+  return f"{tbl.cols.names[at]} = {say(v)}"
 
 def TRENDS(tbl: TBL, eras: CLUSTERS, row: ROW,
            stop: int | None = None) -> CLUSTERS:
@@ -380,8 +388,8 @@ def TRENDS(tbl: TBL, eras: CLUSTERS, row: ROW,
 def FORECAST(tbl: TBL, eras: CLUSTERS, row: ROW,
              stop: int | None = None) -> dict:
   cs = TRENDS(tbl, eras, row, stop)
-  return {at: delta(cs[-2].cols[at], cs[-1].cols[at])
-          for at in cs[-1].cols}
+  return {at: delta(cs[-2].cols.all[at], cs[-1].cols.all[at])
+          for at in cs[-1].cols.all}
 
 def ALERTS(tbl: TBL, eras: CLUSTERS, row: ROW,
            stop: int | None = None) -> tuple[NUMS, bool]:
@@ -420,16 +428,16 @@ def eg_summarize() -> None:
   t, cs = _cars()
   c = min(cs, key=lambda c: ymu(t, c.rows))
   print(f"best cluster n={len(c.rows)}",
-        {t.names[at]: say(v)
+        {t.cols.names[at]: say(v)
          for at, v in SUMMARIZATION(t, c).items()})
 
 def eg_predict() -> None:
   "CLASSIFICATION and REGRESSION: one act, two col types."
   t, cs = _cars()
   r = t.rows[0]
-  print("regress ", {t.names[at]: say(v) for at, v in
+  print("regress ", {t.cols.names[at]: say(v) for at, v in
                      REGRESSION(t, r, cs).items()})
-  print("actual  ", {t.names[c.at]: r[c.at] for c in t.y})
+  print("actual  ", {t.cols.names[c.at]: r[c.at] for c in t.cols.y})
   d   = Tbl(csv(the.Klass))
   dcs = halve(d, stop=16)
   print("classify", CLASSIFICATION(d, d.rows[0], dcs),
@@ -456,7 +464,7 @@ def eg_spread() -> None:
   r = t.rows[0]
   c = relevant(t, r, cs)
   for at, ys in SPREAD(t, r, cs, 40).items():
-    print(f"{t.names[at]:>7} point {say(mid(c.cols[at]))}"
+    print(f"{t.cols.names[at]:>7} point {say(mid(c.cols.all[at]))}"
           f"  10th-90th {say(ys[4])} .. {say(ys[-5])}")
 
 def eg_synth() -> None:
@@ -487,8 +495,8 @@ def eg_trends() -> None:
   slices = eras(t, 3)              # Model year is the order
   r   = t.rows[0]
   cs  = TRENDS(t, slices, r, stop=16)
-  print("era mpg ", [say(mid(c.cols[7])) for c in cs])
-  print("era lbs ", [say(mid(c.cols[5])) for c in cs])
+  print("era mpg ", [say(mid(c.cols.all[7])) for c in cs])
+  print("era lbs ", [say(mid(c.cols.all[5])) for c in cs])
   f = FORECAST(t, slices, r, stop=16)
   print("next mpg", say(mid(f[7])),
         " next lbs", say(mid(f[5])))
@@ -501,7 +509,7 @@ def eg_simulate() -> None:
   t, cs = _cars()
   for r, y in SIMULATION(t, cs, 3):
     print([say(v) for v in r[:5]], "->",
-          {t.names[at]: say(v) for at, v in y.items()})
+          {t.cols.names[at]: say(v) for at, v in y.items()})
 
 def eg_optimize() -> None:
   "OPTIMIZATION: acquire, best first.  Then defer to --vs."
@@ -516,6 +524,38 @@ def eg_distinguish() -> None:
   print("x~x", DISTINGUISHABILITY(x, x),
         " x~z", DISTINGUISHABILITY(x, z))
   eg_same()
+
+def eg_fft() -> None:
+  """Frugal trees: one tree0, many biases, shop for the best."""
+  random.seed(the.Seed)
+  t      = Tbl(csv(the.File))
+  rows   = random.sample(t.rows, len(t.rows)); n = len(rows)//2
+  tr, te = clone(t, rows[:n]), clone(t, rows[n:])
+  root   = fit(tree(tr, tr.rows), ys(tr, tr.rows))
+  def base(f, tb, rs):       # same scale as fmae, for a reference
+    Y  = ys(tb, rs); vs = list(Y.values())
+    return (sum(abs(Y[id(r)] - f(r)) for r in rs) / len(rs)
+            / (sum(vs)/len(vs) - min(vs) + 1E-32))
+  c   = t.cols.y          # name the target: a 0.2 on one of them
+  tgt = c[0].txt if len(c)==1 else f"ydist of {len(c)} goals"
+  print(f"{os.path.basename(the.File)}: {n} train,"     # is not a
+        f" {len(te.rows)} test, Frugal={the.Frugal}"    # 0.2 on
+        f"\ntarget: {tgt}, MAE over (mean - min)")       # another
+  Y  = ys(tr, tr.rows); vs = list(Y.values())
+  sc = n * (sum(vs)/len(vs) - min(vs))    # fmae's scale, precomputed
+  print("  d     N |   best  worst |   test")
+  for d in (1, 2, 3, 4, 5):
+    best, least, most, N = None, 1e30, -1e30, 0
+    for path in frugals(root, the.Frugal, d):
+      e = sum(x.err for x in exits(path)) / sc; N += 1
+      if e < least: best, least = path[:], e
+      most = max(most, e)
+    print(f"{d:3} {N:5} | {least:6.3f} {most:6.3f} |"
+          f" {fmae(best,te,te.rows):6.3f}")
+  for txt, f in [("tree0, every leaf", lambda r: leaf(root,r).pred),
+                 ("one leaf (the mean)", lambda r: root.pred)]:
+    print(f"{txt:>25} | {base(f,tr,tr.rows):6.3f}"
+          f" {base(f,te,te.rows):6.3f}")
 
 def eg_all() -> None:
   "Run every demo; exit code counts the crashes."
