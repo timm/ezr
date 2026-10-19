@@ -15,6 +15,8 @@ import sys, statistics as S
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+X = [3, 6, 12, 24, 48, 100]      # ticks, and where the dots go
+
 C = {"lgbm": ("#d1702f", "LightGBM, every training label"),
      "256":  ("#1f6fb4", "ezr tree, 256 random labels"),
      "50":   ("#7b53b5", "ezr tree, 50 random labels"),
@@ -31,26 +33,32 @@ def read(f, floor=100):
 
 def main(src, out):
   d, ns = read(src)
-  fig, axs = plt.subplots(1, 2, figsize=(14, 5.6))
-  for ax, hi, ttl in ((axs[0], 100, "the first 100 rows"),
-                      (axs[1], 10, "the first 10, up close")):
-    for arm in ("rand", "50", "256", "lgbm"):
-      col, lab = C[arm]
-      ys = [S.mean(d[(n,arm)][x] for n in ns) for x in range(hi)]
-      ax.plot(range(1, hi+1), ys, color=col, lw=2,
-              marker="o" if hi == 10 else "", ms=5, label=lab)
-    ax.set_xlabel(f"rows examined, off the top of the ranking"
-                  f"  ({ttl})")
-    ax.grid(color="#e9e9e9", lw=.8); ax.set_axisbelow(True)
-    for s in ("top","right"): ax.spines[s].set_visible(False)
-    ax.set_xlim(1, hi); ax.set_ylim(0, None)
-  axs[0].set_ylabel("true percentile of the BEST row found so far\n"
-                    "(0 = you are holding the genuinely best row)")
-  axs[1].set_xticks(range(1, 11))
-  axs[0].legend(frameon=False, fontsize=10)
-  fig.suptitle("If you used the model to pick, how good would your"
+  fig, ax = plt.subplots(figsize=(9, 5.8))
+  for arm in ("rand", "50", "256", "lgbm"):
+    col, lab = C[arm]
+    ys = [S.mean(d[(n,arm)][x] for n in ns) for x in range(100)]
+    ax.plot(range(1, 101), ys, color=col, lw=2.2, label=lab)
+    ax.scatter(X, [ys[x-1] for x in X],
+               s=26, color=col, zorder=3, edgecolor="white", lw=.8)
+  ax.set_xscale("log")           # log x, so one panel does the work
+  ax.set_xticks(X)                        # two panels used to do
+  ax.set_xticklabels([str(x) for x in X])
+  ax.set_yscale("log")           # log y too: nothing here is zero,
+  T = [.05,.1,.2,.5,1,2,5,10,20,50]        # so nothing is clipped
+  ax.set_yticks(T)
+  ax.set_yticklabels([str(v).lstrip("0") if v < 1 else str(int(v))
+                      for v in T])
+  ax.minorticks_off()
+  ax.set_xlim(1, 100); ax.set_ylim(.03, 60)
+  ax.set_xlabel("rows examined, off the top of the ranking  (log)")
+  ax.set_ylabel("true percentile of the BEST row found so far\n"
+                "(log; 0 = you hold the genuinely best row)")
+  ax.grid(color="#e9e9e9", lw=.8); ax.set_axisbelow(True)
+  for sp in ("top","right"): ax.spines[sp].set_visible(False)
+  ax.legend(frameon=False, fontsize=10)
+  ax.set_title("If you used the model to pick, how good would your"
                " pick be?\n23 datasets of moot/regression with 100+"
-               " test rows, 20 seeds each, mean", fontsize=12)
+               " test rows, 20 seeds each, mean", fontsize=12, pad=12)
   fig.tight_layout(); fig.savefig(out, dpi=220)
   print(f"-> {out}   ({len(ns)} datasets)")
   w = max(len(l) for _, l in C.values())

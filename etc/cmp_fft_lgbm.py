@@ -32,7 +32,7 @@ def split(f, seed):
 
 def scale(tr, rows):
   "Test y, and what to divide its errors by.  Train's columns."
-  Y  = E.ys(tr)
+  _, Y = E.target(tr)
   vs = [Y(r) for r in rows]
   return Y, sum(vs)/len(vs) - min(vs) + 1E-32
 
@@ -43,7 +43,7 @@ def fft(tr, te):
   t0        = time.time()
   best, _   = A.frugal(tr, tr.rows)
   secs      = time.time() - t0
-  root      = E.fit(E.tree(tr, tr.rows, DEPTH), E.ys(tr))
+  root      = E.fit(E.tree(tr, tr.rows, DEPTH), *E.target(tr))
   Y, d      = scale(tr, te.rows)
   err = sum(abs(Y(r) - A.fleaf(best,r)) for r in te.rows)
   big = sum(abs(Y(r) - E.leaf(root,r).pred) for r in te.rows)
@@ -65,7 +65,7 @@ def lgbm(tr, te):
       [[cats[at].get(r[at], np.nan) if at in cats else
         (np.nan if r[at] == "?" else r[at]) for at in xs]
        for r in rows], dtype=float)
-  Ytr    = E.ys(tr)
+  _, Ytr = E.target(tr)
   Yte, d = scale(tr, te.rows)
   t0 = time.time()
   m  = lgb.LGBMRegressor(verbose=-1, n_estimators=100)

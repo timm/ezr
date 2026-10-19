@@ -37,7 +37,7 @@ def split(f, seed):
 
 def scale(tr, rows):
   "Test y, and what to divide its errors by.  Train's columns."
-  Y  = E.ys(tr); vs = [Y(r) for r in rows]
+  _, Y = E.target(tr); vs = [Y(r) for r in rows]
   return Y, sum(vs)/len(vs) - min(vs) + 1E-32
 
 def ezr(full, te):
@@ -46,7 +46,7 @@ def ezr(full, te):
   t0 = time.time()
   E.the.Leaf = max(2, int(sqrt(n)))
   tr   = E.clone(full, E.grabs(full, n))
-  root = E.fit(E.tree(tr, tr.rows), E.ys(tr))
+  root = E.fit(E.tree(tr, tr.rows), *E.target(tr))
   secs = time.time() - t0
   Y, d = scale(full, te.rows)
   return (sum(abs(Y(r) - E.leaf(root,r).pred)
@@ -64,7 +64,7 @@ def lgbm(full, te):
     [[cats[at].get(r[at], np.nan) if at in cats else
       (np.nan if r[at] == "?" else r[at]) for at in xs]
      for r in rows], dtype=float)
-  Ytr  = E.ys(full)
+  _, Ytr = E.target(full)
   Y, d = scale(full, te.rows)
   t0 = time.time()
   m  = lgb.LGBMRegressor(verbose=-1, n_estimators=100)

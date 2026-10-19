@@ -33,7 +33,6 @@ five files back:
 # pylint: disable=no-member,assigning-non-slot  # `type()` structs
 from typing import Any
 import os, re, sys, random, traceback # pylint: disable=C0410
-from copy import copy
 from itertools import groupby
 from math import exp, log2, sqrt
 from collections.abc import Callable, Iterable, Iterator
@@ -93,7 +92,7 @@ SYM = struct("SYM", txt=" ", at=0, n=0, has=dict)
 COLS= struct("COLS", names=list, all=dict, x=list, y=list, klass=None)
 TBL = struct("TBL", rows=list, cols=COLS, mids=None)
 NODE= struct("NODE", rows=list, at=None, v=None, go=None, kids=list,
-             mu=0, pred=0, err=0, verr=0)   # pred,err,verr: `fit*`
+             pred=0, err=0, verr=0)    # pred,err,verr: `fit*`
 
 # Constructors are the TYPE itself, unless named here.
 Num,Sym,Node = NUM,SYM,NODE          # Tbl and Cols are defined below
@@ -132,14 +131,25 @@ def mids(tbl: TBL) -> MIDS:
 
 def div(col: COL) -> float:
   "Spread: entropy, or standard deviation."
-  return (-sum(v/col.n*log2(v/col.n) for v in col.has.values())
-          if type(col) is Sym else col.sd)  # sd kept by `add`
+  return (-sum(p*log2(p) for v in col.has.values()
+               if (p := v/col.n) > 0)       # add(...,-1) can leave
+          if type(col) is Sym else col.sd)  # a 0; sd kept by `add`
 
 def adds(vs: Iterable[ATOM], col: COL | None = None) -> COL:
   "Every item of VS into COL."
   col = Num() if col is None else col
   for v in vs: add(col, v)
   return col
+
+def like(col: COL) -> COL:
+  "A new, EMPTY column of the same kind as COL."
+  return type(col)(at=col.at, txt=col.txt)
+
+def copy(col: COL) -> COL:
+  "A COL with the same counts.  A Sym also needs its dict copied."
+  out = type(col)(**{k: getattr(col,k) for k in type(col).__slots__})
+  if type(col) is Sym: out.has = dict(col.has)
+  return out
 
 def norm(col: COL, v: ATOM) -> ATOM:
   "To 0..1, by the logistic curve.  Symbols do not scale."
@@ -232,22 +242,33 @@ def grabs(tbl: TBL, cap: int | None = None,
 
 #-- tree ---------------------------------------------------
 # Calls core.  Nothing above this line calls down here.
-def cut(tbl: TBL, rows: ROWS) -> tuple[int,ATOM,GO]|None:
-  "The (at, v, go) whose two sides have the tightest ys."
-  Y   = {id(r): ydist(tbl, r) for r in rows}   # ydist, ALWAYS: a
-  tot = adds(Y.values())      # tree splits on how good a row is,
-  out, least = None, 1e30     # not on what `ys` would regress
-  for col in tbl.cols.x:
-    at = col.at                 # this column as sorted (x,y) pairs:
-    vs = sorted((r[at], Y[id(r)])         # a num cuts between them,
-                for r in rows if r[at] != "?")   # a sym groups by
+def cut(tbl: TBL, rows: ROWS, sub: int = 0) -> tuple|None:
+  """The (at, v, go) whose two sides have the tightest ys.  SUB
+  looks at only that many columns, drawn afresh at every split:
+  it makes one tree worse and a forest of them much better, since
+  bagging alone leaves every tree rooted on the same question."""
+  ycol, y = target(tbl)       # a class, a number, or a ydist: cut
+  tot = adds((y(r) for r in rows), ycol)   # does not care which,
+  out, least = None, 1e30     # since div() already knows both
+  for col in (tbl.cols.x if not sub else
+              random.sample(tbl.cols.x, min(sub, len(tbl.cols.x)))):
+    at, sym = col.at, type(col) is Sym  # this column as sorted
+    vs = sorted(((r[at], y(r))           # (x,y) pairs.  A num cuts
+                 for r in rows if r[at] != "?"),  # between them; a
+                key=(lambda z: str(z[0])) if sym else
+                    (lambda z: z[0]))
+    # Sort on x ALONE.  A sym column can hold 2, 3 and "5more" at
+    # once and int will not sort against str, so a sym sorts on
+    # str(x) -- it only needs its equals kept together.  And never
+    # fall through to y: on a tie in x that would compare two
+    # classes, which is the same mess one column over.
     for v, a, b in candidates(col, vs, copy(tot)):          # them
       if a.n >= the.Leaf and b.n >= the.Leaf:
         s = (div(a)*a.n + div(b)*b.n) / (a.n + b.n)
         if s < least: out, least = (col, v), s
   if out: return out[0].at, out[1], gate(*out)
 
-def candidates(col: COL, vs: list, tot: NUM) -> Iterator:
+def candidates(col: COL, vs: list, tot: COL) -> Iterator:
   """Every split of COL as (v, left, right): the ys each side would
   hold.  VS is this column\'s (x,y) pairs, sorted; TOT is every y of
   every row, the "?" ones too, and is consumed here -- which is why
@@ -255,11 +276,11 @@ def candidates(col: COL, vs: list, tot: NUM) -> Iterator:
   yields, so score them before asking for the next one."""
   if type(col) is Sym:
     for v, g in groupby(vs, lambda z: z[0]):   # one symbol, and
-      a, b = Num(), copy(tot)                  # then all the rest
+      a, b = like(tot), copy(tot)              # then all the rest
       for _, y in g: add(a, y); add(b, y, -1)
       yield v, a, b
   else:
-    a = Num()
+    a = like(tot)
     for (v, y), (nxt, _) in zip(vs, vs[1:]):
       add(a, y); add(tot, y, -1)      # one row moves right to left
       if v != nxt: yield v, a, tot    # no cutting inside a tie
@@ -269,18 +290,19 @@ def gate(col: COL, v: ATOM) -> GO:
   return ((lambda r: r[col.at] == v) if type(col) is Sym else
           (lambda r: r[col.at] != "?" and r[col.at] <= v))
 
-def tree(tbl: TBL, rows: ROWS, most: int = 1000) -> NODE:
+def tree(tbl: TBL, rows: ROWS, most: int = 1000,
+         sub: int = 0) -> NODE:
   """Split while a split keeps both sides big enough.  MOST caps
   the depth, for a caller that will not read past it: building
   what nobody looks at is the whole cost on a wide file."""
-  node = NODE(rows=rows,
-              mu=sum(ydist(tbl,r) for r in rows)/len(rows))
-  if most and len(rows) > the.Leaf and (found := cut(tbl, rows)):
+  node = NODE(rows=rows)
+  if most and len(rows) > the.Leaf and (found := cut(tbl,rows,sub)):
     at, v, go = found
     yes, no = [], []
     for r in rows: (yes if go(r) else no).append(r)
     node.at, node.v, node.go = at, v, go # cut kepts sides big
-    node.kids = [tree(tbl, yes, most-1), tree(tbl, no, most-1)]
+    node.kids = [tree(tbl, yes, most-1, sub),
+                 tree(tbl, no,  most-1, sub)]
   return node
 
 def leaf(node: NODE, row: ROW) -> NODE:
@@ -295,10 +317,10 @@ def leafs(node: NODE) -> list[NODE]:
 def show(tbl: TBL, node: NODE, pre: str | None = None,
          edge: str = "") -> None:
   "Tree on the left; ydist and n on the right."
-  ls = sorted(leafs(node), key=lambda z: z.mu)
+  ls = sorted(leafs(node), key=lambda z: z.pred)
   def walk(z: NODE, pre: str | None, edge: str) -> None:
     m = "+" if z is ls[0] else "-" if z is ls[-1] else " "
-    print(f"{m} {round(100*z.mu):>4} {len(z.rows):>5}   "
+    print(f"{m} {say(z.pred):>5} {len(z.rows):>5}   "
           f"{(pre or '')+edge}".rstrip())
     op = "=" if type(tbl.cols.all[z.at or 0]) is Sym else "<="
     no = "!=" if op == "=" else ">"
@@ -310,37 +332,43 @@ def show(tbl: TBL, node: NODE, pre: str | None = None,
 
 
 
-#-- regress ------------------------------------------------
-# Calls tree.  A tree splits on ydist; these two let it predict a
-# number instead, and say what that prediction costs.
-def ys(tbl: TBL) -> Callable[[ROW], QTY]:
-  """A row\'s y: its lone y column, or else its ydist.  Returns a
-  FUNCTION, and one that remembers -- ydist is not cheap and a row
-  is asked for its y once per level of a tree.  Not cached on the
-  row itself: ydist reads TBL\'s columns, so the same row has a
-  different y in another table."""
-  c    = tbl.cols.y
-  f    = (lambda r: r[c[0].at]) if len(c)==1 else lambda r: ydist(tbl,r)
+#-- target -------------------------------------------------
+# One row, one number -- or one class.  This is the whole of the
+# difference between regression, classification and many goals.
+def target(tbl: TBL):
+  """What a tree predicts, and how to read it off a row: one
+  klass, one number, or the ydist of several goals.  Returns an
+  empty COL of the right kind to accumulate into, and a reader
+  that remembers -- ydist is not cheap and a row is read once per
+  level.  Not cached on the row: ydist reads TBL's columns, so
+  the same row has a different y in another table."""
+  c = tbl.cols.y
+  col, f = ((c[0], lambda r: r[c[0].at]) if len(c) == 1 else
+            (Num(txt="ydist"), lambda r: ydist(tbl, r)))
   memo = {}
   def y(row):
     if id(row) not in memo: memo[id(row)] = f(row)
     return memo[id(row)]
-  return y
+  return like(col), y
 
-def fit(node: NODE, Y: Callable[[ROW], QTY]) -> NODE:
-  "What this node would predict (PRED), and what that costs (ERR)."
-  vs = [Y(r) for r in node.rows]
-  node.pred = sum(vs) / len(vs)
-  node.err  = sum(abs(v - node.pred) for v in vs)
-  for kid in node.kids: fit(kid, Y)
+def fit(node: NODE, col: COL, y: Callable) -> NODE:
+  """What this node would predict (PRED) and what that costs
+  (ERR).  A Sym predicts its mode and pays for every row that is
+  not it; a Num predicts its mean and pays the distance."""
+  now = adds((y(r) for r in node.rows), like(col))
+  node.pred = mid(now)
+  node.err  = (now.n - now.has[node.pred] if type(now) is Sym else
+               sum(abs(y(r) - node.pred) for r in node.rows))
+  for kid in node.kids: fit(kid, col, y)
   return node
+
 
 #-- rig ----------------------------------------------------
 # Calls core, acquire, and one RANKER -- tree's, by default.
 def ranker(lab: TBL) -> Callable[[ROW], float]:
-  "Grow a tree on LAB; score any row by its leaf's mean ydist."
-  node = tree(lab, lab.rows)
-  return lambda r: leaf(node, r).mu
+  "Grow a tree on LAB; score any row by what its leaf predicts."
+  node = fit(tree(lab, lab.rows), *target(lab))
+  return lambda r: leaf(node, r).pred
 
 def wins(tbl: TBL) -> Callable[[ROW], float]:
   "100 at the best row, 0 at an average one."
@@ -387,6 +415,27 @@ def ks(xs: NUMS, ys: NUMS, a: float = 1.36) -> bool:
     while j < m and ys[j] <= v: j += 1
     d = max(d, abs(i/n - j/m))
   return d <= a * sqrt((n + m) / (n * m))
+
+def abcd(pairs: Iterable[tuple]) -> dict:
+  """(got, want) pairs -> what each class cost us.  PD is recall:
+  of the Xs there were, how many did we find?  PREC: of the times
+  we shouted X, how often was it one?  PF: of the things that were
+  not X, how many did we call X anyway?  ACC is the whole table's,
+  so it is the same number in every row."""
+  n, got, want, hit = 0, {}, {}, {}
+  for g, w in pairs:
+    n      += 1
+    got[g]  = got.get(g, 0) + 1
+    want[w] = want.get(w, 0) + 1
+    hit[g]  = hit.get(g, 0) + (g == w)
+  pc  = lambda x, y: 100*x/y if y else 0
+  out = {}
+  for x in want:
+    tp = hit.get(x, 0); fp = got.get(x, 0) - tp; fn = want[x] - tp
+    tn = n - tp - fp - fn
+    out[x] = dict(n=want[x], acc=pc(tp+tn, n), prec=pc(tp, tp+fp),
+                  pd=pc(tp, tp+fn), pf=pc(fp, fp+tn))
+  return out
 
 def same(xs: NUMS, ys: NUMS, d: float = 0) -> bool:
   """Indistinguishable.  Always cliffs and ks; a non-zero D adds

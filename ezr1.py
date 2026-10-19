@@ -66,10 +66,10 @@ def struct(s, **d): # a __slots__ class; type defaults fresh per object
 
 #-- structs ----------------------------------------------------
 # Camel = a plain struct. UPPER = a struct built by a Camel def.
-the = struct("The", **opts(__doc__))()
-NUM = struct("NUM", at=0, txt=" ", n=0, mu=0, m2=0, sd=0, goal=1)
-SYM = struct("SYM", at=0, txt=" ", n=0, has=dict)
-ROW = struct("ROW", raw=list, bins=None)
+Settings = struct("Settings", **opts(__doc__))()
+NUM  = struct("NUM", at=0, txt=" ", n=0, mu=0, m2=0, sd=0, goal=1)
+SYM  = struct("SYM", at=0, txt=" ", n=0, has=dict)
+ROW  = struct("ROW", raw=list, bins=None)
 COLS = struct("COLS",names=list, all=dict, x=list, y=list)
 TBL  = struct("TBL", rows=list, cols=None)
 
@@ -264,14 +264,28 @@ def explain(tbl, m): # per column: top score, each bin's; then top rules
 def opts(): # -key=value pairs in DOC, as a dict
   return {k: atom(v) for k, v in re.findall(r"-(\w+)=(\S+)", __doc__)}
 
-def cli(s, args): # -key value pairs, for keys S already has
-  for k, v in zip(args, args[1:]):
-    if k[:1] == "-" and k[1:] in s.__slots__: setattr(s, k[1:], atom(v))
-  return s
+def run(fun): # FUN sees the options main parsed; undo its edits after
+  global the; the=Settings()
+  random.seed(the.Seed)
+  try: fun()
+  except Exception as e: traceback.print_exception(e); return 1
+  return 0
 
-if __name__ == "__main__":
+def cli(args):
+  funs = {k:f for k,f in globals().items() if k[:3] == "eg_"}
+  out = 0
+  while args:
+    s = args.pop(0)
+    if   "eg_" + s.lstrip("-") in funs:  # -nb or --nb runs eg_nb
+      out += run(funs["eg_" + s.lstrip("-")])
+    elif hasattr(the, s[1:]): setattr(the, s[1:], atom(args.pop(0)))
+    else: print(f"unknown arg: {s}")
+  sys.exit(out)
+
+the=Settings()
+if __name__=="__main__": main(sys.argv[1:] or ["-h"])if __name__ == "__main__":
   if "-h" in sys.argv: print(__doc__); sys.exit()
-  cli(the, sys.argv[1:])
+  cli(sys.argv[1:])
   _t = load(csv(the.File))
   random.seed(the.Seed)
   explain(_t, model(_t, random.sample(_t.rows, len(_t.rows))))

@@ -78,8 +78,8 @@ def frugal(tbl: TBL, rows: ROWS = None) -> list:
   rows = random.sample(rows or tbl.rows, len(rows or tbl.rows))
   n    = int((1 - the.Hold) * len(rows))
   grow, pick = (rows[:n], rows[n:]) if n < len(rows) else (rows, [])
-  Y    = ys(tbl)
-  root = fit(tree(tbl, grow, the.Depth), Y)
+  col, Y = target(tbl)
+  root = fit(tree(tbl, grow, the.Depth), col, Y)
   cost = (lambda p: sum(x.err for x in exits(p)))     # no holdout
   if pick:
     fitv(root, Y, pick)
@@ -98,7 +98,7 @@ def fleaf(path: list, row: ROW) -> QTY:
 
 def fmae(path: list, tbl: TBL, rows: ROWS) -> float:
   "MAE, over how far the mean y sits above the best y."
-  Y  = ys(tbl)
+  _, Y = target(tbl)
   vs = [Y(r) for r in rows]
   return (sum(abs(Y(r) - fleaf(path,r)) for r in rows) / len(rows)
           / (sum(vs)/len(vs) - min(vs) + 1E-32))
@@ -114,9 +114,9 @@ def eg_fft() -> None:
   t      = Tbl(csv(the.File))
   rows   = random.sample(t.rows, len(t.rows)); n = len(rows)//2
   tr, te = clone(t, rows[:n]), clone(t, rows[n:])
-  root   = fit(tree(tr, tr.rows), ys(tr))
+  root   = fit(tree(tr, tr.rows), *target(tr))
   def base(f, tb, rs):       # same scale as fmae, for a reference
-    Y  = ys(tb); vs = [Y(r) for r in rs]
+    _, Y = target(tb); vs = [Y(r) for r in rs]
     return (sum(abs(Y(r) - f(r)) for r in rs) / len(rs)
             / (sum(vs)/len(vs) - min(vs) + 1E-32))
   c   = t.cols.y          # name the target: a 0.2 on one of them
@@ -124,7 +124,7 @@ def eg_fft() -> None:
   print(f"{os.path.basename(the.File)}: {n} train,"     # is not a
         f" {len(te.rows)} test, Frugal={the.Frugal}"    # 0.2 on
         f"\ntarget: {tgt}, MAE over (mean - min)")       # another
-  Y  = ys(tr); vs = [Y(r) for r in tr.rows]
+  _, Y = target(tr); vs = [Y(r) for r in tr.rows]
   sc = n * (sum(vs)/len(vs) - min(vs))    # fmae's scale, precomputed
   print("  d     N |   best  worst |   test")
   for d in (1, 2, 3, 4, 5):
