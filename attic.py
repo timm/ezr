@@ -1,6 +1,9 @@
 #!/usr/bin/env python3 -B
 """
-attic.py: fast and frugal trees.  Kept, but not in ezr.py.
+attic.py: the regression rig for fast and frugal trees.
+
+`frugals`, `exits` and `fleaf` now live in ezr.py.  What is left
+here is the MAE experiment that first measured them.
 
 A frugal tree exits on ONE side of every test, so it is a spine,
 not a bush.  Which side, at each depth, is a different inductive
@@ -47,29 +50,6 @@ def fitv(root: NODE, Y: dict, rows: ROWS) -> NODE:
       z = z.kids[0 if z.go(r) else 1]
   return root
 
-def frugals(node: NODE, n: int = 2, d: int = 4,
-            path: list | None = None) -> Iterator[list]:
-  """Every frugal variant, as a list of (node, side) steps: side
-  0 or 1 collapses that kid and walks on into the other, 2
-  collapses both and stops, None is a leaf of tree0.  PATH is one
-  reused list -- copy it if you mean to keep it."""
-  path = [] if path is None else path
-  if not node.kids or d < 1:
-    path += [(node, None)]; yield path; path.pop(); return
-  for side in (0, 1):
-    path += [(node, side)]
-    yield from frugals(node.kids[1-side], n, d-1, path)
-    path.pop()
-  if n > 1:
-    path += [(node, 2)]; yield path; path.pop()
-
-def exits(path: list) -> Iterator[NODE]:
-  "A frugal tree\'s leaves: whatever it collapsed.  No overlaps."
-  for z, s in path:
-    if   s is None: yield z
-    elif s == 2:    yield from z.kids
-    else:           yield z.kids[s]
-
 def frugal(tbl: TBL, rows: ROWS = None) -> list:
   """Of up to 3^Depth frugal trees, the one a held-out slice of
   the labels likes best.  Picking on the rows that grew the tree
@@ -89,18 +69,11 @@ def frugal(tbl: TBL, rows: ROWS = None) -> list:
     if (err := cost(path)) < least: best, least = path[:], err
   return best, root
 
-def fleaf(path: list, row: ROW) -> QTY:
-  "Walk ROW along the spine; the first exit it meets answers."
-  for z, s in path:                  # the last step always exits,
-    if s is None: return z.pred      # so this cannot fall through
-    k = 0 if z.go(row) else 1
-    if s in (2, k): return z.kids[k].pred
-
 def fmae(path: list, tbl: TBL, rows: ROWS) -> float:
   "MAE, over how far the mean y sits above the best y."
   _, Y = target(tbl)
   vs = [Y(r) for r in rows]
-  return (sum(abs(Y(r) - fleaf(path,r)) for r in rows) / len(rows)
+  return (sum(abs(Y(r) - fleaf(path,r).pred) for r in rows) / len(rows)
           / (sum(vs)/len(vs) - min(vs) + 1E-32))
 
 def eg_h() -> None:

@@ -92,7 +92,7 @@ SYM = struct("SYM", txt=" ", at=0, n=0, has=dict)
 COLS= struct("COLS", names=list, all=dict, x=list, y=list, klass=None)
 TBL = struct("TBL", rows=list, cols=COLS, mids=None)
 NODE= struct("NODE", rows=list, at=None, v=None, go=None, kids=list,
-             pred=0, err=0, verr=0)    # pred,err,verr: `fit*`
+             pred=0, err=0, verr=0, y=None, nn=None)  # see `fit*`
 
 # Constructors are the TYPE itself, unless named here.
 Num,Sym,Node = NUM,SYM,NODE          # Tbl and Cols are defined below
@@ -314,6 +314,57 @@ def leafs(node: NODE) -> list[NODE]:
   "Return leaves of this tree."
   return [x for k in node.kids for x in leafs(k)] or [node]
 
+def frugals(node: NODE, n: int = 2, d: int = 4,
+            path: list | None = None) -> Iterator[list]:
+  """Every frugal variant, as a list of (node, side) steps: side
+  0 or 1 collapses that kid and walks on into the other, 2
+  collapses both and stops, None is a leaf of the grown tree.
+  PATH is one reused list -- copy it if you mean to keep it."""
+  path = [] if path is None else path
+  if not node.kids or d < 1:
+    path += [(node, None)]; yield path; path.pop(); return
+  for side in (0, 1):
+    path += [(node, side)]
+    yield from frugals(node.kids[1-side], n, d-1, path)
+    path.pop()
+  if n > 1:
+    path += [(node, 2)]; yield path; path.pop()
+
+def exits(path: list) -> Iterator[NODE]:
+  "A frugal tree's leaves: whatever it collapsed.  No overlaps."
+  for z, s in path:
+    if   s is None: yield z
+    elif s == 2:    yield from z.kids
+    else:           yield z.kids[s]
+
+def fitnn(tbl: TBL, node: NODE, y: Callable,
+          root: bool = True) -> NODE:
+  """Score every node as if it answered by nearest neighbour.  A
+  node owns a fixed set of rows, so its leave-one-out counts are
+  fixed -- paid once here, after which any collapsed tree exiting
+  at this node just copies them.  The root is skipped: it is an
+  exit only in the do-nothing variant, and being the node that
+  holds every row, it is far and away the dearest to score."""
+  if not root and node.nn is None:
+    n, got, want, hit, rs = 0, {}, {}, {}, node.rows
+    for i, r in enumerate(rs):
+      rest = rs[:i] + rs[i+1:]
+      g = y(min(rest, key=lambda o: xdist(tbl,o,r))) if rest else y(r)
+      w = y(r); n += 1
+      got[g]  = got.get(g, 0) + 1
+      want[w] = want.get(w, 0) + 1
+      hit[g]  = hit.get(g, 0) + (g == w)
+    node.nn = (n, got, want, hit)
+  for kid in node.kids: fitnn(tbl, kid, y, False)
+  return node
+
+def fleaf(path: list, row: ROW) -> NODE:
+  "Walk ROW along the spine; the first exit it meets answers."
+  for z, s in path:                  # the last step always exits,
+    if s is None: return z           # so this cannot fall through
+    k = 0 if z.go(row) else 1
+    if s in (2, k): return z.kids[k]
+
 def show(tbl: TBL, node: NODE, pre: str | None = None,
          edge: str = "") -> None:
   "Tree on the left; ydist and n on the right."
@@ -354,9 +405,11 @@ def target(tbl: TBL):
 def fit(node: NODE, col: COL, y: Callable) -> NODE:
   """What this node would predict (PRED) and what that costs
   (ERR).  A Sym predicts its mode and pays for every row that is
-  not it; a Num predicts its mean and pays the distance."""
+  not it; a Num predicts its mean and pays the distance.  Y is
+  kept whole, not collapsed to PRED: `counts` scores a collapsed
+  tree off these, and never touches a row to do it."""
   now = adds((y(r) for r in node.rows), like(col))
-  node.pred = mid(now)
+  node.pred, node.y = mid(now), now
   node.err  = (now.n - now.has[node.pred] if type(now) is Sym else
                sum(abs(y(r) - node.pred) for r in node.rows))
   for kid in node.kids: fit(kid, col, y)
@@ -417,17 +470,22 @@ def ks(xs: NUMS, ys: NUMS, a: float = 1.36) -> bool:
   return d <= a * sqrt((n + m) / (n * m))
 
 def abcd(pairs: Iterable[tuple]) -> dict:
-  """(got, want) pairs -> what each class cost us.  PD is recall:
-  of the Xs there were, how many did we find?  PREC: of the times
-  we shouted X, how often was it one?  PF: of the things that were
-  not X, how many did we call X anyway?  ACC is the whole table's,
-  so it is the same number in every row."""
+  "(got, want) pairs -> what each class cost us.  See `tally`."
   n, got, want, hit = 0, {}, {}, {}
   for g, w in pairs:
     n      += 1
     got[g]  = got.get(g, 0) + 1
     want[w] = want.get(w, 0) + 1
     hit[g]  = hit.get(g, 0) + (g == w)
+  return tally(n, got, want, hit)
+
+def tally(n: int, got: dict, want: dict, hit: dict) -> dict:
+  """What each class cost us.  PD is recall: of the Xs there were,
+  how many did we find?  PREC: of the times we shouted X, how
+  often was it one?  PF: of the things that were not X, how many
+  did we call X anyway?  ACC is the whole table's, so it is the
+  same number in every row.  Counted rows, not a list of them --
+  so a collapsed tree can be scored without walking anything."""
   pc  = lambda x, y: 100*x/y if y else 0
   out = {}
   for x in want:
@@ -436,6 +494,39 @@ def abcd(pairs: Iterable[tuple]) -> dict:
     out[x] = dict(n=want[x], acc=pc(tp+tn, n), prec=pc(tp, tp+fp),
                   pd=pc(tp, tp+fn), pf=pc(fp, fp+tn))
   return out
+
+def counts(path: list, nn: bool = False) -> tuple:
+  """A frugal tree's (n, got, want, hit), read off what `fit` (or
+  `fitnn`) left at each node.  Its exits are disjoint and cover
+  every row, so these sum exactly -- WANT comes out the same for
+  every variant, since all of them carve up the same rows.  NN
+  asks what each exit would say by nearest neighbour instead of
+  by its mode; either way, no row is walked here."""
+  n, got, want, hit = 0, {}, {}, {}
+  for z in exits(path):
+    if nn:
+      a, b, c, d = z.nn
+      n += a
+      for dst, src in ((got,b), (want,c), (hit,d)):
+        for key, v in src.items(): dst[key] = dst.get(key, 0) + v
+    else:
+      m, h   = z.pred, z.y.has
+      n     += z.y.n
+      got[m] = got.get(m, 0) + z.y.n
+      hit[m] = hit.get(m, 0) + h.get(m, 0)
+      for c, v in h.items(): want[c] = want.get(c, 0) + v
+  return n, got, want, hit
+
+def d2h(sc: dict) -> float:
+  """How far from (pd=100, pf=0), the heaven of a classifier.
+  PD and PF are summed over the classes, each weighted by how
+  common it is -- so a class nobody sees cannot swing the score.
+  Lower is better.  A caller wanting some other trade-off passes
+  its own function of `tally`'s dict; nothing here is assumed."""
+  n  = sum(v["n"] for v in sc.values())
+  pd = sum(v["n"]*v["pd"] for v in sc.values()) / n
+  pf = sum(v["n"]*v["pf"] for v in sc.values()) / n
+  return sqrt((100-pd)**2 + pf**2) / 100
 
 def same(xs: NUMS, ys: NUMS, d: float = 0) -> bool:
   """Indistinguishable.  Always cliffs and ks; a non-zero D adds
