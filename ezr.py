@@ -58,13 +58,14 @@ def say(x: Any, p: int = 2) -> str:
   return str(x)
 
 def struct(s: str, **d: Any) -> type:
-  """A __slots__ class, in one line.  A default that is a type is
+  """A __slots__ class, in one line.  A default that can be called is
   called, so every object gets its own list/dict (not a shared one)."""
   def init(i, **kw):
     for k, v in d.items():
-      setattr(i, k, kw[k] if k in kw else v() if type(v) is type else v)
-  return type(s, (), dict( __slots__ = tuple(d), __init__  = init,
-                     __repr__=lambda i:say({k:getattr(i,k) for k in d})))
+      setattr(i, k, kw[k] if k in kw else v() if callable(v) else v)
+  return type(s, (),
+              dict(__slots__ = tuple(d), __init__  = init,
+                   __repr__  = lambda i:say({k:getattr(i,k) for k in d})))
 
 def opts(doc: str) -> dict:
   "The -key=value pairs in DOC."
@@ -72,27 +73,26 @@ def opts(doc: str) -> dict:
 
 def atom(s: str) -> ATOM:
   "'22' -> 22. '3.1' -> 3.1. 'True' -> True. 'x' -> 'x'."
-  for fn in (int, float):
-    try: return fn(s)
-    except ValueError: pass
-  return s=="True" or (s !="False" and s) # or (s=="False" and False)
+  try: return int(s)
+  except ValueError:
+    try: return float(s)
+    except ValueError: return s=="True" or (s !="False" and s)
 
 def csv(file: str) -> Iterator[ROW]:
   "ROWS of FILE, each cell coerced."
-  with open(os.path.expanduser(file),  # -sig drops any BOM
-           encoding="utf-8-sig") as f:
+  with open(os.path.expanduser(file), encoding="utf-8-sig") as f:
     for line in f:
       if line.strip(): yield [atom(s.strip()) for s in line.split(",")]
 
 #-- structs ------------------------------------------------
 # UPPER is the struct.  A default that is a type gets called, so
 # `cols=COLS` gives every TBL its own COLS.
-NUM = struct("NUM", txt=" ", at=0, n=0, mu=0, m2=0, sd=0, goal=1)
-SYM = struct("SYM", txt=" ", at=0, n=0, has=dict)
+NUM = struct("NUM",  txt=" ", at=0, n=0, mu=0, m2=0, sd=0, goal=1)
+SYM = struct("SYM",  txt=" ", at=0, n=0, has=dict)
 COLS= struct("COLS", names=list, all=dict, x=list, y=list, klass=None)
-TBL = struct("TBL", rows=list, cols=COLS, mids=None)
+TBL = struct("TBL",  rows=list, cols=COLS, mids=None)
 NODE= struct("NODE", rows=list, at=None, v=None, go=None, kids=list,
-             pred=0, err=0, verr=0, y=None, nn=None)  # see `fit*`
+                     pred=0, err=0, verr=0, y=None, nn=None) # see `fit*`
 
 # Constructors are the TYPE itself, unless named here.
 Num,Sym,Node = NUM,SYM,NODE          # Tbl and Cols are defined below
@@ -121,8 +121,8 @@ def add(col: COL, v: ATOM, inc: int = 1) -> None:
 
 def mid(col: COL) -> ATOM:
   "Middle: the mean, or the most common symbol; ? if none."
-  return (max(col.has, key=col.has.get) if col.has else "?"
-          ) if type(col) is Sym else col.mu
+  return (max(col.has, key=col.has.get) if col.has else "?") 
+              if type(col) is Sym else col.mu
 
 def mids(tbl: TBL) -> MIDS:
   "Every column's middle, cached until the next addRow."
@@ -131,8 +131,7 @@ def mids(tbl: TBL) -> MIDS:
 
 def div(col: COL) -> float:
   "Spread: entropy, or standard deviation."
-  return (-sum(p*log2(p) for v in col.has.values()
-               if (p := v/col.n) > 0)       # add(...,-1) can leave
+  return (-sum(p*log2(p) for v in col.has.values() if (p := v/col.n) > 0)   
           if type(col) is Sym else col.sd)  # a 0; sd kept by `add`
 
 def adds(vs: Iterable[ATOM], col: COL | None = None) -> COL:
@@ -191,8 +190,9 @@ def clone(tbl: TBL, rows: ROWS = None) -> TBL:
 #-- distance -----------------------------------------------
 def dist(vs: Iterable[QTY]) -> float:
   "Root mean square of the gaps.  VS is counted, not asked for n."
-  vs = list(vs)
-  return sqrt(sum(v*v for v in vs) / len(vs))
+  n = s = 0
+  for v in vs: n += 1; s += v*v
+  return sqrt(s/n)
 
 def ydist(tbl: TBL, row: ROW) -> float:
   "How far ROW's goals are from the best they could be."
@@ -381,8 +381,6 @@ def show(tbl: TBL, node: NODE, pre: str | None = None,
   print(" ydist     n")
   walk(node, pre, edge)
 
-
-
 #-- target -------------------------------------------------
 # One row, one number -- or one class.  This is the whole of the
 # difference between regression, classification and many goals.
@@ -440,7 +438,6 @@ def holdout(tbl: TBL, pick: PICKER = acquire,
   lab   = clone(tbl, pick(tr, the.Stop - the.Check, label))
   top   = sorted(rows[n:], key=rank(lab))
   return min(top[:the.Check], key=lambda r: ydist(lab, label(r)))
-
 
 #-- stats --------------------------------------------------
 # A leaf: it calls core, and nothing here calls it.

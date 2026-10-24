@@ -91,3 +91,13 @@ fft: ## ezr vs lgbm over moot/regression, $(J) cores
 
 fig: ## redraw docs/ezr_vs_lgbm.png from the cached run
 	@python3 etc/plot_ezr_lgbm.py etc/big50.tsv docs/ezr_vs_lgbm.png
+
+#-- RQ4: regression (see rq.md) ---------------------------------------
+rq4: ## redraw both RQ4 figures from the cached runs
+	@python3 etc/plot_regress.py
+
+frugal: ## attic.py --fft over moot/regression -> etc/frugal56.tsv
+	@{ echo -e "data\tvariants\tfrugal_train\tfrugal_test\ttree0_train\ttree0_test"; \
+	   ls $(REG)/*.csv | xargs -P $(J) -I@ python3 etc/frugal1.py @ \
+	   2>/dev/null | sort; } > etc/frugal56.tsv
+	@wc -l < etc/frugal56.tsv

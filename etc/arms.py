@@ -52,9 +52,9 @@ def ezr(full, te):
   return (sum(abs(Y(r) - E.leaf(root,r).pred)
               for r in te.rows)/len(te.rows)/d, secs, n)
 
-def lgbm(full, te):
-  "Every training row, LightGBM's defaults."
-  import numpy as np, lightgbm as lgb
+def lgbm_pred(full, te):
+  "What LightGBM predicts for each test row, and what it cost."
+  import numpy as np, lightgbm as lgb     # pylint: disable=C0415
   xs   = [c.at for c in full.cols.x]
   cats = {at: {v: i for i, v in enumerate(sorted(
                  {r[at] for r in full.rows if type(r[at]) is str
@@ -65,13 +65,15 @@ def lgbm(full, te):
       (np.nan if r[at] == "?" else r[at]) for at in xs]
      for r in rows], dtype=float)
   _, Ytr = E.target(full)
-  Y, d = scale(full, te.rows)
-  t0 = time.time()
   m  = lgb.LGBMRegressor(verbose=-1, n_estimators=100)
   m.fit(X(full.rows), [Ytr(r) for r in full.rows],
         categorical_feature=[i for i,at in enumerate(xs) if at in cats])
-  secs = time.time() - t0
-  p = m.predict(X(te.rows))
+  return m.predict(X(te.rows))
+
+def lgbm(full, te):
+  "Every training row, LightGBM's defaults."
+  t0 = time.time(); p = lgbm_pred(full, te); secs = time.time()-t0
+  Y, d = scale(full, te.rows)
   return (sum(abs(Y(r) - v) for r, v in zip(te.rows, p))
           /len(te.rows)/d, secs, len(full.rows))
 
